@@ -7,6 +7,7 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   output: 'static',
   site: 'https://permaculture-guild-designer.netlify.app',
+  devToolbar: { enabled: false },
 
   vite: {
     plugins: [tailwindcss()],
