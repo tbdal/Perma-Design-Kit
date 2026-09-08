@@ -80,6 +80,7 @@ import Layout from '../layouts/Layout.astro';
     ROLE_LABEL, ROLE_REQUIREMENT,
     type Guild, type GuildMember, type GuildRole, type PlantData,
   } from '../lib/types';
+  import { escapeHtml } from '../lib/html';
 
   type RoleSuggestion = { latin: string; common: string };
   let curatedByRole: Partial<Record<GuildRole, RoleSuggestion[]>> = {};
@@ -111,9 +112,11 @@ import Layout from '../layouts/Layout.astro';
     setTimeout(() => toast.classList.add('hidden'), 2000);
   }
 
+  /** HTML-escaped label — safe to interpolate directly into innerHTML/attributes. */
   function plantLabel(p: PlantData | undefined): string {
     if (!p) return '— unbekannt —';
-    return p.commonName ? `${p.commonName} (${p.latinName})` : p.latinName || '—';
+    const label = p.commonName ? `${p.commonName} (${p.latinName})` : p.latinName || '—';
+    return escapeHtml(label);
   }
 
   // ── Compatibility scoring ──────────────────────────────────────────────
@@ -155,8 +158,8 @@ import Layout from '../layouts/Layout.astro';
       const more = g.members.length > 6 ? `<span class="text-xs text-stone-400">+${g.members.length - 6}</span>` : '';
       return `
         <article data-guild-id="${g.id}" class="cursor-pointer rounded-xl bg-white dark:bg-stone-800 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:ring-green-300 dark:hover:ring-green-700">
-          <h3 class="text-base font-semibold text-stone-900 dark:text-stone-100">${g.name || '— ohne Namen —'}</h3>
-          ${g.description ? `<p class="mt-0.5 text-xs text-stone-500 dark:text-stone-400">${g.description}</p>` : ''}
+          <h3 class="text-base font-semibold text-stone-900 dark:text-stone-100">${escapeHtml(g.name || '— ohne Namen —')}</h3>
+          ${g.description ? `<p class="mt-0.5 text-xs text-stone-500 dark:text-stone-400">${escapeHtml(g.description)}</p>` : ''}
           <p class="mt-2 text-sm text-stone-700 dark:text-stone-200"><span class="text-stone-400 dark:text-stone-500">Anker:</span> ${plantLabel(anchor)}</p>
           <div class="mt-3 flex flex-wrap items-center gap-1">${memberChips} ${more}</div>
           <p class="mt-3 text-xs text-stone-400 dark:text-stone-500">${g.members.length} Mitglied${g.members.length === 1 ? '' : 'er'} · ${filledRoles.size} von ${ROLES.length} Rollen besetzt</p>

@@ -2,6 +2,7 @@ import { PDFDocument, PDFPage, PDFRef, degrees, drawImage as pdfDrawImage } from
 import { renderPolyCardToCanvas, renderStripeCardToCanvas } from './card-canvas';
 import { renderBaumscheibeSvg } from './baumscheibe-render';
 import type { PlantData } from './types';
+import { escapeHtml } from './html';
 
 // Card dimensions in mm
 const POLY_MM   = { w: 70,  h: 120 };
@@ -247,12 +248,6 @@ async function embedBaumscheibePage(pdfDoc: PDFDocument, plant: PlantData) {
   const canvas = await svgStringToCanvas(svg, w, h);
   const img    = await pdfDoc.embedJpg(canvasToJpegBytes(canvas));
   page.drawImage(img, { x: 0, y: 0, width: cardW, height: cardH });
-}
-
-function escapeHtml(s: string): string {
-  return s.replace(/[&<>"']/g, c => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-  } as Record<string, string>)[c]);
 }
 
 function buildPrintHtml(svgs: string[], title: string): string {

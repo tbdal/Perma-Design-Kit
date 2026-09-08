@@ -1,4 +1,5 @@
 import type { PlantData } from './types';
+import { escapeHtml } from './html';
 
 // Colour palette matching the original SVG templates
 const C = {
@@ -116,15 +117,15 @@ export function renderPolyCardHtml(plant: PlantData, imgSrc?: string): string {
     // ── Header ────────────────────────────────────────────────────────────────
     `<div style="background:${C.header};color:#fff;padding:6px 8px;flex-shrink:0;">` +
       `<div style="font-size:13px;font-weight:bold;line-height:1.2;white-space:nowrap;` +
-           `overflow:hidden;text-overflow:ellipsis;">${plant.latinName || '—'}</div>` +
+           `overflow:hidden;text-overflow:ellipsis;">${escapeHtml(plant.latinName || '—')}</div>` +
       `<div style="font-size:11px;opacity:0.85;white-space:nowrap;overflow:hidden;` +
-           `text-overflow:ellipsis;">${plant.commonName || '\u00a0'}</div>` +
+           `text-overflow:ellipsis;">${escapeHtml(plant.commonName || '\u00a0')}</div>` +
     `</div>` +
 
     // ── Photo ─────────────────────────────────────────────────────────────────
     `<div style="height:128px;background:#e8e8e8;flex-shrink:0;overflow:hidden;">` +
       (img
-        ? `<img src="${img}" style="width:100%;height:100%;object-fit:cover;" />`
+        ? `<img src="${escapeHtml(img)}" style="width:100%;height:100%;object-fit:cover;" />`
         : `<div style="height:100%;display:flex;align-items:center;justify-content:center;` +
                `color:#aaa;font-size:11px;">Kein Bild</div>`) +
     `</div>` +
@@ -232,15 +233,15 @@ export function renderStripeCardHtml(plant: PlantData, imgSrc?: string): string 
 
     // Photo
     `<div style="width:50px;height:50px;flex-shrink:0;background:#e8e8e8;overflow:hidden;">` +
-      (img ? `<img src="${img}" style="width:100%;height:100%;object-fit:cover;" />` : '') +
+      (img ? `<img src="${escapeHtml(img)}" style="width:100%;height:100%;object-fit:cover;" />` : '') +
     `</div>` +
 
     // Name
     `<div style="padding:0 8px;width:150px;flex-shrink:0;">` +
       `<div style="font-size:11px;font-weight:bold;color:${C.header};white-space:nowrap;` +
-           `overflow:hidden;text-overflow:ellipsis;">${plant.latinName || '—'}</div>` +
+           `overflow:hidden;text-overflow:ellipsis;">${escapeHtml(plant.latinName || '—')}</div>` +
       `<div style="font-size:9px;color:#666;white-space:nowrap;overflow:hidden;` +
-           `text-overflow:ellipsis;">${plant.commonName || ''}</div>` +
+           `text-overflow:ellipsis;">${escapeHtml(plant.commonName || '')}</div>` +
     `</div>` +
 
     // Specs

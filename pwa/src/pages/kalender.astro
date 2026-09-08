@@ -53,6 +53,7 @@ import Layout from '../layouts/Layout.astro';
 <script>
   import { getAllPlants } from '../lib/db';
   import type { PlantData } from '../lib/types';
+  import { escapeHtml } from '../lib/html';
 
   const MONTHS = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
   const NOW_MONTH = new Date().getMonth();
@@ -134,8 +135,8 @@ import Layout from '../layouts/Layout.astro';
     }).join('');
 
     const rows = plants.map(p => {
-      const name = p.commonName || p.latinName;
-      const sub  = p.commonName ? `<span class="block text-[10px] italic text-stone-400 dark:text-stone-500 truncate">${p.latinName}</span>` : '';
+      const name = escapeHtml(p.commonName || p.latinName);
+      const sub  = p.commonName ? `<span class="block text-[10px] italic text-stone-400 dark:text-stone-500 truncate">${escapeHtml(p.latinName)}</span>` : '';
       const cells = MONTHS.map((_, i) => {
         const flower = showF && !!(p.flowerMonths?.[i]);
         const fruit  = showR && !!(p.fruitMonths?.[i]);
