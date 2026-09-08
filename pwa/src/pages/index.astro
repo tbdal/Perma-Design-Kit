@@ -41,6 +41,7 @@ import Layout from '../layouts/Layout.astro';
           <button id="btn-export" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Alle exportieren (JSON)</button>
           <hr class="my-1 border-stone-200 dark:border-stone-700">
           <button id="btn-load-samples" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Beispieldaten laden</button>
+          <button id="btn-load-samples-crawford" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Beispieldaten laden (Crawford)</button>
         </div>
       </details>
     </div>
@@ -244,6 +245,7 @@ import Layout from '../layouts/Layout.astro';
   import { getAllPlants, savePlant, deletePlant, importPlants } from '../lib/db';
   import { createEmptyPlant, type PlantData, type DataSource, SOURCE_LABEL, SOURCE_COLOR } from '../lib/types';
   import { samplePlants } from '../lib/sample-data';
+  import { crawfordPlants } from '../lib/sample-data-crawford';
   import { importFromCSV } from '../lib/csv-import';
   import { validatePlant } from '../lib/validate';
   import { searchPlants, fetchProxyData, fetchPlantDetails } from '../lib/plant-search';
@@ -1029,6 +1031,19 @@ import Layout from '../layouts/Layout.astro';
       persistFilters();
       await renderList();
       alert(`${samplePlants.length} Beispielpflanzen importiert${before > 0 ? ' (Filter zurückgesetzt)' : ''}.`);
+    } catch (err) {
+      alert(`Beispieldaten-Import fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`);
+      console.error(err);
+    }
+  });
+  document.getElementById('btn-load-samples-crawford')!.addEventListener('click', async () => {
+    try {
+      await importPlants(crawfordPlants);
+      const before = activeFilters.size;
+      activeFilters.clear();
+      persistFilters();
+      await renderList();
+      alert(`${crawfordPlants.length} Pflanzen (Crawford) importiert${before > 0 ? ' (Filter zurückgesetzt)' : ''}. Nur lateinische Namen sind gesetzt — mit „↻" pro Pflanze anreichern.`);
     } catch (err) {
       alert(`Beispieldaten-Import fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`);
       console.error(err);
