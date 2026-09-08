@@ -184,8 +184,17 @@ async function fetchPfaf(name: string): Promise<Partial<PlantResult>> {
 }
 
 // --- NaturaDB parsing ---
+//
+// Disabled for now (see ROADMAP.md "Lizenz & Datenquellen"): naturadb.de
+// grants no reuse license for its editorial plant database, and its
+// robots.txt has an explicit "Datenbank Crawler: Disallow /" entry — a
+// clear anti-scraping signal. Re-enable only after obtaining permission
+// or API access from NaturaDB.
+const NATURADB_ENABLED = false;
 
 async function fetchNaturaDb(name: string): Promise<Partial<PlantResult>> {
+  if (!NATURADB_ENABLED) return {};
+
   const slug = name.toLowerCase().replace(/ /g, "-");
   const url = `https://www.naturadb.de/pflanzen/${slug}/`;
   let html: string;
