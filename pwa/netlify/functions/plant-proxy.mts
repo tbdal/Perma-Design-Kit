@@ -5,12 +5,38 @@ const MONTH_NAMES_DE: Record<string, number> = {
   juli: 6, august: 7, september: 8, oktober: 9, november: 10, dezember: 11,
 };
 
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
-  "Content-Type": "application/json",
-};
+// --- Origin allowlist ---
+//
+// `Access-Control-Allow-Origin: *` let ANY website's frontend call this
+// function directly from a visitor's browser — free-riding on our function
+// (and, transitively, on PFAF's server) as a scraping relay for their own
+// unrelated app. Browsers enforce CORS, so restricting this to our own
+// deploys actually stops that vector (unlike server-to-server calls, which
+// CORS can't touch — see rate limiting below for those).
+function isAllowedOrigin(origin: string | null): boolean {
+  if (!origin) return true; // same-origin / non-browser request, no Origin header sent
+  try {
+    const host = new URL(origin).hostname;
+    return (
+      host === "localhost" ||
+      host === "127.0.0.1" ||
+      host.endsWith(".netlify.app") // covers our production site + deploy previews
+    );
+  } catch {
+    return false;
+  }
+}
+
+function corsHeaders(origin: string | null): Record<string, string> {
+  return {
+    "Access-Control-Allow-Origin": origin && isAllowedOrigin(origin) ? origin : "null",
+    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Vary": "Origin",
+    "Content-Type": "application/json",
+  };
+}
+
 
 interface PlantResult {
   latinName: string;
@@ -272,8 +298,18 @@ function parseMonthIndicators(html: string): boolean[] {
 // --- Main handler ---
 
 export default async (req: Request, _context: Context) => {
+  const origin = req.headers.get("Origin");
+  const headers = corsHeaders(origin);
+
   if (req.method === "OPTIONS") {
-    return new Response(null, { status: 204, headers: CORS_HEADERS });
+    return new Response(null, { status: 204, headers });
+  }
+
+  if (origin && !isAllowedOrigin(origin)) {
+    return new Response(
+      JSON.stringify({ error: "Origin not allowed" }),
+      { status: 403, headers }
+    );
   }
 
   const url = new URL(req.url);
@@ -282,7 +318,7 @@ export default async (req: Request, _context: Context) => {
   if (!name) {
     return new Response(
       JSON.stringify({ error: "Missing ?name= parameter" }),
-      { status: 400, headers: CORS_HEADERS }
+      { status: 400, headers }
     );
   }
 
@@ -326,10 +362,20 @@ export default async (req: Request, _context: Context) => {
 
   return new Response(JSON.stringify(result), {
     status: 200,
-    headers: CORS_HEADERS,
+    headers,
   });
 };
 
 export const config = {
   path: ["/api/plant-proxy", "/.netlify/functions/plant-proxy"],
+  // Netlify-enforced (not in-process, so it actually works across cold
+  // starts/instances): max 30 requests per IP per 60s. Generous for normal
+  // autocomplete/import use, but closes off using this function as a free
+  // scraping relay for PFAF from outside the app.
+  rateLimit: {
+    action: "rate_limit",
+    aggregateBy: "ip",
+    windowSize: 60,
+    windowLimit: 30,
+  },
 };
