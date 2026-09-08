@@ -89,6 +89,12 @@ export const SOURCE_COLOR: Record<DataSource, string> = {
   sample:   'bg-teal-100 text-teal-700',
 };
 
+/** True if any field on this plant was populated from the given source — used to
+ *  decide whether a card needs that source's attribution (e.g. PFAF's CC BY 4.0). */
+export function hasSource(plant: { _sources?: Partial<Record<string, DataSource>> }, source: DataSource): boolean {
+  return !!plant._sources && Object.values(plant._sources).includes(source);
+}
+
 export interface PlantData {
   id: string;
   latinName: string;

@@ -1,4 +1,5 @@
 import type { PlantData } from './types';
+import { hasSource } from './types';
 import { TEXT_FIELDS, BOOL_FIELDS } from './baumscheibe-mapping';
 
 const TEMPLATE_URL = '/baumscheibe-template.svg';
@@ -122,6 +123,21 @@ function injectMonthCalendar(svg: SVGSVGElement, fruitMonths: boolean[], flowerM
   injectMonthRing(svg, flowerMonths, FLOWER_RING, '#e64ba0');
 }
 
+/** PFAF's database text is CC BY 4.0, which requires attribution wherever the
+ *  data is republished. Placed in the dome's otherwise-empty area, right of
+ *  the name text, below the month calendar. */
+function injectPfafAttribution(svg: SVGSVGElement) {
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+  const text = document.createElementNS(SVG_NS, 'text');
+  text.setAttribute('x', '1250');
+  text.setAttribute('y', '700');
+  text.setAttribute('font-family', 'Inter, sans-serif');
+  text.setAttribute('font-size', '18');
+  text.setAttribute('fill', '#999999');
+  text.textContent = 'Daten: PFAF.org (CC BY 4.0)';
+  svg.appendChild(text);
+}
+
 /** Render a plant into the Baumscheibe SVG template; returns serialized SVG markup. */
 export async function renderBaumscheibeSvg(plant: PlantData): Promise<string> {
   const tpl = await loadTemplate();
@@ -137,6 +153,7 @@ export async function renderBaumscheibeSvg(plant: PlantData): Promise<string> {
   injectNameText(svg, 'commonName', plant.commonName || '');
   injectNameText(svg, 'latinName',  plant.latinName  || '');
   injectMonthCalendar(svg, plant.fruitMonths, plant.flowerMonths);
+  if (hasSource(plant, 'pfaf')) injectPfafAttribution(svg);
 
   for (const [field, labels] of Object.entries(BOOL_FIELDS)) {
     if (!labels) continue;

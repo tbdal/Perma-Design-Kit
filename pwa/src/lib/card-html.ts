@@ -1,5 +1,11 @@
 import type { PlantData } from './types';
+import { hasSource } from './types';
 import { escapeHtml } from './html';
+
+/** PFAF's database text is CC BY 4.0, which requires attribution wherever the
+ *  data is republished — including on printed/exported cards, not just in the
+ *  app's own UI. Only shown when the plant actually has PFAF-sourced fields. */
+const PFAF_ATTRIBUTION = 'Daten: PFAF.org (CC BY 4.0)';
 
 // Colour palette matching the original SVG templates
 const C = {
@@ -190,12 +196,16 @@ export function renderPolyCardHtml(plant: PlantData, imgSrc?: string): string {
     `</div>` +
 
     // ── Flower months ─────────────────────────────────────────────────────────
-    `<div style="padding:2px 8px 4px;flex-shrink:0;">` +
+    `<div style="padding:2px 8px 2px;flex-shrink:0;">` +
       `<div style="display:flex;align-items:center;gap:2px;">` +
         `<span style="font-size:9px;color:#888;min-width:36px;">Bl\u00fcte:</span>` +
         `<div style="display:flex;gap:1px;">${flowers}</div>` +
       `</div>` +
     `</div>` +
+
+    (hasSource(plant, 'pfaf')
+      ? `<div style="padding:1px 8px 3px;font-size:7px;color:#aaa;flex-shrink:0;">${PFAF_ATTRIBUTION}</div>`
+      : '') +
 
     `</div>` // end card
   );
@@ -274,6 +284,11 @@ export function renderStripeCardHtml(plant: PlantData, imgSrc?: string): string 
         (plant.waterPlant ? `<span style="background:${C.waterPlant};color:#fff;padding:1px 2px;border-radius:2px;">Tei</span>` : '') +
       `</div>` +
     `</div>` +
+
+    // Attribution (fixed column, not truncated like the name field would be)
+    (hasSource(plant, 'pfaf')
+      ? `<div style="font-size:6px;color:#aaa;flex-shrink:0;padding:0 4px;line-height:1.3;white-space:nowrap;">PFAF.org<br/>CC BY 4.0</div>`
+      : '') +
 
     `</div>`
   );
