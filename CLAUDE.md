@@ -4,18 +4,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Git
 
-Always use `nit` instead of `git`. `nit` is installed at `/usr/local/bin/nit` and passes unknown commands through to git. Only `origin` is configured (points to `js32/PermacultureTreeGuildsDesigner`); push there.
+This is a fork (`tbdal/Perma-Guild-Forge`) of the upstream `js32/Perma-Guild-Forge`. `origin` points to the fork; push there with plain `git`.
 
 ## Build & Dev
 
-All commands run from `pwa/` with Node ≥ 22 (use `~/.nvm/versions/node/v24.13.1/bin/node`):
+All commands run from `pwa/` with Node ≥ 22 (managed via nvm; run `nvm use` to pick up `.nvmrc`):
 
 ```bash
 # Local dev server
-PATH="$HOME/.nvm/versions/node/v24.13.1/bin:$PATH" npm run dev
+npm run dev
 
 # Production build (run before committing to catch TS errors)
-PATH="$HOME/.nvm/versions/node/v24.13.1/bin:$PATH" npm run build
+npm run build
 ```
 
 No test suite exists. Build success is the primary correctness signal.
