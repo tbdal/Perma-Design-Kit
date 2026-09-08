@@ -114,29 +114,42 @@ async function fetchPfaf(name) {
 
   const result = { source: 'pfaf' };
 
-  const commonMatch = html.match(/Common Name[^<]*<\/td>\s*<td[^>]*>([^<]+)/i);
-  if (commonMatch) result.commonName = commonMatch[1].split(',')[0].trim();
+  // PFAF's overview table used to be plain `<td>Label</td><td>Value</td>` —
+  // matched by searching for the label text and reading the next <td>. PFAF
+  // redesigned the table (label now in <b>, value now in a <span id="...">),
+  // which broke that: the label regex could no longer reach past the </b>
+  // tag, and the value was no longer directly inside the <td>. ASP.NET control
+  // ids (id="ContentPlaceHolder1_XXX") are far more stable than surrounding
+  // markup, since they're tied to server-side code rather than page styling —
+  // so look values up by id instead of by adjacent label text.
+  const getById = (id) => {
+    const m = html.match(new RegExp(`id="ContentPlaceHolder1_${id}"[^>]*>([^<]*)`, 'i'));
+    return m ? m[1].replace(/&nbsp;/g, ' ').trim() : '';
+  };
 
-  const edibleMatch = html.match(/Edibility Rating[^<]*<\/td>\s*<td[^>]*>([^<]+)/i);
-  if (edibleMatch) {
-    result.eatableScore = parsePfafScore(edibleMatch[1]);
+  const commonName = getById('lblCommanName'); // sic — typo in PFAF's own markup
+  if (commonName) result.commonName = commonName.split(',')[0].trim();
+
+  const edibleRating = getById('txtEdrating');
+  if (edibleRating) {
+    result.eatableScore = parsePfafScore(edibleRating);
     result.eatable = (result.eatableScore || 0) > 2;
   }
 
-  const medsMatch = html.match(/Medicinal Rating[^<]*<\/td>\s*<td[^>]*>([^<]+)/i);
-  if (medsMatch) {
-    result.medsScore = parsePfafScore(medsMatch[1]);
+  const medRating = getById('txtMedRating');
+  if (medRating) {
+    result.medsScore = parsePfafScore(medRating);
     result.meds = (result.medsScore || 0) > 2;
   }
 
-  const otherMatch = html.match(/Other Uses[^<]*<\/td>\s*<td[^>]*>([^<]+)/i);
-  if (otherMatch) {
-    result.materialScore = parsePfafScore(otherMatch[1]);
+  const otherUseRating = getById('txtOtherUseRating');
+  if (otherUseRating) {
+    result.materialScore = parsePfafScore(otherUseRating);
     result.material = (result.materialScore || 0) > 2;
   }
 
-  const zoneMatch = html.match(/USDA hardiness[^<]*<\/td>\s*<td[^>]*>([^<]+)/i);
-  if (zoneMatch) result.climateZone = zoneMatch[1].trim();
+  const climateZone = getById('lblUSDAhardiness');
+  if (climateZone) result.climateZone = climateZone;
 
   const physMatch = html.match(/lblPhystatment[^>]*>([^<]+(?:<[^>]+>[^<]*)*)/i);
   const phys = physMatch ? physMatch[1].replace(/<[^>]+>/g, '') : '';
