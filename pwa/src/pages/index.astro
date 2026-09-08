@@ -42,6 +42,8 @@ import Layout from '../layouts/Layout.astro';
           <hr class="my-1 border-stone-200 dark:border-stone-700">
           <button id="btn-load-samples" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Beispieldaten laden</button>
           <button id="btn-load-samples-crawford" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Beispieldaten laden (Crawford)</button>
+          <hr class="my-1 border-stone-200 dark:border-stone-700">
+          <button id="btn-enrich-all" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Lade alle fehlenden Daten</button>
         </div>
       </details>
     </div>
@@ -1048,6 +1050,35 @@ import Layout from '../layouts/Layout.astro';
       alert(`Beispieldaten-Import fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`);
       console.error(err);
     }
+  });
+  document.getElementById('btn-enrich-all')!.addEventListener('click', async () => {
+    const b = document.getElementById('btn-enrich-all') as HTMLButtonElement;
+    const origText = b.textContent;
+    const plants = (await getAllPlants()).filter(p => p.latinName);
+    if (plants.length === 0) { alert('Keine Pflanzen mit lateinischem Namen vorhanden.'); return; }
+    b.disabled = true;
+    let plantsUpdated = 0, fieldsFilled = 0, failed = 0;
+    for (let i = 0; i < plants.length; i++) {
+      b.textContent = `${i + 1}/${plants.length}…`;
+      try {
+        const enriched = await enrichPlant(plants[i]);
+        if (enriched > 0) {
+          await savePlant(plants[i]);
+          plantsUpdated++;
+          fieldsFilled += enriched;
+        }
+      } catch (err) {
+        failed++;
+        console.error(`Anreicherung fehlgeschlagen für ${plants[i].latinName}:`, err);
+      }
+    }
+    b.disabled = false;
+    b.textContent = origText;
+    await renderList();
+    alert(
+      `${plantsUpdated} von ${plants.length} Pflanzen aktualisiert, ${fieldsFilled} Felder ergänzt.` +
+      (failed > 0 ? ` ${failed} fehlgeschlagen (siehe Konsole).` : '')
+    );
   });
   document.getElementById('btn-csv-template')!.addEventListener('click', () => {
     triggerDownload(buildCSVTemplate(), 'pflanzen-vorlage.csv', 'text/csv;charset=utf-8;');
