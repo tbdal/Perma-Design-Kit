@@ -9,15 +9,15 @@ The PWA is the primary interface. It runs in the browser, works offline, and can
 ```
 cd pwa
 npm install
-npm run dev
+npm run dev     # in a second terminal: npm run proxy (needed for PFAF enrichment)
 ```
 
-For deployment and Netlify proxy setup see [`pwa/SETUP.md`](pwa/SETUP.md).
+For deployment and proxy setup see [`pwa/SETUP.md`](pwa/SETUP.md).
 
 ### Features
 
 - **Plant management** — create, edit, search and import plants with ~50 attributes
-- **Multi-source import** — Wikidata autocomplete, enrichment via PFAF & NaturaDB proxy
+- **Multi-source import** — Wikidata autocomplete, enrichment via PFAF proxy (NaturaDB currently disabled, see `ROADMAP.md`)
 - **Per-field provenance** — each data point is tagged with its source (Wikidata / PFAF / NaturaDB / manual / CSV)
 - **Card preview** — live canvas preview of poly cards (70×120 mm) and stripe cards (290×17 mm)
 - **PDF export** — print-ready A4 layout, compatible with LibreWolf/Firefox/Chrome

@@ -27,11 +27,11 @@ npm run build     # Static Build nach ./dist/
 npm run preview   # Lokale Vorschau des Builds
 ```
 
-## Deployment (Netlify)
+## Deployment
 
 - Build Command: `npm run build`
 - Publish Directory: `dist`
-- Netlify-Config liegt in `netlify.toml`
+- Der PFAF-Proxy (`server/plant-proxy-server.mjs`) muss separat als eigener Prozess laufen; das Deployment braucht eine Reverse-Proxy-Regel, die `/api/plant-proxy` dorthin weiterleitet (siehe `CLAUDE.md`)
 
 ## Projektstruktur
 
@@ -53,5 +53,6 @@ pwa/
     manifest.json           # PWA-Manifest
     sw.js                   # Service Worker
     favicon.svg
-  netlify.toml
+  server/
+    plant-proxy-server.mjs  # Standalone PFAF-Proxy (ersetzt die alte Netlify Function)
 ```

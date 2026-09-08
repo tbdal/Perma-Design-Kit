@@ -22,9 +22,12 @@ nvm use 24
 cd pwa
 npm install        # Abhängigkeiten installieren (einmalig)
 npm run dev        # Dev-Server starten → http://localhost:4321
+npm run proxy      # in einem zweiten Terminal — nötig für PFAF-Anreicherung
 ```
 
-Der Dev-Server aktualisiert automatisch bei Dateiänderungen (Hot Reload).
+Der Dev-Server aktualisiert automatisch bei Dateiänderungen (Hot Reload). Ohne `npm run proxy`
+funktioniert die App normal, PFAF-Anreicherung (`/api/plant-proxy`) liefert dann aber leere Ergebnisse
+statt eines Fehlers — der Dev-Server-Proxy in `astro.config.mjs` findet einfach niemanden auf Port 8787.
 
 ### Weitere Befehle
 
@@ -32,30 +35,31 @@ Der Dev-Server aktualisiert automatisch bei Dateiänderungen (Hot Reload).
 |---------------------|---------------------------------------|
 | `npm run build`     | Produktions-Build nach `dist/`        |
 | `npm run preview`   | Build lokal testen (nach `build`)     |
+| `npm run proxy`     | PFAF-Proxy-Server starten (`server/plant-proxy-server.mjs`) |
 
-## Deployment auf Netlify
+## Deployment
 
-### Ersteinrichtung
+Zwei unabhängige Teile:
 
-1. https://app.netlify.com → **Add new site** → **Import an existing project**
-2. GitHub-Repo verbinden
-3. Build-Einstellungen:
-   - **Base directory:** `pwa`
-   - **Build command:** `npm run build`
-   - **Publish directory:** `pwa/dist`
-4. **Deploy**
+1. **Statischer Build** (`dist/`) — kann von jedem Static-Hosting ausgeliefert werden (eigener Server,
+   Netlify, o.ä.). Build-Command `npm run build`, Publish-Verzeichnis `dist`.
+2. **PFAF-Proxy** — `server/plant-proxy-server.mjs` muss als eigener, dauerhaft laufender Node-Prozess
+   betrieben werden (z.B. via systemd, siehe `plant-proxy.service` auf dem Entwicklungs-VPS). Das Hosting
+   davor braucht eine Reverse-Proxy-Regel, die `/api/plant-proxy` an diesen Prozess weiterleitet — lokal
+   übernimmt das der `vite.server.proxy`-Eintrag in `astro.config.mjs`, in Produktion z.B. eine
+   entsprechende nginx-`location`-Regel.
 
-### Danach
-
-Jeder Push auf `main` löst automatisch ein neues Deployment aus.
+Ohne den Proxy läuft die App weiter, aber PFAF-Anreicherung liefert keine Daten (siehe oben).
 
 ## Architektur
 
 - **Astro** — Static Site Generator, erzeugt reines HTML/CSS/JS
 - **Tailwind CSS** — Utility-first CSS Framework
 - **IndexedDB** — Pflanzendaten lokal im Browser (kein Server nötig)
-- **Wikidata API** — Pflanzensuche direkt vom Browser (kein Proxy)
+- **Wikidata API** — Pflanzensuche direkt vom Browser (kein Proxy, CORS-frei)
+- **PFAF-Proxy** (`server/plant-proxy-server.mjs`) — eigener Node-Prozess, da PFAF keinen direkten
+  Browser-Zugriff erlaubt (CORS). NaturaDB-Anreicherung ist aktuell deaktiviert, siehe `ROADMAP.md`
 - **jsPDF + svg2pdf.js** — PDF-Export im Browser
 - **Service Worker** — Offline-Fähigkeit
 
-Kein Backend, kein Proxy, kein Server. Alles läuft im Browser.
+Alles bis auf die PFAF-Anreicherung läuft rein im Browser, ohne Server.

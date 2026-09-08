@@ -25,6 +25,19 @@ export default defineConfig({
     plugins: [tailwindcss()],
     server: {
       https: httpsConfig,
+      // Forwards /api/plant-proxy to the standalone proxy process (see
+      // server/plant-proxy-server.mjs) so the frontend can keep calling a
+      // relative path — matches how the old netlify.toml redirect worked,
+      // just without Netlify. xfwd forwards the real client IP so the
+      // proxy's own rate limiter sees actual visitors, not just this dev
+      // server's address.
+      proxy: {
+        '/api/plant-proxy': {
+          target: `http://127.0.0.1:${process.env.PLANT_PROXY_PORT || 8787}`,
+          changeOrigin: true,
+          xfwd: true,
+        },
+      },
     },
   },
 });

@@ -51,10 +51,9 @@ import Layout from '../layouts/Layout.astro';
       <ul class="list-disc pl-6">
         <li><strong>Wikidata</strong> (<a class="text-green-700 dark:text-green-400 hover:underline" href="https://www.wikidata.org" target="_blank" rel="noopener">wikidata.org</a>) —
           direkte API-Anfragen aus deinem Browser für Such­ergebnisse und Pflanzen­details.</li>
-        <li><strong>PFAF</strong> (<a class="text-green-700 dark:text-green-400 hover:underline" href="https://pfaf.org" target="_blank" rel="noopener">pfaf.org</a>) und
-          <strong>NaturaDB</strong> (<a class="text-green-700 dark:text-green-400 hover:underline" href="https://www.naturadb.de" target="_blank" rel="noopener">naturadb.de</a>) —
-          Anfragen werden über eine Netlify Serverless Function (<code>/api/plant-proxy</code>) als CORS-Proxy
-          weitergeleitet, weil die Quellen keinen direkten Browser-Zugriff erlauben.</li>
+        <li><strong>PFAF</strong> (<a class="text-green-700 dark:text-green-400 hover:underline" href="https://pfaf.org" target="_blank" rel="noopener">pfaf.org</a>) —
+          Anfragen werden über einen eigenen Server-Proxy (<code>/api/plant-proxy</code>) weitergeleitet, weil die
+          Quelle keinen direkten Browser-Zugriff erlaubt. (NaturaDB ist aktuell deaktiviert, siehe ROADMAP.md.)</li>
         <li><strong>Wikimedia Commons</strong> — Pflanzen­bilder werden bei Bedarf direkt von dort geladen.</li>
         <li><strong>GitHub API</strong> (<a class="text-green-700 dark:text-green-400 hover:underline" href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement" target="_blank" rel="noopener">Privacy Statement</a>) —
           nur wenn du Gist-Sync aktiviert hast. Anfragen gehen mit deinem Personal Access Token
@@ -65,9 +64,8 @@ import Layout from '../layouts/Layout.astro';
 
     <section class="space-y-2">
       <h2 class="text-xl font-semibold">Hosting</h2>
-      <p>Die Anwendung wird über <strong>Netlify</strong> (Netlify, Inc., 44 Montgomery St, San Francisco, USA) ausgeliefert.
-        Beim Aufruf der Seite werden technisch notwendige Server-Logs (z.B. IP-Adresse, Zeitstempel, User-Agent)
-        durch Netlify verarbeitet. Details: <a class="text-green-700 dark:text-green-400 hover:underline" href="https://www.netlify.com/privacy" target="_blank" rel="noopener">netlify.com/privacy</a>.</p>
+      <p>Die Anwendung wird von einem eigenen Server ausgeliefert. Beim Aufruf der Seite werden technisch
+        notwendige Server-Logs (z.B. IP-Adresse, Zeitstempel, User-Agent) verarbeitet.</p>
     </section>
 
     <section class="space-y-2">

@@ -222,7 +222,7 @@ export async function fetchPlantDetails(wikidataId: string): Promise<Partial<Pla
 }
 
 /**
- * Fetch enrichment data from PFAF + NaturaDB via the Netlify proxy function.
+ * Fetch enrichment data from PFAF via the server proxy (server/plant-proxy-server.mjs).
  * Returns partial PlantData with all the fields that the proxy could parse.
  */
 export async function fetchProxyData(latinName: string): Promise<Partial<PlantData>> {

@@ -26,10 +26,10 @@ No test suite exists. Build success is the primary correctness signal.
 
 **Data flow:**
 1. Plant data lives in IndexedDB (`permaculture-guilds` DB, `plants` store) — `src/lib/db.ts`
-2. Search hits the local `public/plants-db.json` first, then Wikidata API directly, then the Netlify proxy for PFAF/NaturaDB enrichment
+2. Search hits the local `public/plants-db.json` first, then Wikidata API directly, then the server proxy for PFAF enrichment (NaturaDB is currently disabled, see ROADMAP.md)
 3. `_sources: Partial<Record<keyof PlantData, DataSource>>` tracks per-field provenance — every import path must call `trackSources()` after writing fields
 
-**Netlify proxy** (`pwa/netlify/functions/plant-proxy.mts`) scrapes PFAF and NaturaDB HTML and merges results. Reachable at `/api/plant-proxy?name=LatinName` via the redirect in `netlify.toml` (which must stay at repo root with `base = "pwa"`).
+**Plant proxy** (`pwa/server/plant-proxy-server.mjs`) is a standalone Node process (not Netlify — migrated off it) that scrapes PFAF HTML server-side, since the browser can't due to CORS. NaturaDB scraping exists in the same file but is hard-disabled (`NATURADB_ENABLED = false`, unresolved license/robots.txt concerns — see ROADMAP.md). Reachable at `/api/plant-proxy?name=LatinName`: in dev, `astro.config.mjs`'s `vite.server.proxy` forwards that path to the standalone process (default port 8787, override via `PLANT_PROXY_PORT`); any other deployment needs an equivalent reverse-proxy rule. Run it with `npm run proxy` (or as the `plant-proxy.service` systemd unit on the VPS this was developed on).
 
 **PDF export** (`src/lib/pdf-export.ts`) uses raw `flateStream` with RGB bytes instead of `embedPng()` for Poly/Stripe cards — this avoids an SMask that breaks rendering in LibreWolf/pdf.js. Don't revert to `embedPng()`. The Baumscheibe export takes a different route: Chrome/Safari rasterize SVG → JPEG → `embedJpg` (DCTDecode, no SMask) and auto-download; **Firefox** opens a native print window with the SVG inline (vector, fast) because canvas-rasterization of the 5 MB SVG is slow in Firefox and pdf.js mis-decodes the resulting raster XObject as diagonal stripes. Branch by `/Firefox\//.test(navigator.userAgent)`.
 
