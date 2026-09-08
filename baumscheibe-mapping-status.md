@@ -102,10 +102,19 @@ Nur die mittleren drei der ursprünglich geplanten 5 pH-Stufen (ODS Task2: „Gr
 
 | data-field | Status |
 |---|---|
-| `fruitMonths` | ✅ OK (seit `injectMonthCalendar`) |
-| `flowerMonths` | ✅ OK (seit `injectMonthCalendar`) |
+| `fruitMonths` | ✅ OK (Ring-Overlay, s.u.) |
+| `flowerMonths` | ✅ OK (Ring-Overlay, s.u.) |
 
-Da im Template kein Ansatzpunkt existierte, wird der Kalender wie `commonName`/`latinName` **programmatisch injiziert** (`injectMonthCalendar()` in `baumscheibe-render.ts`), nicht aus dem SVG gelesen: zwei Reihen à 12 Boxen (J–D) im bislang leeren Bereich rechts neben dem Namenstext im oberen Bogen, rot = Frucht, pink = Blüte, im selben Stil wie bei Poly-/Streifenkarte. Position/Größe sind feste Pixel-Koordinaten (`CAL` in `baumscheibe-render.ts`) — bei einer Neugestaltung des Templates in Inkscape ggf. anpassen oder durch echte Artwork-Elemente ersetzen.
+**Korrektur (2026-09-08):** Erste Version dieses Dokuments hatte hier fälschlich „kein Ansatzpunkt im Template" behauptet und stattdessen einen komplett neuen Kalender (12 Boxen) frei in der Kuppel platziert. Das war falsch — im unteren Bereich des Templates existieren bereits **zwei konzentrische, handgezeichnete Ringe** genau für diesen Zweck (innerer Ring = Frucht, äußerer Ring = Blüte, je in 12 Segmente unterteilt). Sie tragen nur kein `inkscape:label` und sind Teil des einen großen `background`-Rasterbilds (die ganze Zeichnung ist ein einziges `<image>`, 0 `<path>`-Elemente in der Datei) — deshalb waren sie über `findByLabel()` nicht auffindbar. Bestätigt durch Vergleich von `pwa/public/baumscheibe-template.svg` und der Repo-Root-Datei `baumscheibe3.svg` (identische MD5-Summe, exakt dieselben 40 Labels in beiden).
+
+Da diese Ringe keine einzeln ansteuerbaren Elemente sind, funktioniert das reguläre Label-Mapping hier nicht. Stattdessen legt `injectMonthRing()` (in `baumscheibe-render.ts`) für jeden aktiven Monat ein halbtransparentes Kreisring-Segment (`<path>`, Donut-Ausschnitt) direkt über die vermessene Ringgeometrie:
+
+- Zentrum `(1140, 1130)`, Frucht-Ring `r=860–905`, Blüte-Ring `r=925–995` (Bildkoordinaten des 2286×2482-Viewbox)
+- Geometrie wurde nicht geschätzt, sondern per Canvas-Pixel-Sampling aus dem gerenderten Template ermittelt (Radius-Konsistenz über 10 Winkel geprüft, Std-Abw. ~6px bei mean~1023 für die äußere Randlinie) und zusätzlich visuell durch Overlay-Kreise + 12-Teilstriche gegen die echten Tuschestriche/Punkte im Bild verifiziert
+- Monat 0 (Jan) bei 180° (links), Monat 11 (Dez) bei ~0° (rechts), Sweep durch 90° (unten) — liest sich links→rechts wie ein normaler Zeitstrahl
+- Getestet: realistisches Apfel-Muster (Blüte links, Frucht rechts, beide sauber im jeweiligen Ring), überlappende Testmonate zur Verifikation der Innen/Außen-Zuordnung (Frucht innen, Blüte außen — bestätigt), Leerfall (keine Monate) ohne Crash
+
+**Einschränkung:** Center/Radien sind für *dieses* Template hart codiert (`RING_CENTER`, `FRUIT_RING`, `FLOWER_RING` in `baumscheibe-render.ts`). Wird die Zeichnung in Inkscape neu exportiert oder verschoben, müssen sie neu vermessen werden — im Idealfall bekommen die beiden Ringe dann echte `inkscape:label`-Werte (z.B. `fruitMonths`/`flowerMonths` mit 12 einzeln beschrifteten Segmenten), dann kann dieser Hardcode-Workaround durch reguläres Label-Mapping ersetzt werden.
 
 ## Statische/strukturelle SVG-Labels ohne Datenbezug
 

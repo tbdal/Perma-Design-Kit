@@ -63,62 +63,63 @@ function setVisible(el: Element, on: boolean) {
   else el.setAttribute('display', 'none');
 }
 
-// Fruit/flower month calendar — no template artwork exists for this yet
-// (see baumscheibe-mapping-status.md), so it's injected programmatically
-// at a fixed position in the free area of the upper dome, right of the
-// name text. Two rows of 12 boxes: fruit (red) above flower (pink).
-const MONTH_LETTERS = ['J','F','M','A','M','J','J','A','S','O','N','D'];
-const CAL = {
-  x: 1250, y: 300, cell: 44, gap: 6,
-  labelH: 40, rowGap: 8,
-};
+// Fruit/flower month calendar. The template's background art already has two
+// concentric hand-drawn rings for this in the lower half (inner = fruit,
+// outer = flower, per the artist) but they're unlabeled pixels baked into
+// the flat "background" raster — no vector/label structure to hook into
+// (see baumscheibe-mapping-status.md). So instead of toggling an existing
+// element like every other field, we overlay 12 translucent arc segments
+// per ring, geometrically fitted to the artwork by sampling rendered pixels
+// (see scratchpad fit-ring.mjs from the session that built this).
+// Center/radii are hand-fitted to this specific template — if the artwork
+// is redrawn, re-measure and update these.
+const RING_CENTER = { x: 1140, y: 1130 };
+const FRUIT_RING = { rInner: 860, rOuter: 905 };
+const FLOWER_RING = { rInner: 925, rOuter: 995 };
+// Month 0 (Jan) at the left (180°), month 11 (Dec) at the right (0°), sweeping
+// through the bottom (90°) — reads left-to-right like a normal timeline.
+const RING_ANGLE_START_DEG = 180;
+const RING_ANGLE_END_DEG = 0;
 
-function injectMonthCalendar(svg: SVGSVGElement, fruitMonths: boolean[], flowerMonths: boolean[]) {
+function describeAnnulusSegment(
+  cx: number, cy: number, rInner: number, rOuter: number,
+  startDeg: number, endDeg: number,
+): string {
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const pt = (r: number, deg: number) => [cx + r * Math.cos(toRad(deg)), cy + r * Math.sin(toRad(deg))];
+  const [x1, y1] = pt(rOuter, startDeg);
+  const [x2, y2] = pt(rOuter, endDeg);
+  const [x3, y3] = pt(rInner, endDeg);
+  const [x4, y4] = pt(rInner, startDeg);
+  const sweep = endDeg > startDeg ? 1 : 0;
+  return `M ${x1} ${y1} A ${rOuter} ${rOuter} 0 0 ${sweep} ${x2} ${y2} ` +
+    `L ${x3} ${y3} A ${rInner} ${rInner} 0 0 ${1 - sweep} ${x4} ${y4} Z`;
+}
+
+function injectMonthRing(
+  svg: SVGSVGElement, months: boolean[], ring: { rInner: number; rOuter: number }, color: string,
+) {
   const SVG_NS = 'http://www.w3.org/2000/svg';
   const g = document.createElementNS(SVG_NS, 'g');
+  const step = (RING_ANGLE_END_DEG - RING_ANGLE_START_DEG) / 12;
 
-  const addRow = (values: boolean[], rowY: number, activeColor: string, rowLabel: string) => {
-    const labelText = document.createElementNS(SVG_NS, 'text');
-    labelText.setAttribute('x', String(CAL.x - 14));
-    labelText.setAttribute('y', String(rowY + CAL.cell / 2 + 6));
-    labelText.setAttribute('text-anchor', 'end');
-    labelText.setAttribute('font-family', 'Inter, sans-serif');
-    labelText.setAttribute('font-size', '15');
-    labelText.setAttribute('fill', '#555555');
-    labelText.textContent = rowLabel;
-    g.appendChild(labelText);
-
-    values.forEach((active, i) => {
-      const x = CAL.x + i * (CAL.cell + CAL.gap);
-      const rect = document.createElementNS(SVG_NS, 'rect');
-      rect.setAttribute('x', String(x));
-      rect.setAttribute('y', String(rowY));
-      rect.setAttribute('width', String(CAL.cell));
-      rect.setAttribute('height', String(CAL.cell));
-      rect.setAttribute('rx', '4');
-      rect.setAttribute('fill', active ? activeColor : '#f0f0f0');
-      rect.setAttribute('stroke', '#bbbbbb');
-      rect.setAttribute('stroke-width', '1.5');
-      g.appendChild(rect);
-
-      const label = document.createElementNS(SVG_NS, 'text');
-      label.setAttribute('x', String(x + CAL.cell / 2));
-      label.setAttribute('y', String(rowY + CAL.cell / 2 + 6));
-      label.setAttribute('text-anchor', 'middle');
-      label.setAttribute('font-family', 'Inter, sans-serif');
-      label.setAttribute('font-size', '16');
-      label.setAttribute('fill', active ? '#ffffff' : '#999999');
-      label.textContent = MONTH_LETTERS[i];
-      g.appendChild(label);
-    });
-  };
-
-  const fruitY = CAL.y + CAL.labelH;
-  const flowerY = fruitY + CAL.cell + CAL.rowGap;
-  addRow(fruitMonths, fruitY, '#e64545', 'Frucht');
-  addRow(flowerMonths, flowerY, '#e64ba0', 'Blüte');
+  months.forEach((active, i) => {
+    if (!active) return;
+    const start = RING_ANGLE_START_DEG + i * step;
+    const end = start + step;
+    const path = document.createElementNS(SVG_NS, 'path');
+    path.setAttribute('d', describeAnnulusSegment(RING_CENTER.x, RING_CENTER.y, ring.rInner, ring.rOuter, start, end));
+    path.setAttribute('fill', color);
+    path.setAttribute('fill-opacity', '0.6');
+    g.appendChild(path);
+  });
 
   svg.appendChild(g);
+}
+
+function injectMonthCalendar(svg: SVGSVGElement, fruitMonths: boolean[], flowerMonths: boolean[]) {
+  injectMonthRing(svg, fruitMonths, FRUIT_RING, '#e6483f');
+  injectMonthRing(svg, flowerMonths, FLOWER_RING, '#e64ba0');
 }
 
 /** Render a plant into the Baumscheibe SVG template; returns serialized SVG markup. */
