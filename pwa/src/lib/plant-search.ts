@@ -1,5 +1,6 @@
 import { createEmptyPlant, type DataSource, type PlantData } from './types';
 import { isSourceEnabled } from './settings';
+import { newId } from './id';
 
 // ── Local plant database ─────────────────────────────────────────────────────
 
@@ -298,6 +299,6 @@ export async function importPlantFromSearch(result: SearchResult): Promise<Plant
     recordSources(plant, filled, 'pfaf'); // proxy merges pfaf+naturadb; use 'pfaf' as primary
   }
 
-  plant.id = crypto.randomUUID();
+  plant.id = newId();
   return plant;
 }

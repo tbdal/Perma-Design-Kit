@@ -1,3 +1,5 @@
+import { newId } from './id';
+
 // ── Guilds ──────────────────────────────────────────────────────────────────
 
 export type GuildRole =
@@ -54,7 +56,7 @@ export interface Guild {
 export function createEmptyGuild(): Guild {
   const now = new Date().toISOString();
   return {
-    id: crypto.randomUUID(),
+    id: newId(),
     name: '',
     description: '',
     anchorPlantId: null,
@@ -147,7 +149,7 @@ export interface PlantData {
 
 export function createEmptyPlant(): PlantData {
   return {
-    id: crypto.randomUUID(),
+    id: newId(),
     latinName: '',
     commonName: '',
     heightM: null,

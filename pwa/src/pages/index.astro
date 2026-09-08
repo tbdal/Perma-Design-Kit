@@ -247,6 +247,7 @@ import Layout from '../layouts/Layout.astro';
   import { importFromCSV } from '../lib/csv-import';
   import { validatePlant } from '../lib/validate';
   import { searchPlants, fetchProxyData, fetchPlantDetails } from '../lib/plant-search';
+  import { newId } from '../lib/id';
   import { isSourceEnabled, loadSettings } from '../lib/settings';
   import { exportCardsPDF, exportSingleCardPDF, exportBaumscheibePDF, exportBaumscheibesPDF } from '../lib/pdf-export';
   import { renderPolyCardHtml, renderStripeCardHtml } from '../lib/card-html';
@@ -1142,7 +1143,7 @@ import Layout from '../layouts/Layout.astro';
               }
             }
 
-            plant.id = crypto.randomUUID();
+            plant.id = newId();
             await savePlant(plant);
             renderList();
             b.textContent = '✓ Hinzugefügt';
