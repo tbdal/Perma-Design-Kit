@@ -4,7 +4,7 @@ Testmethode: `renderBaumscheibeSvg()` mit einer vollständig ausgefüllten Testp
 
 Quelle für Soll-Zustand: `baumscheibe3-data-fields.ods`, Sheet „baumscheibe3-data-fields".
 
-**Ergebnis in Kurzform:** 21 von 38 PlantData-Feldern werden korrekt gerendert. 8 Felder sind im Code gemappt, aber im SVG existiert kein passendes Element (Mapping läuft ins Leere — kein Fehler, einfach kein sichtbarer Effekt). 9 Felder haben gar kein Code-Mapping. 3 SVG-Icons sind unverknüpft und **immer sichtbar** (nicht ausgeblendet), zeigen also fälschlich bei jeder Pflanze an.
+**Ergebnis in Kurzform:** 23 von 38 PlantData-Feldern werden korrekt gerendert (inkl. Frucht-/Blütemonate, s.u.). 8 Felder sind im Code gemappt, aber im SVG existiert kein passendes Element (Mapping läuft ins Leere — kein Fehler, einfach kein sichtbarer Effekt). 7 Felder haben gar kein Code-Mapping. Mindestens 3 SVG-Icons sind unverknüpft und **immer sichtbar** (nicht ausgeblendet) — beim Test mit einer leeren Pflanze blieben zusätzlich zum bekannten Baum-/Duftverwirrer-/Faser-Icon noch eine zweite Biene und ein Holzscheit sichtbar, die keinem der drei dokumentierten Icons entsprechen; welche Felder das genau sein sollen ist unklar (evtl. die vom ODS-Kommentar erwähnte Aufteilung „mat-construction/mat-fibre" bei `material`, oder ein zweites Insekten-Icon) — nicht weiter untersucht, da außerhalb des aktuellen Auftrags.
 
 ## Legende
 
@@ -102,8 +102,10 @@ Nur die mittleren drei der ursprünglich geplanten 5 pH-Stufen (ODS Task2: „Gr
 
 | data-field | Status |
 |---|---|
-| `fruitMonths` | ❌ Kein Mapping — kein SVG-Element, ODS: „fehlt noch" |
-| `flowerMonths` | ❌ Kein Mapping — kein SVG-Element, ODS: „fehlt noch" |
+| `fruitMonths` | ✅ OK (seit `injectMonthCalendar`) |
+| `flowerMonths` | ✅ OK (seit `injectMonthCalendar`) |
+
+Da im Template kein Ansatzpunkt existierte, wird der Kalender wie `commonName`/`latinName` **programmatisch injiziert** (`injectMonthCalendar()` in `baumscheibe-render.ts`), nicht aus dem SVG gelesen: zwei Reihen à 12 Boxen (J–D) im bislang leeren Bereich rechts neben dem Namenstext im oberen Bogen, rot = Frucht, pink = Blüte, im selben Stil wie bei Poly-/Streifenkarte. Position/Größe sind feste Pixel-Koordinaten (`CAL` in `baumscheibe-render.ts`) — bei einer Neugestaltung des Templates in Inkscape ggf. anpassen oder durch echte Artwork-Elemente ersetzen.
 
 ## Statische/strukturelle SVG-Labels ohne Datenbezug
 
@@ -113,10 +115,10 @@ Nur die mittleren drei der ursprünglich geplanten 5 pH-Stufen (ODS Task2: „Gr
 
 ## Priorisierte Lücken (Vorschlag)
 
-1. **Sonne/Wasser komplett tot** (6 Felder) — größte Lücke, da diese Angaben bei jeder Pflanze vorhanden sind. Braucht Icons in Inkscape mit den erwarteten Labels (`Sun-fullsun`/`sunFull` etc.).
-2. **3 immer sichtbare Geister-Icons** (`layer`, `duftverwirrer`, `fibre`) — zeigen aktuell bei *jeder* Pflanze an, auch wenn die Eigenschaft nicht zutrifft. Schnell behebbar: entweder per Default `display="none"` setzen (bis die Felder verdrahtet sind) oder ans Datenmodell anbinden.
+1. **Sonne/Wasser komplett tot** (6 Felder) — größte verbleibende Lücke, da diese Angaben bei jeder Pflanze vorhanden sind. Braucht Icons in Inkscape mit den erwarteten Labels (`Sun-fullsun`/`sunFull` etc.).
+2. **Immer sichtbare Geister-Icons** (`layer`, `duftverwirrer`, `fibre` + mind. 2 weitere unklare, s.o.) — zeigen aktuell bei *jeder* Pflanze an, auch wenn die Eigenschaft nicht zutrifft. Schnell behebbar: entweder per Default `display="none"` setzen (bis die Felder verdrahtet sind) oder ans Datenmodell anbinden.
 3. **pH-Extremstufen** (`phVeryAcid`, `phVeryAlkaline`) — 2 von 5 fehlen im SVG.
 4. **Score-Sterne** (`eatableScore`/`medsScore`/`materialScore`) — Gruppe `rating` existiert als Platzhalter, aber ohne Struktur für 3×5 Sterne.
-5. **Fruchtmonate/Blütemonate** — komplett neues SVG-Element nötig (Kreisdiagramm o.ä.), kein bestehender Ansatzpunkt im Template.
+5. ~~**Fruchtmonate/Blütemonate**~~ — erledigt: programmatisch injizierter Kalender (s. Abschnitt Phänologie oben), da kein SVG-Ansatzpunkt existierte.
 
 Diese Datei spiegelt den Stand von `baumscheibe-template.svg` + `baumscheibe-mapping.ts` zum Testzeitpunkt wider — bei Änderungen am SVG in Inkscape muss sie neu erzeugt werden.
