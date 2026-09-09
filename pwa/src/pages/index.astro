@@ -4,14 +4,14 @@ import Layout from '../layouts/Layout.astro';
 <Layout title="Perma Guild Forge">
   <!-- Search hero -->
   <section class="relative mb-8">
-    <p class="mb-3 text-center text-xs font-medium uppercase tracking-widest text-stone-400 dark:text-stone-500">Pflanzendatenbank durchsuchen</p>
+    <p class="mb-3 text-center text-xs font-medium uppercase tracking-widest text-stone-400 dark:text-stone-500" data-i18n="searchSubtitle">Pflanzendatenbank durchsuchen</p>
     <div class="relative flex items-center gap-0 overflow-hidden rounded-2xl bg-white dark:bg-stone-800 shadow-md ring-1 ring-stone-200 dark:ring-stone-700 focus-within:ring-2 focus-within:ring-green-400 transition">
       <svg class="ml-4 h-5 w-5 shrink-0 text-stone-400 dark:text-stone-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/>
       </svg>
-      <input type="text" id="plant-search" placeholder="Pflanze suchen — lat. oder dt. Name, z.B. Sambucus nigra"
+      <input type="text" id="plant-search" data-i18n-placeholder="searchPlaceholder" placeholder="Pflanze suchen — lat. oder dt. Name, z.B. Sambucus nigra"
         class="flex-1 bg-transparent py-3.5 pl-3 pr-2 text-sm text-stone-800 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:outline-none" autocomplete="off" />
-      <button id="btn-search" class="shrink-0 rounded-xl m-1.5 bg-green-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-green-800 active:scale-95">Suchen</button>
+      <button id="btn-search" data-i18n="searchBtn" class="shrink-0 rounded-xl m-1.5 bg-green-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-green-800 active:scale-95">Suchen</button>
     </div>
     <!-- Floating dropdown -->
     <div id="search-results" class="absolute left-0 right-0 top-full z-50 mt-1 hidden max-h-80 overflow-y-auto rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 shadow-xl"></div>
@@ -21,29 +21,29 @@ import Layout from '../layouts/Layout.astro';
   <div class="mb-2 flex flex-wrap items-center justify-between gap-3">
     <div class="flex items-center gap-3">
       <div class="flex overflow-hidden rounded-lg ring-1 ring-stone-200 dark:ring-stone-700">
-        <button id="btn-view-grid" class="bg-green-700 px-3 py-2 text-sm font-medium text-white transition hover:bg-green-800" title="Kachelansicht">⊞</button>
-        <button id="btn-view-list" class="bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 transition hover:bg-stone-200 dark:hover:bg-stone-700" title="Listenansicht">☰</button>
-        <button id="btn-view-cards" class="bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 transition hover:bg-stone-200 dark:hover:bg-stone-700" title="Kartenansicht">▤</button>
+        <button id="btn-view-grid" data-i18n-title="viewGridTitle" class="bg-green-700 px-3 py-2 text-sm font-medium text-white transition hover:bg-green-800" title="Kachelansicht">⊞</button>
+        <button id="btn-view-list" data-i18n-title="viewListTitle" class="bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 transition hover:bg-stone-200 dark:hover:bg-stone-700" title="Listenansicht">☰</button>
+        <button id="btn-view-cards" data-i18n-title="viewCardsTitle" class="bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 transition hover:bg-stone-200 dark:hover:bg-stone-700" title="Kartenansicht">▤</button>
       </div>
-      <h1 class="text-xl font-bold text-stone-800 dark:text-stone-100">Pflanzenkacheln</h1>
+      <h1 class="text-xl font-bold text-stone-800 dark:text-stone-100" data-i18n="headingTiles">Pflanzenkacheln</h1>
     </div>
     <div class="flex items-center gap-2">
-      <button id="btn-add" class="rounded-lg bg-green-700 px-3.5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">+ Neue Pflanze</button>
+      <button id="btn-add" data-i18n="btnAddPlant" class="rounded-lg bg-green-700 px-3.5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">+ Neue Pflanze</button>
       <details id="data-menu" class="relative">
-        <summary class="cursor-pointer list-none rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700" title="Daten importieren / exportieren">
+        <summary data-i18n="dataMenuLabel" data-i18n-title="dataMenuTitle" class="cursor-pointer list-none rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700" title="Daten importieren / exportieren">
           Daten ⋮
         </summary>
         <div class="absolute right-0 top-full z-40 mt-1 min-w-56 rounded-lg bg-white dark:bg-stone-800 p-1 shadow-lg ring-1 ring-stone-200 dark:ring-stone-700">
-          <button id="btn-import" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Import JSON</button>
-          <button id="btn-import-csv" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Import CSV</button>
-          <button id="btn-csv-template" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">CSV-Vorlage ↓</button>
+          <button id="btn-import" data-i18n="menuImportJson" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Import JSON</button>
+          <button id="btn-import-csv" data-i18n="menuImportCsv" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Import CSV</button>
+          <button id="btn-csv-template" data-i18n="menuCsvTemplate" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">CSV-Vorlage ↓</button>
           <hr class="my-1 border-stone-200 dark:border-stone-700">
-          <button id="btn-export" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Alle exportieren (JSON)</button>
+          <button id="btn-export" data-i18n="menuExportAll" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Alle exportieren (JSON)</button>
           <hr class="my-1 border-stone-200 dark:border-stone-700">
-          <button id="btn-load-samples" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Beispieldaten laden</button>
-          <button id="btn-load-samples-crawford" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Beispieldaten laden (Crawford)</button>
+          <button id="btn-load-samples" data-i18n="menuLoadSamples" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Beispieldaten laden</button>
+          <button id="btn-load-samples-crawford" data-i18n="menuLoadSamplesCrawford" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Beispieldaten laden (Crawford)</button>
           <hr class="my-1 border-stone-200 dark:border-stone-700">
-          <button id="btn-enrich-all" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Lade alle fehlenden Daten</button>
+          <button id="btn-enrich-all" data-i18n="menuEnrichAll" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Lade alle fehlenden Daten</button>
         </div>
       </details>
     </div>
@@ -51,45 +51,45 @@ import Layout from '../layouts/Layout.astro';
   <!-- Cards toolbar (own row, no layout shift in button bar) -->
   <div id="cards-toolbar" style="display:none" class="mb-4 flex items-center gap-2">
     <select id="card-type-select" class="rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2 py-1.5 text-sm shadow-sm focus:border-green-500 focus:outline-none">
-      <option value="poly">Pflanzenkarten</option>
-      <option value="stripe">Streifenkarten</option>
-      <option value="baumscheibe">Baumscheibe</option>
+      <option value="poly" data-i18n="cardTypePoly">Pflanzenkarten</option>
+      <option value="stripe" data-i18n="cardTypeStripe">Streifenkarten</option>
+      <option value="baumscheibe" data-i18n="cardTypeBaumscheibe">Baumscheibe</option>
     </select>
-    <button id="btn-pdf-all" class="rounded-lg bg-green-700 px-3 py-1.5 text-sm font-medium text-white shadow transition hover:bg-green-800">PDF ↓</button>
-    <button id="btn-pdf-sheet" title="6 Baumscheiben je 9cm Durchmesser auf einer A4-Seite, kompakt zum Ausschneiden" class="hidden rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700">PDF (6/Seite, 9cm)</button>
+    <button id="btn-pdf-all" data-i18n="pdfAllBtn" class="rounded-lg bg-green-700 px-3 py-1.5 text-sm font-medium text-white shadow transition hover:bg-green-800">PDF ↓</button>
+    <button id="btn-pdf-sheet" data-i18n="pdfSheetBtn" data-i18n-title="pdfSheetTitle" title="6 Baumscheiben je 9cm Durchmesser auf einer A4-Seite, kompakt zum Ausschneiden" class="hidden rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700">PDF (6/Seite, 9cm)</button>
   </div>
 
   <!-- Lokal-Filter (chips, AND-Logik) -->
   <div id="filter-bar" class="mb-4 flex flex-wrap items-center gap-2 text-xs">
-    <span class="text-stone-500 dark:text-stone-400">Filter:</span>
-    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="eatable">Essbar</button>
-    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="meds">Medizinisch</button>
-    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="material">Material</button>
-    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="nitrogenFix">N-Fixer</button>
+    <span class="text-stone-500 dark:text-stone-400" data-i18n="filterLabel">Filter:</span>
+    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="eatable" data-i18n="filterEatable">Essbar</button>
+    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="meds" data-i18n="filterMeds">Medizinisch</button>
+    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="material" data-i18n="filterMaterial">Material</button>
+    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="nitrogenFix" data-i18n="filterNitrogenFix">N-Fixer</button>
     <span class="h-4 w-px bg-stone-300 dark:bg-stone-700"></span>
-    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="sunFull">Volle Sonne</button>
-    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="sunMid">Halbschatten</button>
-    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="sunShadow">Schatten</button>
+    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="sunFull" data-i18n="filterSunFull">Volle Sonne</button>
+    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="sunMid" data-i18n="filterSunMid">Halbschatten</button>
+    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="sunShadow" data-i18n="filterSunShadow">Schatten</button>
     <span class="h-4 w-px bg-stone-300 dark:bg-stone-700"></span>
-    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="waterDry">Trocken</button>
-    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="waterMid">Mittel</button>
-    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="waterWet">Nass</button>
+    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="waterDry" data-i18n="filterWaterDry">Trocken</button>
+    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="waterMid" data-i18n="filterWaterMid">Mittel</button>
+    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="waterWet" data-i18n="filterWaterWet">Nass</button>
     <span class="h-4 w-px bg-stone-300 dark:bg-stone-700"></span>
-    <button id="btn-filter-clear" class="hidden rounded-full bg-stone-200 dark:bg-stone-700 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-300 dark:hover:bg-stone-700">Zurücksetzen ×</button>
+    <button id="btn-filter-clear" data-i18n="filterClear" class="hidden rounded-full bg-stone-200 dark:bg-stone-700 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-300 dark:hover:bg-stone-700">Zurücksetzen ×</button>
     <span id="filter-count" class="hidden text-stone-500 dark:text-stone-400"></span>
   </div>
 
   <!-- Bulk bar (hidden until items selected in list view) -->
   <div id="bulk-bar" style="display:none" class="mb-4 flex flex-wrap items-center gap-2 rounded-xl bg-stone-100 dark:bg-stone-800 px-4 py-2.5 text-sm ring-1 ring-stone-200 dark:ring-stone-700">
     <span id="bulk-count" class="font-medium text-stone-700 dark:text-stone-200">0 ausgewählt</span>
-    <button id="btn-select-all" class="rounded-lg bg-white dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-50 dark:hover:bg-stone-800">Alle</button>
-    <button id="btn-deselect" class="rounded-lg bg-white dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-50 dark:hover:bg-stone-800">Abwählen</button>
+    <button id="btn-select-all" data-i18n="bulkSelectAll" class="rounded-lg bg-white dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-50 dark:hover:bg-stone-800">Alle</button>
+    <button id="btn-deselect" data-i18n="bulkDeselect" class="rounded-lg bg-white dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-50 dark:hover:bg-stone-800">Abwählen</button>
     <span class="h-4 w-px bg-stone-300"></span>
-    <button id="btn-bulk-enrich" class="rounded-lg bg-blue-100 dark:bg-blue-900/40 px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/60">Ergänzen</button>
-    <button id="btn-bulk-delete" class="rounded-lg bg-red-100 dark:bg-red-900/40 px-3 py-1.5 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/60">Löschen</button>
-    <button id="btn-bulk-json" class="rounded-lg bg-stone-200 dark:bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 hover:bg-stone-300 dark:hover:bg-stone-700">JSON</button>
-    <button id="btn-bulk-csv" class="rounded-lg bg-stone-200 dark:bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 hover:bg-stone-300 dark:hover:bg-stone-700">CSV</button>
-    <button id="btn-bulk-pdf" class="rounded-lg bg-stone-200 dark:bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 hover:bg-stone-300 dark:hover:bg-stone-700">PDF</button>
+    <button id="btn-bulk-enrich" data-i18n="bulkEnrich" class="rounded-lg bg-blue-100 dark:bg-blue-900/40 px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/60">Ergänzen</button>
+    <button id="btn-bulk-delete" data-i18n="bulkDelete" class="rounded-lg bg-red-100 dark:bg-red-900/40 px-3 py-1.5 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/60">Löschen</button>
+    <button id="btn-bulk-json" data-i18n="bulkJson" class="rounded-lg bg-stone-200 dark:bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 hover:bg-stone-300 dark:hover:bg-stone-700">JSON</button>
+    <button id="btn-bulk-csv" data-i18n="bulkCsv" class="rounded-lg bg-stone-200 dark:bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 hover:bg-stone-300 dark:hover:bg-stone-700">CSV</button>
+    <button id="btn-bulk-pdf" data-i18n="bulkPdf" class="rounded-lg bg-stone-200 dark:bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 hover:bg-stone-300 dark:hover:bg-stone-700">PDF</button>
   </div>
 
   <!-- Plant list -->
@@ -98,144 +98,144 @@ import Layout from '../layouts/Layout.astro';
   <!-- Edit dialog -->
   <dialog id="plant-dialog" class="m-auto w-full max-w-2xl rounded-2xl bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-100 p-0 shadow-2xl backdrop:bg-black/40">
     <form id="plant-form" method="dialog" class="max-h-[85vh] overflow-y-auto p-6">
-      <h2 id="dialog-title" class="mb-4 text-lg font-bold text-stone-800 dark:text-stone-100">Pflanze bearbeiten</h2>
+      <h2 id="dialog-title" data-i18n="dialogTitleEdit" class="mb-4 text-lg font-bold text-stone-800 dark:text-stone-100">Pflanze bearbeiten</h2>
       <input type="hidden" id="f-id" />
 
       <div class="space-y-4">
         <!-- Grunddaten -->
         <fieldset class="rounded-lg border border-stone-200 dark:border-stone-700 p-4">
-          <legend class="px-2 text-sm font-semibold text-green-800 dark:text-green-300">Grunddaten</legend>
+          <legend class="px-2 text-sm font-semibold text-green-800 dark:text-green-300" data-i18n="fieldsetBasics">Grunddaten</legend>
           <div class="grid gap-3 sm:grid-cols-2">
-            <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="latinName">Lateinischer Name</span>
+            <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="latinName" data-i18n="fieldLatinName">Lateinischer Name</span>
               <input type="text" id="f-latinName" required class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
-            <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="commonName">Deutscher Name</span>
+            <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="commonName" data-i18n="fieldCommonName">Deutscher Name</span>
               <input type="text" id="f-commonName" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
-            <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="heightM">Höhe (m)</span>
+            <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="heightM" data-i18n="fieldHeightM">Höhe (m)</span>
               <input type="number" id="f-heightM" step="0.1" min="0" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
-            <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="widthM">Breite (m)</span>
+            <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="widthM" data-i18n="fieldWidthM">Breite (m)</span>
               <input type="number" id="f-widthM" step="0.1" min="0" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
-            <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="climateZone">Klimazone</span>
-              <input type="text" id="f-climateZone" placeholder="z.B. 5-9" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
-            <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="imageUrl">Bild-URL</span>
+            <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="climateZone" data-i18n="fieldClimateZone">Klimazone</span>
+              <input type="text" id="f-climateZone" data-i18n-placeholder="climateZonePlaceholder" placeholder="z.B. 5-9" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
+            <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="imageUrl" data-i18n="fieldImageUrl">Bild-URL</span>
               <input type="url" id="f-imageUrl" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
           </div>
         </fieldset>
 
         <!-- Nutzung -->
         <fieldset class="rounded-lg border border-stone-200 dark:border-stone-700 p-4">
-          <legend class="px-2 text-sm font-semibold text-green-800 dark:text-green-300">Nutzung</legend>
+          <legend class="px-2 text-sm font-semibold text-green-800 dark:text-green-300" data-i18n="fieldsetUsage">Nutzung</legend>
           <div class="flex flex-wrap gap-x-5 gap-y-1.5 text-sm">
-            <label class="inline-flex items-center gap-1.5" data-field="eatable"><input type="checkbox" id="f-eatable" class="accent-green-600" /> Essbar</label>
-            <label class="inline-flex items-center gap-1" data-field="eatableScore"><span class="text-stone-400 dark:text-stone-500">Score</span><input type="number" id="f-eatableScore" min="0" max="5" class="w-12 rounded border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs" /></label>
-            <label class="inline-flex items-center gap-1.5" data-field="culinaric"><input type="checkbox" id="f-culinaric" class="accent-green-600" /> Kulinarisch</label>
-            <label class="inline-flex items-center gap-1.5" data-field="meds"><input type="checkbox" id="f-meds" class="accent-green-600" /> Medizinisch</label>
-            <label class="inline-flex items-center gap-1" data-field="medsScore"><span class="text-stone-400 dark:text-stone-500">Score</span><input type="number" id="f-medsScore" min="0" max="5" class="w-12 rounded border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs" /></label>
-            <label class="inline-flex items-center gap-1.5" data-field="material"><input type="checkbox" id="f-material" class="accent-green-600" /> Material</label>
-            <label class="inline-flex items-center gap-1" data-field="materialScore"><span class="text-stone-400 dark:text-stone-500">Score</span><input type="number" id="f-materialScore" min="0" max="5" class="w-12 rounded border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs" /></label>
-            <label class="inline-flex items-center gap-1.5" data-field="fodder"><input type="checkbox" id="f-fodder" class="accent-green-600" /> Futter</label>
-            <label class="inline-flex items-center gap-1.5" data-field="fuel"><input type="checkbox" id="f-fuel" class="accent-green-600" /> Brennstoff</label>
+            <label class="inline-flex items-center gap-1.5" data-field="eatable"><input type="checkbox" id="f-eatable" class="accent-green-600" /> <span data-i18n="lblEatable">Essbar</span></label>
+            <label class="inline-flex items-center gap-1" data-field="eatableScore"><span class="text-stone-400 dark:text-stone-500" data-i18n="lblScore">Score</span><input type="number" id="f-eatableScore" min="0" max="5" class="w-12 rounded border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs" /></label>
+            <label class="inline-flex items-center gap-1.5" data-field="culinaric"><input type="checkbox" id="f-culinaric" class="accent-green-600" /> <span data-i18n="lblCulinaric">Kulinarisch</span></label>
+            <label class="inline-flex items-center gap-1.5" data-field="meds"><input type="checkbox" id="f-meds" class="accent-green-600" /> <span data-i18n="lblMeds">Medizinisch</span></label>
+            <label class="inline-flex items-center gap-1" data-field="medsScore"><span class="text-stone-400 dark:text-stone-500" data-i18n="lblScore">Score</span><input type="number" id="f-medsScore" min="0" max="5" class="w-12 rounded border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs" /></label>
+            <label class="inline-flex items-center gap-1.5" data-field="material"><input type="checkbox" id="f-material" class="accent-green-600" /> <span data-i18n="lblMaterial">Material</span></label>
+            <label class="inline-flex items-center gap-1" data-field="materialScore"><span class="text-stone-400 dark:text-stone-500" data-i18n="lblScore">Score</span><input type="number" id="f-materialScore" min="0" max="5" class="w-12 rounded border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs" /></label>
+            <label class="inline-flex items-center gap-1.5" data-field="fodder"><input type="checkbox" id="f-fodder" class="accent-green-600" /> <span data-i18n="lblFodder">Futter</span></label>
+            <label class="inline-flex items-center gap-1.5" data-field="fuel"><input type="checkbox" id="f-fuel" class="accent-green-600" /> <span data-i18n="lblFuel">Brennstoff</span></label>
           </div>
         </fieldset>
 
         <!-- Ökosystem -->
         <fieldset class="rounded-lg border border-stone-200 dark:border-stone-700 p-4">
-          <legend class="px-2 text-sm font-semibold text-green-800 dark:text-green-300">Ökosystem</legend>
+          <legend class="px-2 text-sm font-semibold text-green-800 dark:text-green-300" data-i18n="fieldsetEcosystem">Ökosystem</legend>
           <div class="flex flex-wrap gap-x-5 gap-y-1.5 text-sm">
-            <label class="inline-flex items-center gap-1.5" data-field="nitrogenFix"><input type="checkbox" id="f-nitrogenFix" class="accent-green-600" /> Stickstoff</label>
-            <label class="inline-flex items-center gap-1.5" data-field="mineralFix"><input type="checkbox" id="f-mineralFix" class="accent-green-600" /> Mineralien</label>
-            <label class="inline-flex items-center gap-1.5" data-field="groundCover"><input type="checkbox" id="f-groundCover" class="accent-green-600" /> Bodendecker</label>
-            <label class="inline-flex items-center gap-1.5" data-field="insects"><input type="checkbox" id="f-insects" class="accent-green-600" /> Insekten</label>
-            <label class="inline-flex items-center gap-1.5" data-field="pest"><input type="checkbox" id="f-pest" class="accent-green-600" /> Schädling</label>
-            <label class="inline-flex items-center gap-1.5" data-field="animalProtection"><input type="checkbox" id="f-animalProtection" class="accent-green-600" /> Tierschutz</label>
-            <label class="inline-flex items-center gap-1.5" data-field="windBreaking"><input type="checkbox" id="f-windBreaking" class="accent-green-600" /> Windschutz</label>
-            <label class="inline-flex items-center gap-1.5" data-field="windBreakingOnSea"><input type="checkbox" id="f-windBreakingOnSea" class="accent-green-600" /> Wind (See)</label>
+            <label class="inline-flex items-center gap-1.5" data-field="nitrogenFix"><input type="checkbox" id="f-nitrogenFix" class="accent-green-600" /> <span data-i18n="lblNitrogenFix">Stickstoff</span></label>
+            <label class="inline-flex items-center gap-1.5" data-field="mineralFix"><input type="checkbox" id="f-mineralFix" class="accent-green-600" /> <span data-i18n="lblMineralFix">Mineralien</span></label>
+            <label class="inline-flex items-center gap-1.5" data-field="groundCover"><input type="checkbox" id="f-groundCover" class="accent-green-600" /> <span data-i18n="lblGroundCover">Bodendecker</span></label>
+            <label class="inline-flex items-center gap-1.5" data-field="insects"><input type="checkbox" id="f-insects" class="accent-green-600" /> <span data-i18n="lblInsects">Insekten</span></label>
+            <label class="inline-flex items-center gap-1.5" data-field="pest"><input type="checkbox" id="f-pest" class="accent-green-600" /> <span data-i18n="lblPest">Schädling</span></label>
+            <label class="inline-flex items-center gap-1.5" data-field="animalProtection"><input type="checkbox" id="f-animalProtection" class="accent-green-600" /> <span data-i18n="lblAnimalProtection">Tierschutz</span></label>
+            <label class="inline-flex items-center gap-1.5" data-field="windBreaking"><input type="checkbox" id="f-windBreaking" class="accent-green-600" /> <span data-i18n="lblWindBreaking">Windschutz</span></label>
+            <label class="inline-flex items-center gap-1.5" data-field="windBreakingOnSea"><input type="checkbox" id="f-windBreakingOnSea" class="accent-green-600" /> <span data-i18n="lblWindBreakingOnSea">Wind (See)</span></label>
           </div>
         </fieldset>
 
         <!-- Sonne + Wasser + Wachstum -->
         <div class="grid gap-4 sm:grid-cols-3">
           <fieldset class="rounded-lg border border-stone-200 dark:border-stone-700 p-3">
-            <legend class="px-2 text-xs font-semibold text-green-800 dark:text-green-300">Sonne</legend>
+            <legend class="px-2 text-xs font-semibold text-green-800 dark:text-green-300" data-i18n="fieldsetSun">Sonne</legend>
             <div class="flex flex-col gap-1 text-sm">
-              <label class="inline-flex items-center gap-1.5" data-field="sunFull"><input type="checkbox" id="f-sunFull" class="accent-amber-500" /> Volle Sonne</label>
-              <label class="inline-flex items-center gap-1.5" data-field="sunMid"><input type="checkbox" id="f-sunMid" class="accent-amber-500" /> Halbschatten</label>
-              <label class="inline-flex items-center gap-1.5" data-field="sunShadow"><input type="checkbox" id="f-sunShadow" class="accent-amber-500" /> Schatten</label>
+              <label class="inline-flex items-center gap-1.5" data-field="sunFull"><input type="checkbox" id="f-sunFull" class="accent-amber-500" /> <span data-i18n="lblSunFull">Volle Sonne</span></label>
+              <label class="inline-flex items-center gap-1.5" data-field="sunMid"><input type="checkbox" id="f-sunMid" class="accent-amber-500" /> <span data-i18n="lblSunMid">Halbschatten</span></label>
+              <label class="inline-flex items-center gap-1.5" data-field="sunShadow"><input type="checkbox" id="f-sunShadow" class="accent-amber-500" /> <span data-i18n="lblSunShadow">Schatten</span></label>
             </div>
           </fieldset>
           <fieldset class="rounded-lg border border-stone-200 dark:border-stone-700 p-3">
-            <legend class="px-2 text-xs font-semibold text-green-800 dark:text-green-300">Wasser</legend>
+            <legend class="px-2 text-xs font-semibold text-green-800 dark:text-green-300" data-i18n="fieldsetWater">Wasser</legend>
             <div class="flex flex-col gap-1 text-sm">
-              <label class="inline-flex items-center gap-1.5" data-field="waterDry"><input type="checkbox" id="f-waterDry" class="accent-blue-500" /> Trocken</label>
-              <label class="inline-flex items-center gap-1.5" data-field="waterMid"><input type="checkbox" id="f-waterMid" class="accent-blue-500" /> Mittel</label>
-              <label class="inline-flex items-center gap-1.5" data-field="waterWet"><input type="checkbox" id="f-waterWet" class="accent-blue-500" /> Nass</label>
-              <label class="inline-flex items-center gap-1.5" data-field="waterPlant"><input type="checkbox" id="f-waterPlant" class="accent-blue-500" /> Wasserpflanze</label>
+              <label class="inline-flex items-center gap-1.5" data-field="waterDry"><input type="checkbox" id="f-waterDry" class="accent-blue-500" /> <span data-i18n="lblWaterDry">Trocken</span></label>
+              <label class="inline-flex items-center gap-1.5" data-field="waterMid"><input type="checkbox" id="f-waterMid" class="accent-blue-500" /> <span data-i18n="lblWaterMid">Mittel</span></label>
+              <label class="inline-flex items-center gap-1.5" data-field="waterWet"><input type="checkbox" id="f-waterWet" class="accent-blue-500" /> <span data-i18n="lblWaterWet">Nass</span></label>
+              <label class="inline-flex items-center gap-1.5" data-field="waterPlant"><input type="checkbox" id="f-waterPlant" class="accent-blue-500" /> <span data-i18n="lblWaterPlant">Wasserpflanze</span></label>
             </div>
           </fieldset>
           <fieldset class="rounded-lg border border-stone-200 dark:border-stone-700 p-3">
-            <legend class="px-2 text-xs font-semibold text-green-800 dark:text-green-300">Wachstum</legend>
+            <legend class="px-2 text-xs font-semibold text-green-800 dark:text-green-300" data-i18n="fieldsetGrowth">Wachstum</legend>
             <div class="flex flex-col gap-1 text-sm">
-              <label class="inline-flex items-center gap-1.5" data-field="growSpeedLow"><input type="checkbox" id="f-growSpeedLow" class="accent-green-600" /> Langsam</label>
-              <label class="inline-flex items-center gap-1.5" data-field="growSpeedMid"><input type="checkbox" id="f-growSpeedMid" class="accent-green-600" /> Mittel</label>
-              <label class="inline-flex items-center gap-1.5" data-field="growSpeedHigh"><input type="checkbox" id="f-growSpeedHigh" class="accent-green-600" /> Schnell</label>
+              <label class="inline-flex items-center gap-1.5" data-field="growSpeedLow"><input type="checkbox" id="f-growSpeedLow" class="accent-green-600" /> <span data-i18n="lblGrowSpeedLow">Langsam</span></label>
+              <label class="inline-flex items-center gap-1.5" data-field="growSpeedMid"><input type="checkbox" id="f-growSpeedMid" class="accent-green-600" /> <span data-i18n="lblGrowSpeedMid">Mittel</span></label>
+              <label class="inline-flex items-center gap-1.5" data-field="growSpeedHigh"><input type="checkbox" id="f-growSpeedHigh" class="accent-green-600" /> <span data-i18n="lblGrowSpeedHigh">Schnell</span></label>
             </div>
           </fieldset>
         </div>
 
         <!-- pH -->
         <fieldset class="rounded-lg border border-stone-200 dark:border-stone-700 p-4">
-          <legend class="px-2 text-sm font-semibold text-green-800 dark:text-green-300">Boden pH</legend>
+          <legend class="px-2 text-sm font-semibold text-green-800 dark:text-green-300" data-i18n="fieldsetPh">Boden pH</legend>
           <div class="flex flex-wrap gap-x-4 gap-y-1.5 text-sm">
-            <label class="inline-flex items-center gap-1.5" data-field="phVeryAcid"><input type="checkbox" id="f-phVeryAcid" class="accent-red-500" /> Sehr sauer</label>
-            <label class="inline-flex items-center gap-1.5" data-field="phAcid"><input type="checkbox" id="f-phAcid" class="accent-yellow-500" /> Sauer</label>
-            <label class="inline-flex items-center gap-1.5" data-field="phNeutral"><input type="checkbox" id="f-phNeutral" class="accent-green-500" /> Neutral</label>
-            <label class="inline-flex items-center gap-1.5" data-field="phAlkaline"><input type="checkbox" id="f-phAlkaline" class="accent-teal-500" /> Alkalisch</label>
-            <label class="inline-flex items-center gap-1.5" data-field="phVeryAlkaline"><input type="checkbox" id="f-phVeryAlkaline" class="accent-blue-500" /> Sehr alk.</label>
-            <label class="inline-flex items-center gap-1.5" data-field="phSaline"><input type="checkbox" id="f-phSaline" class="accent-purple-500" /> Salin</label>
+            <label class="inline-flex items-center gap-1.5" data-field="phVeryAcid"><input type="checkbox" id="f-phVeryAcid" class="accent-red-500" /> <span data-i18n="lblPhVeryAcid">Sehr sauer</span></label>
+            <label class="inline-flex items-center gap-1.5" data-field="phAcid"><input type="checkbox" id="f-phAcid" class="accent-yellow-500" /> <span data-i18n="lblPhAcid">Sauer</span></label>
+            <label class="inline-flex items-center gap-1.5" data-field="phNeutral"><input type="checkbox" id="f-phNeutral" class="accent-green-500" /> <span data-i18n="lblPhNeutral">Neutral</span></label>
+            <label class="inline-flex items-center gap-1.5" data-field="phAlkaline"><input type="checkbox" id="f-phAlkaline" class="accent-teal-500" /> <span data-i18n="lblPhAlkaline">Alkalisch</span></label>
+            <label class="inline-flex items-center gap-1.5" data-field="phVeryAlkaline"><input type="checkbox" id="f-phVeryAlkaline" class="accent-blue-500" /> <span data-i18n="lblPhVeryAlkaline">Sehr alk.</span></label>
+            <label class="inline-flex items-center gap-1.5" data-field="phSaline"><input type="checkbox" id="f-phSaline" class="accent-purple-500" /> <span data-i18n="lblPhSaline">Salin</span></label>
           </div>
         </fieldset>
 
         <!-- Monate -->
         <div class="grid gap-4 sm:grid-cols-2">
           <fieldset class="rounded-lg border border-stone-200 dark:border-stone-700 p-3">
-            <legend class="px-2 text-xs font-semibold text-red-700 dark:text-red-300" data-field="fruitMonths">Fruchtmonate</legend>
+            <legend class="px-2 text-xs font-semibold text-red-700 dark:text-red-300" data-field="fruitMonths" data-i18n="fieldFruitMonths">Fruchtmonate</legend>
             <div class="grid grid-cols-6 gap-1 text-xs">
-              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-0" class="accent-red-500" />Jan</label>
-              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-1" class="accent-red-500" />Feb</label>
-              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-2" class="accent-red-500" />Mär</label>
-              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-3" class="accent-red-500" />Apr</label>
-              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-4" class="accent-red-500" />Mai</label>
-              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-5" class="accent-red-500" />Jun</label>
-              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-6" class="accent-red-500" />Jul</label>
-              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-7" class="accent-red-500" />Aug</label>
-              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-8" class="accent-red-500" />Sep</label>
-              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-9" class="accent-red-500" />Okt</label>
-              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-10" class="accent-red-500" />Nov</label>
-              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-11" class="accent-red-500" />Dez</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-0" class="accent-red-500" /><span data-i18n="monthJan">Jan</span></label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-1" class="accent-red-500" /><span data-i18n="monthFeb">Feb</span></label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-2" class="accent-red-500" /><span data-i18n="monthMar">Mär</span></label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-3" class="accent-red-500" /><span data-i18n="monthApr">Apr</span></label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-4" class="accent-red-500" /><span data-i18n="monthMay">Mai</span></label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-5" class="accent-red-500" /><span data-i18n="monthJun">Jun</span></label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-6" class="accent-red-500" /><span data-i18n="monthJul">Jul</span></label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-7" class="accent-red-500" /><span data-i18n="monthAug">Aug</span></label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-8" class="accent-red-500" /><span data-i18n="monthSep">Sep</span></label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-9" class="accent-red-500" /><span data-i18n="monthOct">Okt</span></label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-10" class="accent-red-500" /><span data-i18n="monthNov">Nov</span></label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-fruit-11" class="accent-red-500" /><span data-i18n="monthDec">Dez</span></label>
             </div>
           </fieldset>
           <fieldset class="rounded-lg border border-stone-200 dark:border-stone-700 p-3">
-            <legend class="px-2 text-xs font-semibold text-pink-700 dark:text-pink-300" data-field="flowerMonths">Blütemonate</legend>
+            <legend class="px-2 text-xs font-semibold text-pink-700 dark:text-pink-300" data-field="flowerMonths" data-i18n="fieldFlowerMonths">Blütemonate</legend>
             <div class="grid grid-cols-6 gap-1 text-xs">
-              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-0" class="accent-pink-500" />Jan</label>
-              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-1" class="accent-pink-500" />Feb</label>
-              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-2" class="accent-pink-500" />Mär</label>
-              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-3" class="accent-pink-500" />Apr</label>
-              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-4" class="accent-pink-500" />Mai</label>
-              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-5" class="accent-pink-500" />Jun</label>
-              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-6" class="accent-pink-500" />Jul</label>
-              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-7" class="accent-pink-500" />Aug</label>
-              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-8" class="accent-pink-500" />Sep</label>
-              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-9" class="accent-pink-500" />Okt</label>
-              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-10" class="accent-pink-500" />Nov</label>
-              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-11" class="accent-pink-500" />Dez</label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-0" class="accent-pink-500" /><span data-i18n="monthJan">Jan</span></label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-1" class="accent-pink-500" /><span data-i18n="monthFeb">Feb</span></label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-2" class="accent-pink-500" /><span data-i18n="monthMar">Mär</span></label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-3" class="accent-pink-500" /><span data-i18n="monthApr">Apr</span></label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-4" class="accent-pink-500" /><span data-i18n="monthMay">Mai</span></label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-5" class="accent-pink-500" /><span data-i18n="monthJun">Jun</span></label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-6" class="accent-pink-500" /><span data-i18n="monthJul">Jul</span></label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-7" class="accent-pink-500" /><span data-i18n="monthAug">Aug</span></label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-8" class="accent-pink-500" /><span data-i18n="monthSep">Sep</span></label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-9" class="accent-pink-500" /><span data-i18n="monthOct">Okt</span></label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-10" class="accent-pink-500" /><span data-i18n="monthNov">Nov</span></label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="f-flower-11" class="accent-pink-500" /><span data-i18n="monthDec">Dez</span></label>
             </div>
           </fieldset>
         </div>
       </div>
 
       <div class="mt-5 flex justify-end gap-2">
-        <button type="button" id="btn-cancel" class="rounded-lg px-4 py-2 text-sm font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-300 dark:ring-stone-600 transition hover:bg-stone-100 dark:hover:bg-stone-700">Abbrechen</button>
-        <button type="submit" class="rounded-lg bg-green-700 px-5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">Speichern</button>
+        <button type="button" id="btn-cancel" data-i18n="btnCancel" class="rounded-lg px-4 py-2 text-sm font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-300 dark:ring-stone-600 transition hover:bg-stone-100 dark:hover:bg-stone-700">Abbrechen</button>
+        <button type="submit" data-i18n="btnSave" class="rounded-lg bg-green-700 px-5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">Speichern</button>
       </div>
     </form>
   </dialog>
@@ -258,6 +258,11 @@ import Layout from '../layouts/Layout.astro';
   import { exportCardsPDF, exportSingleCardPDF, exportBaumscheibePDF, exportBaumscheibesPDF, exportBaumscheibeSheetPDF } from '../lib/pdf-export';
   import { renderPolyCardHtml, renderStripeCardHtml } from '../lib/card-html';
   import { renderBaumscheibeCardHtml } from '../lib/baumscheibe-render';
+  import { createT, applyStaticI18n } from '../lib/i18n/core';
+  import { indexDict } from '../lib/i18n/dict-index';
+
+  const t = createT(indexDict);
+  applyStaticI18n(indexDict);
 
   const listEl = document.getElementById('plant-list')!;
   const dialog = document.getElementById('plant-dialog') as HTMLDialogElement;
@@ -331,7 +336,7 @@ import Layout from '../layouts/Layout.astro';
       if (source && SOURCE_COLOR[source]) {
         const badge = document.createElement('span');
         badge.className = `src-badge ml-1 inline-block rounded px-1 py-px text-[10px] font-semibold leading-none align-middle ${SOURCE_COLOR[source]}`;
-        badge.title = `Quelle: ${SOURCE_LABEL[source]}`;
+        badge.title = t('formBadgeSource', { source: SOURCE_LABEL[source] });
         badge.textContent = SOURCE_LABEL[source][0];
         fieldEl.appendChild(badge);
       }
@@ -376,11 +381,12 @@ import Layout from '../layouts/Layout.astro';
       .filter(s => SOURCE_OUTLINE[s])
       .map(s => {
         const cls = `inline-block rounded border px-1.5 py-px text-[10px] font-medium ${SOURCE_OUTLINE[s]}`;
-        const title = `Datenquelle: ${SOURCE_LABEL[s]}`;
+        const title = t('sourceTitle', { source: SOURCE_LABEL[s] });
+        const titleLink = t('sourceTitleLink', { source: SOURCE_LABEL[s] });
         const href = sourceLink(s, p);
         return href
-          ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="${cls} hover:underline" title="${title} — auf ${SOURCE_LABEL[s]} öffnen">${SOURCE_SHORT[s]}</a>`
-          : `<span class="${cls}" title="${title}">${SOURCE_SHORT[s]}</span>`;
+          ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="${cls} hover:underline" title="${escapeHtml(titleLink)}">${SOURCE_SHORT[s]}</a>`
+          : `<span class="${cls}" title="${escapeHtml(title)}">${SOURCE_SHORT[s]}</span>`;
       })
       .join(' ');
   }
@@ -394,10 +400,10 @@ import Layout from '../layouts/Layout.astro';
     const count = p.printCount ?? 1;
     const off = count === 0;
     return `
-      <div class="print-stepper inline-flex items-center gap-1" title="Druckanzahl">
-        <button type="button" class="btn-print-dec inline-flex h-5 w-5 items-center justify-center rounded bg-stone-100 dark:bg-stone-800 text-xs font-medium leading-none text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700" title="Weniger drucken">−</button>
-        <span class="print-count-toggle w-4 cursor-pointer text-center text-xs tabular-nums ${off ? 'font-semibold text-red-500' : 'text-stone-600 dark:text-stone-300'}" title="${off ? 'Deaktiviert — klicken zum Aktivieren' : 'Klicken zum Deaktivieren'}">${count}</span>
-        <button type="button" class="btn-print-inc inline-flex h-5 w-5 items-center justify-center rounded bg-stone-100 dark:bg-stone-800 text-xs font-medium leading-none text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700" title="Mehr drucken">+</button>
+      <div class="print-stepper inline-flex items-center gap-1" title="${escapeHtml(t('printStepperTitle'))}">
+        <button type="button" class="btn-print-dec inline-flex h-5 w-5 items-center justify-center rounded bg-stone-100 dark:bg-stone-800 text-xs font-medium leading-none text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700" title="${escapeHtml(t('printStepperLess'))}">−</button>
+        <span class="print-count-toggle w-4 cursor-pointer text-center text-xs tabular-nums ${off ? 'font-semibold text-red-500' : 'text-stone-600 dark:text-stone-300'}" title="${escapeHtml(off ? t('printStepperToggleOff') : t('printStepperToggleOn'))}">${count}</span>
+        <button type="button" class="btn-print-inc inline-flex h-5 w-5 items-center justify-center rounded bg-stone-100 dark:bg-stone-800 text-xs font-medium leading-none text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700" title="${escapeHtml(t('printStepperMore'))}">+</button>
       </div>`;
   }
 
@@ -460,16 +466,16 @@ import Layout from '../layouts/Layout.astro';
 
   // Usage: warm tones. Ecosystem: cool/green tones.
   const USE_BADGES: [keyof PlantData, string, string][] = [
-    ['eatable',      'bg-amber-100 text-amber-800',   'Essbar'],
-    ['culinaric',    'bg-yellow-100 text-yellow-800',  'Kulinarisch'],
-    ['meds',         'bg-rose-100 text-rose-700',      'Medizin'],
-    ['material',     'bg-orange-100 text-orange-800',  'Material'],
-    ['fodder',       'bg-lime-100 text-lime-700',      'Futter'],
-    ['nitrogenFix',  'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300',    'N-Fix'],
-    ['groundCover',  'bg-teal-100 text-teal-800',      'Bodendecker'],
-    ['insects',      'bg-cyan-100 text-cyan-800',      'Insekten'],
-    ['windBreaking', 'bg-sky-100 text-sky-800',        'Windschutz'],
-    ['animalProtection', 'bg-violet-100 text-violet-800', 'Tierschutz'],
+    ['eatable',      'bg-amber-100 text-amber-800',   t('badgeEatable')],
+    ['culinaric',    'bg-yellow-100 text-yellow-800',  t('badgeCulinaric')],
+    ['meds',         'bg-rose-100 text-rose-700',      t('badgeMeds')],
+    ['material',     'bg-orange-100 text-orange-800',  t('badgeMaterial')],
+    ['fodder',       'bg-lime-100 text-lime-700',      t('badgeFodder')],
+    ['nitrogenFix',  'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300',    t('badgeNitrogenFix')],
+    ['groundCover',  'bg-teal-100 text-teal-800',      t('badgeGroundCover')],
+    ['insects',      'bg-cyan-100 text-cyan-800',      t('badgeInsects')],
+    ['windBreaking', 'bg-sky-100 text-sky-800',        t('badgeWindBreaking')],
+    ['animalProtection', 'bg-violet-100 text-violet-800', t('badgeAnimalProtection')],
   ];
 
   function badges(p: PlantData): string {
@@ -506,7 +512,7 @@ import Layout from '../layouts/Layout.astro';
       bulkBar.style.display = 'none';
     } else {
       bulkBar.style.display = 'flex';
-      bulkCountEl.textContent = `${n} ausgewählt`;
+      bulkCountEl.textContent = t('bulkSelectedCount', { n });
     }
   }
 
@@ -522,7 +528,7 @@ import Layout from '../layouts/Layout.astro';
     const active = viewMode === 'grid' ? btnGrid : viewMode === 'list' ? btnList : btnCards;
     active.classList.remove(...inactiveClass); active.classList.add(...activeClass);
     cardsToolbar.style.display = viewMode === 'cards' ? 'flex' : 'none';
-    if (heading) heading.textContent = viewMode === 'cards' ? 'Pflanzenkarten' : viewMode === 'list' ? 'Pflanzenliste' : 'Pflanzenkacheln';
+    if (heading) heading.textContent = viewMode === 'cards' ? t('headingCards') : viewMode === 'list' ? t('headingList') : t('headingTiles');
   }
 
   // ── Sorting ───────────────────────────────────────────────────────────────────
@@ -688,9 +694,9 @@ import Layout from '../layouts/Layout.astro';
               fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             <circle cx="16" cy="11" r="1.2" fill="currentColor"/>
           </svg>
-          <p class="mb-1 text-base font-semibold text-stone-500 dark:text-stone-400">Noch keine Pflanzen</p>
-          <p class="mb-4 text-sm text-stone-400 dark:text-stone-500">Suche nach einer Pflanze oder lade Beispieldaten.</p>
-          <button onclick="document.getElementById('plant-search').focus()" class="rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">Erste Pflanze suchen</button>
+          <p class="mb-1 text-base font-semibold text-stone-500 dark:text-stone-400">${escapeHtml(t('emptyStateTitle'))}</p>
+          <p class="mb-4 text-sm text-stone-400 dark:text-stone-500">${escapeHtml(t('emptyStateSubtitle'))}</p>
+          <button onclick="document.getElementById('plant-search').focus()" class="rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">${escapeHtml(t('emptyStateBtn'))}</button>
         </div>`;
       return;
     }
@@ -716,8 +722,8 @@ import Layout from '../layouts/Layout.astro';
           <div class="relative z-10 flex items-center justify-between bg-white/90 dark:bg-stone-800/90 px-3 py-1.5">
             <span class="text-xs text-stone-400 dark:text-stone-500">${escapeHtml(p.commonName || p.latinName)}</span>
             <div class="flex gap-1.5">
-              <button class="btn-edit inline-flex items-center gap-1 rounded-md bg-stone-100 dark:bg-stone-800 px-2.5 py-1 text-xs font-medium text-stone-600 dark:text-stone-300 transition hover:bg-blue-100 dark:hover:bg-blue-900/60 hover:text-blue-800 dark:hover:text-blue-200">Bearb.</button>
-              <button class="btn-pdf-single inline-flex items-center gap-1 rounded-md bg-stone-100 dark:bg-stone-800 px-2.5 py-1 text-xs font-medium text-stone-600 dark:text-stone-300 transition hover:bg-green-100 dark:hover:bg-green-900/60 hover:text-green-800 dark:hover:text-green-200">PDF</button>
+              <button class="btn-edit inline-flex items-center gap-1 rounded-md bg-stone-100 dark:bg-stone-800 px-2.5 py-1 text-xs font-medium text-stone-600 dark:text-stone-300 transition hover:bg-blue-100 dark:hover:bg-blue-900/60 hover:text-blue-800 dark:hover:text-blue-200">${escapeHtml(t('btnEditShort'))}</button>
+              <button class="btn-pdf-single inline-flex items-center gap-1 rounded-md bg-stone-100 dark:bg-stone-800 px-2.5 py-1 text-xs font-medium text-stone-600 dark:text-stone-300 transition hover:bg-green-100 dark:hover:bg-green-900/60 hover:text-green-800 dark:hover:text-green-200">${escapeHtml(t('btnPdfShort'))}</button>
             </div>
           </div>
         </div>`;
@@ -734,8 +740,8 @@ import Layout from '../layouts/Layout.astro';
             if (cardViewMode === 'baumscheibe') await exportBaumscheibePDF(plant);
             else await exportSingleCardPDF(plant);
           }
-          catch (err) { alert(`PDF-Fehler: ${err instanceof Error ? err.message : String(err)}`); }
-          finally { b.disabled = false; b.textContent = 'PDF'; }
+          catch (err) { alert(t('alertPdfError', { error: err instanceof Error ? err.message : String(err) })); }
+          finally { b.disabled = false; b.textContent = t('btnPdfShort'); }
         });
       });
 
@@ -760,7 +766,7 @@ import Layout from '../layouts/Layout.astro';
                 <p class="truncate text-xs italic text-stone-500 dark:text-stone-400">${escapeHtml(p.latinName)}</p>
               </div>
               <div class="flex shrink-0 gap-1 sm:opacity-0 sm:transition sm:group-hover:opacity-100">
-                <button class="btn-enrich rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60" title="Daten ergänzen">↻</button>
+                <button class="btn-enrich rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60" title="${escapeHtml(t('btnEnrichTitle'))}">↻</button>
                 <button class="btn-edit rounded-md bg-stone-100 dark:bg-stone-800 px-2 py-1 text-xs font-medium text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700">✎</button>
                 <button class="btn-del rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-100 dark:hover:bg-red-900/60">✕</button>
               </div>
@@ -768,7 +774,7 @@ import Layout from '../layouts/Layout.astro';
             <div class="mb-1.5 flex gap-3 text-xs text-stone-500 dark:text-stone-400">
               ${p.heightM != null ? `<span>↕ ${p.heightM}m</span>` : ''}
               ${p.widthM != null ? `<span>↔ ${p.widthM}m</span>` : ''}
-              ${p.climateZone ? `<span>Zone ${escapeHtml(p.climateZone)}</span>` : ''}
+              ${p.climateZone ? `<span>${escapeHtml(t('zoneLabel', { zone: p.climateZone }))}</span>` : ''}
             </div>
             <div class="flex flex-wrap gap-1">${badges(p)}</div>
           </div>
@@ -805,7 +811,7 @@ import Layout from '../layouts/Layout.astro';
       });
 
       const actionBtns = `
-        <button class="btn-enrich rounded bg-blue-50 px-1.5 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60" title="Ergänzen">↻</button>
+        <button class="btn-enrich rounded bg-blue-50 px-1.5 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60" title="${escapeHtml(t('btnEnrichShort'))}">↻</button>
         <button class="btn-edit rounded bg-stone-100 dark:bg-stone-800 px-1.5 py-0.5 text-xs font-medium text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700">✎</button>
         <button class="btn-del rounded bg-red-50 px-1.5 py-0.5 text-xs font-medium text-red-600 hover:bg-red-100 dark:hover:bg-red-900/60">✕</button>`;
 
@@ -849,14 +855,14 @@ import Layout from '../layouts/Layout.astro';
             <thead>
               <tr class="border-b border-stone-200 dark:border-stone-700 text-left text-xs font-medium text-stone-500 dark:text-stone-400">
                 <th class="w-8 px-3 py-2.5"><input type="checkbox" id="select-all-check" class="accent-green-600" ${allSelected ? 'checked' : ''} /></th>
-                ${thSort('commonName', 'Name')}
-                ${thSort('latinName', 'Lateinisch')}
-                ${thSort('heightM', 'H')}
-                <th class="px-3 py-2.5">Nutzung</th>
-                ${thSort('completeness', 'Vollst.')}
-                <th class="px-3 py-2.5">Anz.</th>
-                <th class="px-3 py-2.5">Quellen</th>
-                <th class="px-3 py-2.5">Aktionen</th>
+                ${thSort('commonName', t('thName'))}
+                ${thSort('latinName', t('thLatin'))}
+                ${thSort('heightM', t('thHeightShort'))}
+                <th class="px-3 py-2.5">${escapeHtml(t('thUsage'))}</th>
+                ${thSort('completeness', t('thCompleteness'))}
+                <th class="px-3 py-2.5">${escapeHtml(t('thCount'))}</th>
+                <th class="px-3 py-2.5">${escapeHtml(t('thSources'))}</th>
+                <th class="px-3 py-2.5">${escapeHtml(t('thActions'))}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-stone-100">
@@ -957,7 +963,7 @@ import Layout from '../layouts/Layout.astro';
         const card = btn.closest('[data-id]') as HTMLElement;
         const id = card.dataset.id!;
         const plant = cachedPlants.find(p => p.id === id);
-        if (!plant || !plant.latinName) { alert('Lateinischer Name fehlt.'); return; }
+        if (!plant || !plant.latinName) { alert(t('alertMissingLatinName')); return; }
         const b = btn as HTMLButtonElement;
         const origText = b.textContent;
         b.disabled = true; b.textContent = '…';
@@ -976,7 +982,7 @@ import Layout from '../layouts/Layout.astro';
         const plant = cachedPlants.find(p => p.id === id);
         if (plant) {
           editingPlant = plant;
-          (document.getElementById('dialog-title') as HTMLElement).textContent = 'Pflanze bearbeiten';
+          (document.getElementById('dialog-title') as HTMLElement).textContent = t('dialogTitleEdit');
           fillForm(plant);
           dialog.showModal();
         }
@@ -986,7 +992,7 @@ import Layout from '../layouts/Layout.astro';
     listEl.querySelectorAll('.btn-del').forEach(btn => {
       btn.addEventListener('click', async () => {
         const id = (btn.closest('[data-id]') as HTMLElement).dataset.id!;
-        if (confirm('Pflanze löschen?')) {
+        if (confirm(t('confirmDeletePlant'))) {
           selectedIds.delete(id);
           await deletePlant(id);
           updateBulkBar();
@@ -1032,7 +1038,7 @@ import Layout from '../layouts/Layout.astro';
 
   document.getElementById('btn-add')!.addEventListener('click', () => {
     editingPlant = null;
-    (document.getElementById('dialog-title') as HTMLElement).textContent = 'Neue Pflanze';
+    (document.getElementById('dialog-title') as HTMLElement).textContent = t('dialogTitleNew');
     fillForm(createEmptyPlant());
     dialog.showModal();
   });
@@ -1062,7 +1068,7 @@ import Layout from '../layouts/Layout.astro';
       if (cardViewMode === 'baumscheibe') await exportBaumscheibesPDF(cachedPlants);
       else await exportCardsPDF(cachedPlants);
     }
-    finally { btn.disabled = false; btn.textContent = 'PDF ↓'; }
+    finally { btn.disabled = false; btn.textContent = t('pdfAllBtn'); }
   });
   document.getElementById('btn-pdf-sheet')!.addEventListener('click', async () => {
     if (cachedPlants.length === 0) return;
@@ -1082,7 +1088,7 @@ import Layout from '../layouts/Layout.astro';
   });
   document.getElementById('btn-bulk-delete')!.addEventListener('click', async () => {
     if (!selectedIds.size) return;
-    if (!confirm(`${selectedIds.size} Pflanze(n) löschen?`)) return;
+    if (!confirm(t('confirmBulkDelete', { n: selectedIds.size }))) return;
     for (const id of selectedIds) await deletePlant(id);
     selectedIds.clear(); updateBulkBar(); renderList();
   });
@@ -1101,12 +1107,12 @@ import Layout from '../layouts/Layout.astro';
     btn.disabled = true;
     let done = 0;
     for (const plant of plants) {
-      btn.textContent = `Ergänzen ${done + 1}/${plants.length}…`;
+      btn.textContent = t('bulkEnrichProgress', { done: done + 1, total: plants.length });
       await enrichPlant(plant);
       await savePlant(plant);
       done++;
     }
-    btn.textContent = `✓ ${done} ergänzt`;
+    btn.textContent = t('bulkEnrichDone', { done });
     btn.disabled = false;
     setTimeout(() => renderList(), 800);
   });
@@ -1125,9 +1131,9 @@ import Layout from '../layouts/Layout.astro';
       activeFilters.clear();
       persistFilters();
       await renderList();
-      alert(`${samplePlants.length} Beispielpflanzen importiert${before > 0 ? ' (Filter zurückgesetzt)' : ''}.`);
+      alert(t('alertSamplesImported', { n: samplePlants.length, reset: before > 0 ? t('alertFiltersReset') : '' }));
     } catch (err) {
-      alert(`Beispieldaten-Import fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`);
+      alert(t('alertSampleImportFailed', { error: err instanceof Error ? err.message : String(err) }));
       console.error(err);
     }
   });
@@ -1138,9 +1144,9 @@ import Layout from '../layouts/Layout.astro';
       activeFilters.clear();
       persistFilters();
       await renderList();
-      alert(`${crawfordPlants.length} Pflanzen (Crawford) importiert${before > 0 ? ' (Filter zurückgesetzt)' : ''}. Nur lateinische Namen sind gesetzt — mit „↻" pro Pflanze anreichern.`);
+      alert(t('alertCrawfordImported', { n: crawfordPlants.length, reset: before > 0 ? t('alertFiltersReset') : '' }));
     } catch (err) {
-      alert(`Beispieldaten-Import fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`);
+      alert(t('alertSampleImportFailed', { error: err instanceof Error ? err.message : String(err) }));
       console.error(err);
     }
   });
@@ -1148,7 +1154,7 @@ import Layout from '../layouts/Layout.astro';
     const b = document.getElementById('btn-enrich-all') as HTMLButtonElement;
     const origText = b.textContent;
     const plants = (await getAllPlants()).filter(p => p.latinName);
-    if (plants.length === 0) { alert('Keine Pflanzen mit lateinischem Namen vorhanden.'); return; }
+    if (plants.length === 0) { alert(t('alertNoLatinNamePlants')); return; }
     b.disabled = true;
     let plantsUpdated = 0, fieldsFilled = 0, failed = 0;
     for (let i = 0; i < plants.length; i++) {
@@ -1169,8 +1175,8 @@ import Layout from '../layouts/Layout.astro';
     b.textContent = origText;
     await renderList();
     alert(
-      `${plantsUpdated} von ${plants.length} Pflanzen aktualisiert, ${fieldsFilled} Felder ergänzt.` +
-      (failed > 0 ? ` ${failed} fehlgeschlagen (siehe Konsole).` : '')
+      t('alertEnrichAllSummary', { updated: plantsUpdated, total: plants.length, fields: fieldsFilled }) +
+      (failed > 0 ? t('alertEnrichAllFailed', { failed }) : '')
     );
   });
   document.getElementById('btn-csv-template')!.addEventListener('click', () => {
@@ -1188,7 +1194,7 @@ import Layout from '../layouts/Layout.astro';
   csvInput.addEventListener('change', async () => {
     const f = csvInput.files?.[0]; if (!f) return;
     const plants = importFromCSV(await f.text());
-    if (plants.length === 0) { alert('Keine Pflanzen in der CSV gefunden.'); return; }
+    if (plants.length === 0) { alert(t('alertNoCsvPlants')); return; }
     for (const plant of plants) trackSources(plant, plant as Partial<PlantData>, 'csv');
     await importPlants(plants); renderList(); csvInput.value = '';
   });
@@ -1203,10 +1209,10 @@ import Layout from '../layouts/Layout.astro';
     const q = searchInput.value.trim();
     if (q.length < 2) { searchResults.innerHTML = ''; searchResults.classList.add('hidden'); return; }
     searchResults.classList.remove('hidden');
-    searchResults.innerHTML = '<p class="px-4 py-3 text-sm text-stone-400 dark:text-stone-500 animate-pulse">Suche…</p>';
+    searchResults.innerHTML = `<p class="px-4 py-3 text-sm text-stone-400 dark:text-stone-500 animate-pulse">${escapeHtml(t('searchLoading'))}</p>`;
     try {
       const results = await searchPlants(q);
-      if (results.length === 0) { searchResults.innerHTML = '<p class="px-4 py-3 text-sm text-stone-400 dark:text-stone-500">Keine Ergebnisse.</p>'; return; }
+      if (results.length === 0) { searchResults.innerHTML = `<p class="px-4 py-3 text-sm text-stone-400 dark:text-stone-500">${escapeHtml(t('searchNoResults'))}</p>`; return; }
       searchResults.innerHTML = results.map((r, i) => `
         <div class="flex items-center justify-between gap-2 px-4 py-2.5 hover:bg-stone-50 dark:hover:bg-stone-800 transition" data-idx="${i}">
           <div class="min-w-0">
@@ -1215,7 +1221,7 @@ import Layout from '../layouts/Layout.astro';
             ${r.description ? `<p class="truncate text-xs text-stone-400 dark:text-stone-500">${escapeHtml(r.description)}</p>` : ''}
             <p class="import-status text-xs text-green-600"></p>
           </div>
-          <button class="btn-add-result shrink-0 rounded-lg bg-green-700 px-3 py-1.5 text-xs font-medium text-white shadow transition hover:bg-green-800 active:scale-95">+ Hinzuf.</button>
+          <button class="btn-add-result shrink-0 rounded-lg bg-green-700 px-3 py-1.5 text-xs font-medium text-white shadow transition hover:bg-green-800 active:scale-95">${escapeHtml(t('searchAddResult'))}</button>
         </div>
       `).join('');
 
@@ -1235,7 +1241,7 @@ import Layout from '../layouts/Layout.astro';
             if (plant.commonName) plant._sources['commonName'] = 'manual';
 
             if (isSourceEnabled('wikidata')) {
-              b.textContent = 'Wikidata...';
+              b.textContent = t('enrichWikidataStatus');
               let wdId = r.wikidataId;
               if (!wdId && plant.latinName) {
                 const searchUrl = new URL('https://www.wikidata.org/w/api.php');
@@ -1264,7 +1270,7 @@ import Layout from '../layouts/Layout.astro';
             }
 
             if (plant.latinName && (isSourceEnabled('pfaf') || isSourceEnabled('naturadb'))) {
-              b.textContent = 'PFAF/NaturaDB...';
+              b.textContent = t('enrichPfafStatus');
               const proxyData = await fetchProxyData(plant.latinName);
               const filled: Partial<PlantData> = {};
               for (const [key, value] of Object.entries(proxyData)) {
@@ -1286,17 +1292,17 @@ import Layout from '../layouts/Layout.astro';
             plant.id = newId();
             await savePlant(plant);
             renderList();
-            b.textContent = '✓ Hinzugefügt';
+            b.textContent = t('searchAdded');
             b.classList.replace('bg-green-700', 'bg-green-500');
             b.disabled = true;
             if (statusEl) statusEl.textContent = sourceLabels.length ? `${sourceLabels.join(' + ')}` : '';
           } catch {
-            b.textContent = 'Fehler';
+            b.textContent = t('searchAddFailed');
             b.classList.replace('bg-green-700', 'bg-red-500');
           }
         });
       });
-    } catch (err) { searchResults.innerHTML = `<p class="px-4 py-3 text-sm text-red-500">Fehler: ${escapeHtml(String(err))}</p>`; }
+    } catch (err) { searchResults.innerHTML = `<p class="px-4 py-3 text-sm text-red-500">${escapeHtml(t('searchError', { error: String(err) }))}</p>`; }
   }
 
   document.getElementById('btn-search')!.addEventListener('click', doSearch);
@@ -1332,7 +1338,7 @@ import Layout from '../layouts/Layout.astro';
     if (activeFilters.size > 0) {
       clearBtn.classList.remove('hidden');
       countEl.classList.remove('hidden');
-      countEl.textContent = `${shown} von ${total} angezeigt`;
+      countEl.textContent = t('filterCount', { shown, total });
     } else {
       clearBtn.classList.add('hidden');
       countEl.classList.add('hidden');

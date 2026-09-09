@@ -1,0 +1,35 @@
+import type { Dict } from './core';
+
+export const kalenderDict: Dict = {
+  pageTitle: { de: 'Ernte- & Blütenkalender', en: 'Harvest & Bloom Calendar' },
+  pageSubtitle: { de: 'Wann blüht was, wann ist was erntereif — aus deinen Pflanzendaten.', en: 'What blooms when, what ripens when — from your plant data.' },
+  legendFlower: { de: 'Blüte', en: 'Bloom' },
+  legendFruit: { de: 'Ernte', en: 'Harvest' },
+  legendBoth: { de: 'Beides', en: 'Both' },
+  overviewHeading: { de: 'Überblick', en: 'Overview' },
+  searchPlaceholder: { de: 'Pflanze suchen…', en: 'Search plant…' },
+  filterFlower: { de: 'Blüte', en: 'Bloom' },
+  filterFruit: { de: 'Ernte', en: 'Harvest' },
+  emptyNoData: { de: 'Noch keine Pflanzen mit Blüte- oder Erntedaten.', en: 'No plants with bloom or harvest data yet.' },
+  emptyNoDataLink: { de: 'Pflanzen anlegen oder importieren →', en: 'Add or import plants →' },
+  emptyNoMatch: { de: 'Keine Pflanzen entsprechen dem Filter.', en: 'No plants match the filter.' },
+
+  monthJan: { de: 'Jan', en: 'Jan' },
+  monthFeb: { de: 'Feb', en: 'Feb' },
+  monthMar: { de: 'Mär', en: 'Mar' },
+  monthApr: { de: 'Apr', en: 'Apr' },
+  monthMay: { de: 'Mai', en: 'May' },
+  monthJun: { de: 'Jun', en: 'Jun' },
+  monthJul: { de: 'Jul', en: 'Jul' },
+  monthAug: { de: 'Aug', en: 'Aug' },
+  monthSep: { de: 'Sep', en: 'Sep' },
+  monthOct: { de: 'Okt', en: 'Oct' },
+  monthNov: { de: 'Nov', en: 'Nov' },
+  monthDec: { de: 'Dez', en: 'Dec' },
+
+  overviewFloweringTitle: { de: '{count} blühend', en: '{count} blooming' },
+  overviewRipeTitle: { de: '{count} erntereif', en: '{count} ripe' },
+  tableHeaderPlant: { de: 'Pflanze', en: 'Plant' },
+  countAll: { de: '{count} Pflanzen', en: '{count} plants' },
+  countFiltered: { de: '{filtered} / {total} Pflanzen', en: '{filtered} / {total} plants' },
+};

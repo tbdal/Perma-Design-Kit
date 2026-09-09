@@ -4,134 +4,141 @@ import Layout from '../layouts/Layout.astro';
 <Layout title="Perma Guild Forge — Hilfe">
   <article class="mx-auto max-w-3xl space-y-8 text-stone-800 dark:text-stone-100">
     <header>
-      <h1 class="text-2xl font-bold">Hilfe & Glossar</h1>
-      <p class="mt-2 text-sm text-stone-500 dark:text-stone-400">Konzepte, Ansichten und Funktionen kurz erklärt.</p>
+      <h1 class="text-2xl font-bold" data-i18n="pageTitle">Hilfe & Glossar</h1>
+      <p class="mt-2 text-sm text-stone-500 dark:text-stone-400" data-i18n="pageSubtitle">Konzepte, Ansichten und Funktionen kurz erklärt.</p>
     </header>
 
     <section id="gilden" class="space-y-2">
-      <h2 class="text-xl font-semibold">Was ist eine Permakultur-Gilde?</h2>
-      <p>Eine <strong>Gilde</strong> ist eine Gruppe von Pflanzen, die sich gegenseitig fördert: Bäume,
+      <h2 class="text-xl font-semibold" data-i18n="guildHeading">Was ist eine Permakultur-Gilde?</h2>
+      <p><span data-i18n="guildDefIntro">Eine</span> <strong data-i18n="guildDefStrong">Gilde</strong> <span data-i18n="guildDefRest">ist eine Gruppe von Pflanzen, die sich gegenseitig fördert: Bäume,
         Sträucher, Stauden, Bodendecker und Wurzelpflanzen werden so kombiniert, dass sie sich Nährstoffe,
         Schatten, Bestäuber und Schädlingsabwehr teilen. Statt einer Monokultur entsteht ein kleines, sich
-        weitgehend selbst regulierendes Ökosystem rund um eine zentrale Hauptpflanze (oft ein Obstbaum).</p>
-      <p>Diese App hilft dir, Pflanzen mit ihren wichtigsten Eigenschaften zu erfassen, anzureichern und
+        weitgehend selbst regulierendes Ökosystem rund um eine zentrale Hauptpflanze (oft ein Obstbaum).</span></p>
+      <p data-i18n="guildAppIntro">Diese App hilft dir, Pflanzen mit ihren wichtigsten Eigenschaften zu erfassen, anzureichern und
         als Karten zu drucken — als Grundlage, um eigene Gilden zu komponieren.</p>
-      <p>Auf der Seite <a href="/gilden" class="text-green-700 dark:text-green-400 hover:underline">Gilden</a>
-        kannst du eigene Gilden anlegen: Ankerart wählen, Mitglieder mit Rolle hinzufügen
+      <p><span data-i18n="guildPageIntro">Auf der Seite</span> <a href="/gilden" data-i18n="guildPageLink" class="text-green-700 dark:text-green-400 hover:underline">Gilden</a>
+        <span data-i18n="guildPageRest">kannst du eigene Gilden anlegen: Ankerart wählen, Mitglieder mit Rolle hinzufügen
         (Begleiter, Bodendecker, N-Fixer, Mineraliensammler, Insekten- oder Duftpflanze, Obst/Beere).
         Das Vorschlags-Panel filtert deinen Pflanzen-Bestand nach offenen Rollen und
-        zeigt dir eine Sonne/Wasser/pH-Kompatibilität (0–3) zur Ankerart an.</p>
+        zeigt dir eine Sonne/Wasser/pH-Kompatibilität (0–3) zur Ankerart an.</span></p>
     </section>
 
     <section class="space-y-2">
-      <h2 class="text-xl font-semibold">Ansichten</h2>
+      <h2 class="text-xl font-semibold" data-i18n="viewsHeading">Ansichten</h2>
       <dl class="space-y-3">
         <div>
-          <dt class="font-semibold">Kacheln</dt>
-          <dd class="text-sm text-stone-600 dark:text-stone-300">Übersicht mit Bildvorschau, Akzentstreifen
+          <dt class="font-semibold" data-i18n="viewTilesTerm">Kacheln</dt>
+          <dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="viewTilesDesc">Übersicht mit Bildvorschau, Akzentstreifen
             nach Primärnutzung und Vollständigkeitsbalken. Gut zum Stöbern.</dd>
         </div>
         <div>
-          <dt class="font-semibold">Liste</dt>
-          <dd class="text-sm text-stone-600 dark:text-stone-300">Sortierbare Tabelle (Desktop) bzw. kompakte
+          <dt class="font-semibold" data-i18n="viewListTerm">Liste</dt>
+          <dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="viewListDesc">Sortierbare Tabelle (Desktop) bzw. kompakte
             Karten (Mobil) mit Nutzungs-Dots und Vollständigkeit. Ideal für Mehrfach­auswahl und Bulk-Aktionen.</dd>
         </div>
         <div>
-          <dt class="font-semibold">Karten</dt>
-          <dd class="text-sm text-stone-600 dark:text-stone-300">Druckansicht der Pflanzenkarten — Vorschau
+          <dt class="font-semibold" data-i18n="viewCardsTerm">Karten</dt>
+          <dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="viewCardsDesc">Druckansicht der Pflanzenkarten — Vorschau
             des PDF-Exports im Browser.</dd>
         </div>
       </dl>
     </section>
 
     <section class="space-y-2">
-      <h2 class="text-xl font-semibold">Karten-Varianten</h2>
+      <h2 class="text-xl font-semibold" data-i18n="variantsHeading">Karten-Varianten</h2>
       <dl class="space-y-3">
         <div>
-          <dt class="font-semibold">Pflanzenkarten (Polykarte)</dt>
-          <dd class="text-sm text-stone-600 dark:text-stone-300">70 × 120 mm. Eine Karte pro Pflanze mit
+          <dt class="font-semibold" data-i18n="variantPolyTerm">Pflanzenkarten (Polykarte)</dt>
+          <dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="variantPolyDesc">70 × 120 mm. Eine Karte pro Pflanze mit
             Bild, Namen, Eigenschaften und Phänologie. Standardformat zum Auslegen oder Anheften.</dd>
         </div>
         <div>
-          <dt class="font-semibold">Streifenkarten</dt>
-          <dd class="text-sm text-stone-600 dark:text-stone-300">290 × 17 mm Querformat. Kompakte Zeile pro
+          <dt class="font-semibold" data-i18n="variantStripeTerm">Streifenkarten</dt>
+          <dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="variantStripeDesc">290 × 17 mm Querformat. Kompakte Zeile pro
             Pflanze — gut für Etiketten oder Schnellübersichten.</dd>
         </div>
         <div>
-          <dt class="font-semibold">Baumscheibe</dt>
-          <dd class="text-sm text-stone-600 dark:text-stone-300">Großformat mit grafischer Darstellung
+          <dt class="font-semibold" data-i18n="variantBaumscheibeTerm">Baumscheibe</dt>
+          <dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="variantBaumscheibeDesc">Großformat mit grafischer Darstellung
             (Schichten, Sonne, Wasser, pH, Nutzung, Funktion). PDF im A4-Hochformat.</dd>
         </div>
       </dl>
     </section>
 
     <section class="space-y-2">
-      <h2 class="text-xl font-semibold">Datenquellen</h2>
-      <p>Beim Anlegen oder Anreichern werden Pflanzendaten aus verschiedenen Quellen kombiniert. Welche
-        aktiv sind, stellst du in den <a href="/settings" class="text-green-700 dark:text-green-400 hover:underline">Einstellungen</a> ein.</p>
+      <h2 class="text-xl font-semibold" data-i18n="sourcesHeading">Datenquellen</h2>
+      <p><span data-i18n="sourcesIntro">Beim Anlegen oder Anreichern werden Pflanzendaten aus verschiedenen Quellen kombiniert. Welche
+        aktiv sind, stellst du in den</span> <a href="/settings" data-i18n="sourcesIntroLink" class="text-green-700 dark:text-green-400 hover:underline">Einstellungen</a> <span data-i18n="sourcesIntroEnd">ein.</span></p>
       <dl class="space-y-3">
         <div>
-          <dt class="font-semibold">Wikidata</dt>
-          <dd class="text-sm text-stone-600 dark:text-stone-300">Lateinische und deutsche Namen, Bilder,
+          <dt class="font-semibold" data-i18n="sourceWikidataTerm">Wikidata</dt>
+          <dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="sourceWikidataDesc">Lateinische und deutsche Namen, Bilder,
             Taxonomie. CORS-frei, direkter Zugriff aus dem Browser.</dd>
         </div>
         <div>
-          <dt class="font-semibold">PFAF (Plants For A Future)</dt>
-          <dd class="text-sm text-stone-600 dark:text-stone-300">Nutzungs-Scores (Essbarkeit, Medizin,
+          <dt class="font-semibold" data-i18n="sourcePfafTerm">PFAF (Plants For A Future)</dt>
+          <dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="sourcePfafDesc">Nutzungs-Scores (Essbarkeit, Medizin,
             Material), Lichtbedarf, pH, Wasserbedarf, Wachstumsrate, Höhe/Breite, Frucht-/Blütemonate.
             Über Server-Proxy.</dd>
         </div>
         <div>
-          <dt class="font-semibold">NaturaDB</dt>
-          <dd class="text-sm text-stone-600 dark:text-stone-300">Deutsche Pflanzendaten: Höhe, Breite,
+          <dt class="font-semibold" data-i18n="sourceNaturaTerm">NaturaDB</dt>
+          <dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="sourceNaturaDesc">Deutsche Pflanzendaten: Höhe, Breite,
             Frucht- und Blütemonate, Standortansprüche. Aktuell deaktiviert (ungeklärte Lizenzlage).</dd>
         </div>
       </dl>
     </section>
 
     <section class="space-y-2">
-      <h2 class="text-xl font-semibold">Visuelles Vokabular</h2>
+      <h2 class="text-xl font-semibold" data-i18n="vocabHeading">Visuelles Vokabular</h2>
       <ul class="list-disc space-y-1 pl-6 text-sm text-stone-600 dark:text-stone-300">
-        <li><strong>Ausgefüllte Badges</strong> = Nutzung der Pflanze (essbar, medizinisch, Material…).</li>
-        <li><strong>Outline-Chips</strong> = Datenquelle, aus der ein Wert stammt (z.B. PFAF, NaturaDB).</li>
-        <li><strong>Akzentstreifen / -punkt</strong> = Primärnutzung in Kacheln und Listenzeile.</li>
-        <li><strong>Vollständigkeits­balken</strong> = wieviele Felder gegenüber dem Maximum gefüllt sind
-          (grün ≥ 80 %, gelb ≥ 50 %, rot darunter).</li>
+        <li><strong data-i18n="vocabBadgesTerm">Ausgefüllte Badges</strong> <span data-i18n="vocabBadgesDesc">= Nutzung der Pflanze (essbar, medizinisch, Material…).</span></li>
+        <li><strong data-i18n="vocabChipsTerm">Outline-Chips</strong> <span data-i18n="vocabChipsDesc">= Datenquelle, aus der ein Wert stammt (z.B. PFAF, NaturaDB).</span></li>
+        <li><strong data-i18n="vocabAccentTerm">Akzentstreifen / -punkt</strong> <span data-i18n="vocabAccentDesc">= Primärnutzung in Kacheln und Listenzeile.</span></li>
+        <li><strong data-i18n="vocabBarTerm">Vollständigkeits­balken</strong> <span data-i18n="vocabBarDesc">= wieviele Felder gegenüber dem Maximum gefüllt sind
+          (grün ≥ 80 %, gelb ≥ 50 %, rot darunter).</span></li>
       </ul>
     </section>
 
     <section class="space-y-2">
-      <h2 class="text-xl font-semibold">Daten exportieren & sichern</h2>
+      <h2 class="text-xl font-semibold" data-i18n="exportHeading">Daten exportieren & sichern</h2>
       <ul class="list-disc space-y-1 pl-6 text-sm text-stone-600 dark:text-stone-300">
-        <li><strong>Backup (JSON)</strong> in den Einstellungen: kompletter Datensatz inkl. Konfiguration —
-          ideal als Sicherung oder zum Übertragen auf ein anderes Gerät.</li>
-        <li><strong>CSV / JSON-Export</strong> auf der Hauptseite: einzelne oder ausgewählte Pflanzen.</li>
-        <li><strong>PDF-Export</strong> aus der Kartenansicht: alle Karten, Streifen oder Baumscheiben.</li>
+        <li><strong data-i18n="exportBackupTerm">Backup (JSON)</strong> <span data-i18n="exportBackupDesc">in den Einstellungen: kompletter Datensatz inkl. Konfiguration —
+          ideal als Sicherung oder zum Übertragen auf ein anderes Gerät.</span></li>
+        <li><strong data-i18n="exportCsvTerm">CSV / JSON-Export</strong> <span data-i18n="exportCsvDesc">auf der Hauptseite: einzelne oder ausgewählte Pflanzen.</span></li>
+        <li><strong data-i18n="exportPdfTerm">PDF-Export</strong> <span data-i18n="exportPdfDesc">aus der Kartenansicht: alle Karten, Streifen oder Baumscheiben.</span></li>
       </ul>
     </section>
 
     <section class="space-y-2">
-      <h2 class="text-xl font-semibold">Tastatur-Shortcuts</h2>
-      <p class="text-sm text-stone-600 dark:text-stone-300">Greifen auf der Hauptseite — nicht
-        während du in einem Eingabefeld tippst (außer <kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1 text-xs">Esc</kbd>, das schließt überall den offenen Dialog).</p>
+      <h2 class="text-xl font-semibold" data-i18n="shortcutsHeading">Tastatur-Shortcuts</h2>
+      <p class="text-sm text-stone-600 dark:text-stone-300"><span data-i18n="shortcutsIntro">Greifen auf der Hauptseite — nicht
+        während du in einem Eingabefeld tippst (außer</span> <kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1 text-xs">Esc</kbd><span data-i18n="shortcutsIntroEnd">, das schließt überall den offenen Dialog).</span></p>
       <table class="w-full text-sm">
         <tbody class="divide-y divide-stone-200 dark:divide-stone-700">
-          <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">/</kbd></td><td>Suche fokussieren</td></tr>
-          <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Esc</kbd></td><td>Offenen Dialog schließen</td></tr>
-          <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">n</kbd></td><td>Neue Pflanze</td></tr>
-          <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">g</kbd></td><td>Kachelansicht</td></tr>
-          <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">l</kbd></td><td>Listenansicht</td></tr>
-          <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">c</kbd></td><td>Kartenansicht</td></tr>
-          <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Shift</kbd>+Klick</td><td>In der Liste: Bereich von letzter bis aktueller Checkbox auswählen</td></tr>
+          <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">/</kbd></td><td data-i18n="shortcutFocusSearch">Suche fokussieren</td></tr>
+          <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Esc</kbd></td><td data-i18n="shortcutCloseDialog">Offenen Dialog schließen</td></tr>
+          <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">n</kbd></td><td data-i18n="shortcutNewPlant">Neue Pflanze</td></tr>
+          <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">g</kbd></td><td data-i18n="shortcutTiles">Kachelansicht</td></tr>
+          <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">l</kbd></td><td data-i18n="shortcutList">Listenansicht</td></tr>
+          <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">c</kbd></td><td data-i18n="shortcutCards">Kartenansicht</td></tr>
+          <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Shift</kbd>+Klick</td><td data-i18n="shortcutShiftClick">In der Liste: Bereich von letzter bis aktueller Checkbox auswählen</td></tr>
         </tbody>
       </table>
     </section>
 
     <section class="space-y-2">
-      <h2 class="text-xl font-semibold">App installieren</h2>
-      <p>Auf <strong>Android / Chrome</strong> erscheint oben ein Banner „App installieren". Auf <strong>iOS
-        Safari</strong> tippe auf das Teilen-Symbol und „Zum Home-Bildschirm". Im installierten Zustand läuft
-        die App offline und ohne Browser-Chrome.</p>
+      <h2 class="text-xl font-semibold" data-i18n="installHeading">App installieren</h2>
+      <p><span data-i18n="installP1">Auf</span> <strong data-i18n="installAndroidChrome">Android / Chrome</strong> <span data-i18n="installP2">erscheint oben ein Banner „App installieren". Auf</span> <strong data-i18n="installIosSafari">iOS
+        Safari</strong> <span data-i18n="installP3">tippe auf das Teilen-Symbol und „Zum Home-Bildschirm". Im installierten Zustand läuft
+        die App offline und ohne Browser-Chrome.</span></p>
     </section>
   </article>
 </Layout>
+
+<script>
+  import { applyStaticI18n } from '../lib/i18n/core';
+  import { hilfeDict } from '../lib/i18n/dict-hilfe';
+
+  applyStaticI18n(hilfeDict);
+</script>

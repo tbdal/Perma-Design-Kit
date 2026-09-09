@@ -3,35 +3,35 @@ import Layout from '../layouts/Layout.astro';
 ---
 <Layout title="Perma Guild Forge — Einstellungen">
   <div class="mb-6">
-    <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-100">Einstellungen</h1>
-    <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Datenquellen, Ansicht, Theme und Daten verwalten.</p>
+    <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-100" data-i18n="pageTitle">Einstellungen</h1>
+    <p class="mt-1 text-sm text-stone-500 dark:text-stone-400" data-i18n="pageSubtitle">Datenquellen, Ansicht, Theme und Daten verwalten.</p>
   </div>
 
   <!-- Datenquellen -->
   <section class="mb-8">
-    <h2 class="mb-3 text-lg font-semibold text-stone-800 dark:text-stone-100">Datenquellen</h2>
+    <h2 class="mb-3 text-lg font-semibold text-stone-800 dark:text-stone-100" data-i18n="sectionSources">Datenquellen</h2>
     <div id="sources-list" class="space-y-4"></div>
   </section>
 
   <!-- Ansicht -->
   <section class="mb-8 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
-    <h2 class="text-lg font-semibold text-stone-800 dark:text-stone-100">Ansicht</h2>
-    <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">Welche Ansicht beim App-Start gezeigt wird.</p>
+    <h2 class="text-lg font-semibold text-stone-800 dark:text-stone-100" data-i18n="sectionView">Ansicht</h2>
+    <p class="mt-1 text-xs text-stone-500 dark:text-stone-400" data-i18n="viewSubtitle">Welche Ansicht beim App-Start gezeigt wird.</p>
     <div class="mt-4 grid gap-4 sm:grid-cols-2">
       <label class="block text-sm">
-        <span class="font-medium text-stone-700 dark:text-stone-200">Standard-Ansicht</span>
+        <span class="font-medium text-stone-700 dark:text-stone-200" data-i18n="labelDefaultView">Standard-Ansicht</span>
         <select id="default-view" class="mt-1 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 shadow-inner focus:border-green-500 focus:outline-none">
-          <option value="grid">Kacheln</option>
-          <option value="list">Liste</option>
-          <option value="cards">Karten</option>
+          <option value="grid" data-i18n="optGrid">Kacheln</option>
+          <option value="list" data-i18n="optList">Liste</option>
+          <option value="cards" data-i18n="optCards">Karten</option>
         </select>
       </label>
       <label class="block text-sm">
-        <span class="font-medium text-stone-700 dark:text-stone-200">Standard-Kartenvariante</span>
+        <span class="font-medium text-stone-700 dark:text-stone-200" data-i18n="labelDefaultCardVariant">Standard-Kartenvariante</span>
         <select id="default-card-variant" class="mt-1 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 shadow-inner focus:border-green-500 focus:outline-none">
-          <option value="poly">Pflanzenkarten</option>
-          <option value="stripe">Streifenkarten</option>
-          <option value="baumscheibe">Baumscheibe</option>
+          <option value="poly" data-i18n="optPoly">Pflanzenkarten</option>
+          <option value="stripe" data-i18n="optStripe">Streifenkarten</option>
+          <option value="baumscheibe" data-i18n="optBaumscheibe">Baumscheibe</option>
         </select>
       </label>
     </div>
@@ -39,43 +39,43 @@ import Layout from '../layouts/Layout.astro';
 
   <!-- Theme -->
   <section class="mb-8 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
-    <h2 class="text-lg font-semibold text-stone-800 dark:text-stone-100">Theme</h2>
-    <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">"Auto" folgt der System­einstellung deines Geräts.</p>
+    <h2 class="text-lg font-semibold text-stone-800 dark:text-stone-100" data-i18n="sectionTheme">Theme</h2>
+    <p class="mt-1 text-xs text-stone-500 dark:text-stone-400" data-i18n="themeSubtitle">"Auto" folgt der System­einstellung deines Geräts.</p>
     <div class="mt-3 flex flex-wrap gap-4 text-sm">
-      <label class="inline-flex items-center gap-2"><input type="radio" name="theme" value="auto" class="theme-radio accent-green-600" /> Auto</label>
-      <label class="inline-flex items-center gap-2"><input type="radio" name="theme" value="light" class="theme-radio accent-green-600" /> Hell</label>
-      <label class="inline-flex items-center gap-2"><input type="radio" name="theme" value="dark" class="theme-radio accent-green-600" /> Dunkel</label>
+      <label class="inline-flex items-center gap-2"><input type="radio" name="theme" value="auto" class="theme-radio accent-green-600" /> <span data-i18n="themeAuto">Auto</span></label>
+      <label class="inline-flex items-center gap-2"><input type="radio" name="theme" value="light" class="theme-radio accent-green-600" /> <span data-i18n="themeLight">Hell</span></label>
+      <label class="inline-flex items-center gap-2"><input type="radio" name="theme" value="dark" class="theme-radio accent-green-600" /> <span data-i18n="themeDark">Dunkel</span></label>
     </div>
   </section>
 
   <!-- Privatsphäre -->
   <section class="mb-8 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
-    <h2 class="text-lg font-semibold text-stone-800 dark:text-stone-100">Privatsphäre</h2>
+    <h2 class="text-lg font-semibold text-stone-800 dark:text-stone-100" data-i18n="sectionPrivacy">Privatsphäre</h2>
     <label class="mt-3 inline-flex items-start gap-2 text-sm">
       <input type="checkbox" id="plausible-optout" class="mt-0.5 accent-green-600" />
       <span>
-        <span class="font-medium text-stone-700 dark:text-stone-200">Plausible-Reichweitenmessung deaktivieren</span>
-        <span class="block text-xs text-stone-500 dark:text-stone-400">Plausible erfasst keine personenbezogenen Daten — falls du trotzdem nicht gezählt werden möchtest, hier den Haken setzen. Details in der <a href="/datenschutz" class="text-green-700 dark:text-green-400 hover:underline">Datenschutzerklärung</a>.</span>
+        <span class="font-medium text-stone-700 dark:text-stone-200" data-i18n="privacyOptOutLabel">Plausible-Reichweitenmessung deaktivieren</span>
+        <span class="block text-xs text-stone-500 dark:text-stone-400"><span data-i18n="privacyOptOutDescPre">Plausible erfasst keine personenbezogenen Daten — falls du trotzdem nicht gezählt werden möchtest, hier den Haken setzen. Details in der</span> <a href="/datenschutz" data-i18n="privacyOptOutDescLink" class="text-green-700 dark:text-green-400 hover:underline">Datenschutzerklärung</a>.</span>
       </span>
     </label>
   </section>
 
   <div class="mb-12 flex gap-3">
-    <button id="btn-save" class="rounded-lg bg-green-700 px-5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">Einstellungen speichern</button>
+    <button id="btn-save" data-i18n="btnSaveSettings" class="rounded-lg bg-green-700 px-5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">Einstellungen speichern</button>
   </div>
 
   <!-- Daten -->
-  <section class="mb-8 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
-    <h2 class="text-lg font-semibold text-stone-800 dark:text-stone-100">Daten</h2>
-    <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">Alle Pflanzen­daten und Gilden leben lokal in deinem Browser (IndexedDB).</p>
+  <section id="daten-section" class="mb-8 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+    <h2 class="text-lg font-semibold text-stone-800 dark:text-stone-100" data-i18n="sectionData">Daten</h2>
+    <p class="mt-1 text-xs text-stone-500 dark:text-stone-400" data-i18n="dataSubtitle">Alle Pflanzen­daten und Gilden leben lokal in deinem Browser (IndexedDB).</p>
 
     <dl class="mt-4 grid gap-2 text-sm sm:grid-cols-2">
       <div>
-        <dt class="text-xs font-medium text-stone-500 dark:text-stone-400">Pflanzen­datensätze</dt>
+        <dt class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="statLabelPlants">Pflanzen­datensätze</dt>
         <dd id="stats-plants" class="font-mono text-stone-800 dark:text-stone-100">…</dd>
       </div>
       <div>
-        <dt class="text-xs font-medium text-stone-500 dark:text-stone-400">Speicherverbrauch</dt>
+        <dt class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="statLabelStorage">Speicherverbrauch</dt>
         <dd id="stats-storage" class="font-mono text-stone-800 dark:text-stone-100">…</dd>
       </div>
     </dl>
@@ -83,32 +83,32 @@ import Layout from '../layouts/Layout.astro';
     <p id="last-backup-info" class="mt-3 text-xs text-stone-500 dark:text-stone-400"></p>
 
     <div class="mt-4 flex flex-wrap gap-2">
-      <button id="btn-backup" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Backup herunterladen (JSON)</button>
-      <button id="btn-share-backup" hidden class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Backup teilen…</button>
+      <button id="btn-backup" data-i18n="btnBackupDownload" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Backup herunterladen (JSON)</button>
+      <button id="btn-share-backup" hidden data-i18n="btnShareBackup" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Backup teilen…</button>
       <label class="cursor-pointer rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">
-        Backup einlesen…
+        <span data-i18n="btnRestoreLabel">Backup einlesen…</span>
         <input type="file" id="restore-input" accept=".json,application/json" class="hidden" />
       </label>
-      <button id="btn-reload-master" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Golden Master neu laden</button>
+      <button id="btn-reload-master" data-i18n="btnReloadMaster" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Golden Master neu laden</button>
     </div>
 
     <div class="mt-6 rounded-lg border border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4">
-      <h3 class="text-sm font-semibold text-red-800 dark:text-red-200">Danger Zone</h3>
-      <p class="mt-1 text-xs text-red-700 dark:text-red-300">Löscht alle Pflanzendatensätze und deine Einstellungen unwiderruflich.</p>
-      <button id="btn-clear-all" class="mt-3 rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white ring-1 ring-red-700 hover:bg-red-700">Alle Daten löschen</button>
+      <h3 class="text-sm font-semibold text-red-800 dark:text-red-200" data-i18n="dangerZoneTitle">Danger Zone</h3>
+      <p class="mt-1 text-xs text-red-700 dark:text-red-300" data-i18n="dangerZoneDesc">Löscht alle Pflanzendatensätze und deine Einstellungen unwiderruflich.</p>
+      <button id="btn-clear-all" data-i18n="btnClearAll" class="mt-3 rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white ring-1 ring-red-700 hover:bg-red-700">Alle Daten löschen</button>
     </div>
   </section>
 
   <!-- Sync -->
   <section class="mb-8 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
-    <h2 class="text-lg font-semibold text-stone-800 dark:text-stone-100">Sync</h2>
-    <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">Pflanzen und Gilden in einen externen Speicher sichern — manuell oder automatisch beim Verlassen der App.</p>
+    <h2 class="text-lg font-semibold text-stone-800 dark:text-stone-100" data-i18n="sectionSync">Sync</h2>
+    <p class="mt-1 text-xs text-stone-500 dark:text-stone-400" data-i18n="syncSubtitle">Pflanzen und Gilden in einen externen Speicher sichern — manuell oder automatisch beim Verlassen der App.</p>
 
     <!-- Auto-Sync Toggle -->
     <div class="mt-5 flex items-start justify-between gap-4">
       <div class="min-w-0">
-        <p class="text-sm font-medium text-stone-700 dark:text-stone-200">Automatisch synchronisieren</p>
-        <p class="mt-0.5 text-xs text-stone-500 dark:text-stone-400">
+        <p class="text-sm font-medium text-stone-700 dark:text-stone-200" data-i18n="autoSyncLabel">Automatisch synchronisieren</p>
+        <p class="mt-0.5 text-xs text-stone-500 dark:text-stone-400" data-i18n="autoSyncDesc">
           Beim Tab-Wechsel oder Schließen automatisch zum ersten konfigurierten Anbieter synchronisieren
           (Priorität: WebDAV → GitHub Gist).
         </p>
@@ -122,77 +122,77 @@ import Layout from '../layouts/Layout.astro';
 
     <!-- WebDAV -->
     <details class="mt-5 rounded-lg border border-stone-200 dark:border-stone-700 p-4">
-      <summary class="cursor-pointer text-sm font-semibold text-stone-700 dark:text-stone-200">WebDAV (z.B. Nextcloud)</summary>
+      <summary class="cursor-pointer text-sm font-semibold text-stone-700 dark:text-stone-200" data-i18n="webdavSummary">WebDAV (z.B. Nextcloud)</summary>
       <p class="mt-2 text-xs text-stone-500 dark:text-stone-400">
-        Pusht/zieht das JSON-Backup direkt in deinen WebDAV-Speicher. Zugangsdaten bleiben
-        im Browser (<code>localStorage</code>), werden nicht übertragen außer ans angegebene Ziel.
-        Dein Server muss <strong>CORS</strong> für die Domain dieser App erlauben — bei Nextcloud
-        z.B. via <code>occ config:system:set cors.allowed-domains</code>.
+        <span data-i18n="webdavDescPre">Pusht/zieht das JSON-Backup direkt in deinen WebDAV-Speicher. Zugangsdaten bleiben
+        im Browser (</span><code>localStorage</code><span data-i18n="webdavDescMid">), werden nicht übertragen außer ans angegebene Ziel.
+        Dein Server muss</span> <strong data-i18n="webdavDescCors">CORS</strong> <span data-i18n="webdavDescPost">für die Domain dieser App erlauben — bei Nextcloud
+        z.B. via</span> <code>occ config:system:set cors.allowed-domains</code>.
       </p>
       <div class="mt-3 grid gap-3 sm:grid-cols-2">
         <label class="block text-xs sm:col-span-2">
-          <span class="font-medium text-stone-500 dark:text-stone-400">Ziel-URL (vollständige Datei-URL)</span>
+          <span class="font-medium text-stone-500 dark:text-stone-400" data-i18n="webdavUrlLabel">Ziel-URL (vollständige Datei-URL)</span>
           <input id="webdav-url" type="url" placeholder="https://cloud.example.com/remote.php/dav/files/USER/permaguild-backup.json" class="mt-1 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 font-mono text-xs shadow-inner focus:border-green-500 focus:outline-none" />
         </label>
         <label class="block text-xs">
-          <span class="font-medium text-stone-500 dark:text-stone-400">Benutzername</span>
+          <span class="font-medium text-stone-500 dark:text-stone-400" data-i18n="webdavUserLabel">Benutzername</span>
           <input id="webdav-user" type="text" autocomplete="off" class="mt-1 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none" />
         </label>
         <label class="block text-xs">
-          <span class="font-medium text-stone-500 dark:text-stone-400">Passwort / App-Token</span>
+          <span class="font-medium text-stone-500 dark:text-stone-400" data-i18n="webdavPassLabel">Passwort / App-Token</span>
           <input id="webdav-pass" type="password" autocomplete="off" class="mt-1 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none" />
         </label>
       </div>
       <div class="mt-3 flex flex-wrap items-center gap-2">
-        <button id="btn-webdav-save-creds" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Zugang merken</button>
-        <button id="btn-webdav-clear-creds" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Zugang vergessen</button>
+        <button id="btn-webdav-save-creds" data-i18n="btnWebdavSaveCreds" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Zugang merken</button>
+        <button id="btn-webdav-clear-creds" data-i18n="btnWebdavClearCreds" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Zugang vergessen</button>
         <span class="h-4 w-px bg-stone-300 dark:bg-stone-700"></span>
-        <button id="btn-webdav-push" class="rounded-lg bg-green-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-green-800">Backup hochladen ↑</button>
-        <button id="btn-webdav-pull" class="rounded-lg bg-blue-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-blue-800">Backup abrufen ↓</button>
+        <button id="btn-webdav-push" data-i18n="btnWebdavPush" class="rounded-lg bg-green-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-green-800">Backup hochladen ↑</button>
+        <button id="btn-webdav-pull" data-i18n="btnWebdavPull" class="rounded-lg bg-blue-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-blue-800">Backup abrufen ↓</button>
         <span id="webdav-status" class="text-xs text-stone-500 dark:text-stone-400"></span>
       </div>
     </details>
 
     <!-- Lokale Datei (File System Access API, nur Chromium) -->
     <details id="details-fsa" class="mt-4 rounded-lg border border-stone-200 dark:border-stone-700 p-4" hidden>
-      <summary class="cursor-pointer text-sm font-semibold text-stone-700 dark:text-stone-200">Lokale Datei (Chrome / Edge)</summary>
-      <p class="mt-2 text-xs text-stone-500 dark:text-stone-400">
+      <summary class="cursor-pointer text-sm font-semibold text-stone-700 dark:text-stone-200" data-i18n="fsaSummary">Lokale Datei (Chrome / Edge)</summary>
+      <p class="mt-2 text-xs text-stone-500 dark:text-stone-400" data-i18n="fsaDesc">
         Schreibt das Backup direkt in eine Datei auf deinem Gerät oder liest es von dort.
         Die Datei kannst du z.&nbsp;B. in einem Cloud-Ordner ablegen (iCloud Drive, Dropbox,
         Google Drive Offline-Ordner). Nur in Chromium-basierten Browsern verfügbar.
       </p>
       <div class="mt-3 flex flex-wrap items-center gap-2">
-        <button id="btn-fsa-write" class="rounded-lg bg-green-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-green-800">In Datei speichern ↑</button>
-        <button id="btn-fsa-read" class="rounded-lg bg-blue-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-blue-800">Aus Datei laden ↓</button>
+        <button id="btn-fsa-write" data-i18n="btnFsaWrite" class="rounded-lg bg-green-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-green-800">In Datei speichern ↑</button>
+        <button id="btn-fsa-read" data-i18n="btnFsaRead" class="rounded-lg bg-blue-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-blue-800">Aus Datei laden ↓</button>
         <span id="fsa-status" class="text-xs text-stone-500 dark:text-stone-400"></span>
       </div>
     </details>
 
     <!-- GitHub Gist -->
     <details class="mt-4 rounded-lg border border-stone-200 dark:border-stone-700 p-4">
-      <summary class="cursor-pointer text-sm font-semibold text-stone-700 dark:text-stone-200">GitHub Gist (geräteübergreifend)</summary>
+      <summary class="cursor-pointer text-sm font-semibold text-stone-700 dark:text-stone-200" data-i18n="gistSummary">GitHub Gist (geräteübergreifend)</summary>
       <p class="mt-2 text-xs text-stone-500 dark:text-stone-400">
-        Speichert das Backup als privates GitHub Gist. Du brauchst einen GitHub-Account und ein
-        <a href="https://github.com/settings/tokens/new?scopes=gist&description=Perma+Guild+Forge" target="_blank" rel="noopener" class="text-green-700 dark:text-green-400 hover:underline">Personal Access Token</a>
-        mit dem Scope <code>gist</code>. Beim ersten Hochladen wird ein neues Gist angelegt
-        und die ID automatisch gespeichert — danach einfach wieder drücken.
+        <span data-i18n="gistDescPre">Speichert das Backup als privates GitHub Gist. Du brauchst einen GitHub-Account und ein</span>
+        <a href="https://github.com/settings/tokens/new?scopes=gist&description=Perma+Guild+Forge" target="_blank" rel="noopener" data-i18n="gistDescLink" class="text-green-700 dark:text-green-400 hover:underline">Personal Access Token</a>
+        <span data-i18n="gistDescPost">mit dem Scope</span> <code>gist</code><span data-i18n="gistDescPost2">. Beim ersten Hochladen wird ein neues Gist angelegt
+        und die ID automatisch gespeichert — danach einfach wieder drücken.</span>
       </p>
       <div class="mt-3 grid gap-3 sm:grid-cols-2">
         <label class="block text-xs">
-          <span class="font-medium text-stone-500 dark:text-stone-400">GitHub Token (PAT)</span>
+          <span class="font-medium text-stone-500 dark:text-stone-400" data-i18n="gistTokenLabel">GitHub Token (PAT)</span>
           <input id="gist-token" type="password" autocomplete="off" placeholder="ghp_…" class="mt-1 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 font-mono text-xs shadow-inner focus:border-green-500 focus:outline-none" />
         </label>
         <label class="block text-xs">
-          <span class="font-medium text-stone-500 dark:text-stone-400">Gist-ID (leer = wird beim ersten Upload gesetzt)</span>
-          <input id="gist-id" type="text" autocomplete="off" placeholder="automatisch gesetzt" class="mt-1 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 font-mono text-xs shadow-inner focus:border-green-500 focus:outline-none" />
+          <span class="font-medium text-stone-500 dark:text-stone-400" data-i18n="gistIdLabel">Gist-ID (leer = wird beim ersten Upload gesetzt)</span>
+          <input id="gist-id" type="text" autocomplete="off" data-i18n-placeholder="gistIdPlaceholder" placeholder="automatisch gesetzt" class="mt-1 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 font-mono text-xs shadow-inner focus:border-green-500 focus:outline-none" />
         </label>
       </div>
       <div class="mt-3 flex flex-wrap items-center gap-2">
-        <button id="btn-gist-save-creds" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Token merken</button>
-        <button id="btn-gist-clear-creds" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Token vergessen</button>
+        <button id="btn-gist-save-creds" data-i18n="btnGistSaveCreds" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Token merken</button>
+        <button id="btn-gist-clear-creds" data-i18n="btnGistClearCreds" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Token vergessen</button>
         <span class="h-4 w-px bg-stone-300 dark:bg-stone-700"></span>
-        <button id="btn-gist-push" class="rounded-lg bg-green-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-green-800">Zu Gist hochladen ↑</button>
-        <button id="btn-gist-pull" class="rounded-lg bg-blue-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-blue-800">Von Gist abrufen ↓</button>
+        <button id="btn-gist-push" data-i18n="btnGistPush" class="rounded-lg bg-green-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-green-800">Zu Gist hochladen ↑</button>
+        <button id="btn-gist-pull" data-i18n="btnGistPull" class="rounded-lg bg-blue-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-blue-800">Von Gist abrufen ↓</button>
         <span id="gist-status" class="text-xs text-stone-500 dark:text-stone-400"></span>
       </div>
     </details>
@@ -211,6 +211,20 @@ import Layout from '../layouts/Layout.astro';
   import { getAllPlants, importPlants, clearAllPlants, importGuilds } from '../lib/db';
   import { buildBackupJson, rememberSyncAt, isAutoSyncEnabled } from '../lib/sync';
   import { escapeHtml } from '../lib/html';
+  import { createT, applyStaticI18n, getLang } from '../lib/i18n/core';
+  import { settingsDict } from '../lib/i18n/dict-settings';
+
+  const t = createT(settingsDict);
+  applyStaticI18n(settingsDict);
+
+  // DEFAULT_SOURCES' name/description (src/lib/settings.ts) are German-only —
+  // that file is shared runtime data, not display markup, so we translate at
+  // this render call site instead of touching it. Keyed by source id.
+  const SOURCE_DESC_KEY: Record<string, string> = {
+    wikidata: 'sourceDescWikidata',
+    pfaf: 'sourceDescPfaf',
+    naturadb: 'sourceDescNaturadb',
+  };
 
   const sourcesList = document.getElementById('sources-list')!;
   const toast = document.getElementById('toast')!;
@@ -249,19 +263,19 @@ import Layout from '../layouts/Layout.astro';
               <h3 class="text-sm font-bold text-stone-800 dark:text-stone-100">${src.name}</h3>
               ${src.url ? `<a href="${src.url}" target="_blank" rel="noopener" class="text-xs text-stone-400 dark:text-stone-500 hover:text-green-700 hover:underline">${new URL(src.url).hostname}</a>` : ''}
             </div>
-            <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">${src.description}</p>
+            <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">${SOURCE_DESC_KEY[src.id] ? t(SOURCE_DESC_KEY[src.id]) : src.description}</p>
           </div>
         </div>
         ${src.needsApiKey ? `
           <div class="mt-3">
-            <label class="block text-xs font-medium text-stone-500 dark:text-stone-400">API Key
-              <input type="password" class="src-apikey mt-0.5 block w-full max-w-sm rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" data-idx="${i}" value="${escapeHtml(src.apiKey)}" placeholder="API Key eingeben..." />
+            <label class="block text-xs font-medium text-stone-500 dark:text-stone-400">${t('apiKeyLabel')}
+              <input type="password" class="src-apikey mt-0.5 block w-full max-w-sm rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" data-idx="${i}" value="${escapeHtml(src.apiKey)}" placeholder="${t('apiKeyPlaceholder')}" />
             </label>
           </div>
         ` : ''}
         <div class="mt-2 flex gap-2">
           <span class="inline-block rounded-full px-2 py-0.5 text-xs font-medium ${src.id === 'wikidata' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' : 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-200'}">
-            ${src.id === 'wikidata' ? 'Direkt (CORS-frei)' : 'Über Server-Proxy'}
+            ${src.id === 'wikidata' ? t('sourceDirectLabel') : t('sourceProxyLabel')}
           </span>
         </div>
       </div>
@@ -327,7 +341,7 @@ import Layout from '../layouts/Layout.astro';
 
     try { localStorage.setItem('auto-sync-enabled', autoSyncToggle.checked ? 'true' : 'false'); } catch {}
 
-    showToast('Einstellungen gespeichert');
+    showToast(t('toastSettingsSaved'));
   });
 
   // ── Daten: Backup ───────────────────────────────────────────────────────
@@ -344,8 +358,8 @@ import Layout from '../layouts/Layout.astro';
     let last: string | null = null;
     try { last = localStorage.getItem('last-backup-at'); } catch {}
     el.textContent = last
-      ? `Letztes Backup: ${new Date(last).toLocaleString('de-DE')}`
-      : 'Noch kein Backup angelegt.';
+      ? t('lastBackupPrefix', { date: new Date(last).toLocaleString(getLang() === 'en' ? 'en-US' : 'de-DE') })
+      : t('lastBackupNone');
   }
 
   function renderLastSyncInfo() {
@@ -359,7 +373,8 @@ import Layout from '../layouts/Layout.astro';
     } catch {}
     if (!at) { el.textContent = ''; return; }
     const providerLabel = provider === 'webdav' ? 'WebDAV' : provider === 'gist' ? 'GitHub Gist' : provider ?? '';
-    el.textContent = `Letzter Auto-Sync: ${new Date(at).toLocaleString('de-DE')}${providerLabel ? ` via ${providerLabel}` : ''}`;
+    el.textContent = t('lastSyncPrefix', { date: new Date(at).toLocaleString(getLang() === 'en' ? 'en-US' : 'de-DE') })
+      + (providerLabel ? t('lastSyncVia', { provider: providerLabel }) : '');
   }
 
   function downloadBackupBlob(blob: Blob, filename: string) {
@@ -394,7 +409,7 @@ import Layout from '../layouts/Layout.astro';
           renderLastBackup();
         }
       } catch (err) {
-        if ((err as Error).name !== 'AbortError') alert(`Teilen fehlgeschlagen: ${err}`);
+        if ((err as Error).name !== 'AbortError') alert(t('shareFailed', { err: String(err) }));
       }
     });
   }
@@ -434,8 +449,8 @@ import Layout from '../layouts/Layout.astro';
       localStorage.setItem('webdav-url', webdavUrl.value.trim());
       localStorage.setItem('webdav-user', webdavUser.value);
       localStorage.setItem('webdav-pass', webdavPass.value);
-      setWebdavStatus('Zugang gemerkt.', 'ok');
-    } catch (err) { setWebdavStatus(`Fehler: ${err}`, 'err'); }
+      setWebdavStatus(t('webdavCredsSaved'), 'ok');
+    } catch (err) { setWebdavStatus(t('webdavErrorUpload', { msg: String(err) }), 'err'); }
   });
   document.getElementById('btn-webdav-clear-creds')!.addEventListener('click', () => {
     try {
@@ -443,13 +458,13 @@ import Layout from '../layouts/Layout.astro';
       localStorage.removeItem('webdav-user');
       localStorage.removeItem('webdav-pass');
       webdavUrl.value = ''; webdavUser.value = ''; webdavPass.value = '';
-      setWebdavStatus('Zugang vergessen.', 'idle');
+      setWebdavStatus(t('webdavCredsCleared'), 'idle');
     } catch {}
   });
 
   document.getElementById('btn-webdav-push')!.addEventListener('click', async () => {
-    if (!webdavUrl.value || !webdavUser.value) { setWebdavStatus('URL und Benutzer fehlen.', 'err'); return; }
-    setWebdavStatus('Lade hoch…');
+    if (!webdavUrl.value || !webdavUser.value) { setWebdavStatus(t('webdavMissingFields'), 'err'); return; }
+    setWebdavStatus(t('webdavUploading'));
     try {
       const json = await buildBackupJson();
       const res = await fetch(webdavUrl.value, {
@@ -460,16 +475,16 @@ import Layout from '../layouts/Layout.astro';
       if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
       rememberSyncAt('webdav');
       renderLastBackup();
-      setWebdavStatus(`Hochgeladen (${res.status}).`, 'ok');
+      setWebdavStatus(t('webdavUploaded', { status: res.status }), 'ok');
     } catch (err) {
-      setWebdavStatus(`Fehler: ${(err as Error).message}. Prüfe URL, Zugangsdaten und CORS am Server.`, 'err');
+      setWebdavStatus(t('webdavErrorUpload', { msg: (err as Error).message }), 'err');
     }
   });
 
   document.getElementById('btn-webdav-pull')!.addEventListener('click', async () => {
-    if (!webdavUrl.value || !webdavUser.value) { setWebdavStatus('URL und Benutzer fehlen.', 'err'); return; }
-    if (!confirm('Backup vom Server abrufen und lokale Pflanzen + Settings überschreiben?')) return;
-    setWebdavStatus('Lade herunter…');
+    if (!webdavUrl.value || !webdavUser.value) { setWebdavStatus(t('webdavMissingFields'), 'err'); return; }
+    if (!confirm(t('webdavConfirmPull'))) return;
+    setWebdavStatus(t('webdavDownloading'));
     try {
       const res = await fetch(webdavUrl.value, {
         method: 'GET',
@@ -478,7 +493,7 @@ import Layout from '../layouts/Layout.astro';
       if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
       const data = await res.json();
       const restoredPlants = Array.isArray(data) ? data : (data.plants ?? []);
-      if (!Array.isArray(restoredPlants)) throw new Error('Ungültiges Backup-Format');
+      if (!Array.isArray(restoredPlants)) throw new Error(t('invalidBackupFormat'));
       const restoredGuilds = Array.isArray(data) ? [] : (data.guilds ?? []);
       await importPlants(restoredPlants);
       if (restoredGuilds.length) await importGuilds(restoredGuilds);
@@ -488,9 +503,9 @@ import Layout from '../layouts/Layout.astro';
         renderSources(); renderPrefs();
       }
       await renderStats();
-      setWebdavStatus(`${restoredPlants.length} Pflanzen, ${restoredGuilds.length} Gilden wiederhergestellt.`, 'ok');
+      setWebdavStatus(t('restoredCount', { plants: restoredPlants.length, guilds: restoredGuilds.length }), 'ok');
     } catch (err) {
-      setWebdavStatus(`Fehler: ${(err as Error).message}. Prüfe URL, Zugangsdaten und CORS.`, 'err');
+      setWebdavStatus(t('webdavErrorDownload', { msg: (err as Error).message }), 'err');
     }
   });
 
@@ -523,9 +538,9 @@ import Layout from '../layouts/Layout.astro';
         await writable.close();
         rememberSyncAt('fsa');
         renderLastBackup();
-        setFsaStatus('Gespeichert.', 'ok');
+        setFsaStatus(t('fsaSaved'), 'ok');
       } catch (err) {
-        if ((err as Error).name !== 'AbortError') setFsaStatus(`Fehler: ${err}`, 'err');
+        if ((err as Error).name !== 'AbortError') setFsaStatus(t('genericError', { msg: String(err) }), 'err');
       }
     });
 
@@ -539,9 +554,9 @@ import Layout from '../layouts/Layout.astro';
         const text = await (file as File).text();
         const data = JSON.parse(text);
         const plants = Array.isArray(data) ? data : (data.plants ?? []);
-        if (!Array.isArray(plants)) throw new Error('Ungültiges Format');
+        if (!Array.isArray(plants)) throw new Error(t('fsaInvalidFormat'));
         const guilds = Array.isArray(data) ? [] : (data.guilds ?? []);
-        if (!confirm(`${plants.length} Pflanzen${guilds.length ? `, ${guilds.length} Gilden` : ''} aus Datei einlesen und bestehende überschreiben?`)) return;
+        if (!confirm(t('fsaConfirmRead', { plants: plants.length, guildPart: guilds.length ? t('restoreGuildPart', { n: guilds.length }) : '' }))) return;
         await importPlants(plants);
         if (guilds.length) await importGuilds(guilds);
         if (!Array.isArray(data) && data.settings) {
@@ -550,9 +565,9 @@ import Layout from '../layouts/Layout.astro';
           renderSources(); renderPrefs();
         }
         await renderStats();
-        setFsaStatus(`${plants.length} Pflanzen, ${guilds.length} Gilden wiederhergestellt.`, 'ok');
+        setFsaStatus(t('restoredCount', { plants: plants.length, guilds: guilds.length }), 'ok');
       } catch (err) {
-        if ((err as Error).name !== 'AbortError') setFsaStatus(`Fehler: ${err}`, 'err');
+        if ((err as Error).name !== 'AbortError') setFsaStatus(t('genericError', { msg: String(err) }), 'err');
       }
     });
   }
@@ -582,8 +597,8 @@ import Layout from '../layouts/Layout.astro';
     try {
       localStorage.setItem('gist-token', gistTokenInput.value.trim());
       localStorage.setItem('gist-id', gistIdInput.value.trim());
-      setGistStatus('Token gemerkt.', 'ok');
-    } catch (err) { setGistStatus(`Fehler: ${err}`, 'err'); }
+      setGistStatus(t('gistTokenSaved'), 'ok');
+    } catch (err) { setGistStatus(t('genericError', { msg: String(err) }), 'err'); }
   });
 
   document.getElementById('btn-gist-clear-creds')!.addEventListener('click', () => {
@@ -591,14 +606,14 @@ import Layout from '../layouts/Layout.astro';
       localStorage.removeItem('gist-token');
       localStorage.removeItem('gist-id');
       gistTokenInput.value = ''; gistIdInput.value = '';
-      setGistStatus('Token vergessen.', 'idle');
+      setGistStatus(t('gistTokenCleared'), 'idle');
     } catch {}
   });
 
   document.getElementById('btn-gist-push')!.addEventListener('click', async () => {
     const token = gistTokenInput.value.trim();
-    if (!token) { setGistStatus('Token fehlt.', 'err'); return; }
-    setGistStatus('Lade hoch…');
+    if (!token) { setGistStatus(t('gistTokenMissing'), 'err'); return; }
+    setGistStatus(t('gistUploading'));
     try {
       const content = await buildBackupJson();
       const id = gistIdInput.value.trim();
@@ -623,18 +638,18 @@ import Layout from '../layouts/Layout.astro';
       }
       rememberSyncAt('gist');
       renderLastBackup();
-      setGistStatus(`Hochgeladen — Gist ${String(result.id).slice(0, 8)}…`, 'ok');
+      setGistStatus(t('gistUploaded', { id: String(result.id).slice(0, 8) }), 'ok');
     } catch (err) {
-      setGistStatus(`Fehler: ${(err as Error).message}`, 'err');
+      setGistStatus(t('gistErrorUpload', { msg: (err as Error).message }), 'err');
     }
   });
 
   document.getElementById('btn-gist-pull')!.addEventListener('click', async () => {
     const token = gistTokenInput.value.trim();
     const id = gistIdInput.value.trim();
-    if (!token || !id) { setGistStatus('Token und Gist-ID fehlen.', 'err'); return; }
-    if (!confirm('Backup von GitHub Gist abrufen und lokale Daten überschreiben?')) return;
-    setGistStatus('Lade herunter…');
+    if (!token || !id) { setGistStatus(t('gistTokenIdMissing'), 'err'); return; }
+    if (!confirm(t('gistConfirmPull'))) return;
+    setGistStatus(t('gistDownloading'));
     try {
       const res = await fetch(`https://api.github.com/gists/${id}`, {
         headers: {
@@ -645,10 +660,10 @@ import Layout from '../layouts/Layout.astro';
       if (!res.ok) throw new Error(`GitHub API ${res.status}`);
       const gist = await res.json();
       const raw: string | undefined = gist.files?.[GIST_FILENAME]?.content;
-      if (!raw) throw new Error(`Datei "${GIST_FILENAME}" nicht im Gist gefunden`);
+      if (!raw) throw new Error(t('gistFileNotFound', { filename: GIST_FILENAME }));
       const data = JSON.parse(raw);
       const plants = Array.isArray(data) ? data : (data.plants ?? []);
-      if (!Array.isArray(plants)) throw new Error('Ungültiges Backup-Format');
+      if (!Array.isArray(plants)) throw new Error(t('invalidBackupFormat'));
       const guilds = Array.isArray(data) ? [] : (data.guilds ?? []);
       await importPlants(plants);
       if (guilds.length) await importGuilds(guilds);
@@ -658,9 +673,9 @@ import Layout from '../layouts/Layout.astro';
         renderSources(); renderPrefs();
       }
       await renderStats();
-      setGistStatus(`${plants.length} Pflanzen, ${guilds.length} Gilden wiederhergestellt.`, 'ok');
+      setGistStatus(t('restoredCount', { plants: plants.length, guilds: guilds.length }), 'ok');
     } catch (err) {
-      setGistStatus(`Fehler: ${(err as Error).message}`, 'err');
+      setGistStatus(t('gistErrorDownload', { msg: (err as Error).message }), 'err');
     }
   });
 
@@ -674,13 +689,13 @@ import Layout from '../layouts/Layout.astro';
       const data = JSON.parse(text);
       const plants = Array.isArray(data) ? data : (data.plants ?? []);
       if (!Array.isArray(plants) || plants.length === 0) {
-        throw new Error('Keine Pflanzen im Backup gefunden');
+        throw new Error(t('restoreNoPlants'));
       }
       const guilds: any[] = Array.isArray(data) ? [] : (data.guilds ?? []);
       const restoreSettings = !Array.isArray(data) && data.settings;
-      const guildPart = guilds.length ? ` + ${guilds.length} Gilden` : '';
-      const settingsPart = restoreSettings ? ' + Einstellungen' : '';
-      const msg = `${plants.length} Pflanzen${guildPart}${settingsPart} aus Backup einlesen? Bestehende Einträge mit gleicher ID werden überschrieben.`;
+      const guildPart = guilds.length ? t('restoreGuildPart', { n: guilds.length }) : '';
+      const settingsPart = restoreSettings ? t('restoreSettingsPart') : '';
+      const msg = t('restoreConfirm', { plants: plants.length, guildPart, settingsPart });
       if (!confirm(msg)) { input.value = ''; return; }
       await importPlants(plants);
       if (guilds.length) await importGuilds(guilds);
@@ -689,10 +704,10 @@ import Layout from '../layouts/Layout.astro';
         settings = loadSettings();
         renderSources(); renderPrefs();
       }
-      showToast(`${plants.length} Pflanzen${guildPart} wiederhergestellt`);
+      showToast(t('restoreToast', { plants: plants.length, guildPart }));
       await renderStats();
     } catch (err) {
-      alert(`Backup-Import fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`);
+      alert(t('restoreFailed', { msg: err instanceof Error ? err.message : String(err) }));
     } finally {
       input.value = '';
     }
@@ -700,24 +715,24 @@ import Layout from '../layouts/Layout.astro';
 
   // ── Daten: Golden Master neu laden ──────────────────────────────────────
   document.getElementById('btn-reload-master')!.addEventListener('click', async () => {
-    if (!confirm('Golden-Master-Pflanzen erneut importieren? Bestehende Pflanzen mit gleicher ID werden überschrieben.')) return;
+    if (!confirm(t('reloadMasterConfirm'))) return;
     try {
       const res = await fetch('/plants-db.json');
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const plants = Array.isArray(data) ? data : (data.plants ?? []);
       await importPlants(plants);
-      showToast(`${plants.length} Pflanzen importiert`);
+      showToast(t('reloadMasterToast', { n: plants.length }));
       await renderStats();
     } catch (err) {
-      alert(`Import fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`);
+      alert(t('reloadMasterFailed', { msg: err instanceof Error ? err.message : String(err) }));
     }
   });
 
   // ── Daten: Alles löschen ────────────────────────────────────────────────
   document.getElementById('btn-clear-all')!.addEventListener('click', async () => {
-    if (!confirm('WIRKLICH alle Pflanzen und Einstellungen löschen? Das kann nicht rückgängig gemacht werden.')) return;
-    if (!confirm('Letzte Warnung: alle Daten gehen verloren. Fortfahren?')) return;
+    if (!confirm(t('clearAllConfirm1'))) return;
+    if (!confirm(t('clearAllConfirm2'))) return;
     await clearAllPlants();
     try { localStorage.clear(); } catch {}
     location.href = '/';
