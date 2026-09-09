@@ -56,6 +56,7 @@ import Layout from '../layouts/Layout.astro';
       <option value="baumscheibe">Baumscheibe</option>
     </select>
     <button id="btn-pdf-all" class="rounded-lg bg-green-700 px-3 py-1.5 text-sm font-medium text-white shadow transition hover:bg-green-800">PDF ↓</button>
+    <button id="btn-pdf-sheet" title="6 Baumscheiben je 9cm Durchmesser auf einer A4-Seite, kompakt zum Ausschneiden" class="hidden rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700">PDF (6/Seite, 9cm)</button>
   </div>
 
   <!-- Lokal-Filter (chips, AND-Logik) -->
@@ -254,7 +255,7 @@ import Layout from '../layouts/Layout.astro';
   import { newId } from '../lib/id';
   import { escapeHtml } from '../lib/html';
   import { isSourceEnabled, loadSettings } from '../lib/settings';
-  import { exportCardsPDF, exportSingleCardPDF, exportBaumscheibePDF, exportBaumscheibesPDF } from '../lib/pdf-export';
+  import { exportCardsPDF, exportSingleCardPDF, exportBaumscheibePDF, exportBaumscheibesPDF, exportBaumscheibeSheetPDF } from '../lib/pdf-export';
   import { renderPolyCardHtml, renderStripeCardHtml } from '../lib/card-html';
   import { renderBaumscheibeCardHtml } from '../lib/baumscheibe-render';
 
@@ -386,6 +387,19 @@ import Layout from '../layouts/Layout.astro';
 
   /** @deprecated use sourceChipsHtml */
   function sourceSummaryHtml(p: PlantData): string { return ''; }
+
+  /** Stepper for PlantData.printCount — how often this plant's card is exported.
+   *  0 = deactivated (excluded from PDF exports), clicking the count toggles 0/1. */
+  function printStepperHtml(p: PlantData): string {
+    const count = p.printCount ?? 1;
+    const off = count === 0;
+    return `
+      <div class="print-stepper inline-flex items-center gap-1" title="Druckanzahl">
+        <button type="button" class="btn-print-dec inline-flex h-5 w-5 items-center justify-center rounded bg-stone-100 dark:bg-stone-800 text-xs font-medium leading-none text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700" title="Weniger drucken">−</button>
+        <span class="print-count-toggle w-4 cursor-pointer text-center text-xs tabular-nums ${off ? 'font-semibold text-red-500' : 'text-stone-600 dark:text-stone-300'}" title="${off ? 'Deaktiviert — klicken zum Aktivieren' : 'Klicken zum Deaktivieren'}">${count}</span>
+        <button type="button" class="btn-print-inc inline-flex h-5 w-5 items-center justify-center rounded bg-stone-100 dark:bg-stone-800 text-xs font-medium leading-none text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700" title="Mehr drucken">+</button>
+      </div>`;
+  }
 
   // ── Form ─────────────────────────────────────────────────────────────────────
 
@@ -688,6 +702,7 @@ import Layout from '../layouts/Layout.astro';
     if (viewMode === 'cards') {
       const isStripe = cardViewMode === 'stripe';
       const isBaumscheibe = cardViewMode === 'baumscheibe';
+      document.getElementById('btn-pdf-sheet')!.classList.toggle('hidden', !isBaumscheibe);
       listEl.className = isStripe ? 'flex flex-col items-stretch gap-2' : 'flex flex-wrap justify-center gap-6';
       const cardHtmls = await Promise.all(displayPlants.map(async (p) => {
         if (isBaumscheibe) return renderBaumscheibeCardHtml(p);
@@ -730,7 +745,7 @@ import Layout from '../layouts/Layout.astro';
         const pct = completenessPercent(p);
         const barColor = pct >= 80 ? 'bg-green-400' : pct >= 50 ? 'bg-amber-400' : 'bg-red-300';
         return `
-        <div class="group relative flex flex-col overflow-hidden rounded-xl bg-white dark:bg-stone-800 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:shadow-md hover:ring-green-300" data-id="${p.id}">
+        <div class="group relative flex flex-col overflow-hidden rounded-xl bg-white dark:bg-stone-800 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:shadow-md hover:ring-green-300${(p.printCount ?? 1) === 0 ? ' opacity-60' : ''}" data-id="${p.id}">
           <!-- Accent left border -->
           <div class="absolute left-0 top-0 h-full w-1 ${accentColor(p)}"></div>
           <!-- Image thumbnail -->
@@ -764,6 +779,7 @@ import Layout from '../layouts/Layout.astro';
             </div>
             <span class="text-[10px] tabular-nums text-stone-400 dark:text-stone-500">${pct}%</span>
             <span class="flex-1"></span>
+            ${printStepperHtml(p)}
             ${sourceChipsHtml(p)}
           </div>
         </div>`;
@@ -783,7 +799,9 @@ import Layout from '../layouts/Layout.astro';
         const useDots = USE_BADGES.filter(([k]) => p[k])
           .map(([,c]) => `<span class="inline-block h-2 w-2 rounded-full ${c.split(' ')[0].replace('-100', '-400')}" title=""></span>`)
           .join('');
-        return { p, srcHtml, sel, pct, barColor, useDots };
+        const printHtml = printStepperHtml(p);
+        const off = (p.printCount ?? 1) === 0;
+        return { p, srcHtml, sel, pct, barColor, useDots, printHtml, off };
       });
 
       const actionBtns = `
@@ -794,8 +812,8 @@ import Layout from '../layouts/Layout.astro';
       listEl.innerHTML = `
         <!-- Mobile card list (< sm) -->
         <div class="sm:hidden divide-y divide-stone-100">
-          ${rowData.map(({ p, srcHtml, sel, pct, barColor, useDots }) => `
-          <div data-id="${p.id}" class="flex items-start gap-2.5 px-3 py-3 ${sel ? 'bg-green-50 dark:bg-green-900/30' : ''}">
+          ${rowData.map(({ p, srcHtml, sel, pct, barColor, useDots, printHtml, off }) => `
+          <div data-id="${p.id}" class="flex items-start gap-2.5 px-3 py-3 ${sel ? 'bg-green-50 dark:bg-green-900/30' : ''}${off ? ' opacity-60' : ''}">
             <input type="checkbox" class="row-check mt-1 shrink-0 accent-green-600" ${sel ? 'checked' : ''} />
             <div class="w-0.5 self-stretch rounded-full ${accentColor(p)} shrink-0"></div>
             <div class="min-w-0 flex-1">
@@ -818,6 +836,7 @@ import Layout from '../layouts/Layout.astro';
                   <div class="h-full rounded-full ${barColor}" style="width:${pct}%"></div>
                 </div>
                 <span class="text-[10px] tabular-nums text-stone-400 dark:text-stone-500">${pct}%</span>
+                ${printHtml}
                 ${srcHtml ? `<span class="flex gap-1">${srcHtml}</span>` : ''}
               </div>
             </div>
@@ -835,13 +854,14 @@ import Layout from '../layouts/Layout.astro';
                 ${thSort('heightM', 'H')}
                 <th class="px-3 py-2.5">Nutzung</th>
                 ${thSort('completeness', 'Vollst.')}
+                <th class="px-3 py-2.5">Anz.</th>
                 <th class="px-3 py-2.5">Quellen</th>
                 <th class="px-3 py-2.5">Aktionen</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-stone-100">
-              ${rowData.map(({ p, srcHtml, sel, pct, barColor, useDots }) => `
-              <tr data-id="${p.id}" class="hover:bg-stone-50 dark:hover:bg-stone-800 ${sel ? 'bg-green-50 dark:bg-green-900/30' : ''}">
+              ${rowData.map(({ p, srcHtml, sel, pct, barColor, useDots, printHtml, off }) => `
+              <tr data-id="${p.id}" class="hover:bg-stone-50 dark:hover:bg-stone-800 ${sel ? 'bg-green-50 dark:bg-green-900/30' : ''}${off ? ' opacity-60' : ''}">
                 <td class="px-3 py-2"><input type="checkbox" class="row-check accent-green-600" ${sel ? 'checked' : ''} /></td>
                 <td class="px-3 py-2">
                   <div class="flex items-center gap-1.5">
@@ -860,6 +880,7 @@ import Layout from '../layouts/Layout.astro';
                     <span class="text-[10px] tabular-nums text-stone-400 dark:text-stone-500">${pct}%</span>
                   </div>
                 </td>
+                <td class="px-3 py-2">${printHtml}</td>
                 <td class="px-3 py-2">${srcHtml}</td>
                 <td class="px-3 py-2"><div class="flex gap-1">${actionBtns}</div></td>
               </tr>`).join('')}
@@ -973,6 +994,38 @@ import Layout from '../layouts/Layout.astro';
         }
       });
     });
+
+    // Print-count stepper (grid + list): 0 = deaktiviert (von Exporten ausgeschlossen)
+    listEl.querySelectorAll('.btn-print-inc').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = (btn.closest('[data-id]') as HTMLElement).dataset.id!;
+        const plant = cachedPlants.find(p => p.id === id);
+        if (!plant) return;
+        plant.printCount = (plant.printCount ?? 1) + 1;
+        await savePlant(plant);
+        renderList();
+      });
+    });
+    listEl.querySelectorAll('.btn-print-dec').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = (btn.closest('[data-id]') as HTMLElement).dataset.id!;
+        const plant = cachedPlants.find(p => p.id === id);
+        if (!plant) return;
+        plant.printCount = Math.max(0, (plant.printCount ?? 1) - 1);
+        await savePlant(plant);
+        renderList();
+      });
+    });
+    listEl.querySelectorAll('.print-count-toggle').forEach(el => {
+      el.addEventListener('click', async () => {
+        const id = (el.closest('[data-id]') as HTMLElement).dataset.id!;
+        const plant = cachedPlants.find(p => p.id === id);
+        if (!plant) return;
+        plant.printCount = (plant.printCount ?? 1) === 0 ? 1 : 0;
+        await savePlant(plant);
+        renderList();
+      });
+    });
   }
 
   // ── Dialog ────────────────────────────────────────────────────────────────────
@@ -1010,6 +1063,14 @@ import Layout from '../layouts/Layout.astro';
       else await exportCardsPDF(cachedPlants);
     }
     finally { btn.disabled = false; btn.textContent = 'PDF ↓'; }
+  });
+  document.getElementById('btn-pdf-sheet')!.addEventListener('click', async () => {
+    if (cachedPlants.length === 0) return;
+    const btn = document.getElementById('btn-pdf-sheet') as HTMLButtonElement;
+    const origText = btn.textContent;
+    btn.disabled = true; btn.textContent = '...';
+    try { await exportBaumscheibeSheetPDF(cachedPlants); }
+    finally { btn.disabled = false; btn.textContent = origText; }
   });
 
   document.getElementById('btn-select-all')!.addEventListener('click', () => {
