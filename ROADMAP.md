@@ -49,14 +49,9 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 
 ### vorort
 - [ ] naturadb anrufen
-- [ ] tabellenansicht verbessern: inhalt klarer unterscheiden (funktionen / nutzen) und weitere spalten mit infos wie Blütemonate. möglichst alles in tabellenform anzeigen. legende zu farben erstellen
-- [ ] präsentation
-  - aufzeichnung 10-20min, ende sept. abgabe, anfang nov ist konferenz. beiträge hinter paywall. agroforestry research trust. fffg.
-  - kalender: wann dran arbeiten?
-  - zu kooperation einladen
 
-- [ ] welcher stand ist für uns ausreichend zu präsentieren?
-- [ ] mapping
+### sonst
+- [ ] tabellenansicht verbessern: inhalt klarer unterscheiden (funktionen / nutzen) und weitere spalten mit infos wie Blütemonate. möglichst alles in tabellenform anzeigen. legende zu farben erstellen
 - [ ] 2 pdf versionen: a) 9 stück pro din a4 b) maßstabsgetreu
 - [ ] jens dazu einweihen
 
@@ -64,7 +59,6 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 #### Darstellung Scheibe & mapping prüfen
 - [ ] raleway schrift auch für höhe und durchmesser und winterhärte
 - [ ] warum wird bei Beinwell Material  und Brennstoff aktiviert - wo steht das bei pfaf?
-
 
 #### weitere bugs / validierung
 - [x] **NOW anzahl pflanzen auf karten-seite** — der bisher nur in Kachel-/Listenansicht (`index.astro`) vorhandene Druckanzahl-Stepper ist jetzt auch auf `/cards` und in der Kartenansicht von `index.astro` verfügbar. `printStepperHtml()` dafür nach `card-html.ts` verschoben (nimmt jetzt eine `t`-Funktion als Parameter, damit jede Seite ihr eigenes i18n-Dict nutzen kann), Klick-Handler in `cards.astro` als Teil der bestehenden Event-Delegation ergänzt (adressiert über `data-index` statt `data-id`, da `cards.astro` Pflanzen indexbasiert referenziert)
