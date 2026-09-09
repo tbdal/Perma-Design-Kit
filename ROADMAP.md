@@ -49,6 +49,7 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 
 ### vorort
 - [ ] naturadb anrufen
+- [ ] tabellenansicht verbessern: inhalt klarer unterscheiden (funktionen / nutzen) und weitere spalten mit infos wie Blütemonate. möglichst alles in tabellenform anzeigen. legende zu farben erstellen
 - [ ] präsentation
   - aufzeichnung 10-20min, ende sept. abgabe, anfang nov ist konferenz. beiträge hinter paywall. agroforestry research trust. fffg.
   - kalender: wann dran arbeiten?
@@ -62,6 +63,7 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 
 ### bugs / validierung
 - [ ] nutzen prüfen, ist alles vorhanden, was in Baumscheibe angezeigt wird?
+- [ ] anzahl pflanzen auf karten-seite
 ### Baumscheibe Karte Feinschliff
 - [x] **SVG neu generiert: `baumscheibe2.3_inkl-label.svg`** — farbiger, überarbeiteter Export ersetzt `pwa/public/baumscheibe-template.svg`. Rohe Photoshop-Ebenennamen (`u_edible`, `f_Nfixer`, `ph2_acid`, …) statt bisheriger PlantData-Feldnamen als `inkscape:label` — Zuordnung per Positionsvergleich ermittelt (`getBBox()` alt vs. neu, nächster Nachbar, meist < 5px), nicht geraten; Details im Kommentar oben in `baumscheibe-mapping.ts` und in `baumscheibe-mapping-status.md`. Disc-Geometrie und Frucht-/Blüte-Ringe per Pixel-Sampling erneut vermessen: byte-identisch zur alten Version, keine Code-Anpassung an `pdf-export.ts`/`baumscheibe-render.ts` nötig. `latinName`/`commonName`/`heightM`/`widthM`/`climateZone` existierten im rohen Export nicht (wie schon vorher reine manuell nachgetragene Textfelder) — 1:1 aus dem alten Template übernommen. **Bonus:** `phVeryAcid`/`phVeryAlkaline` sind jetzt erstmals verdrahtet (2.3-Template hat alle 5 pH-Stufen statt bisher 3). **Regression:** `growSpeedMid`/`growSpeedHigh` sind jetzt tot (2.3-Template hat nur noch 1 statt 3 Wachstumsgeschwindigkeits-Icons) — neuer Punkt in `baumscheibe-mapping-status.md`. Getestet: volle Testpflanze, leere Testpflanze, alle drei PDF-Export-Pfade (Einzelkarte/Bulk/6er-Sheet) per Playwright + Sichtprüfung der gerenderten PDFs
 - [ ] Schriftarten im SVG anpassen entsprechend PSD
