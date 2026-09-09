@@ -177,11 +177,16 @@ import Layout from '../layouts/Layout.astro';
   import { renderPolyCardHtml, renderStripeCardHtml } from '../lib/card-html';
   import { renderBaumscheibeCardHtml } from '../lib/baumscheibe-render';
   import { escapeHtml } from '../lib/html';
+  import { loadSettings } from '../lib/settings';
 
   const container = document.getElementById('cards-container')!;
   const noPlants = document.getElementById('no-plants')!;
   const loading = document.getElementById('loading')!;
   const viewMode = document.getElementById('view-mode') as HTMLSelectElement;
+  try {
+    const defaultVariant = loadSettings()?.defaultCardVariant;
+    if (defaultVariant) viewMode.value = defaultVariant;
+  } catch { /* settings unavailable — keep the select's default option */ }
   const dialog = document.getElementById('plant-dialog') as HTMLDialogElement;
   const form = document.getElementById('plant-form') as HTMLFormElement;
 
