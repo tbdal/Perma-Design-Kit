@@ -1,7 +1,7 @@
 {
-  "name": "Perma Guild Forge",
-  "short_name": "Perma Guild",
-  "description": "Design und Verwaltung von Permakultur-Pflanzengilden",
+  "name": "Perma Design Kit",
+  "short_name": "Perma Design Kit",
+  "description": "Design und Verwaltung von Permakultur-Polykulturen",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#fafafa",

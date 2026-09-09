@@ -20,7 +20,10 @@ export interface AppSettings {
   defaultCardVariant: CardVariant;
 }
 
-const STORAGE_KEY = "guild-designer-settings";
+const STORAGE_KEY = "perma-design-kit-settings";
+/** Key earlier versions (Perma Guild Forge) saved settings under — read as a
+ *  fallback so existing users don't lose their preferences on upgrade. */
+const STORAGE_KEY_LEGACY = "guild-designer-settings";
 
 const DEFAULT_PREFS: Omit<AppSettings, 'sources'> = {
   defaultView: 'grid',
@@ -59,7 +62,7 @@ export const DEFAULT_SOURCES: DataSource[] = [
 
 export function loadSettings(): AppSettings {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(STORAGE_KEY_LEGACY);
     if (raw) {
       const saved = JSON.parse(raw) as Partial<AppSettings>;
       const sources = DEFAULT_SOURCES.map((def) => {

@@ -1,5 +1,5 @@
 import { openDB, type DBSchema } from 'idb';
-import type { PlantData, Guild } from './types';
+import type { PlantData, Polyculture } from './types';
 
 interface PlantDB extends DBSchema {
   plants: {
@@ -7,9 +7,9 @@ interface PlantDB extends DBSchema {
     value: PlantData;
     indexes: { 'by-latin': string };
   };
-  guilds: {
+  polycultures: {
     key: string;
-    value: Guild;
+    value: Polyculture;
   };
 }
 
@@ -21,17 +21,26 @@ const DB_NAME = 'permaculture-guilds';
 // checks each store individually and creates any that are missing — so
 // fresh installs, legacy v1 plants-only DBs, and broken v2 DBs all
 // converge to the same shape.
-const DB_VERSION = 3;
+// v4: renamed the 'guilds' store to 'polycultures' (Gilde → Polykultur
+// terminology rename). Existing records are copied over, then the old
+// store is dropped, so nobody's saved polycultures disappear.
+const DB_VERSION = 4;
 
 function getDB() {
   return openDB<PlantDB>(DB_NAME, DB_VERSION, {
-    upgrade(db) {
+    async upgrade(db, _oldVersion, _newVersion, transaction) {
       if (!db.objectStoreNames.contains('plants')) {
         const store = db.createObjectStore('plants', { keyPath: 'id' });
         store.createIndex('by-latin', 'latinName');
       }
-      if (!db.objectStoreNames.contains('guilds')) {
-        db.createObjectStore('guilds', { keyPath: 'id' });
+      if (!db.objectStoreNames.contains('polycultures')) {
+        const newStore = db.createObjectStore('polycultures', { keyPath: 'id' });
+        if (db.objectStoreNames.contains('guilds')) {
+          const oldStore = transaction.objectStore('guilds' as never);
+          const all = await oldStore.getAll();
+          for (const item of all) await newStore.put(item);
+          db.deleteObjectStore('guilds');
+        }
       }
     },
   });
@@ -75,34 +84,34 @@ export async function clearAllPlants(): Promise<void> {
   await db.clear('plants');
 }
 
-// ── Guilds ────────────────────────────────────────────────────────────────
+// ── Polycultures ──────────────────────────────────────────────────────────
 
-export async function getAllGuilds(): Promise<Guild[]> {
+export async function getAllPolycultures(): Promise<Polyculture[]> {
   const db = await getDB();
-  return db.getAll('guilds');
+  return db.getAll('polycultures');
 }
 
-export async function getGuild(id: string): Promise<Guild | undefined> {
+export async function getPolyculture(id: string): Promise<Polyculture | undefined> {
   const db = await getDB();
-  return db.get('guilds', id);
+  return db.get('polycultures', id);
 }
 
-export async function saveGuild(guild: Guild): Promise<void> {
-  guild.updatedAt = new Date().toISOString();
+export async function savePolyculture(polyculture: Polyculture): Promise<void> {
+  polyculture.updatedAt = new Date().toISOString();
   const db = await getDB();
-  await db.put('guilds', guild);
+  await db.put('polycultures', polyculture);
 }
 
-export async function deleteGuild(id: string): Promise<void> {
+export async function deletePolyculture(id: string): Promise<void> {
   const db = await getDB();
-  await db.delete('guilds', id);
+  await db.delete('polycultures', id);
 }
 
-export async function importGuilds(guilds: Guild[]): Promise<void> {
+export async function importPolycultures(polycultures: Polyculture[]): Promise<void> {
   const db = await getDB();
-  const tx = db.transaction('guilds', 'readwrite');
-  for (const guild of guilds) {
-    await tx.store.put(guild);
+  const tx = db.transaction('polycultures', 'readwrite');
+  for (const polyculture of polycultures) {
+    await tx.store.put(polyculture);
   }
   await tx.done;
 }

@@ -4,22 +4,22 @@ export const hilfeDict: Dict = {
   pageTitle: { de: 'Hilfe & Glossar', en: 'Help & Glossary' },
   pageSubtitle: { de: 'Konzepte, Ansichten und Funktionen kurz erklärt.', en: 'A quick explanation of concepts, views and features.' },
 
-  guildHeading: { de: 'Was ist eine Permakultur-Gilde?', en: 'What is a permaculture guild?' },
+  guildHeading: { de: 'Was ist eine Permakultur-Polykultur?', en: 'What is a permaculture polyculture?' },
   guildDefIntro: { de: 'Eine', en: 'A' },
-  guildDefStrong: { de: 'Gilde', en: 'guild' },
+  guildDefStrong: { de: 'Polykultur', en: 'polyculture' },
   guildDefRest: {
     de: 'ist eine Gruppe von Pflanzen, die sich gegenseitig fördert: Bäume, Sträucher, Stauden, Bodendecker und Wurzelpflanzen werden so kombiniert, dass sie sich Nährstoffe, Schatten, Bestäuber und Schädlingsabwehr teilen. Statt einer Monokultur entsteht ein kleines, sich weitgehend selbst regulierendes Ökosystem rund um eine zentrale Hauptpflanze (oft ein Obstbaum).',
     en: 'is a group of plants that support one another: trees, shrubs, perennials, ground covers and root plants are combined so they share nutrients, shade, pollinators and pest defense. Instead of a monoculture, a small, largely self-regulating ecosystem forms around a central anchor plant (often a fruit tree).',
   },
   guildAppIntro: {
-    de: 'Diese App hilft dir, Pflanzen mit ihren wichtigsten Eigenschaften zu erfassen, anzureichern und als Karten zu drucken — als Grundlage, um eigene Gilden zu komponieren.',
-    en: 'This app helps you record plants with their key attributes, enrich them, and print them as cards — a foundation for composing your own guilds.',
+    de: 'Diese App hilft dir, Pflanzen mit ihren wichtigsten Eigenschaften zu erfassen, anzureichern und als Karten zu drucken — als Grundlage, um eigene Polykulturen zu komponieren.',
+    en: 'This app helps you record plants with their key attributes, enrich them, and print them as cards — a foundation for composing your own polycultures.',
   },
   guildPageIntro: { de: 'Auf der Seite', en: 'On the' },
-  guildPageLink: { de: 'Gilden', en: 'Guilds' },
+  guildPageLink: { de: 'Polykulturen', en: 'Polycultures' },
   guildPageRest: {
-    de: 'kannst du eigene Gilden anlegen: Ankerart wählen, Mitglieder mit Rolle hinzufügen (Begleiter, Bodendecker, N-Fixer, Mineraliensammler, Insekten- oder Duftpflanze, Obst/Beere). Das Vorschlags-Panel filtert deinen Pflanzen-Bestand nach offenen Rollen und zeigt dir eine Sonne/Wasser/pH-Kompatibilität (0–3) zur Ankerart an.',
-    en: 'page you can create your own guilds: pick an anchor species, add members with a role (companion, ground cover, N-fixer, mineral accumulator, insect or fragrance plant, fruit/berry). The suggestion panel filters your plant stock by open roles and shows a sun/water/pH compatibility score (0–3) against the anchor species.',
+    de: 'kannst du eigene Polykulturen anlegen: Ankerart wählen, Mitglieder mit Rolle hinzufügen (Begleiter, Bodendecker, N-Fixer, Mineraliensammler, Insekten- oder Duftpflanze, Obst/Beere). Das Vorschlags-Panel filtert deinen Pflanzen-Bestand nach offenen Rollen und zeigt dir eine Sonne/Wasser/pH-Kompatibilität (0–3) zur Ankerart an.',
+    en: 'page you can create your own polycultures: pick an anchor species, add members with a role (companion, ground cover, N-fixer, mineral accumulator, insect or fragrance plant, fruit/berry). The suggestion panel filters your plant stock by open roles and shows a sun/water/pH compatibility score (0–3) against the anchor species.',
   },
 
   viewsHeading: { de: 'Ansichten', en: 'Views' },

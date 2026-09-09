@@ -177,7 +177,7 @@ export async function exportCardsPDF(plants: PlantData[]): Promise<void> {
     sy += sCardH + pt(2);
   }
 
-  downloadPdf(await pdfDoc.save(), 'permaculture-guild-cards.pdf');
+  downloadPdf(await pdfDoc.save(), 'perma-design-kit-cards.pdf');
 }
 
 export async function exportSingleCardPDF(plant: PlantData): Promise<void> {

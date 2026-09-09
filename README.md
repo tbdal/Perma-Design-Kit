@@ -1,6 +1,6 @@
-# Permaculture Tree Guilds Designer
+# Perma Design Kit
 
-A tool for designing permaculture tree guilds — composing plants by their ecological functions, human uses, and site conditions, and printing them as physical plant cards.
+A tool for designing permaculture polycultures — composing plants by their ecological functions, human uses, and site conditions, and printing them as physical plant cards.
 
 ## Quickstart (PWA)
 

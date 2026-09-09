@@ -7,8 +7,8 @@ export const datenschutzDict: Dict = {
 
   dsSummaryTitle: { de: 'Kurzfassung', en: 'Summary' },
   dsSummaryBody: {
-    de: 'Perma Guild Forge ist eine Local-First-Webanwendung. Deine Pflanzen­daten werden ausschließlich in deinem Browser (IndexedDB) gespeichert und nicht an einen Server übertragen. Es gibt kein Tracking, keine Cookies zu Marketing- oder Analyse­zwecken und keine Nutzer­konten.',
-    en: 'Perma Guild Forge is a local-first web application. Your plant data is stored exclusively in your browser (IndexedDB) and is not transmitted to a server. There is no tracking, no cookies for marketing or analytics purposes, and no user accounts.',
+    de: 'Perma Design Kit ist eine Local-First-Webanwendung. Deine Pflanzen­daten werden ausschließlich in deinem Browser (IndexedDB) gespeichert und nicht an einen Server übertragen. Es gibt kein Tracking, keine Cookies zu Marketing- oder Analyse­zwecken und keine Nutzer­konten.',
+    en: 'Perma Design Kit is a local-first web application. Your plant data is stored exclusively in your browser (IndexedDB) and is not transmitted to a server. There is no tracking, no cookies for marketing or analytics purposes, and no user accounts.',
   },
 
   dsResponsibleTitle: { de: 'Verantwortlich', en: 'Responsible Party' },
@@ -18,10 +18,10 @@ export const datenschutzDict: Dict = {
 
   dsLocalDataTitle: { de: 'Lokal gespeicherte Daten', en: 'Locally Stored Data' },
   dsLocalDataIntro: { de: 'Folgende Daten werden ausschließlich lokal in deinem Browser gespeichert und verlassen dein Gerät nicht:', en: 'The following data is stored exclusively locally in your browser and never leaves your device:' },
-  dsLi1Strong: { de: 'Pflanzen­datenbank und Gilden', en: 'Plant database and guilds' },
+  dsLi1Strong: { de: 'Pflanzen­datenbank und Polykulturen', en: 'Plant database and polycultures' },
   dsLi1Body: {
-    de: 'die von dir erfassten oder importierten Pflanzen­datensätze inklusive Eigenschaften, Quellen und Bild-URLs sowie deine angelegten Gilden.',
-    en: 'the plant records you have entered or imported, including attributes, sources and image URLs, as well as the guilds you have created.',
+    de: 'die von dir erfassten oder importierten Pflanzen­datensätze inklusive Eigenschaften, Quellen und Bild-URLs sowie deine angelegten Polykulturen.',
+    en: 'the plant records you have entered or imported, including attributes, sources and image URLs, as well as the polycultures you have created.',
   },
   dsLi2Strong: { de: 'Einstellungen, Filter und Hinweise', en: 'Settings, filters and notices' },
   dsLi2Body: {

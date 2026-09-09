@@ -1,7 +1,7 @@
 import type { Dict } from './core';
 
 export const layoutDict: Dict = {
-  installBannerText: { de: 'Perma Guild Forge auf den Startbildschirm legen?', en: 'Add Perma Guild Forge to your home screen?' },
+  installBannerText: { de: 'Perma Design Kit auf den Startbildschirm legen?', en: 'Add Perma Design Kit to your home screen?' },
   installBtn: { de: 'Installieren', en: 'Install' },
   closeBtn: { de: 'Schließen', en: 'Close' },
   backupReminderDefault: { de: 'Letztes Backup ist eine Weile her — jetzt sichern?', en: 'It’s been a while since your last backup — back up now?' },
@@ -11,7 +11,7 @@ export const layoutDict: Dict = {
   backupReminderDismiss: { de: 'Heute ausblenden', en: 'Hide for today' },
 
   navPlants: { de: 'Pflanzen', en: 'Plants' },
-  navGuilds: { de: 'Gilden', en: 'Guilds' },
+  navGuilds: { de: 'Polykulturen', en: 'Polycultures' },
   navCalendar: { de: 'Kalender', en: 'Calendar' },
   navSettings: { de: 'Einstellungen', en: 'Settings' },
   themeToggleLabel: { de: 'Theme umschalten', en: 'Toggle theme' },

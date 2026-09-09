@@ -1,8 +1,8 @@
 import { newId } from './id';
 
-// ── Guilds ──────────────────────────────────────────────────────────────────
+// ── Polycultures ────────────────────────────────────────────────────────────
 
-export type GuildRole =
+export type PolycultureRole =
   | 'companion'      // allgemeiner Begleiter
   | 'groundCover'    // Bodendecker
   | 'nFixer'         // Stickstoff-Fixierer
@@ -12,7 +12,7 @@ export type GuildRole =
   | 'fruitProducer'  // Obst-/Beerenträger neben dem Anker
   | 'other';
 
-export const ROLE_LABEL: Record<GuildRole, string> = {
+export const ROLE_LABEL: Record<PolycultureRole, string> = {
   companion:     'Begleiter',
   groundCover:   'Bodendecker',
   nFixer:        'Stickstoff-Fixierer',
@@ -25,7 +25,7 @@ export const ROLE_LABEL: Record<GuildRole, string> = {
 
 // Welche PlantData-Boolean-Felder eine Pflanze qualifizieren, eine Rolle zu füllen.
 // Verwendet im mechanischen Vorschlags-Filter.
-export const ROLE_REQUIREMENT: Record<GuildRole, (keyof PlantData)[]> = {
+export const ROLE_REQUIREMENT: Record<PolycultureRole, (keyof PlantData)[]> = {
   companion:     [],
   groundCover:   ['groundCover'],
   nFixer:        ['nitrogenFix'],
@@ -36,24 +36,24 @@ export const ROLE_REQUIREMENT: Record<GuildRole, (keyof PlantData)[]> = {
   other:         [],
 };
 
-export interface GuildMember {
+export interface PolycultureMember {
   plantId: string;
-  role: GuildRole;
+  role: PolycultureRole;
   notes: string;
 }
 
-export interface Guild {
+export interface Polyculture {
   id: string;
   name: string;
   description: string;
   anchorPlantId: string | null;
-  members: GuildMember[];
+  members: PolycultureMember[];
   notes: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export function createEmptyGuild(): Guild {
+export function createEmptyPolyculture(): Polyculture {
   const now = new Date().toISOString();
   return {
     id: newId(),

@@ -39,7 +39,7 @@ export const settingsDict: Dict = {
   toastSettingsSaved: { de: 'Einstellungen gespeichert', en: 'Settings saved' },
 
   sectionData: { de: 'Daten', en: 'Data' },
-  dataSubtitle: { de: 'Alle Pflanzendaten und Gilden leben lokal in deinem Browser (IndexedDB).', en: 'All plant data and guilds live locally in your browser (IndexedDB).' },
+  dataSubtitle: { de: 'Alle Pflanzendaten und Polykulturen leben lokal in deinem Browser (IndexedDB).', en: 'All plant data and polycultures live locally in your browser (IndexedDB).' },
   statLabelPlants: { de: 'Pflanzendatensätze', en: 'Plant records' },
   statLabelStorage: { de: 'Speicherverbrauch', en: 'Storage used' },
   btnBackupDownload: { de: 'Backup herunterladen (JSON)', en: 'Download backup (JSON)' },
@@ -56,7 +56,7 @@ export const settingsDict: Dict = {
   lastSyncVia: { de: ' via {provider}', en: ' via {provider}' },
 
   sectionSync: { de: 'Sync', en: 'Sync' },
-  syncSubtitle: { de: 'Pflanzen und Gilden in einen externen Speicher sichern — manuell oder automatisch beim Verlassen der App.', en: 'Back up plants and guilds to external storage — manually or automatically when leaving the app.' },
+  syncSubtitle: { de: 'Pflanzen und Polykulturen in einen externen Speicher sichern — manuell oder automatisch beim Verlassen der App.', en: 'Back up plants and polycultures to external storage — manually or automatically when leaving the app.' },
   autoSyncLabel: { de: 'Automatisch synchronisieren', en: 'Sync automatically' },
   autoSyncDesc: { de: 'Beim Tab-Wechsel oder Schließen automatisch zum ersten konfigurierten Anbieter synchronisieren (Priorität: WebDAV → GitHub Gist).', en: 'Automatically sync to the first configured provider when switching tabs or closing (priority: WebDAV → GitHub Gist).' },
 
@@ -82,7 +82,7 @@ export const settingsDict: Dict = {
   webdavDownloading: { de: 'Lade herunter…', en: 'Downloading…' },
   webdavErrorDownload: { de: 'Fehler: {msg}. Prüfe URL, Zugangsdaten und CORS.', en: 'Error: {msg}. Check URL, credentials and CORS.' },
   invalidBackupFormat: { de: 'Ungültiges Backup-Format', en: 'Invalid backup format' },
-  restoredCount: { de: '{plants} Pflanzen, {guilds} Gilden wiederhergestellt.', en: '{plants} plants, {guilds} guilds restored.' },
+  restoredCount: { de: '{plants} Pflanzen, {guilds} Polykulturen wiederhergestellt.', en: '{plants} plants, {guilds} polycultures restored.' },
 
   fsaSummary: { de: 'Lokale Datei (Chrome / Edge)', en: 'Local file (Chrome / Edge)' },
   fsaDesc: { de: 'Schreibt das Backup direkt in eine Datei auf deinem Gerät oder liest es von dort. Die Datei kannst du z. B. in einem Cloud-Ordner ablegen (iCloud Drive, Dropbox, Google Drive Offline-Ordner). Nur in Chromium-basierten Browsern verfügbar.', en: 'Writes the backup directly to a file on your device or reads it from there. You can put the file in a cloud-synced folder (iCloud Drive, Dropbox, Google Drive offline folder). Only available in Chromium-based browsers.' },
@@ -119,7 +119,7 @@ export const settingsDict: Dict = {
   genericError: { de: 'Fehler: {msg}', en: 'Error: {msg}' },
   shareFailed: { de: 'Teilen fehlgeschlagen: {err}', en: 'Sharing failed: {err}' },
   restoreNoPlants: { de: 'Keine Pflanzen im Backup gefunden', en: 'No plants found in backup' },
-  restoreGuildPart: { de: ' + {n} Gilden', en: ' + {n} guilds' },
+  restoreGuildPart: { de: ' + {n} Polykulturen', en: ' + {n} polycultures' },
   restoreSettingsPart: { de: ' + Einstellungen', en: ' + settings' },
   restoreConfirm: { de: '{plants} Pflanzen{guildPart}{settingsPart} aus Backup einlesen? Bestehende Einträge mit gleicher ID werden überschrieben.', en: 'Read {plants} plants{guildPart}{settingsPart} from backup? Existing entries with the same ID will be overwritten.' },
   restoreToast: { de: '{plants} Pflanzen{guildPart} wiederhergestellt', en: '{plants} plants{guildPart} restored' },

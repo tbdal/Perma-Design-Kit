@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 ---
-<Layout title="Perma Guild Forge — Einstellungen">
+<Layout title="Perma Design Kit — Einstellungen">
   <div class="mb-6">
     <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-100" data-i18n="pageTitle">Einstellungen</h1>
     <p class="mt-1 text-sm text-stone-500 dark:text-stone-400" data-i18n="pageSubtitle">Datenquellen, Ansicht, Theme und Daten verwalten.</p>
@@ -67,7 +67,7 @@ import Layout from '../layouts/Layout.astro';
   <!-- Daten -->
   <section id="daten-section" class="mb-8 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
     <h2 class="text-lg font-semibold text-stone-800 dark:text-stone-100" data-i18n="sectionData">Daten</h2>
-    <p class="mt-1 text-xs text-stone-500 dark:text-stone-400" data-i18n="dataSubtitle">Alle Pflanzen­daten und Gilden leben lokal in deinem Browser (IndexedDB).</p>
+    <p class="mt-1 text-xs text-stone-500 dark:text-stone-400" data-i18n="dataSubtitle">Alle Pflanzen­daten und Polykulturen leben lokal in deinem Browser (IndexedDB).</p>
 
     <dl class="mt-4 grid gap-2 text-sm sm:grid-cols-2">
       <div>
@@ -102,7 +102,7 @@ import Layout from '../layouts/Layout.astro';
   <!-- Sync -->
   <section class="mb-8 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
     <h2 class="text-lg font-semibold text-stone-800 dark:text-stone-100" data-i18n="sectionSync">Sync</h2>
-    <p class="mt-1 text-xs text-stone-500 dark:text-stone-400" data-i18n="syncSubtitle">Pflanzen und Gilden in einen externen Speicher sichern — manuell oder automatisch beim Verlassen der App.</p>
+    <p class="mt-1 text-xs text-stone-500 dark:text-stone-400" data-i18n="syncSubtitle">Pflanzen und Polykulturen in einen externen Speicher sichern — manuell oder automatisch beim Verlassen der App.</p>
 
     <!-- Auto-Sync Toggle -->
     <div class="mt-5 flex items-start justify-between gap-4">
@@ -132,7 +132,7 @@ import Layout from '../layouts/Layout.astro';
       <div class="mt-3 grid gap-3 sm:grid-cols-2">
         <label class="block text-xs sm:col-span-2">
           <span class="font-medium text-stone-500 dark:text-stone-400" data-i18n="webdavUrlLabel">Ziel-URL (vollständige Datei-URL)</span>
-          <input id="webdav-url" type="url" placeholder="https://cloud.example.com/remote.php/dav/files/USER/permaguild-backup.json" class="mt-1 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 font-mono text-xs shadow-inner focus:border-green-500 focus:outline-none" />
+          <input id="webdav-url" type="url" placeholder="https://cloud.example.com/remote.php/dav/files/USER/perma-design-kit-backup.json" class="mt-1 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 font-mono text-xs shadow-inner focus:border-green-500 focus:outline-none" />
         </label>
         <label class="block text-xs">
           <span class="font-medium text-stone-500 dark:text-stone-400" data-i18n="webdavUserLabel">Benutzername</span>
@@ -173,7 +173,7 @@ import Layout from '../layouts/Layout.astro';
       <summary class="cursor-pointer text-sm font-semibold text-stone-700 dark:text-stone-200" data-i18n="gistSummary">GitHub Gist (geräteübergreifend)</summary>
       <p class="mt-2 text-xs text-stone-500 dark:text-stone-400">
         <span data-i18n="gistDescPre">Speichert das Backup als privates GitHub Gist. Du brauchst einen GitHub-Account und ein</span>
-        <a href="https://github.com/settings/tokens/new?scopes=gist&description=Perma+Guild+Forge" target="_blank" rel="noopener" data-i18n="gistDescLink" class="text-green-700 dark:text-green-400 hover:underline">Personal Access Token</a>
+        <a href="https://github.com/settings/tokens/new?scopes=gist&description=Perma+Design+Kit" target="_blank" rel="noopener" data-i18n="gistDescLink" class="text-green-700 dark:text-green-400 hover:underline">Personal Access Token</a>
         <span data-i18n="gistDescPost">mit dem Scope</span> <code>gist</code><span data-i18n="gistDescPost2">. Beim ersten Hochladen wird ein neues Gist angelegt
         und die ID automatisch gespeichert — danach einfach wieder drücken.</span>
       </p>
@@ -208,8 +208,8 @@ import Layout from '../layouts/Layout.astro';
     isPlausibleOptedOut, setPlausibleOptOut,
     type AppSettings, type ViewMode, type CardVariant, type ThemePref,
   } from '../lib/settings';
-  import { getAllPlants, importPlants, clearAllPlants, importGuilds } from '../lib/db';
-  import { buildBackupJson, rememberSyncAt, isAutoSyncEnabled } from '../lib/sync';
+  import { getAllPlants, importPlants, clearAllPlants, importPolycultures } from '../lib/db';
+  import { buildBackupJson, rememberSyncAt, isAutoSyncEnabled, GIST_FILENAME, GIST_FILENAME_LEGACY } from '../lib/sync';
   import { escapeHtml } from '../lib/html';
   import { createT, applyStaticI18n, getLang } from '../lib/i18n/core';
   import { settingsDict } from '../lib/i18n/dict-settings';
@@ -348,7 +348,7 @@ import Layout from '../layouts/Layout.astro';
   async function buildBackupBlob(): Promise<{ blob: Blob; filename: string }> {
     const json = await buildBackupJson();
     const blob = new Blob([json], { type: 'application/json' });
-    const filename = `perma-guild-forge-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    const filename = `perma-design-kit-backup-${new Date().toISOString().slice(0, 10)}.json`;
     return { blob, filename };
   }
 
@@ -400,7 +400,7 @@ import Layout from '../layouts/Layout.astro';
       const file = new File([blob], filename, { type: 'application/json' });
       try {
         if ((navigator as any).canShare?.({ files: [file] })) {
-          await navigator.share({ files: [file], title: 'Perma Guild Forge Backup' });
+          await navigator.share({ files: [file], title: 'Perma Design Kit Backup' });
           rememberSyncAt('share');
           renderLastBackup();
         } else {
@@ -494,16 +494,16 @@ import Layout from '../layouts/Layout.astro';
       const data = await res.json();
       const restoredPlants = Array.isArray(data) ? data : (data.plants ?? []);
       if (!Array.isArray(restoredPlants)) throw new Error(t('invalidBackupFormat'));
-      const restoredGuilds = Array.isArray(data) ? [] : (data.guilds ?? []);
+      const restoredPolycultures = Array.isArray(data) ? [] : (data.polycultures ?? data.guilds ?? []);
       await importPlants(restoredPlants);
-      if (restoredGuilds.length) await importGuilds(restoredGuilds);
+      if (restoredPolycultures.length) await importPolycultures(restoredPolycultures);
       if (!Array.isArray(data) && data.settings) {
         saveSettings(data.settings);
         settings = loadSettings();
         renderSources(); renderPrefs();
       }
       await renderStats();
-      setWebdavStatus(t('restoredCount', { plants: restoredPlants.length, guilds: restoredGuilds.length }), 'ok');
+      setWebdavStatus(t('restoredCount', { plants: restoredPlants.length, guilds: restoredPolycultures.length }), 'ok');
     } catch (err) {
       setWebdavStatus(t('webdavErrorDownload', { msg: (err as Error).message }), 'err');
     }
@@ -528,7 +528,7 @@ import Layout from '../layouts/Layout.astro';
       try {
         const json = await buildBackupJson();
         const blob = new Blob([json], { type: 'application/json' });
-        const filename = `perma-guild-forge-backup-${new Date().toISOString().slice(0, 10)}.json`;
+        const filename = `perma-design-kit-backup-${new Date().toISOString().slice(0, 10)}.json`;
         const handle = await (window as any).showSaveFilePicker({
           suggestedName: filename,
           types: [{ description: 'JSON-Backup', accept: { 'application/json': ['.json'] } }],
@@ -555,17 +555,17 @@ import Layout from '../layouts/Layout.astro';
         const data = JSON.parse(text);
         const plants = Array.isArray(data) ? data : (data.plants ?? []);
         if (!Array.isArray(plants)) throw new Error(t('fsaInvalidFormat'));
-        const guilds = Array.isArray(data) ? [] : (data.guilds ?? []);
-        if (!confirm(t('fsaConfirmRead', { plants: plants.length, guildPart: guilds.length ? t('restoreGuildPart', { n: guilds.length }) : '' }))) return;
+        const polycultures = Array.isArray(data) ? [] : (data.polycultures ?? data.guilds ?? []);
+        if (!confirm(t('fsaConfirmRead', { plants: plants.length, guildPart: polycultures.length ? t('restoreGuildPart', { n: polycultures.length }) : '' }))) return;
         await importPlants(plants);
-        if (guilds.length) await importGuilds(guilds);
+        if (polycultures.length) await importPolycultures(polycultures);
         if (!Array.isArray(data) && data.settings) {
           saveSettings(data.settings);
           settings = loadSettings();
           renderSources(); renderPrefs();
         }
         await renderStats();
-        setFsaStatus(t('restoredCount', { plants: plants.length, guilds: guilds.length }), 'ok');
+        setFsaStatus(t('restoredCount', { plants: plants.length, guilds: polycultures.length }), 'ok');
       } catch (err) {
         if ((err as Error).name !== 'AbortError') setFsaStatus(t('genericError', { msg: String(err) }), 'err');
       }
@@ -576,7 +576,6 @@ import Layout from '../layouts/Layout.astro';
   const gistTokenInput = document.getElementById('gist-token') as HTMLInputElement;
   const gistIdInput = document.getElementById('gist-id') as HTMLInputElement;
   const gistStatus = document.getElementById('gist-status')!;
-  const GIST_FILENAME = 'perma-guild-forge-backup.json';
 
   function setGistStatus(msg: string, kind: 'ok' | 'err' | 'idle' = 'idle') {
     gistStatus.textContent = msg;
@@ -625,7 +624,7 @@ import Layout from '../layouts/Layout.astro';
           'X-GitHub-Api-Version': '2022-11-28',
         },
         body: JSON.stringify({
-          description: 'Perma Guild Forge Backup',
+          description: 'Perma Design Kit Backup',
           public: false,
           files: { [GIST_FILENAME]: { content } },
         }),
@@ -659,21 +658,23 @@ import Layout from '../layouts/Layout.astro';
       });
       if (!res.ok) throw new Error(`GitHub API ${res.status}`);
       const gist = await res.json();
-      const raw: string | undefined = gist.files?.[GIST_FILENAME]?.content;
+      // Prefer the current filename; fall back to the one earlier versions
+      // (Perma Guild Forge) wrote, so existing synced Gists still import.
+      const raw: string | undefined = gist.files?.[GIST_FILENAME]?.content ?? gist.files?.[GIST_FILENAME_LEGACY]?.content;
       if (!raw) throw new Error(t('gistFileNotFound', { filename: GIST_FILENAME }));
       const data = JSON.parse(raw);
       const plants = Array.isArray(data) ? data : (data.plants ?? []);
       if (!Array.isArray(plants)) throw new Error(t('invalidBackupFormat'));
-      const guilds = Array.isArray(data) ? [] : (data.guilds ?? []);
+      const polycultures = Array.isArray(data) ? [] : (data.polycultures ?? data.guilds ?? []);
       await importPlants(plants);
-      if (guilds.length) await importGuilds(guilds);
+      if (polycultures.length) await importPolycultures(polycultures);
       if (!Array.isArray(data) && data.settings) {
         saveSettings(data.settings);
         settings = loadSettings();
         renderSources(); renderPrefs();
       }
       await renderStats();
-      setGistStatus(t('restoredCount', { plants: plants.length, guilds: guilds.length }), 'ok');
+      setGistStatus(t('restoredCount', { plants: plants.length, guilds: polycultures.length }), 'ok');
     } catch (err) {
       setGistStatus(t('gistErrorDownload', { msg: (err as Error).message }), 'err');
     }
@@ -691,14 +692,14 @@ import Layout from '../layouts/Layout.astro';
       if (!Array.isArray(plants) || plants.length === 0) {
         throw new Error(t('restoreNoPlants'));
       }
-      const guilds: any[] = Array.isArray(data) ? [] : (data.guilds ?? []);
+      const polycultures: any[] = Array.isArray(data) ? [] : (data.polycultures ?? data.guilds ?? []);
       const restoreSettings = !Array.isArray(data) && data.settings;
-      const guildPart = guilds.length ? t('restoreGuildPart', { n: guilds.length }) : '';
+      const guildPart = polycultures.length ? t('restoreGuildPart', { n: polycultures.length }) : '';
       const settingsPart = restoreSettings ? t('restoreSettingsPart') : '';
       const msg = t('restoreConfirm', { plants: plants.length, guildPart, settingsPart });
       if (!confirm(msg)) { input.value = ''; return; }
       await importPlants(plants);
-      if (guilds.length) await importGuilds(guilds);
+      if (polycultures.length) await importPolycultures(polycultures);
       if (restoreSettings) {
         saveSettings(data.settings);
         settings = loadSettings();

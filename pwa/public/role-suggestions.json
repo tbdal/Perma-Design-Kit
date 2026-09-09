@@ -1,5 +1,5 @@
 {
-  "_comment": "Kuratierte Pflanzen pro Gilden-Rolle. Werden im /gilden-Vorschlags-Panel als 'noch nicht im Bestand' angezeigt; Klick triggert Wikidata+PFAF+NaturaDB-Import. Erweiterungen via PR willkommen — Quellen: Crawford, Jacke & Toensmeier, Hemenway.",
+  "_comment": "Kuratierte Pflanzen pro Polykultur-Rolle. Werden im /polykulturen-Vorschlags-Panel als 'noch nicht im Bestand' angezeigt; Klick triggert Wikidata+PFAF+NaturaDB-Import. Erweiterungen via PR willkommen — Quellen: Crawford, Jacke & Toensmeier, Hemenway.",
 
   "groundCover": [
     { "latin": "Vinca minor", "common": "Kleines Immergrün" },

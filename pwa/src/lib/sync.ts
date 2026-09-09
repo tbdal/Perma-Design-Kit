@@ -1,7 +1,10 @@
-import { getAllPlants, getAllGuilds } from './db';
+import { getAllPlants, getAllPolycultures } from './db';
 import { loadSettings } from './settings';
 
-const GIST_FILENAME = 'perma-guild-forge-backup.json';
+export const GIST_FILENAME = 'perma-design-kit-backup.json';
+/** Filename earlier versions (Perma Guild Forge) wrote to — read as a
+ *  fallback so existing synced Gists still import correctly. */
+export const GIST_FILENAME_LEGACY = 'perma-guild-forge-backup.json';
 
 export function isAutoSyncEnabled(): boolean {
   try { return localStorage.getItem('auto-sync-enabled') === 'true'; } catch { return false; }
@@ -17,9 +20,9 @@ export function rememberSyncAt(provider: string) {
 }
 
 export async function buildBackupJson(): Promise<string> {
-  const [plants, guilds] = await Promise.all([getAllPlants(), getAllGuilds()]);
+  const [plants, polycultures] = await Promise.all([getAllPlants(), getAllPolycultures()]);
   const settings = loadSettings();
-  return JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), settings, plants, guilds }, null, 2);
+  return JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), settings, plants, polycultures }, null, 2);
 }
 
 export type SyncResult = { ok: boolean; provider: 'webdav' | 'gist' | null; error?: string };

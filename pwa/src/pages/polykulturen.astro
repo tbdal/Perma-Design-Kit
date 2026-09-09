@@ -1,30 +1,30 @@
 ---
 import Layout from '../layouts/Layout.astro';
 ---
-<Layout title="Perma Guild Forge — Gilden">
+<Layout title="Perma Design Kit — Polykulturen">
   <!-- ── Listenansicht ─────────────────────────────────────────────────── -->
-  <section id="guild-list-view">
+  <section id="polyculture-list-view">
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-      <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-100" data-i18n="pageTitle">Gilden</h1>
-      <button id="btn-new-guild" data-i18n="btnNewGuild" class="rounded-lg bg-green-700 px-3.5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">+ Neue Gilde</button>
+      <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-100" data-i18n="pageTitle">Polykulturen</h1>
+      <button id="btn-new-polyculture" data-i18n="btnNewGuild" class="rounded-lg bg-green-700 px-3.5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">+ Neue Polykultur</button>
     </div>
     <p class="mb-4 text-sm text-stone-500 dark:text-stone-400">
-      <span data-i18n="introText">Eine Gilde ist eine benannte Gruppe von Pflanzen rund um eine Ankerart, die sich
-      gegenseitig fördert. Mehr in der</span> <a href="/hilfe#gilden" data-i18n="introHelpLink" class="text-green-700 dark:text-green-400 hover:underline">Hilfe</a>.
+      <span data-i18n="introText">Eine Polykultur ist eine benannte Gruppe von Pflanzen rund um eine Ankerart, die sich
+      gegenseitig fördert. Mehr in der</span> <a href="/hilfe#polykulturen" data-i18n="introHelpLink" class="text-green-700 dark:text-green-400 hover:underline">Hilfe</a>.
     </p>
-    <div id="guild-list" class="grid gap-4 sm:grid-cols-2"></div>
-    <div id="guild-empty" class="hidden rounded-xl border-2 border-dashed border-stone-300 dark:border-stone-600 py-16 text-center">
-      <p class="text-stone-500 dark:text-stone-400" data-i18n="emptyStateText">Noch keine Gilden angelegt.</p>
-      <button id="btn-empty-new" data-i18n="btnEmptyNew" class="mt-3 inline-block rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white shadow hover:bg-green-800">Erste Gilde anlegen</button>
+    <div id="polyculture-list" class="grid gap-4 sm:grid-cols-2"></div>
+    <div id="polyculture-empty" class="hidden rounded-xl border-2 border-dashed border-stone-300 dark:border-stone-600 py-16 text-center">
+      <p class="text-stone-500 dark:text-stone-400" data-i18n="emptyStateText">Noch keine Polykulturen angelegt.</p>
+      <button id="btn-empty-new" data-i18n="btnEmptyNew" class="mt-3 inline-block rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white shadow hover:bg-green-800">Erste Polykultur anlegen</button>
     </div>
   </section>
 
   <!-- ── Editor ────────────────────────────────────────────────────────── -->
-  <section id="guild-editor-view" hidden>
+  <section id="polyculture-editor-view" hidden>
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
       <button id="btn-back-to-list" data-i18n="btnBackToList" class="text-sm font-medium text-stone-600 dark:text-stone-300 hover:text-green-700 dark:hover:text-green-400">← Zurück zur Liste</button>
       <div class="flex items-center gap-2">
-        <button id="btn-delete-guild" data-i18n="btnDeleteGuild" class="rounded-lg bg-red-100 dark:bg-red-900/40 px-3 py-1.5 text-sm font-medium text-red-700 dark:text-red-300 ring-1 ring-red-300 dark:ring-red-800 hover:bg-red-200 dark:hover:bg-red-900/60">Löschen</button>
+        <button id="btn-delete-polyculture" data-i18n="btnDeleteGuild" class="rounded-lg bg-red-100 dark:bg-red-900/40 px-3 py-1.5 text-sm font-medium text-red-700 dark:text-red-300 ring-1 ring-red-300 dark:ring-red-800 hover:bg-red-200 dark:hover:bg-red-900/60">Löschen</button>
       </div>
     </div>
 
@@ -34,11 +34,11 @@ import Layout from '../layouts/Layout.astro';
         <div class="rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 space-y-3">
           <label class="block">
             <span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="labelName">Name</span>
-            <input id="g-name" type="text" data-i18n-placeholder="placeholderName" placeholder="z.B. Apfelbaum-Gilde Garten Süd" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none" />
+            <input id="g-name" type="text" data-i18n-placeholder="placeholderName" placeholder="z.B. Apfelbaum-Polykultur Garten Süd" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none" />
           </label>
           <label class="block">
             <span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="labelDescription">Beschreibung</span>
-            <input id="g-description" type="text" data-i18n-placeholder="placeholderDescription" placeholder="kurz, was die Gilde zusammenhält" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none" />
+            <input id="g-description" type="text" data-i18n-placeholder="placeholderDescription" placeholder="kurz, was die Polykultur zusammenhält" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none" />
           </label>
           <label class="block">
             <span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="labelAnchor">Ankerart</span>
@@ -56,7 +56,7 @@ import Layout from '../layouts/Layout.astro';
           <div class="mt-3 text-xs text-stone-500 dark:text-stone-400" data-i18n="membersHint">Mitglieder aus dem Vorschlags-Panel rechts hinzufügen.</div>
         </div>
 
-        <button id="btn-save-guild" data-i18n="btnSaveGuild" class="rounded-lg bg-green-700 px-5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">Gilde speichern</button>
+        <button id="btn-save-polyculture" data-i18n="btnSaveGuild" class="rounded-lg bg-green-700 px-5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">Polykultur speichern</button>
       </div>
 
       <!-- Vorschläge (rechts, 1 col) -->
@@ -73,26 +73,26 @@ import Layout from '../layouts/Layout.astro';
 
 <script>
   import { getAllPlants, savePlant } from '../lib/db';
-  import { getAllGuilds, getGuild, saveGuild, deleteGuild } from '../lib/db';
+  import { getAllPolycultures, getPolyculture, savePolyculture, deletePolyculture } from '../lib/db';
   import { searchPlants, importPlantFromSearch } from '../lib/plant-search';
   import {
-    createEmptyGuild,
+    createEmptyPolyculture,
     ROLE_REQUIREMENT,
-    type Guild, type GuildMember, type GuildRole, type PlantData,
+    type Polyculture, type PolycultureMember, type PolycultureRole, type PlantData,
   } from '../lib/types';
   import { escapeHtml } from '../lib/html';
   import { createT, applyStaticI18n } from '../lib/i18n/core';
-  import { guildsDict } from '../lib/i18n/dict-gilden';
+  import { polyculturesDict } from '../lib/i18n/dict-polykulturen';
 
-  const t = createT(guildsDict);
-  applyStaticI18n(guildsDict);
+  const t = createT(polyculturesDict);
+  applyStaticI18n(polyculturesDict);
 
   type RoleSuggestion = { latin: string; common: string };
-  let curatedByRole: Partial<Record<GuildRole, RoleSuggestion[]>> = {};
+  let curatedByRole: Partial<Record<PolycultureRole, RoleSuggestion[]>> = {};
 
-  const ROLES: GuildRole[] = ['companion','groundCover','nFixer','mineralFixer','insectary','pestConfuser','fruitProducer','other'];
+  const ROLES: PolycultureRole[] = ['companion','groundCover','nFixer','mineralFixer','insectary','pestConfuser','fruitProducer','other'];
 
-  const ROLE_I18N_KEY: Record<GuildRole, string> = {
+  const ROLE_I18N_KEY: Record<PolycultureRole, string> = {
     companion: 'roleCompanion',
     groundCover: 'roleGroundCover',
     nFixer: 'roleNFixer',
@@ -102,15 +102,15 @@ import Layout from '../layouts/Layout.astro';
     fruitProducer: 'roleFruitProducer',
     other: 'roleOther',
   };
-  function roleLabel(role: GuildRole): string {
+  function roleLabel(role: PolycultureRole): string {
     return t(ROLE_I18N_KEY[role]);
   }
 
   // ── DOM refs ────────────────────────────────────────────────────────────
-  const listView = document.getElementById('guild-list-view')!;
-  const editorView = document.getElementById('guild-editor-view')!;
-  const listEl = document.getElementById('guild-list')!;
-  const emptyEl = document.getElementById('guild-empty')!;
+  const listView = document.getElementById('polyculture-list-view')!;
+  const editorView = document.getElementById('polyculture-editor-view')!;
+  const listEl = document.getElementById('polyculture-list')!;
+  const emptyEl = document.getElementById('polyculture-empty')!;
   const toast = document.getElementById('toast')!;
 
   const fName = document.getElementById('g-name') as HTMLInputElement;
@@ -122,8 +122,8 @@ import Layout from '../layouts/Layout.astro';
 
   let plants: PlantData[] = [];
   let plantsById = new Map<string, PlantData>();
-  let guilds: Guild[] = [];
-  let editing: Guild | null = null;
+  let polycultures: Polyculture[] = [];
+  let editing: Polyculture | null = null;
 
   function showToast(msg: string) {
     toast.textContent = msg;
@@ -160,14 +160,14 @@ import Layout from '../layouts/Layout.astro';
 
   // ── Listenansicht ──────────────────────────────────────────────────────
   function renderList() {
-    if (guilds.length === 0) {
+    if (polycultures.length === 0) {
       emptyEl.classList.remove('hidden');
       listEl.classList.add('hidden');
       return;
     }
     emptyEl.classList.add('hidden');
     listEl.classList.remove('hidden');
-    listEl.innerHTML = guilds.map(g => {
+    listEl.innerHTML = polycultures.map(g => {
       const anchor = g.anchorPlantId ? plantsById.get(g.anchorPlantId) : undefined;
       const filledRoles = new Set(g.members.map(m => m.role));
       const memberChips = g.members.slice(0, 6).map(m => {
@@ -177,7 +177,7 @@ import Layout from '../layouts/Layout.astro';
       const more = g.members.length > 6 ? `<span class="text-xs text-stone-400">+${g.members.length - 6}</span>` : '';
       const memberCount = g.members.length === 1 ? t('memberCountSingular', { count: g.members.length }) : t('memberCountPlural', { count: g.members.length });
       return `
-        <article data-guild-id="${g.id}" class="cursor-pointer rounded-xl bg-white dark:bg-stone-800 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:ring-green-300 dark:hover:ring-green-700">
+        <article data-polyculture-id="${g.id}" class="cursor-pointer rounded-xl bg-white dark:bg-stone-800 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:ring-green-300 dark:hover:ring-green-700">
           <h3 class="text-base font-semibold text-stone-900 dark:text-stone-100">${escapeHtml(g.name || t('guildUnnamed'))}</h3>
           ${g.description ? `<p class="mt-0.5 text-xs text-stone-500 dark:text-stone-400">${escapeHtml(g.description)}</p>` : ''}
           <p class="mt-2 text-sm text-stone-700 dark:text-stone-200"><span class="text-stone-400 dark:text-stone-500">${t('anchorLabel')}</span> ${plantLabel(anchor)}</p>
@@ -185,14 +185,14 @@ import Layout from '../layouts/Layout.astro';
           <p class="mt-3 text-xs text-stone-400 dark:text-stone-500">${memberCount} · ${t('rolesFilled', { filled: filledRoles.size, total: ROLES.length })}</p>
         </article>`;
     }).join('');
-    listEl.querySelectorAll<HTMLElement>('[data-guild-id]').forEach(el => {
-      el.addEventListener('click', () => openEditor(el.dataset.guildId!));
+    listEl.querySelectorAll<HTMLElement>('[data-polyculture-id]').forEach(el => {
+      el.addEventListener('click', () => openEditor(el.dataset.polycultureId!));
     });
   }
 
   // ── Editor ─────────────────────────────────────────────────────────────
   function openEditor(id: string | null) {
-    editing = id ? (guilds.find(g => g.id === id) ?? createEmptyGuild()) : createEmptyGuild();
+    editing = id ? (polycultures.find(g => g.id === id) ?? createEmptyPolyculture()) : createEmptyPolyculture();
     fName.value = editing.name;
     fDescription.value = editing.description;
     fNotes.value = editing.notes;
@@ -231,7 +231,7 @@ import Layout from '../layouts/Layout.astro';
     memberList.querySelectorAll<HTMLSelectElement>('.member-role').forEach(sel => {
       sel.addEventListener('change', () => {
         const idx = parseInt(sel.dataset.memberIdx!);
-        editing!.members[idx].role = sel.value as GuildRole;
+        editing!.members[idx].role = sel.value as PolycultureRole;
         renderSuggestions();
       });
     });
@@ -330,7 +330,7 @@ import Layout from '../layouts/Layout.astro';
       btn.addEventListener('click', () => {
         editing!.members.push({
           plantId: btn.dataset.addPlant!,
-          role: btn.dataset.addRole as GuildRole,
+          role: btn.dataset.addRole as PolycultureRole,
           notes: '',
         });
         renderMembers();
@@ -341,7 +341,7 @@ import Layout from '../layouts/Layout.astro';
       btn.addEventListener('click', async () => {
         if (btn.disabled) return;
         const latin = btn.dataset.importLatin!;
-        const role = btn.dataset.importRole as GuildRole;
+        const role = btn.dataset.importRole as PolycultureRole;
         const original = btn.textContent;
         btn.disabled = true;
         btn.textContent = '…';
@@ -373,7 +373,7 @@ import Layout from '../layouts/Layout.astro';
     await loadCurated();
     plants = await getAllPlants();
     plantsById = new Map(plants.map(p => [p.id, p]));
-    guilds = await getAllGuilds();
+    polycultures = await getAllPolycultures();
     renderList();
   }
 
@@ -395,31 +395,31 @@ import Layout from '../layouts/Layout.astro';
     return plant;
   }
 
-  document.getElementById('btn-new-guild')!.addEventListener('click', () => openEditor(null));
+  document.getElementById('btn-new-polyculture')!.addEventListener('click', () => openEditor(null));
   document.getElementById('btn-empty-new')!.addEventListener('click', () => openEditor(null));
   document.getElementById('btn-back-to-list')!.addEventListener('click', closeEditor);
 
   fAnchor.addEventListener('change', () => renderSuggestions());
 
-  document.getElementById('btn-save-guild')!.addEventListener('click', async () => {
+  document.getElementById('btn-save-polyculture')!.addEventListener('click', async () => {
     if (!editing) return;
     if (!fName.value.trim()) { alert(t('alertEnterName')); return; }
     editing.name = fName.value.trim();
     editing.description = fDescription.value.trim();
     editing.notes = fNotes.value;
     editing.anchorPlantId = fAnchor.value || null;
-    await saveGuild(editing);
-    guilds = await getAllGuilds();
+    await savePolyculture(editing);
+    polycultures = await getAllPolycultures();
     renderList();
     closeEditor();
     showToast(t('toastGuildSaved'));
   });
 
-  document.getElementById('btn-delete-guild')!.addEventListener('click', async () => {
+  document.getElementById('btn-delete-polyculture')!.addEventListener('click', async () => {
     if (!editing) return;
     if (!confirm(t('confirmDeleteGuild', { name: editing.name || t('unnamedGuild') }))) return;
-    await deleteGuild(editing.id);
-    guilds = await getAllGuilds();
+    await deletePolyculture(editing.id);
+    polycultures = await getAllPolycultures();
     renderList();
     closeEditor();
     showToast(t('toastGuildDeleted'));

@@ -1,19 +1,19 @@
 import type { Dict } from './core';
 
-export const guildsDict: Dict = {
-  pageTitle: { de: 'Gilden', en: 'Guilds' },
-  btnNewGuild: { de: '+ Neue Gilde', en: '+ New guild' },
-  introText: { de: 'Eine Gilde ist eine benannte Gruppe von Pflanzen rund um eine Ankerart, die sich gegenseitig fördert. Mehr in der', en: 'A guild is a named group of plants around an anchor species that support each other. More in the' },
+export const polyculturesDict: Dict = {
+  pageTitle: { de: 'Polykulturen', en: 'Polycultures' },
+  btnNewGuild: { de: '+ Neue Polykultur', en: '+ New polyculture' },
+  introText: { de: 'Eine Polykultur ist eine benannte Gruppe von Pflanzen rund um eine Ankerart, die sich gegenseitig fördert. Mehr in der', en: 'A polyculture is a named group of plants around an anchor species that support each other. More in the' },
   introHelpLink: { de: 'Hilfe', en: 'help' },
-  emptyStateText: { de: 'Noch keine Gilden angelegt.', en: 'No guilds created yet.' },
-  btnEmptyNew: { de: 'Erste Gilde anlegen', en: 'Create your first guild' },
+  emptyStateText: { de: 'Noch keine Polykulturen angelegt.', en: 'No polycultures created yet.' },
+  btnEmptyNew: { de: 'Erste Polykultur anlegen', en: 'Create your first polyculture' },
 
   btnBackToList: { de: '← Zurück zur Liste', en: '← Back to list' },
   btnDeleteGuild: { de: 'Löschen', en: 'Delete' },
   labelName: { de: 'Name', en: 'Name' },
-  placeholderName: { de: 'z.B. Apfelbaum-Gilde Garten Süd', en: 'e.g. Apple tree guild, south garden' },
+  placeholderName: { de: 'z.B. Apfelbaum-Polykultur Garten Süd', en: 'e.g. Apple tree polyculture, south garden' },
   labelDescription: { de: 'Beschreibung', en: 'Description' },
-  placeholderDescription: { de: 'kurz, was die Gilde zusammenhält', en: 'briefly, what holds the guild together' },
+  placeholderDescription: { de: 'kurz, was die Polykultur zusammenhält', en: 'briefly, what holds the polyculture together' },
   labelAnchor: { de: 'Ankerart', en: 'Anchor species' },
   anchorPleaseSelect: { de: '— bitte wählen —', en: '— please select —' },
   labelNotes: { de: 'Notizen', en: 'Notes' },
@@ -21,7 +21,7 @@ export const guildsDict: Dict = {
   membersHeading: { de: 'Mitglieder', en: 'Members' },
   membersHint: { de: 'Mitglieder aus dem Vorschlags-Panel rechts hinzufügen.', en: 'Add members from the suggestions panel on the right.' },
   noMembers: { de: 'Keine Mitglieder.', en: 'No members.' },
-  btnSaveGuild: { de: 'Gilde speichern', en: 'Save guild' },
+  btnSaveGuild: { de: 'Polykultur speichern', en: 'Save polyculture' },
 
   suggestionsHeading: { de: 'Vorschläge', en: 'Suggestions' },
   suggestionsIntro: { de: 'Pflanzen aus deinem Bestand, die freie Rollen füllen und mit der Ankerart in Sonne/Wasser/pH überlappen.', en: 'Plants from your collection that fill open roles and overlap with the anchor species in sun/water/pH.' },
@@ -44,9 +44,9 @@ export const guildsDict: Dict = {
   rolesFilled: { de: '{filled} von {total} Rollen besetzt', en: '{filled} of {total} roles filled' },
 
   alertEnterName: { de: 'Bitte einen Namen eingeben.', en: 'Please enter a name.' },
-  confirmDeleteGuild: { de: 'Gilde „{name}" wirklich löschen?', en: 'Really delete guild "{name}"?' },
-  toastGuildSaved: { de: 'Gilde gespeichert', en: 'Guild saved' },
-  toastGuildDeleted: { de: 'Gilde gelöscht', en: 'Guild deleted' },
+  confirmDeleteGuild: { de: 'Polykultur „{name}" wirklich löschen?', en: 'Really delete polyculture "{name}"?' },
+  toastGuildSaved: { de: 'Polykultur gespeichert', en: 'Polyculture saved' },
+  toastGuildDeleted: { de: 'Polykultur gelöscht', en: 'Polyculture deleted' },
   toastImported: { de: '{name} importiert', en: '{name} imported' },
   alertImportFailed: { de: 'Import von „{latin}" fehlgeschlagen: {error}', en: 'Import of "{latin}" failed: {error}' },
 
