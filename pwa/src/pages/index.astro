@@ -464,26 +464,31 @@ import Layout from '../layouts/Layout.astro';
   // tones) — two separate lists so the table view can show them as distinct
   // columns with a legend (see legendUsageHeading/legendFunctionsHeading),
   // instead of one undifferentiated row of dots.
-  // Each entry also carries a literal "-400" dot-color class (3rd field) for the
-  // compact table dots/legend — Tailwind's JIT scanner only generates CSS for
-  // class strings that appear literally in source, so these can't be derived by
-  // string-replacing the pill color at runtime (that silently produces invisible,
-  // ungenerated classes for every color but amber).
+  // 3rd field is the dot color as a literal hex value, applied via inline
+  // style (not a Tailwind class — arbitrary hex can't go through the JIT
+  // scanner, which only generates CSS for class strings literal in source).
+  // Where a field has a matching wedge in the Baumscheibe template's "color"
+  // group (baumscheibe-mapping.ts BOOL_FIELDS' trailing alias, e.g. 'e' for
+  // eatable), the hex is the exact color of that wedge's PNG — extracted via
+  // median RGB of its opaque pixels, not eyeballed — so the table dots match
+  // the actual card. material/fodder/fuel have no wedge in that group (only
+  // 9 of the 15 Nutzung+Funktionen fields do, confirmed by image count in the
+  // SVG), so those three keep an arbitrary but visually consistent hex.
   const USAGE_BADGES: [keyof PlantData, string, string, string][] = [
-    ['eatable',   'bg-amber-100 text-amber-800',   'bg-amber-400',  t('badgeEatable')],
-    ['culinaric', 'bg-yellow-100 text-yellow-800', 'bg-yellow-400', t('badgeCulinaric')],
-    ['meds',      'bg-rose-100 text-rose-700',     'bg-rose-400',   t('badgeMeds')],
-    ['material',  'bg-orange-100 text-orange-800', 'bg-orange-400', t('badgeMaterial')],
-    ['fodder',    'bg-lime-100 text-lime-700',     'bg-lime-400',   t('badgeFodder')],
-    ['fuel',      'bg-red-100 text-red-700',       'bg-red-400',    t('badgeFuel')],
+    ['eatable',   'bg-amber-100 text-amber-800',   '#dc330c', t('badgeEatable')],
+    ['culinaric', 'bg-yellow-100 text-yellow-800', '#f88a70', t('badgeCulinaric')],
+    ['meds',      'bg-rose-100 text-rose-700',     '#fa512a', t('badgeMeds')],
+    ['material',  'bg-orange-100 text-orange-800', '#fb923c', t('badgeMaterial')],
+    ['fodder',    'bg-lime-100 text-lime-700',     '#a3e635', t('badgeFodder')],
+    ['fuel',      'bg-red-100 text-red-700',       '#f87171', t('badgeFuel')],
   ];
   const FUNCTION_BADGES: [keyof PlantData, string, string, string][] = [
-    ['nitrogenFix',      'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300', 'bg-green-400',   t('badgeNitrogenFix')],
-    ['mineralFix',       'bg-emerald-100 text-emerald-800', 'bg-emerald-400', t('badgeMineralFix')],
-    ['groundCover',      'bg-teal-100 text-teal-800',       'bg-teal-400',    t('badgeGroundCover')],
-    ['insects',          'bg-cyan-100 text-cyan-800',       'bg-cyan-400',    t('badgeInsects')],
-    ['windBreaking',     'bg-sky-100 text-sky-800',         'bg-sky-400',     t('badgeWindBreaking')],
-    ['animalProtection', 'bg-violet-100 text-violet-800',   'bg-violet-400',  t('badgeAnimalProtection')],
+    ['nitrogenFix',      'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300', '#92d051', t('badgeNitrogenFix')],
+    ['mineralFix',       'bg-emerald-100 text-emerald-800', '#3cbbe4', t('badgeMineralFix')],
+    ['groundCover',      'bg-teal-100 text-teal-800',       '#d4a525', t('badgeGroundCover')],
+    ['insects',          'bg-cyan-100 text-cyan-800',       '#fadb07', t('badgeInsects')],
+    ['windBreaking',     'bg-sky-100 text-sky-800',         '#c6c6c6', t('badgeWindBreaking')],
+    ['animalProtection', 'bg-violet-100 text-violet-800',   '#ba7010', t('badgeAnimalProtection')],
   ];
   const USE_BADGES = [...USAGE_BADGES, ...FUNCTION_BADGES];
 
@@ -499,15 +504,15 @@ import Layout from '../layouts/Layout.astro';
   function dotGroup(p: PlantData, group: [keyof PlantData, string, string, string][]): string {
     return group
       .filter(([k]) => p[k])
-      .map(([,,dot,l]) => `<span class="inline-block h-2 w-2 rounded-full ${dot}" title="${escapeHtml(l)}"></span>`)
+      .map(([,,dot,l]) => `<span class="inline-block h-2 w-2 rounded-full" style="background-color:${dot}" title="${escapeHtml(l)}"></span>`)
       .join('');
   }
 
   /** Color-key for the table's dot columns — what each dot color/position
    *  means, since the table itself only has room for colored dots, not labels. */
   function legendHtml(): string {
-    const chip = (colorClass: string, label: string) =>
-      `<span class="inline-flex items-center gap-1"><span class="inline-block h-2 w-2 rounded-full ${colorClass}"></span>${escapeHtml(label)}</span>`;
+    const chip = (colorHex: string, label: string) =>
+      `<span class="inline-flex items-center gap-1"><span class="inline-block h-2 w-2 rounded-full" style="background-color:${colorHex}"></span>${escapeHtml(label)}</span>`;
     const usageChips = USAGE_BADGES.map(([,,dot,l]) => chip(dot, l)).join(' ');
     const functionChips = FUNCTION_BADGES.map(([,,dot,l]) => chip(dot, l)).join(' ');
     return `
@@ -518,8 +523,8 @@ import Layout from '../layouts/Layout.astro';
           <div class="flex flex-wrap items-center gap-x-3 gap-y-1"><strong class="text-stone-500 dark:text-stone-400">${escapeHtml(t('legendFunctionsHeading'))}</strong>${functionChips}</div>
           <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
             <strong class="text-stone-500 dark:text-stone-400">${escapeHtml(t('legendPhenologyHeading'))}</strong>
-            ${chip('bg-amber-300 dark:bg-amber-500', t('legendFlowering'))}
-            ${chip('bg-green-500 dark:bg-green-400', t('legendFruiting'))}
+            ${chip('#fcd34d', t('legendFlowering'))}
+            ${chip('#22c55e', t('legendFruiting'))}
           </div>
         </div>
       </details>`;
