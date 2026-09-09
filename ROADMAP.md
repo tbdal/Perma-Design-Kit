@@ -50,6 +50,7 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 - [ ] SVG neu generieren mit anpassungen in baumscheibe3-data-fields.ods --> python-skript existiert nun.
 - [ ] Schriftarten im SVG anpassen entsprechend PSD
 - [ ] Code anpassen analog baumscheibe3-data-fields.ods
+- [ ] lizenzen manuell prüfen & unsere festlegen
 
 ### PDF Generierung
 - [x] **Größen angepasst: 6 Baumscheiben pro Seite, 9cm Durchmesser** — neuer Button „PDF (6/Seite, 9cm)" auf `/cards` (nur sichtbar bei Baumscheibe-Ansicht), `exportBaumscheibeSheetPDF()` in `pdf-export.ts`. Das bisherige Einzelkarten-Layout (`exportBaumscheibePDF`/`exportBaumscheibesPDF`) druckt das volle Template-Canvas (193,5×210,2mm, viel Weißraum außerhalb der eigentlichen Scheibe) — dieses neue Layout schneidet stattdessen eng auf die Scheibe zu. Kreismittelpunkt/-radius wurden vermessen (Canvas an 24 Winkeln vom Zentrum nach außen abgetastet, äußerster Tintenpixel je Winkel: konsistent ~1011–1046, ein 1077-Ausreißer durch eine kleine Dekor-Kerbe oben rechts) statt geschätzt. 2×3-Raster auf A4, mittig, mit 4mm Abstand; bei mehr als 6 Pflanzen automatische Paginierung. Firefox nutzt wie beim bestehenden Export den nativen Druckdialog mit eingebettetem (zugeschnittenem) SVG statt Rasterung. Verifiziert: PDF mit 7 Test-Pflanzen erzeugt (6 auf Seite 1, 1 auf Seite 2), beide Seiten A4 (210×297mm), per `poppler-utils` gerendert und den tatsächlichen Scheibendurchmesser nachgemessen — 89,15mm bei Sollwert 90mm (Abweichung durch Kantenerkennungs-Toleranz, nicht durch falsche Skalierung)
