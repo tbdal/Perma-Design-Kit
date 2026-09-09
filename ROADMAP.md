@@ -49,7 +49,7 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 
 ### vorort
 - [ ] naturadb anrufen
-- [ ] tabellenansicht verbessern: inhalt klarer unterscheiden (funktionen / nutzen) und weitere spalten mit infos wie Blütemonate. möglichst alles in tabellenform anzeigen
+- [ ] tabellenansicht verbessern: inhalt klarer unterscheiden (funktionen / nutzen) und weitere spalten mit infos wie Blütemonate. möglichst alles in tabellenform anzeigen. legende zu farben erstellen
 - [ ] präsentation
   - aufzeichnung 10-20min, ende sept. abgabe, anfang nov ist konferenz. beiträge hinter paywall. agroforestry research trust. fffg.
   - kalender: wann dran arbeiten?
