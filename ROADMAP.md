@@ -61,8 +61,7 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 - [ ] jens dazu einweihen
 
 ### Debugging
-#### Darstellung Scheibe
-
+#### Darstellung Scheibe & mapping prüfen
 - [ ] raleway schrift auch für höhe und durchmesser und winterhärte
 - [ ] warum wird bei Beinwell Material  und Brennstoff aktiviert - wo steht das bei pfaf?
 
