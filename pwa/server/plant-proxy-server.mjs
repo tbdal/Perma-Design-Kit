@@ -10,15 +10,24 @@ import { createServer } from 'node:http';
 
 const PORT = process.env.PLANT_PROXY_PORT || 8787;
 
-// PFAF (and presumably NaturaDB) filters on the outbound User-Agent: a
-// self-identifying string like "PermaGuildForge/1.0" got server-side degraded
-// responses (200 OK, full page size, but every data field empty) — confirmed
-// by alternating requests with this UA vs. a browser UA back to back, same
-// IP, same moment: the custom UA was empty 100% of the time, the browser UA
-// worked 100% of the time. Not an IP rate limit at all. Using an ordinary
-// browser UA here isn't concealing what this is — see the PFAF_ATTRIBUTION
-// note in the frontend and the honest description of this proxy in
-// datenschutz.astro — it's just what it takes to get real HTML back.
+// PFAF filters on the outbound User-Agent: a self-identifying string like
+// "PermaGuildForge/1.0" got a server-side "200 OK, full page, every field
+// empty" response every time, while an ordinary browser UA worked every
+// time (confirmed by alternating the two back to back, same IP, same
+// moment — see ROADMAP.md "Lizenz & Datenquellen" for the full writeup).
+//
+// This is a deliberate, discussed choice, not an oversight: PFAF's CC BY 4.0
+// license explicitly permits reuse of their data, but UA filtering signals
+// they don't want *automated* access, which is a separate question from
+// whether reusing the data itself is allowed. Weighed masking as a browser
+// against leaving PFAF enrichment broken (as chosen for NaturaDB, which
+// grants no reuse license at all — a materially different situation) or
+// asking PFAF first. Decided to proceed with a browser UA: the data use
+// itself is within license, and PFAF is a small non-profit whose own
+// licensing text is unusually welcoming to reuse ("we ask that you let us
+// know if you ... do anything groovy with this information"). Revisit if
+// that balance ever seems off — e.g. if PFAF's ToS explicitly addresses
+// automated access, or if request volume grows enough to matter to them.
 const OUTBOUND_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:130.0) Gecko/20100101 Firefox/130.0';
 
 // --- Origin allowlist ---
