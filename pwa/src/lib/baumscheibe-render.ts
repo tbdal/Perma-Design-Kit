@@ -164,11 +164,23 @@ export async function renderBaumscheibeSvg(plant: PlantData): Promise<string> {
   const tpl = await loadTemplate();
   const svg = tpl.cloneNode(true) as SVGSVGElement;
 
+  // Force the Raleway face to load unconditionally here (not just inside
+  // injectNameText, which skips its own load call when commonName/latinName
+  // is empty) — heightM/widthM/climateZone need it regardless of whether the
+  // name fields are set.
+  try { await document.fonts.load(`500 91px Raleway`); } catch { /* offline first load, falls back gracefully */ }
+
+  // heightM/widthM/climateZone are pre-existing template <text> elements
+  // (copied over from the old template, still styled with the old font:Inter
+  // bold). Override to Raleway to match commonName's font.
   for (const [field, labels] of Object.entries(TEXT_FIELDS)) {
     if (!labels) continue;
     const v = (plant as any)[field];
     const text = v == null || v === '' ? '' : String(v);
-    for (const el of findByLabel(svg, labels)) setText(el, text);
+    for (const el of findByLabel(svg, labels)) {
+      setText(el, text);
+      (el as SVGElement).style.fontFamily = "'Raleway', sans-serif";
+    }
   }
 
   await injectNameText(svg, 'commonName', plant.commonName || '');

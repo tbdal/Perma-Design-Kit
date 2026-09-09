@@ -247,17 +247,46 @@ async function fetchPfaf(name) {
   result.waterWet = html.includes('water3.jpg');
   result.waterPlant = html.includes('water4.jpg');
 
-  const fieldSection = html.match(/boots[^"]*"[^>]*>([\s\S]*?)<\/div>/gi)?.join(' ') || '';
-  result.nitrogenFix = /Nitrogen Fixer/i.test(fieldSection);
-  result.groundCover = /Ground Cover/i.test(fieldSection);
-  result.insects = /Attracts Wildlife/i.test(fieldSection);
+  // Was `/boots[^"]*"[^>]*>/` (no "class="), which doesn't just match the
+  // intended class="boots"/"boots2"/"boots3"/"boots4" divs (Cultivation
+  // details / Medicinal / Edible / Other Uses) — it also matches the literal
+  // substring "boots" inside "bootstrap" in the <head>'s CDN <link>/<script>
+  // tags, which appear *before* the real content. That false match's lazy
+  // capture then runs all the way to the next `</div>` in the document,
+  // swallowing tens of KB of unrelated head/script/hidden-form markup ahead
+  // of the real Uses sections. Fixed by requiring the `class="` prefix.
+  const fieldSection = html.match(/class="boots\d*"[^>]*>([\s\S]*?)<\/div>/gi)?.join(' ') || '';
+
+  // Fields backed by one of PFAF's own "Other Uses" / "Special Uses" tags
+  // (rendered as `<a href='Search_Use.aspx?glossary=Fuel'>Fuel</a>` etc. —
+  // confirmed by checking real PFAF pages, not guessed) match the literal
+  // anchor text, not loose prose. Matching loose prose was the actual bug
+  // behind "Beinwell" (Symphytum officinale) showing fuel/fodder/groundCover
+  // as active: PFAF only tags it Biomass/Compost/Gum/Dynamic accumulator/Food
+  // Forest, but the Biomass tag's own tooltip text reads "...can be converted
+  // into fuel etc.", and the Landscape Uses prose mentions "Ground cover" in
+  // passing — `/\bFuel\b/i` and `/Ground Cover/i` matched that prose as if it
+  // were an assigned tag. materialScore (Other Uses Rating, 4 of 5 for
+  // Beinwell) is unaffected by this bug — that's PFAF's own numeric rating,
+  // not text-matched, and is correctly not a false positive.
+  const hasUseTag = (tagName) =>
+    new RegExp(`>${tagName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}</a>`, 'i').test(fieldSection);
+  result.nitrogenFix = hasUseTag('Nitrogen Fixer');
+  result.groundCover = hasUseTag('Ground Cover');
+  result.insects = hasUseTag('Attracts Wildlife');
+  result.fuel = hasUseTag('Fuel');
+  result.fodder = hasUseTag('Fodder');
+  result.pest = hasUseTag('Repellent');
+  result.mineralFix = hasUseTag('Dynamic accumulator');
+  result.culinaric = hasUseTag('Condiment');
+  // windBreaking/animalProtection have no equivalent PFAF glossary tag at all
+  // (verified: Search_Use.aspx?glossary=Windbreak and ?glossary=Living+Trellis
+  // both return PFAF's "no search result found" page even for classic
+  // windbreak species like Elaeagnus x ebbingei) — PFAF only ever mentions
+  // these as free text in the Agroforestry Uses paragraph, so prose-matching
+  // is the best signal available, not a shortcut we chose over a real tag.
   result.windBreaking = /Windbreak/i.test(fieldSection);
-  result.fuel = /\bFuel\b/i.test(fieldSection);
-  result.fodder = /\bFodder\b/i.test(fieldSection);
-  result.pest = /\bRepellent\b/i.test(fieldSection);
   result.animalProtection = /Living trellis/i.test(fieldSection);
-  result.mineralFix = /Dynamic accumulator/i.test(fieldSection);
-  result.culinaric = /\bCondiment\b/i.test(fieldSection);
 
   return result;
 }
