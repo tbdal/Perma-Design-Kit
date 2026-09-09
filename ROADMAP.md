@@ -65,12 +65,12 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 - [ ] raleway schrift auch für höhe und durchmesser und winterhärte
 - [ ] warum wird bei Beinwell Material  und Brennstoff aktiviert - wo steht das bei pfaf?
 
-### bugs / validierung
-- [ ] nutzen prüfen, ist alles vorhanden, was in Baumscheibe angezeigt wird?
+
+#### weitere bugs / validierung
 - [ ] NOW anzahl pflanzen auf karten-seite
 - [ ] limits für abruf bei pfaf
 
-- [ ] 
+
 ### Baumscheibe Karte Feinschliff
 - [x] **SVG neu generiert: `baumscheibe2.3_inkl-label.svg`** — farbiger, überarbeiteter Export ersetzt `pwa/public/baumscheibe-template.svg`. Rohe Photoshop-Ebenennamen (`u_edible`, `f_Nfixer`, `ph2_acid`, …) statt bisheriger PlantData-Feldnamen als `inkscape:label` — Zuordnung per Positionsvergleich ermittelt (`getBBox()` alt vs. neu, nächster Nachbar, meist < 5px), nicht geraten; Details im Kommentar oben in `baumscheibe-mapping.ts` und in `baumscheibe-mapping-status.md`. Disc-Geometrie und Frucht-/Blüte-Ringe per Pixel-Sampling erneut vermessen: byte-identisch zur alten Version, keine Code-Anpassung an `pdf-export.ts`/`baumscheibe-render.ts` nötig. `latinName`/`commonName`/`heightM`/`widthM`/`climateZone` existierten im rohen Export nicht (wie schon vorher reine manuell nachgetragene Textfelder) — 1:1 aus dem alten Template übernommen. **Bonus:** `phVeryAcid`/`phVeryAlkaline` sind jetzt erstmals verdrahtet (2.3-Template hat alle 5 pH-Stufen statt bisher 3). **Regression:** `growSpeedMid`/`growSpeedHigh` sind jetzt tot (2.3-Template hat nur noch 1 statt 3 Wachstumsgeschwindigkeits-Icons) — neuer Punkt in `baumscheibe-mapping-status.md`. Getestet: volle Testpflanze, leere Testpflanze, alle drei PDF-Export-Pfade (Einzelkarte/Bulk/6er-Sheet) per Playwright + Sichtprüfung der gerenderten PDFs
 - [x] **Schriftarten von SVG übernommen (commonName)** — `NAME_BOXES` in `baumscheibe-render.ts` nutzt jetzt Raleway (wie das Template selbst für „COMMON NAME") statt Inter; per Google Fonts geladen (OFL-lizenziert), `document.fonts.load()` vor dem Rendern erzwungen, da ein per `Image()`-Blob geladenes SVG das Nachladen sonst nicht selbst auslöst — sonst hätte der PDF-Export (Canvas-Rasterung) die Schrift verpasst, obwohl sie im Hauptdokument schon registriert war. Per `document.fonts.check()` und Sichtprüfung des gerenderten PDFs bestätigt. **latinName offen:** das Template nutzt „Voice-of-the-Highlander", ein Schriftschnitt von Octotype/DaFont — laut Lizenz nur für den persönlichen Gebrauch frei, für Web-Embedding in dieser App bräuchte es eine kommerzielle Lizenz (Kontakt: octotypeone@gmail.com). Font-Family wird zwar angefragt (fällt aktuell auf eine Serif-Kursive zurück), aber nicht eingebunden — Kauf/Klärung der Lizenz wäre nötig, bevor sie echt eingebunden werden kann
