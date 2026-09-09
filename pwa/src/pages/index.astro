@@ -350,14 +350,37 @@ import Layout from '../layouts/Layout.astro';
     wikidata: 'WD', pfaf: 'PFAF', naturadb: 'NDB', manual: 'M', csv: 'CSV', sample: '~',
   };
 
-  /** Outline source chips — visually distinct from filled usage badges. */
+  /** Deep-link to this plant's actual record on the given source, when that's possible. */
+  function sourceLink(source: DataSource, p: PlantData): string | null {
+    if (!p.latinName) return null;
+    switch (source) {
+      case 'pfaf':
+        return `https://pfaf.org/user/Plant.aspx?LatinName=${encodeURIComponent(p.latinName).replace(/%20/g, '+')}`;
+      case 'wikidata':
+        return `https://www.wikidata.org/w/index.php?search=${encodeURIComponent(p.latinName)}`;
+      case 'naturadb':
+        return `https://www.naturadb.de/pflanzen/${p.latinName.toLowerCase().replace(/ /g, '-')}/`;
+      default:
+        return null; // manual/csv/sample aren't external sources
+    }
+  }
+
+  /** Outline source chips — visually distinct from filled usage badges. Clickable
+   *  where the source is an external site, linking straight to this plant's record. */
   function sourceChipsHtml(p: PlantData): string {
     if (!p._sources) return '';
     const sources = [...new Set(Object.values(p._sources))] as DataSource[];
     if (sources.length === 0) return '';
     return sources
       .filter(s => SOURCE_OUTLINE[s])
-      .map(s => `<span class="inline-block rounded border px-1.5 py-px text-[10px] font-medium ${SOURCE_OUTLINE[s]}" title="Datenquelle: ${SOURCE_LABEL[s]}">${SOURCE_SHORT[s]}</span>`)
+      .map(s => {
+        const cls = `inline-block rounded border px-1.5 py-px text-[10px] font-medium ${SOURCE_OUTLINE[s]}`;
+        const title = `Datenquelle: ${SOURCE_LABEL[s]}`;
+        const href = sourceLink(s, p);
+        return href
+          ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="${cls} hover:underline" title="${title} — auf ${SOURCE_LABEL[s]} öffnen">${SOURCE_SHORT[s]}</a>`
+          : `<span class="${cls}" title="${title}">${SOURCE_SHORT[s]}</span>`;
+      })
       .join(' ');
   }
 
