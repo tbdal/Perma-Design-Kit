@@ -63,9 +63,10 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 ### bugs / validierung
 - [ ] nutzen prüfen, ist alles vorhanden, was in Baumscheibe angezeigt wird?
 ### Baumscheibe Karte Feinschliff
-- [ ] SVG neu generieren mit anpassungen in baumscheibe3-data-fields.ods --> python-skript existiert nun.
+- [x] **SVG neu generiert: `baumscheibe2.3_inkl-label.svg`** — farbiger, überarbeiteter Export ersetzt `pwa/public/baumscheibe-template.svg`. Rohe Photoshop-Ebenennamen (`u_edible`, `f_Nfixer`, `ph2_acid`, …) statt bisheriger PlantData-Feldnamen als `inkscape:label` — Zuordnung per Positionsvergleich ermittelt (`getBBox()` alt vs. neu, nächster Nachbar, meist < 5px), nicht geraten; Details im Kommentar oben in `baumscheibe-mapping.ts` und in `baumscheibe-mapping-status.md`. Disc-Geometrie und Frucht-/Blüte-Ringe per Pixel-Sampling erneut vermessen: byte-identisch zur alten Version, keine Code-Anpassung an `pdf-export.ts`/`baumscheibe-render.ts` nötig. `latinName`/`commonName`/`heightM`/`widthM`/`climateZone` existierten im rohen Export nicht (wie schon vorher reine manuell nachgetragene Textfelder) — 1:1 aus dem alten Template übernommen. **Bonus:** `phVeryAcid`/`phVeryAlkaline` sind jetzt erstmals verdrahtet (2.3-Template hat alle 5 pH-Stufen statt bisher 3). **Regression:** `growSpeedMid`/`growSpeedHigh` sind jetzt tot (2.3-Template hat nur noch 1 statt 3 Wachstumsgeschwindigkeits-Icons) — neuer Punkt in `baumscheibe-mapping-status.md`. Getestet: volle Testpflanze, leere Testpflanze, alle drei PDF-Export-Pfade (Einzelkarte/Bulk/6er-Sheet) per Playwright + Sichtprüfung der gerenderten PDFs
 - [ ] Schriftarten im SVG anpassen entsprechend PSD
 - [ ] Code anpassen analog baumscheibe3-data-fields.ods
+- [ ] Sonne/Wasser-Icons (je 3 Zustände) und growSpeedMid/High-Icons ergänzen — einzige verbleibenden „komplett tot"-Gruppen, siehe `baumscheibe-mapping-status.md`
 - [ ] sprache der karten auf ui-sprache einstellen
 
 ### sonst
