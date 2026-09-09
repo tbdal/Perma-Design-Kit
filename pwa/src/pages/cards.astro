@@ -15,6 +15,10 @@ import Layout from '../layouts/Layout.astro';
         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
         PDF exportieren
       </button>
+      <button id="btn-pdf-sheet" title="6 Baumscheiben je 9cm Durchmesser auf einer A4-Seite, kompakt zum Ausschneiden" class="hidden inline-flex items-center gap-2 rounded-lg bg-stone-100 dark:bg-stone-800 px-4 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700 focus:ring-2 focus:ring-green-500/20 focus:outline-none">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></svg>
+        PDF (6/Seite, 9cm)
+      </button>
     </div>
   </div>
 
@@ -227,6 +231,8 @@ import Layout from '../layouts/Layout.astro';
       (document.getElementById('view-mode') as HTMLSelectElement).disabled = true;
       (document.getElementById('btn-pdf-all') as HTMLButtonElement).disabled = true;
       (document.getElementById('btn-pdf-all') as HTMLButtonElement).classList.add('opacity-40', 'cursor-not-allowed');
+      (document.getElementById('btn-pdf-sheet') as HTMLButtonElement).disabled = true;
+      (document.getElementById('btn-pdf-sheet') as HTMLButtonElement).classList.add('opacity-40', 'cursor-not-allowed');
       return;
     }
 
@@ -238,6 +244,8 @@ import Layout from '../layouts/Layout.astro';
     const mode = viewMode.value;
     const isStripe = mode === 'stripe';
     const isBaumscheibe = mode === 'baumscheibe';
+
+    document.getElementById('btn-pdf-sheet')!.classList.toggle('hidden', !isBaumscheibe);
 
     container.className = isStripe
       ? 'flex flex-col items-stretch gap-2'
@@ -328,6 +336,21 @@ import Layout from '../layouts/Layout.astro';
     } finally {
       btn.disabled = false;
       btn.innerHTML = '<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg> PDF exportieren';
+    }
+  });
+
+  document.getElementById('btn-pdf-sheet')!.addEventListener('click', async () => {
+    if (plants.length === 0) return;
+    const btn = document.getElementById('btn-pdf-sheet') as HTMLButtonElement;
+    btn.disabled = true;
+    const origHtml = btn.innerHTML;
+    btn.textContent = 'Erstelle PDF...';
+    try {
+      const pdf = await import('../lib/pdf-export');
+      await pdf.exportBaumscheibeSheetPDF(plants);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = origHtml;
     }
   });
 

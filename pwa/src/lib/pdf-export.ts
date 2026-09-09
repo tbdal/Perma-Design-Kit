@@ -300,3 +300,131 @@ export async function exportBaumscheibesPDF(plants: PlantData[]): Promise<void> 
   for (const plant of plants) await embedBaumscheibePage(pdfDoc, plant);
   downloadPdf(await pdfDoc.save(), 'permaculture-baumscheiben.pdf');
 }
+
+// ── Baumscheibe sheet: 6 discs per A4 page, 9cm diameter each ───────────────
+//
+// The single-per-page export above prints the full template canvas
+// (193.5×210.2mm) — mostly white space around the actual circular disc,
+// meant to be cut out by hand. For a compact print-and-cut sheet we instead
+// crop tightly to the disc itself before rasterizing.
+//
+// Geometry is specific to the current baumscheibe-template.svg (viewBox
+// 2286×2482) and was measured, not assumed: rendered the template to a
+// canvas and sampled outward from the center at 24 angles around the full
+// circle to find the outermost ink pixel at each — consistently ~1011-1046
+// (one 1077 outlier from a small decorative notch near the top-right, not
+// the disc's own edge). If the artwork is redrawn, re-measure and update
+// these two numbers.
+const DISC_CENTER = { x: 1140, y: 1130 };
+const DISC_RADIUS_UNITS = 1030; // measured outer edge of the ink, see above
+const CROP_MARGIN_UNITS = 20; // clears the ~stroke-width of the outer ring itself
+const CROP_HALF = DISC_RADIUS_UNITS + CROP_MARGIN_UNITS;
+const CROP_SIZE_UNITS = CROP_HALF * 2;
+
+const DISC_TARGET_MM = 90; // requested: 9cm diameter
+const UNITS_TO_MM = DISC_TARGET_MM / (DISC_RADIUS_UNITS * 2);
+const TILE_MM = CROP_SIZE_UNITS * UNITS_TO_MM; // ≈ 91.7mm — disc plus small margin
+
+const SHEET_COLS = 2;
+const SHEET_ROWS = 3;
+const SHEET_PER_PAGE = SHEET_COLS * SHEET_ROWS;
+const SHEET_GAP_MM = 4;
+const A4_MM = { w: 210, h: 297 };
+
+/** Replace the SVG's viewBox/width/height with a tight square crop centered
+ *  on the disc, so rasterizing/printing it fills the box with just the disc
+ *  (plus a small margin) instead of the full template canvas. */
+function cropSvgToDisc(svg: string): string {
+  const vb = `viewBox="${DISC_CENTER.x - CROP_HALF} ${DISC_CENTER.y - CROP_HALF} ${CROP_SIZE_UNITS} ${CROP_SIZE_UNITS}"`;
+  return svg
+    .replace(/viewBox="[^"]*"/, vb)
+    .replace(/\swidth="[^"]*"/, ` width="${CROP_SIZE_UNITS}"`)
+    .replace(/\sheight="[^"]*"/, ` height="${CROP_SIZE_UNITS}"`);
+}
+
+function sheetGridOrigin() {
+  const gridW = SHEET_COLS * TILE_MM + (SHEET_COLS - 1) * SHEET_GAP_MM;
+  const gridH = SHEET_ROWS * TILE_MM + (SHEET_ROWS - 1) * SHEET_GAP_MM;
+  return { x: (A4_MM.w - gridW) / 2, y: (A4_MM.h - gridH) / 2 };
+}
+
+async function embedBaumscheibeSheetPage(pdfDoc: PDFDocument, plants: PlantData[]) {
+  const page = pdfDoc.addPage([pt(A4_MM.w), pt(A4_MM.h)]);
+  const origin = sheetGridOrigin();
+  const tilePx = Math.round(TILE_MM / 25.4 * 150); // 150dpi, matches embedBaumscheibePage
+
+  for (let i = 0; i < plants.length && i < SHEET_PER_PAGE; i++) {
+    const col = i % SHEET_COLS;
+    const row = Math.floor(i / SHEET_COLS);
+    const svg = cropSvgToDisc(await renderBaumscheibeSvg(plants[i]));
+    const canvas = await svgStringToCanvas(svg, tilePx, tilePx);
+    const img = await pdfDoc.embedJpg(canvasToJpegBytes(canvas));
+
+    const xMm = origin.x + col * (TILE_MM + SHEET_GAP_MM);
+    // PDF y-origin is bottom-left; row 0 is the top row on the page.
+    const yMmFromTop = origin.y + row * (TILE_MM + SHEET_GAP_MM);
+    const yPt = pt(A4_MM.h) - pt(yMmFromTop) - pt(TILE_MM);
+    page.drawImage(img, { x: pt(xMm), y: yPt, width: pt(TILE_MM), height: pt(TILE_MM) });
+  }
+}
+
+function buildSheetPrintHtml(plantGroups: PlantData[][], svgsByGroup: string[][], title: string): string {
+  const origin = sheetGridOrigin();
+  const pages = plantGroups.map((group, gi) => {
+    const cells = svgsByGroup[gi].map(svg =>
+      `<div class="cell">${svg.replace('<svg', `<svg style="width:100%;height:100%;display:block;"`)}</div>`
+    ).join('');
+    const pb = gi < plantGroups.length - 1 ? ' style="page-break-after:always;"' : '';
+    return `<div class="page"${pb}><div class="grid" style="margin:${origin.y}mm ${origin.x}mm;">${cells}</div></div>`;
+  }).join('');
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${title}</title>
+<style>
+  @page { size: A4 portrait; margin: 0; }
+  html, body { margin: 0; padding: 0; }
+  .page { width: 100vw; height: 100vh; overflow: hidden; box-sizing: border-box; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(${SHEET_COLS}, ${TILE_MM}mm);
+    grid-auto-rows: ${TILE_MM}mm;
+    gap: ${SHEET_GAP_MM}mm;
+  }
+  .cell { width: ${TILE_MM}mm; height: ${TILE_MM}mm; overflow: hidden; }
+</style></head><body>${pages}</body></html>`;
+}
+
+async function openSheetPrintWindow(plantGroups: PlantData[][], title: string): Promise<void> {
+  const svgsByGroup = await Promise.all(
+    plantGroups.map(group => Promise.all(group.map(async p => cropSvgToDisc(await renderBaumscheibeSvg(p)))))
+  );
+  const w = window.open('', '_blank');
+  if (!w) {
+    alert('Popup-Blocker aktiv? Bitte für diese Seite erlauben und nochmal probieren.');
+    return;
+  }
+  w.document.open();
+  w.document.write(buildSheetPrintHtml(plantGroups, svgsByGroup, escapeHtml(title)));
+  w.document.close();
+  await new Promise(r => setTimeout(r, 300));
+  w.focus();
+  w.print();
+}
+
+function chunk<T>(arr: T[], size: number): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  return out;
+}
+
+/** Compact print-and-cut sheet: up to 6 Baumscheiben per A4 page, each a
+ *  true 9cm-diameter disc (cropped tightly, not the full template canvas). */
+export async function exportBaumscheibeSheetPDF(plants: PlantData[]): Promise<void> {
+  if (plants.length === 0) return;
+  const groups = chunk(plants, SHEET_PER_PAGE);
+  if (isFirefox) {
+    await openSheetPrintWindow(groups, 'Permakultur-Baumscheiben (9cm)');
+    return;
+  }
+  const pdfDoc = await PDFDocument.create();
+  for (const group of groups) await embedBaumscheibeSheetPage(pdfDoc, group);
+  downloadPdf(await pdfDoc.save(), 'baumscheiben-9cm-sheet.pdf');
+}
