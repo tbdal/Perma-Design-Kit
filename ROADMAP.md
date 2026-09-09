@@ -73,7 +73,8 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 - [ ] sanduhr, .. bei erstellung und warten auf pdf
 - [ ] baumscheibe als standardansicht
 - [ ] führung durch die webseite beim ersten aufruf der webseite
-- [ ] nutzen prüfen, ist alles vorhanden, was in Baumscheibe angezeigt wird?
+- [ ] nutzen prüfen, ist alles vorhanden, was in Baumscheibe angezeigt wird?#
+- [ ] polykulturen-tab entwickeln
 
 
 
