@@ -604,24 +604,16 @@ import Layout from '../layouts/Layout.astro';
     if (!plant._sources) plant._sources = {};
     let enriched = 0;
 
-    if (isSourceEnabled('pfaf') || isSourceEnabled('naturadb')) {
-      const proxyData = await fetchProxyData(plant.latinName);
-      const filled: Partial<PlantData> = {};
-      for (const [key, value] of Object.entries(proxyData)) {
-        const cur = (plant as any)[key];
-        const empty = cur === null || cur === undefined || cur === '' || cur === false ||
-          (Array.isArray(cur) && cur.every((v: boolean) => !v));
-        if (empty && value !== null && value !== undefined && value !== '' && value !== false) {
-          (plant as any)[key] = value; (filled as any)[key] = value; enriched++;
-        }
-      }
-      if (Object.keys(filled).length > 0) {
-        const src: DataSource = isSourceEnabled('pfaf') ? 'pfaf' : 'naturadb';
-        trackSources(plant, filled, src);
-      }
-    }
-
-    if (isSourceEnabled('wikidata') && !plant.imageUrl) {
+    // Wikidata first, deliberately: it's the source with a German commonName
+    // (fetchPlantDetails prefers labels.de). PFAF only has an English common
+    // name ("Apple"). Since enrichment only ever fills currently-empty
+    // fields (never overwrites), whichever of the two runs first "wins" — so
+    // Wikidata has to go first or its German name never gets a chance,
+    // silently losing to PFAF's English one. Previously PFAF ran first here
+    // (unlike the search-import flow below, which already had this right),
+    // which is why bulk-enriching e.g. the Crawford sample set produced
+    // English common names in a German-language app.
+    if (isSourceEnabled('wikidata')) {
       const searchUrl = new URL('https://www.wikidata.org/w/api.php');
       searchUrl.searchParams.set('action', 'wbsearchentities');
       searchUrl.searchParams.set('search', plant.latinName);
@@ -644,6 +636,23 @@ import Layout from '../layouts/Layout.astro';
           }
           if (Object.keys(filled).length > 0) trackSources(plant, filled, 'wikidata');
         }
+      }
+    }
+
+    if (isSourceEnabled('pfaf') || isSourceEnabled('naturadb')) {
+      const proxyData = await fetchProxyData(plant.latinName);
+      const filled: Partial<PlantData> = {};
+      for (const [key, value] of Object.entries(proxyData)) {
+        const cur = (plant as any)[key];
+        const empty = cur === null || cur === undefined || cur === '' || cur === false ||
+          (Array.isArray(cur) && cur.every((v: boolean) => !v));
+        if (empty && value !== null && value !== undefined && value !== '' && value !== false) {
+          (plant as any)[key] = value; (filled as any)[key] = value; enriched++;
+        }
+      }
+      if (Object.keys(filled).length > 0) {
+        const src: DataSource = isSourceEnabled('pfaf') ? 'pfaf' : 'naturadb';
+        trackSources(plant, filled, src);
       }
     }
 
