@@ -46,12 +46,27 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 ---
 
 ## Kurzfristig
+
+### vorort
+- [ ] naturadb anrufen
+- [ ] präsentation
+  - aufzeichnung 10-20min, ende sept. abgabe, anfang nov ist konferenz. beiträge hinter paywall. agroforestry research trust. fffg.
+  - kalender: wann dran arbeiten?
+  - zu kooperation einladen
+
+- [ ] welcher stand ist für uns ausreichend zu präsentieren?
+- [ ] mapping
+- [ ] 2 pdf versionen: a) 9 stück pro din a4 b) maßstabsgetreu
+- [ ] jens dazu einweihen
+
+
 ### bugs / validierung
 - [ ] nutzen prüfen, ist alles vorhanden, was in Baumscheibe angezeigt wird?
 ### Baumscheibe Karte Feinschliff
 - [ ] SVG neu generieren mit anpassungen in baumscheibe3-data-fields.ods --> python-skript existiert nun.
 - [ ] Schriftarten im SVG anpassen entsprechend PSD
 - [ ] Code anpassen analog baumscheibe3-data-fields.ods
+- [ ] sprache der karten auf ui-sprache einstellen
 
 ### sonst
 - [ ] lizenzen manuell prüfen & unsere festlegen
