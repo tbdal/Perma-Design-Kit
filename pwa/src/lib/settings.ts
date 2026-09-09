@@ -27,7 +27,7 @@ const STORAGE_KEY_LEGACY = "guild-designer-settings";
 
 const DEFAULT_PREFS: Omit<AppSettings, 'sources'> = {
   defaultView: 'grid',
-  defaultCardVariant: 'poly',
+  defaultCardVariant: 'baumscheibe',
 };
 
 export const DEFAULT_SOURCES: DataSource[] = [

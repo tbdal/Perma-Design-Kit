@@ -253,7 +253,7 @@ import Layout from '../layouts/Layout.astro';
   import { validatePlant } from '../lib/validate';
   import { searchPlants, fetchProxyData, fetchPlantDetails } from '../lib/plant-search';
   import { newId } from '../lib/id';
-  import { escapeHtml } from '../lib/html';
+  import { escapeHtml, withButtonSpinner } from '../lib/html';
   import { isSourceEnabled, loadSettings } from '../lib/settings';
   import { exportCardsPDF, exportSingleCardPDF, exportBaumscheibePDF, exportBaumscheibesPDF, exportBaumscheibeSheetPDF } from '../lib/pdf-export';
   import { renderPolyCardHtml, renderStripeCardHtml } from '../lib/card-html';
@@ -327,17 +327,26 @@ import Layout from '../layouts/Layout.astro';
     }
   }
 
-  /** Update source badge chips next to each form label with data-field attribute. */
+  /** Update source badge chips next to each form label with data-field attribute.
+   *  Clickable where the source is an external site (matches sourceChipsHtml's
+   *  behavior in grid/list view) — links straight to this plant's record. */
   function updateFormBadges(plant: PlantData | null) {
     document.querySelectorAll<HTMLElement>('[data-field]').forEach(fieldEl => {
       const field = fieldEl.dataset.field as keyof PlantData;
       const source = plant?._sources?.[field] as DataSource | undefined;
       fieldEl.querySelector('.src-badge')?.remove();
       if (source && SOURCE_COLOR[source]) {
-        const badge = document.createElement('span');
-        badge.className = `src-badge ml-1 inline-block rounded px-1 py-px text-[10px] font-semibold leading-none align-middle ${SOURCE_COLOR[source]}`;
-        badge.title = t('formBadgeSource', { source: SOURCE_LABEL[source] });
+        const href = plant ? sourceLink(source, plant) : null;
+        const badge = document.createElement(href ? 'a' : 'span');
+        badge.className = `src-badge ml-1 inline-block rounded px-1 py-px text-[10px] font-semibold leading-none align-middle ${SOURCE_COLOR[source]}${href ? ' hover:underline' : ''}`;
+        badge.title = t('formBadgeSource', { source: SOURCE_LABEL[source] }) + (href ? ` — ${t('formBadgeOpenSource', { source: SOURCE_LABEL[source] })}` : '');
         badge.textContent = SOURCE_LABEL[source][0];
+        if (href) {
+          (badge as HTMLAnchorElement).href = href;
+          badge.setAttribute('target', '_blank');
+          badge.setAttribute('rel', 'noopener');
+          badge.addEventListener('click', (e) => e.stopPropagation());
+        }
         fieldEl.appendChild(badge);
       }
     });
@@ -735,13 +744,13 @@ import Layout from '../layouts/Layout.astro';
           const id = (b.closest('[data-id]') as HTMLElement).dataset.id!;
           const plant = cachedPlants.find(p => p.id === id);
           if (!plant) return;
-          b.disabled = true; b.textContent = '...';
-          try {
-            if (cardViewMode === 'baumscheibe') await exportBaumscheibePDF(plant);
-            else await exportSingleCardPDF(plant);
-          }
-          catch (err) { alert(t('alertPdfError', { error: err instanceof Error ? err.message : String(err) })); }
-          finally { b.disabled = false; b.textContent = t('btnPdfShort'); }
+          await withButtonSpinner(b, async () => {
+            try {
+              if (cardViewMode === 'baumscheibe') await exportBaumscheibePDF(plant);
+              else await exportSingleCardPDF(plant);
+            }
+            catch (err) { alert(t('alertPdfError', { error: err instanceof Error ? err.message : String(err) })); }
+          });
         });
       });
 
@@ -1063,20 +1072,15 @@ import Layout from '../layouts/Layout.astro';
   document.getElementById('btn-pdf-all')!.addEventListener('click', async () => {
     if (cachedPlants.length === 0) return;
     const btn = document.getElementById('btn-pdf-all') as HTMLButtonElement;
-    btn.disabled = true; btn.textContent = '...';
-    try {
+    await withButtonSpinner(btn, async () => {
       if (cardViewMode === 'baumscheibe') await exportBaumscheibesPDF(cachedPlants);
       else await exportCardsPDF(cachedPlants);
-    }
-    finally { btn.disabled = false; btn.textContent = t('pdfAllBtn'); }
+    });
   });
   document.getElementById('btn-pdf-sheet')!.addEventListener('click', async () => {
     if (cachedPlants.length === 0) return;
     const btn = document.getElementById('btn-pdf-sheet') as HTMLButtonElement;
-    const origText = btn.textContent;
-    btn.disabled = true; btn.textContent = '...';
-    try { await exportBaumscheibeSheetPDF(cachedPlants); }
-    finally { btn.disabled = false; btn.textContent = origText; }
+    await withButtonSpinner(btn, () => exportBaumscheibeSheetPDF(cachedPlants));
   });
 
   document.getElementById('btn-select-all')!.addEventListener('click', () => {

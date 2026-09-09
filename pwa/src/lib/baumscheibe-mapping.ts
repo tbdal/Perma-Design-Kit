@@ -19,10 +19,12 @@ export const TEXT_FIELDS: Partial<Record<keyof PlantData, string[]>> = {
 };
 
 export const BOOL_FIELDS: Partial<Record<keyof PlantData, string[]>> = {
-  // Wachstum — 2.3 template only has one growth-speed icon labeled so far
-  // ("speed1", at the growSpeedLow position); growSpeedMid/High have no
-  // matching element yet and stay silently unrendered, same as before.
-  growSpeedLow:  ['Growth-slow', 'growSpeedLow', 'speed1'],
+  // Wachstum — the 2.3 template has only one generic growth-speed icon (the
+  // "growth speed" group's single image, id "speed1"), not three distinct
+  // ones, so it can't distinguish Low/Mid/High individually. Handled by
+  // setGrowthSpeedIcon() in baumscheibe-render.ts instead (shown whenever any
+  // of the three is true), not through this generic per-field alias list.
+  growSpeedLow:  ['Growth-slow', 'growSpeedLow'],
   growSpeedMid:  ['Growth-mod',  'growSpeedMid'],
   growSpeedHigh: ['Growth-fast', 'growSpeedHigh'],
   // Sonne — no per-state elements in the 2.3 template either (still just one
@@ -41,18 +43,21 @@ export const BOOL_FIELDS: Partial<Record<keyof PlantData, string[]>> = {
   phNeutral:      ['phNeutral',      'PH-neutral',   'ph3_neutral1'],
   phAlkaline:     ['phAlkaline',     'PH-alkaline',  'ph5_alk'],
   phVeryAlkaline: ['PH-veralkaline', 'phVeryAlkaline', 'ph6_v_alk'],
-  // Nutzung
-  eatable:    ['eatable',   'Edible',   'u_edible'],
-  culinaric:  ['culinaric', 'Culinary', 'u_culinary'],
-  meds:       ['meds',      'Mecidinal', 'u_medicinal'],
-  material:   ['material',  'Material', 'u_material'],
-  fodder:     ['fodder',    'Fodder',   'u_fodder'],
-  fuel:       ['fuel',      'Fuel',     'u_fuel'],
-  // Funktionen
-  nitrogenFix:      ['nitrogenFix',      'NitrogenFix',   'f_Nfixer'],
-  mineralFix:       ['mineralFix',       'MineralFix',    'f_dynacc'],
-  groundCover:      ['groundCover',      'GroundCover',   'f_groundcover'],
-  insects:          ['insects',          'Insects',       'f_pollinators'],
-  animalProtection: ['animalProtection', 'Animalshelter', 'f_shelter'],
-  windBreaking:     ['windBreaking',     'Windbreak',     'f_windbreak2'],
+  // Nutzung — the trailing single/short label ('e', 'cul', 'med', …) is the
+  // color-wedge fill behind the icon (2.3 template's "color" group), added so
+  // hiding a field hides its background color along with the icon, not just
+  // the icon on its own. Each verified unique in the template (grep count 1).
+  eatable:    ['eatable',   'Edible',    'u_edible',    'e'],
+  culinaric:  ['culinaric', 'Culinary',  'u_culinary',  'cul'],
+  meds:       ['meds',      'Mecidinal', 'u_medicinal', 'med'],
+  material:   ['material',  'Material',  'u_material'],
+  fodder:     ['fodder',    'Fodder',    'u_fodder'],
+  fuel:       ['fuel',      'Fuel',      'u_fuel'],
+  // Funktionen — same color-wedge aliases where the "color" group has one.
+  nitrogenFix:      ['nitrogenFix',      'NitrogenFix',   'f_Nfixer',      'n+'],
+  mineralFix:       ['mineralFix',       'MineralFix',    'f_dynacc',      'da'],
+  groundCover:      ['groundCover',      'GroundCover',   'f_groundcover', 'gc'],
+  insects:          ['insects',          'Insects',       'f_pollinators', 'i'],
+  animalProtection: ['animalProtection', 'Animalshelter', 'f_shelter',     'sh'],
+  windBreaking:     ['windBreaking',     'Windbreak',     'f_windbreak2',  'w'],
 };

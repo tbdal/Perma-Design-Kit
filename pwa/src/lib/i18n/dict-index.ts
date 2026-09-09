@@ -87,6 +87,7 @@ export const indexDict: Dict = {
   sourceTitle: { de: 'Datenquelle: {source}', en: 'Data source: {source}' },
   sourceTitleLink: { de: 'Datenquelle: {source} — auf {source} öffnen', en: 'Data source: {source} — open on {source}' },
   formBadgeSource: { de: 'Quelle: {source}', en: 'Source: {source}' },
+  formBadgeOpenSource: { de: 'auf {source} öffnen', en: 'open on {source}' },
 
   // ── Table headers ────────────────────────────────────────────────────
   thName: { de: 'Name', en: 'Name' },

@@ -37,20 +37,34 @@ function setText(el: Element, value: string) {
 // commonName / latinName in the SVG template are <image> placeholder rasters,
 // not text elements. We hide the placeholder and inject a real <text> element
 // at the same bounding-box coordinates (measured from the SVG source).
+// fontFamily matches what the 2.3 template's own decorative placeholder text
+// used ("COMMON NAME" / "Botanical name"): Raleway (OFL-licensed, loaded via
+// Google Fonts in Layout.astro) for commonName; "Voice-of-the-Highlander" for
+// latinName is a DaFont personal-use-only script font — not legally
+// embeddable here without buying a commercial license from the designer, so
+// it's requested but not loaded, falling back to a serif italic that's at
+// least in the spirit of a handwritten botanical label.
 const NAME_BOXES = {
-  commonName: { x: 661, y: 590, w: 975, h: 91, fontSize: 65, italic: false },
-  latinName:  { x: 819, y: 435, w: 619, h: 97, fontSize: 55, italic: true  },
+  commonName: { x: 661, y: 590, w: 975, h: 91, fontSize: 65, italic: false, fontFamily: "'Raleway', sans-serif" },
+  latinName:  { x: 819, y: 435, w: 619, h: 97, fontSize: 55, italic: true,  fontFamily: "'Voice-of-the-Highlander', Georgia, serif" },
 } as const;
 
-function injectNameText(svg: SVGSVGElement, field: keyof typeof NAME_BOXES, value: string) {
+async function injectNameText(svg: SVGSVGElement, field: keyof typeof NAME_BOXES, value: string) {
   const cfg = NAME_BOXES[field];
   for (const el of findByLabel(svg, [field])) el.setAttribute('display', 'none');
   if (!value) return;
+  // The Google Fonts <link> only registers the @font-face — the actual file
+  // isn't fetched until something on the page needs it, which never
+  // otherwise happens since this text lives in a detached SVG, not the DOM.
+  // Force it so the font is ready before the SVG gets rasterized to canvas
+  // for PDF export (an <img>-decoded SVG can use fonts the page has already
+  // loaded, but won't trigger loading them itself).
+  try { await document.fonts.load(`500 ${cfg.fontSize}px Raleway`); } catch { /* offline first load, falls back gracefully */ }
   const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
   text.setAttribute('x', String(cfg.x + cfg.w / 2));
   text.setAttribute('y', String(cfg.y + cfg.h * 0.78));
   text.setAttribute('text-anchor', 'middle');
-  text.setAttribute('font-family', 'Inter, sans-serif');
+  text.setAttribute('font-family', cfg.fontFamily);
   text.setAttribute('font-size', String(cfg.fontSize));
   text.setAttribute('fill', '#000000');
   text.setAttribute('fill-opacity', '0.63');
@@ -105,6 +119,16 @@ function injectPfafAttribution(svg: SVGSVGElement) {
   svg.appendChild(text);
 }
 
+/** The 2.3 template's "growth speed" group has a single generic icon (not
+ *  three distinct Low/Mid/High icons), so it can only show "a growth speed
+ *  is known" — visible when any of the three booleans is true. */
+function setGrowthSpeedIcon(svg: SVGSVGElement, plant: PlantData) {
+  const [group] = findByLabel(svg, ['growth speed']);
+  if (!group) return;
+  const on = plant.growSpeedLow || plant.growSpeedMid || plant.growSpeedHigh;
+  group.querySelectorAll('image').forEach(el => setVisible(el, on));
+}
+
 /** Render a plant into the Baumscheibe SVG template; returns serialized SVG markup. */
 export async function renderBaumscheibeSvg(plant: PlantData): Promise<string> {
   const tpl = await loadTemplate();
@@ -117,9 +141,10 @@ export async function renderBaumscheibeSvg(plant: PlantData): Promise<string> {
     for (const el of findByLabel(svg, labels)) setText(el, text);
   }
 
-  injectNameText(svg, 'commonName', plant.commonName || '');
-  injectNameText(svg, 'latinName',  plant.latinName  || '');
+  await injectNameText(svg, 'commonName', plant.commonName || '');
+  await injectNameText(svg, 'latinName',  plant.latinName  || '');
   injectMonthCalendar(svg, plant.fruitMonths, plant.flowerMonths);
+  setGrowthSpeedIcon(svg, plant);
   if (hasSource(plant, 'pfaf')) injectPfafAttribution(svg);
 
   for (const [field, labels] of Object.entries(BOOL_FIELDS)) {

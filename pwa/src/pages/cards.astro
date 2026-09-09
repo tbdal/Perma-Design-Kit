@@ -176,7 +176,7 @@ import Layout from '../layouts/Layout.astro';
   import { createEmptyPlant, type PlantData } from '../lib/types';
   import { renderPolyCardHtml, renderStripeCardHtml } from '../lib/card-html';
   import { renderBaumscheibeCardHtml } from '../lib/baumscheibe-render';
-  import { escapeHtml } from '../lib/html';
+  import { escapeHtml, withButtonSpinner } from '../lib/html';
   import { loadSettings } from '../lib/settings';
   import { createT, applyStaticI18n } from '../lib/i18n/core';
   import { cardsDict } from '../lib/i18n/dict-cards';
@@ -298,19 +298,16 @@ import Layout from '../layouts/Layout.astro';
     if (pdfBtn) {
       if (pdfBtn.disabled) return;
       const idx = parseInt((pdfBtn.closest('[data-index]') as HTMLElement).dataset.index!);
-      pdfBtn.disabled = true;
-      pdfBtn.textContent = '...';
-      try {
-        const pdf = await import('../lib/pdf-export');
-        if (viewMode.value === 'baumscheibe') await pdf.exportBaumscheibePDF(plants[idx]);
-        else await pdf.exportSingleCardPDF(plants[idx]);
-      } catch (err) {
-        console.error('PDF generation failed:', err);
-        alert(`${t('pdfErrorPrefix')} ${err instanceof Error ? err.message : String(err)}`);
-      } finally {
-        pdfBtn.disabled = false;
-        pdfBtn.innerHTML = `<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg> ${t('btnPdfShort')}`;
-      }
+      await withButtonSpinner(pdfBtn, async () => {
+        try {
+          const pdf = await import('../lib/pdf-export');
+          if (viewMode.value === 'baumscheibe') await pdf.exportBaumscheibePDF(plants[idx]);
+          else await pdf.exportSingleCardPDF(plants[idx]);
+        } catch (err) {
+          console.error('PDF generation failed:', err);
+          alert(`${t('pdfErrorPrefix')} ${err instanceof Error ? err.message : String(err)}`);
+        }
+      });
     }
 
     if (editBtn) {
@@ -337,31 +334,20 @@ import Layout from '../layouts/Layout.astro';
   document.getElementById('btn-pdf-all')!.addEventListener('click', async () => {
     if (plants.length === 0) return;
     const btn = document.getElementById('btn-pdf-all') as HTMLButtonElement;
-    btn.disabled = true;
-    btn.textContent = t('btnCreatingPdf');
-    try {
+    await withButtonSpinner(btn, async () => {
       const pdf = await import('../lib/pdf-export');
       if (viewMode.value === 'baumscheibe') await pdf.exportBaumscheibesPDF(plants);
       else await pdf.exportCardsPDF(plants);
-    } finally {
-      btn.disabled = false;
-      btn.innerHTML = `<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg> ${t('btnPdfExportAll')}`;
-    }
+    });
   });
 
   document.getElementById('btn-pdf-sheet')!.addEventListener('click', async () => {
     if (plants.length === 0) return;
     const btn = document.getElementById('btn-pdf-sheet') as HTMLButtonElement;
-    btn.disabled = true;
-    const origHtml = btn.innerHTML;
-    btn.textContent = t('btnCreatingPdf');
-    try {
+    await withButtonSpinner(btn, async () => {
       const pdf = await import('../lib/pdf-export');
       await pdf.exportBaumscheibeSheetPDF(plants);
-    } finally {
-      btn.disabled = false;
-      btn.innerHTML = origHtml;
-    }
+    });
   });
 
   init();
