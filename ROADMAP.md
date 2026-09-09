@@ -50,6 +50,7 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 - [ ] SVG neu generieren mit anpassungen in baumscheibe3-data-fields.ods --> python-skript existiert nun.
 - [ ] Schriftarten im SVG anpassen entsprechend PSD
 - [ ] Code anpassen analog baumscheibe3-data-fields.ods
+- [ ] lizenzen manuell prüfen & unsere festlegen
 
 ### PDF Generierung
 - [ ] Größen anpassen: 6 Baumscheiben pro Seite, 9cm Durchmesser
