@@ -328,7 +328,13 @@ const TILE_MM = CROP_SIZE_UNITS * UNITS_TO_MM; // ≈ 91.7mm — disc plus small
 const SHEET_COLS = 2;
 const SHEET_ROWS = 3;
 const SHEET_PER_PAGE = SHEET_COLS * SHEET_ROWS;
-const SHEET_GAP_MM = 4;
+// Kept minimal on purpose: 3 rows of ~91.7mm tiles (90mm disc + crop margin)
+// already total ~275mm against a 297mm-tall A4 page, so there's only ~22mm
+// of slack to split between gaps and the outer margin. A larger gap here
+// directly eats into that margin — see the "PDF-Blatt" ROADMAP entry for the
+// clipping issue this caused when a real device's print pipeline enforced
+// more margin than this had room for.
+const SHEET_GAP_MM = 1;
 const A4_MM = { w: 210, h: 297 };
 
 /** Replace the SVG's viewBox/width/height with a tight square crop centered
@@ -379,9 +385,9 @@ function buildSheetPrintHtml(plantGroups: PlantData[][], svgsByGroup: string[][]
   }).join('');
   return `<!doctype html><html><head><meta charset="utf-8"><title>${title}</title>
 <style>
-  @page { size: A4 portrait; margin: 0; }
+  @page { size: 210mm 297mm; margin: 0; }
   html, body { margin: 0; padding: 0; }
-  .page { width: 100vw; height: 100vh; overflow: hidden; box-sizing: border-box; }
+  .page { width: 210mm; height: 297mm; overflow: hidden; box-sizing: border-box; }
   .grid {
     display: grid;
     grid-template-columns: repeat(${SHEET_COLS}, ${TILE_MM}mm);
