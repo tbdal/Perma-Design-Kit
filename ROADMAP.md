@@ -46,11 +46,7 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 ---
 
 ## Kurzfristig
-
-### vorort
 - [ ] naturadb anrufen
-
-### sonst
 - [ ] tabellenansicht verbessern: inhalt klarer unterscheiden (funktionen / nutzen) und weitere spalten mit infos wie Blütemonate. möglichst alles in tabellenform anzeigen. legende zu farben erstellen
 - [ ] 2 pdf versionen: a) 9 stück pro din a4 b) maßstabsgetreu
 - [ ] jens dazu einweihen
