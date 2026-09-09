@@ -78,6 +78,8 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
   - Datenschutzerklärung (`datenschutz.astro`) korrigiert: nannte noch „Netlify Serverless Function" und NaturaDB als aktive externe Quelle sowie Netlify als Hosting-Anbieter — alles nicht mehr zutreffend
   - Diverse Textstellen (`hilfe.astro`, `settings.astro`, `CLAUDE.md`, beide READMEs, `SETUP.md`) von „Netlify-Proxy"/„Netlify Function" auf „Server-Proxy" aktualisiert
 
+- [x] **Frucht-/Blütemonate aus PFAF extrahiert** — PFAFs Fließtext-Beschreibung (`lblPhystatment`) enthält bei fast allen geprüften Pflanzen einen Satz wie „It is in flower from April to May … the seeds ripen from September to October" — exakte Monatsbereiche, kein Fließtext-Rätselraten nötig. (Es gibt daneben ein `txtSummary`-Feld mit „Main Bloom Time: Early spring, Late spring, Mid spring" — das ist aber nur Jahreszeit statt Monat und uneinheitlich formatiert, teils genereller Gattungs-Fließtext statt Blühzeit; bewusst nicht verwendet.) `parseMonthRange()`/`extractMonths()` in `plant-proxy-server.mjs` parsen den Satz und füllen `flowerMonths`/`fruitMonths`, inkl. korrektem Jahreswechsel bei Bereichen wie „November to March". Verifiziert an Fagus sylvatica (Apr–Mai / Sep–Okt), Robinia pseudoacacia (Jun / Nov–Mär, Jahreswechsel korrekt), Prunus avium, Corylus avellana
+
 ### Sync (Feinschliff)
 - [ ] **Konflikt-Erkennung** — vor dem Pull prüfen ob das Backup auf dem Server neuer ist als lokal; Warnung + Merge-Option statt blindem Überschreiben
 - [ ] **Sync-Status im Header** — kleines Icon (✓ / ⚠) das den letzten Auto-Sync-Status zeigt ohne in die Einstellungen zu müssen

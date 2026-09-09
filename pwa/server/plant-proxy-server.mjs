@@ -123,6 +123,37 @@ function parsePfafDimension(text) {
   return m[2] === 'cm' ? val / 100 : val;
 }
 
+// PFAF's physical-description text ("It is in flower from April to June...
+// the seeds ripen from November to March") gives exact month ranges, in the
+// same sentence structure across every plant page checked. There's also a
+// separate "Main Bloom Time" field on some pages that only gives a season
+// (e.g. "Early spring, Late spring, Mid spring") — that field's format is
+// inconsistent (sometimes genus-level essay text instead) and coarser than
+// what's already available here, so it's not used.
+const MONTH_NAMES_EN = ['january', 'february', 'march', 'april', 'may', 'june',
+  'july', 'august', 'september', 'october', 'november', 'december'];
+
+function parseMonthRange(fromName, toName) {
+  const months = Array(12).fill(false);
+  const from = MONTH_NAMES_EN.indexOf(fromName.toLowerCase());
+  if (from === -1) return months;
+  const to = toName ? MONTH_NAMES_EN.indexOf(toName.toLowerCase()) : from;
+  if (to === -1) { months[from] = true; return months; }
+  for (let i = from; ; i = (i + 1) % 12) {
+    months[i] = true;
+    if (i === to) break;
+  }
+  return months;
+}
+
+function extractMonths(phys, kind) {
+  const re = kind === 'flower'
+    ? /in flower (?:in|from) (\w+)(?:\s+to\s+(\w+))?/i
+    : /seeds? ripens? (?:in|from) (\w+)(?:\s+to\s+(\w+))?/i;
+  const m = phys.match(re);
+  return m ? parseMonthRange(m[1], m[2]) : null;
+}
+
 async function fetchPfaf(name) {
   // PFAF's canonical URL form uses '+' for spaces (application/x-www-form-
   // urlencoded style); encode first, then swap %20 for '+' — NOT the reverse
@@ -202,6 +233,11 @@ async function fetchPfaf(name) {
   result.phSaline = /pH:.*saline.*soils\./i.test(phys);
 
   result.windBreakingOnSea = /tolerate maritime exposure/i.test(phys);
+
+  const flowerMonths = extractMonths(phys, 'flower');
+  if (flowerMonths) result.flowerMonths = flowerMonths;
+  const fruitMonths = extractMonths(phys, 'fruit');
+  if (fruitMonths) result.fruitMonths = fruitMonths;
 
   result.sunFull = html.includes('sun.jpg');
   result.sunMid = html.includes('partsun.jpg');
