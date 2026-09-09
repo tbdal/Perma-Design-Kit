@@ -35,41 +35,71 @@ function setText(el: Element, value: string) {
 }
 
 // commonName / latinName in the SVG template are <image> placeholder rasters,
-// not text elements. We hide the placeholder and inject a real <text> element
-// at the same bounding-box coordinates (measured from the SVG source).
-// fontFamily matches what the 2.3 template's own decorative placeholder text
-// used ("COMMON NAME" / "Botanical name"): Raleway (OFL-licensed, loaded via
-// Google Fonts in Layout.astro) for commonName; "Voice-of-the-Highlander" for
-// latinName is a DaFont personal-use-only script font — not legally
-// embeddable here without buying a commercial license from the designer, so
-// it's requested but not loaded, falling back to a serif italic that's at
-// least in the spirit of a handwritten botanical label.
+// not text elements. We hide the placeholder and inject a real <text> element,
+// centered horizontally over the same box (measured from the SVG source) but
+// using the *original decorative placeholder text's own baseline y* — at the
+// template's font-size (125), the old box-height-fraction formula (tuned for
+// a much smaller font) sat wrong; the designer's own y for "COMMON NAME" /
+// "Botanical name" is the reliable reference for where 125px text belongs in
+// the dome. fontFamily likewise matches that placeholder text: Raleway
+// (OFL-licensed, loaded via Google Fonts in Layout.astro) for commonName —
+// shown uppercase, matching the placeholder's own "COMMON NAME" styling;
+// "Voice-of-the-Highlander" for latinName is a DaFont personal-use-only
+// script font — not legally embeddable here without buying a commercial
+// license from the designer, so it's requested but not loaded, falling back
+// to a serif italic that's at least in the spirit of a handwritten label.
 const NAME_BOXES = {
-  commonName: { x: 661, y: 590, w: 975, h: 91, fontSize: 65, italic: false, fontFamily: "'Raleway', sans-serif" },
-  latinName:  { x: 819, y: 435, w: 619, h: 97, fontSize: 55, italic: true,  fontFamily: "'Voice-of-the-Highlander', Georgia, serif" },
+  commonName: { x: 661, w: 975, yBaseline: 680.25, fontSize: 125, italic: false, uppercase: true,  fontFamily: "'Raleway', sans-serif" },
+  latinName:  { x: 819, w: 619, yBaseline: 522.75, fontSize: 125, italic: true,  uppercase: false, fontFamily: "'Voice-of-the-Highlander', Georgia, serif" },
 } as const;
+
+// The template's own placeholder text ("COMMON NAME" / "Botanical name") is
+// short and fits comfortably at font-size 125 — real plant names vary wildly
+// in length and regularly wouldn't (e.g. "Robinia pseudoacacia var.
+// longissima" spills well past the dome's edges at that size). Shrink the
+// font just enough to fit the box width, floored at the old pre-2.3 sizes so
+// a long name is never worse off than before, using canvas measureText
+// rather than SVG layout APIs since this <text> lives in a detached,
+// never-attached SVG (getComputedTextLength requires live layout).
+const NAME_MIN_FONT_SIZE = { commonName: 65, latinName: 55 } as const;
+let measureCtx: CanvasRenderingContext2D | null = null;
+function fitFontSize(text: string, fontFamily: string, italic: boolean, maxFontSize: number, minFontSize: number, maxWidth: number): number {
+  if (!measureCtx) measureCtx = document.createElement('canvas').getContext('2d');
+  if (!measureCtx) return maxFontSize;
+  const style = italic ? 'italic ' : '';
+  measureCtx.font = `${style}${maxFontSize}px ${fontFamily}`;
+  const widthAtMax = measureCtx.measureText(text).width;
+  if (widthAtMax <= maxWidth) return maxFontSize;
+  const scaled = Math.floor(maxFontSize * (maxWidth / widthAtMax));
+  return Math.max(minFontSize, scaled);
+}
 
 async function injectNameText(svg: SVGSVGElement, field: keyof typeof NAME_BOXES, value: string) {
   const cfg = NAME_BOXES[field];
   for (const el of findByLabel(svg, [field])) el.setAttribute('display', 'none');
   if (!value) return;
+  const displayValue = cfg.uppercase ? value.toUpperCase() : value;
   // The Google Fonts <link> only registers the @font-face — the actual file
   // isn't fetched until something on the page needs it, which never
   // otherwise happens since this text lives in a detached SVG, not the DOM.
   // Force it so the font is ready before the SVG gets rasterized to canvas
   // for PDF export (an <img>-decoded SVG can use fonts the page has already
-  // loaded, but won't trigger loading them itself).
+  // loaded, but won't trigger loading them itself) — and before fitFontSize()
+  // measures it below, so the measurement uses the real font, not a fallback.
   try { await document.fonts.load(`500 ${cfg.fontSize}px Raleway`); } catch { /* offline first load, falls back gracefully */ }
+  const fontSize = fitFontSize(
+    displayValue, cfg.fontFamily, cfg.italic, cfg.fontSize, NAME_MIN_FONT_SIZE[field], cfg.w * 0.92,
+  );
   const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
   text.setAttribute('x', String(cfg.x + cfg.w / 2));
-  text.setAttribute('y', String(cfg.y + cfg.h * 0.78));
+  text.setAttribute('y', String(cfg.yBaseline));
   text.setAttribute('text-anchor', 'middle');
   text.setAttribute('font-family', cfg.fontFamily);
-  text.setAttribute('font-size', String(cfg.fontSize));
+  text.setAttribute('font-size', String(fontSize));
   text.setAttribute('fill', '#000000');
   text.setAttribute('fill-opacity', '0.63');
   if (cfg.italic) text.setAttribute('font-style', 'italic');
-  text.textContent = value;
+  text.textContent = displayValue;
   svg.appendChild(text);
 }
 
