@@ -126,6 +126,7 @@ function downloadPdf(bytes: Uint8Array, filename: string) {
 // ── Exports ──────────────────────────────────────────────────────────────────
 
 export async function exportCardsPDF(plants: PlantData[]): Promise<void> {
+  plants = expandByPrintCount(plants);
   if (plants.length === 0) return;
 
   const pdfDoc = await PDFDocument.create();
@@ -290,6 +291,7 @@ export async function exportBaumscheibePDF(plant: PlantData): Promise<void> {
 }
 
 export async function exportBaumscheibesPDF(plants: PlantData[]): Promise<void> {
+  plants = expandByPrintCount(plants);
   if (plants.length === 0) return;
   if (isFirefox) {
     const svgs = await Promise.all(plants.map(p => renderBaumscheibeSvg(p)));
@@ -421,9 +423,16 @@ function chunk<T>(arr: T[], size: number): T[][] {
   return out;
 }
 
+/** Expands a plant list per plant.printCount before bulk export: 0 = excluded
+ *  (deactivated), >1 = repeated that many times. Default (undefined) = 1. */
+function expandByPrintCount(plants: PlantData[]): PlantData[] {
+  return plants.flatMap(p => Array(p.printCount ?? 1).fill(p));
+}
+
 /** Compact print-and-cut sheet: up to 6 Baumscheiben per A4 page, each a
  *  true 9cm-diameter disc (cropped tightly, not the full template canvas). */
 export async function exportBaumscheibeSheetPDF(plants: PlantData[]): Promise<void> {
+  plants = expandByPrintCount(plants);
   if (plants.length === 0) return;
   const groups = chunk(plants, SHEET_PER_PAGE);
   if (isFirefox) {

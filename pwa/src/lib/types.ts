@@ -149,6 +149,8 @@ export interface PlantData {
   flowerMonths: boolean[];
   // Image
   imageUrl: string;
+  // Number of times to print this plant's card (0 = excluded from exports, default 1)
+  printCount: number;
   // Provenance: source per field (optional, not all plants have this)
   _sources?: Partial<Record<keyof PlantData, DataSource>>;
 }
@@ -197,5 +199,6 @@ export function createEmptyPlant(): PlantData {
     fruitMonths: Array(12).fill(false),
     flowerMonths: Array(12).fill(false),
     imageUrl: '',
+    printCount: 1,
   };
 }
