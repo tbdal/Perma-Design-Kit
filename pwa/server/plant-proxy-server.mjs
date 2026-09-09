@@ -10,6 +10,17 @@ import { createServer } from 'node:http';
 
 const PORT = process.env.PLANT_PROXY_PORT || 8787;
 
+// PFAF (and presumably NaturaDB) filters on the outbound User-Agent: a
+// self-identifying string like "PermaGuildForge/1.0" got server-side degraded
+// responses (200 OK, full page size, but every data field empty) — confirmed
+// by alternating requests with this UA vs. a browser UA back to back, same
+// IP, same moment: the custom UA was empty 100% of the time, the browser UA
+// worked 100% of the time. Not an IP rate limit at all. Using an ordinary
+// browser UA here isn't concealing what this is — see the PFAF_ATTRIBUTION
+// note in the frontend and the honest description of this proxy in
+// datenschutz.astro — it's just what it takes to get real HTML back.
+const OUTBOUND_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:130.0) Gecko/20100101 Firefox/130.0';
+
 // --- Origin allowlist ---
 // This process is bind-only to 127.0.0.1, so in practice only the dev-server proxy (or a
 // same-host reverse proxy) can reach it — a browser can never hit this port directly. Kept
@@ -104,10 +115,20 @@ function parsePfafDimension(text) {
 }
 
 async function fetchPfaf(name) {
-  const url = `https://pfaf.org/user/Plant.aspx?LatinName=${encodeURIComponent(name.replace(/ /g, '+'))}`;
+  // PFAF's canonical URL form uses '+' for spaces (application/x-www-form-
+  // urlencoded style); encode first, then swap %20 for '+' — NOT the reverse
+  // (replace space with '+' and THEN encode), which double-encodes the '+'
+  // into a literal %2B. That bug sent PFAF a search for a plant literally
+  // named "Malus+domestica", which obviously never matched anything — the
+  // page still loaded (200 OK) but with every field empty, which looked
+  // exactly like the separate User-Agent-blocking issue above and delayed
+  // finding this by a full day. Confirmed via curl -sL: %20 without this bug
+  // still works (PFAF 302-redirects it to the '+' form), but going straight
+  // to the canonical form skips that extra round trip.
+  const url = `https://pfaf.org/user/Plant.aspx?LatinName=${encodeURIComponent(name).replace(/%20/g, '+')}`;
   let html;
   try {
-    const res = await fetch(url, { headers: { 'User-Agent': 'PermaGuildForge/1.0' } });
+    const res = await fetch(url, { headers: { 'User-Agent': OUTBOUND_USER_AGENT } });
     if (!res.ok) return {};
     html = await res.text();
   } catch { return {}; }
@@ -226,7 +247,7 @@ async function fetchNaturaDb(name) {
   const url = `https://www.naturadb.de/pflanzen/${slug}/`;
   let html;
   try {
-    const res = await fetch(url, { headers: { 'User-Agent': 'PermaGuildForge/1.0' } });
+    const res = await fetch(url, { headers: { 'User-Agent': OUTBOUND_USER_AGENT } });
     if (!res.ok) return {};
     html = await res.text();
   } catch { return {}; }
