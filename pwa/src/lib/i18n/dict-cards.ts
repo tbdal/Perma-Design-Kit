@@ -2,6 +2,11 @@ import type { Dict } from './core';
 
 export const cardsDict: Dict = {
   pageTitle: { de: 'Karten', en: 'Cards' },
+  printStepperTitle: { de: 'Druckanzahl', en: 'Print count' },
+  printStepperLess: { de: 'Weniger drucken', en: 'Print fewer' },
+  printStepperMore: { de: 'Mehr drucken', en: 'Print more' },
+  printStepperToggleOff: { de: 'Deaktiviert — klicken zum Aktivieren', en: 'Deactivated — click to activate' },
+  printStepperToggleOn: { de: 'Klicken zum Deaktivieren', en: 'Click to deactivate' },
   optPoly: { de: 'Pflanzenkarten', en: 'Plant cards' },
   optStripe: { de: 'Streifenkarten', en: 'Strip cards' },
   optBaumscheibe: { de: 'Baumscheibe', en: 'Baumscheibe' },

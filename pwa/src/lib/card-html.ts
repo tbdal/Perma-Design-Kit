@@ -82,6 +82,28 @@ function pill(label: string, active: boolean, color: string, lightText = false):
   );
 }
 
+/** Translate function shape shared with src/lib/i18n/core.ts's createT() —
+ *  duplicated here instead of imported to keep this module framework/page
+ *  agnostic (it has no i18n dict of its own; callers pass their own `t`). */
+type Translate = (key: string, vars?: Record<string, string | number>) => string;
+
+/** Stepper for PlantData.printCount — how often this plant's card is
+ *  exported. 0 = deactivated (excluded from PDF exports), clicking the count
+ *  toggles 0/1. Shared between index.astro's grid/list/cards views and
+ *  cards.astro — each page passes its own page-scoped `t`, and wires up
+ *  .btn-print-inc/.btn-print-dec/.print-count-toggle click handlers itself
+ *  since they touch each page's own plant-list state. */
+export function printStepperHtml(plant: PlantData, t: Translate): string {
+  const count = plant.printCount ?? 1;
+  const off = count === 0;
+  return `
+    <div class="print-stepper inline-flex items-center gap-1" title="${escapeHtml(t('printStepperTitle'))}">
+      <button type="button" class="btn-print-dec inline-flex h-5 w-5 items-center justify-center rounded bg-stone-100 dark:bg-stone-800 text-xs font-medium leading-none text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700" title="${escapeHtml(t('printStepperLess'))}">−</button>
+      <span class="print-count-toggle w-4 cursor-pointer text-center text-xs tabular-nums ${off ? 'font-semibold text-red-500' : 'text-stone-600 dark:text-stone-300'}" title="${escapeHtml(off ? t('printStepperToggleOff') : t('printStepperToggleOn'))}">${count}</span>
+      <button type="button" class="btn-print-inc inline-flex h-5 w-5 items-center justify-center rounded bg-stone-100 dark:bg-stone-800 text-xs font-medium leading-none text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700" title="${escapeHtml(t('printStepperMore'))}">+</button>
+    </div>`;
+}
+
 /**
  * Render a poly plant card as an inline-styled HTML string.
  * Width: 280px, Height: 480px — maps to 70×120mm in the PDF.

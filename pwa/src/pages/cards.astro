@@ -174,7 +174,7 @@ import Layout from '../layouts/Layout.astro';
 <script>
   import { getAllPlants, savePlant } from '../lib/db';
   import { createEmptyPlant, type PlantData } from '../lib/types';
-  import { renderPolyCardHtml, renderStripeCardHtml } from '../lib/card-html';
+  import { renderPolyCardHtml, renderStripeCardHtml, printStepperHtml } from '../lib/card-html';
   import { renderBaumscheibeCardHtml } from '../lib/baumscheibe-render';
   import { escapeHtml, withButtonSpinner } from '../lib/html';
   import { loadSettings } from '../lib/settings';
@@ -269,11 +269,12 @@ import Layout from '../layouts/Layout.astro';
     container.innerHTML = plants.map((_, i) => {
       const cardHtml = cardHtmls[i];
       return `
-        <div class="group relative rounded-xl shadow-md ring-1 ring-stone-200 dark:ring-stone-700 transition hover:shadow-lg hover:ring-green-300 overflow-hidden" data-index="${i}">
+        <div class="group relative rounded-xl shadow-md ring-1 ring-stone-200 dark:ring-stone-700 transition hover:shadow-lg hover:ring-green-300 overflow-hidden${(plants[i].printCount ?? 1) === 0 ? ' opacity-60' : ''}" data-index="${i}">
           <div class="pointer-events-none${isStripe ? ' overflow-x-auto' : ''}">${cardHtml}</div>
           <div class="relative z-10 flex items-center justify-between bg-white/90 dark:bg-stone-800/90 px-3 py-1.5">
             <span class="text-xs text-stone-400 dark:text-stone-500">${escapeHtml(plants[i].commonName || plants[i].latinName)}</span>
-            <div class="flex gap-1.5">
+            <div class="flex items-center gap-1.5">
+              ${printStepperHtml(plants[i], t)}
               <button class="btn-edit-card inline-flex items-center gap-1 rounded-md bg-stone-100 dark:bg-stone-800 px-2.5 py-1 text-xs font-medium text-stone-600 dark:text-stone-300 transition hover:bg-blue-100 dark:hover:bg-blue-900/60 hover:text-blue-800 dark:hover:text-blue-200">
                 <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/></svg>
                 ${t('btnEditShort')}
@@ -294,6 +295,22 @@ import Layout from '../layouts/Layout.astro';
     const target = e.target as HTMLElement;
     const pdfBtn = target.closest('.btn-pdf-single') as HTMLButtonElement | null;
     const editBtn = target.closest('.btn-edit-card') as HTMLButtonElement | null;
+    const printInc = target.closest('.btn-print-inc') as HTMLElement | null;
+    const printDec = target.closest('.btn-print-dec') as HTMLElement | null;
+    const printToggle = target.closest('.print-count-toggle') as HTMLElement | null;
+
+    // Print-count stepper: 0 = deaktiviert (von Exporten ausgeschlossen)
+    if (printInc || printDec || printToggle) {
+      const el = (printInc ?? printDec ?? printToggle)!;
+      const idx = parseInt((el.closest('[data-index]') as HTMLElement).dataset.index!);
+      const plant = plants[idx];
+      if (printInc) plant.printCount = (plant.printCount ?? 1) + 1;
+      else if (printDec) plant.printCount = Math.max(0, (plant.printCount ?? 1) - 1);
+      else plant.printCount = (plant.printCount ?? 1) === 0 ? 1 : 0;
+      await savePlant(plant);
+      render();
+      return;
+    }
 
     if (pdfBtn) {
       if (pdfBtn.disabled) return;
