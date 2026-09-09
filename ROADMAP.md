@@ -44,6 +44,8 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 ---
 
 ## Kurzfristig
+### bugs / validierung
+- [ ] nutzen prüfen, ist alles vorhanden, was in Baumscheibe angezeigt wird?
 ### Baumscheibe Karte Feinschliff
 - [ ] SVG neu generieren mit anpassungen in baumscheibe3-data-fields.ods --> python-skript existiert nun.
 - [ ] Schriftarten im SVG anpassen entsprechend PSD
