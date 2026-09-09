@@ -69,6 +69,7 @@ Die PWA (`pwa/`) ist der aktive Entwicklungszweig und ersetzt die älteren Power
 - [ ] Schriftarten im SVG anpassen entsprechend PSD
 - [ ] Code anpassen analog baumscheibe3-data-fields.ods
 - [ ] Sonne/Wasser-Icons (je 3 Zustände) und growSpeedMid/High-Icons ergänzen — einzige verbleibenden „komplett tot"-Gruppen, siehe `baumscheibe-mapping-status.md`
+- [x] **Frucht-/Blütemonate auf echtes Label-Mapping umgestellt** — der bisherige Hardcode-Workaround (Donut-Segmente per Pixel-Sampling über die Ring-Geometrie gelegt) ist ersetzt: das 2.3-Template hat gelabelte Gruppen `harvest` (Frucht) und `flowering` (Blüte) mit je einem `<image>` pro Monat; DOM-Reihenfolge der Kind-Elemente entspricht der Winkel-Reihenfolge (per `getBBox()` bestätigt, nicht angenommen). `setMonthRing()` blendet sie einzeln nach `fruitMonths[i]`/`flowerMonths[i]` ein/aus, statt neue Pfade zu injizieren. Besonderheit: `harvest` hat nur 11 statt 12 Bilder (kein Frucht-Icon für April) — per Winkel-Abgleich gegen `flowering`s vollständige 12 Positionen bestimmt, nicht geraten. Getestet: alle Monate einzeln, der April-Sonderfall, ein realistisches Apfel-Muster, der Grenzfall „Frucht+Blüte im selben Monat", alle drei PDF-Export-Pfade. Details in `baumscheibe-mapping-status.md`
 - [ ] sprache der karten auf ui-sprache einstellen
 
 ### sonst

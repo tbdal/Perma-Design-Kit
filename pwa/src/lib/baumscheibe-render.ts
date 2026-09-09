@@ -64,63 +64,30 @@ function setVisible(el: Element, on: boolean) {
   else el.setAttribute('display', 'none');
 }
 
-// Fruit/flower month calendar. The template's background art already has two
-// concentric hand-drawn rings for this in the lower half (inner = fruit,
-// outer = flower, per the artist) but they're unlabeled pixels baked into
-// the flat "background" raster — no vector/label structure to hook into
-// (see baumscheibe-mapping-status.md). So instead of toggling an existing
-// element like every other field, we overlay 12 translucent arc segments
-// per ring, geometrically fitted to the artwork by sampling rendered pixels
-// (see scratchpad fit-ring.mjs from the session that built this).
-// Center/radii are hand-fitted to this specific template — if the artwork
-// is redrawn, re-measure and update these.
-const RING_CENTER = { x: 1140, y: 1130 };
-const FRUIT_RING = { rInner: 860, rOuter: 905 };
-const FLOWER_RING = { rInner: 925, rOuter: 995 };
-// Month 0 (Jan) at the left (180°), month 11 (Dec) at the right (0°), sweeping
-// through the bottom (90°) — reads left-to-right like a normal timeline.
-const RING_ANGLE_START_DEG = 180;
-const RING_ANGLE_END_DEG = 0;
+// Fruit/flower month calendar. The 2.3 template's "harvest" and "flowering"
+// labeled groups each contain one <image> per month, in DOM order by
+// angular position around the ring (month 0 = Jan at the left/180°, sweeping
+// through the bottom to month 11 = Dec at the right/0° — same convention the
+// old hardcoded-arc approach used). Confirmed by measuring each image's
+// angle from the ring center (1140, 1130) and checking the order is
+// monotonic. "harvest" (fruit) has only 11 images — no April (index 3) icon
+// exists in this artwork — while "flowering" has the full 12; matched by
+// nearest angle against flowering's evenly-spaced 12 positions.
+const HARVEST_MONTH_INDEX = [0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11];
 
-function describeAnnulusSegment(
-  cx: number, cy: number, rInner: number, rOuter: number,
-  startDeg: number, endDeg: number,
-): string {
-  const toRad = (d: number) => (d * Math.PI) / 180;
-  const pt = (r: number, deg: number) => [cx + r * Math.cos(toRad(deg)), cy + r * Math.sin(toRad(deg))];
-  const [x1, y1] = pt(rOuter, startDeg);
-  const [x2, y2] = pt(rOuter, endDeg);
-  const [x3, y3] = pt(rInner, endDeg);
-  const [x4, y4] = pt(rInner, startDeg);
-  const sweep = endDeg > startDeg ? 1 : 0;
-  return `M ${x1} ${y1} A ${rOuter} ${rOuter} 0 0 ${sweep} ${x2} ${y2} ` +
-    `L ${x3} ${y3} A ${rInner} ${rInner} 0 0 ${1 - sweep} ${x4} ${y4} Z`;
-}
-
-function injectMonthRing(
-  svg: SVGSVGElement, months: boolean[], ring: { rInner: number; rOuter: number }, color: string,
-) {
-  const SVG_NS = 'http://www.w3.org/2000/svg';
-  const g = document.createElementNS(SVG_NS, 'g');
-  const step = (RING_ANGLE_END_DEG - RING_ANGLE_START_DEG) / 12;
-
-  months.forEach((active, i) => {
-    if (!active) return;
-    const start = RING_ANGLE_START_DEG + i * step;
-    const end = start + step;
-    const path = document.createElementNS(SVG_NS, 'path');
-    path.setAttribute('d', describeAnnulusSegment(RING_CENTER.x, RING_CENTER.y, ring.rInner, ring.rOuter, start, end));
-    path.setAttribute('fill', color);
-    path.setAttribute('fill-opacity', '0.6');
-    g.appendChild(path);
+function setMonthRing(svg: SVGSVGElement, groupLabel: string, months: boolean[], monthIndexByOrder?: number[]) {
+  const [group] = findByLabel(svg, [groupLabel]);
+  if (!group) return;
+  Array.from(group.querySelectorAll('image')).forEach((el, order) => {
+    const monthIdx = monthIndexByOrder ? monthIndexByOrder[order] : order;
+    if (monthIdx == null) return;
+    setVisible(el, !!months[monthIdx]);
   });
-
-  svg.appendChild(g);
 }
 
 function injectMonthCalendar(svg: SVGSVGElement, fruitMonths: boolean[], flowerMonths: boolean[]) {
-  injectMonthRing(svg, fruitMonths, FRUIT_RING, '#e6483f');
-  injectMonthRing(svg, flowerMonths, FLOWER_RING, '#e64ba0');
+  setMonthRing(svg, 'harvest', fruitMonths, HARVEST_MONTH_INDEX);
+  setMonthRing(svg, 'flowering', flowerMonths);
 }
 
 /** PFAF's database text is CC BY 4.0, which requires attribution wherever the
