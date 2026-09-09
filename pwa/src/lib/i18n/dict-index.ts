@@ -94,6 +94,8 @@ export const indexDict: Dict = {
   thLatin: { de: 'Lateinisch', en: 'Latin' },
   thHeightShort: { de: 'H', en: 'H' },
   thUsage: { de: 'Nutzung', en: 'Uses' },
+  thFunctions: { de: 'Funktionen', en: 'Functions' },
+  thPhenology: { de: 'Blüte/Frucht', en: 'Bloom/Fruit' },
   thCompleteness: { de: 'Vollst.', en: 'Complete' },
   thCount: { de: 'Anz.', en: 'Qty.' },
   thSources: { de: 'Quellen', en: 'Sources' },
@@ -105,11 +107,22 @@ export const indexDict: Dict = {
   badgeMeds: { de: 'Medizin', en: 'Medicinal' },
   badgeMaterial: { de: 'Material', en: 'Material' },
   badgeFodder: { de: 'Futter', en: 'Fodder' },
+  badgeFuel: { de: 'Brennstoff', en: 'Fuel' },
   badgeNitrogenFix: { de: 'N-Fix', en: 'N-fix' },
+  badgeMineralFix: { de: 'Mineraliensammler', en: 'Mineral accumulator' },
   badgeGroundCover: { de: 'Bodendecker', en: 'Ground cover' },
   badgeInsects: { de: 'Insekten', en: 'Insects' },
   badgeWindBreaking: { de: 'Windschutz', en: 'Windbreak' },
   badgeAnimalProtection: { de: 'Tierschutz', en: 'Animal shelter' },
+
+  // ── Table legend (Nutzung/Funktionen color key) ─────────────────────
+  legendToggle: { de: 'Farblegende', en: 'Color legend' },
+  legendUsageHeading: { de: 'Nutzung:', en: 'Uses:' },
+  legendFunctionsHeading: { de: 'Funktionen:', en: 'Functions:' },
+  legendPhenologyHeading: { de: 'Blüte/Frucht:', en: 'Bloom/Fruit:' },
+  legendFlowering: { de: 'Blüte', en: 'Bloom' },
+  legendFruiting: { de: 'Frucht', en: 'Fruit' },
+  phenologyTitle: { de: '{count} Blütemonate, {countFruit} Fruchtmonate', en: '{count} bloom months, {countFruit} fruit months' },
 
   // ── Edit dialog: title, fieldsets, field labels ─────────────────────
   dialogTitleEdit: { de: 'Pflanze bearbeiten', en: 'Edit plant' },

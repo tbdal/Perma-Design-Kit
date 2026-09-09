@@ -2,7 +2,7 @@
 
 ## Kurzfristig
 - [ ] naturadb anrufen
-- [ ] tabellenansicht verbessern: inhalt klarer unterscheiden (funktionen / nutzen) und weitere spalten mit infos wie Blütemonate. möglichst alles in tabellenform anzeigen. legende zu farben erstellen
+- [x] **tabellenansicht verbessern** — Nutzung und Funktionen sind jetzt zwei getrennte Spalten (`USAGE_BADGES`/`FUNCTION_BADGES` statt einer kombinierten Liste, dabei auch `fuel`/`mineralFix` ergänzt, die vorher in der Badge-Liste fehlten) mit farbigen Dots statt vollen Pills; neue Spalte „Blüte/Frucht" zeigt eine kompakte 12-Tick-Mini-Leiste (Amber=Blüte, Grün=Frucht, Smaragd=beides — gleiche Farbsprache wie `/kalender`); ausklappbare Farblegende (`<details>`) über der Desktop-Tabelle erklärt alle Dot-/Leisten-Farben. Nebenbei zwei echte Bugs behoben: die alten kombinierten Dots hatten `title=""` (gar kein Tooltip) — jetzt mit echten Labels; und die Dot-Farbe wurde zur Laufzeit per String-Replace aus der Pill-Farbklasse abgeleitet (`bg-amber-100` → `bg-amber-400`), was Tailwinds JIT-Scanner nicht erkennt (nur literal im Quellcode vorkommende Klassen werden generiert) — dadurch waren alle Dot-Farben außer Amber unsichtbar (transparent). Fix: jede Badge-Definition trägt jetzt zusätzlich eine literale `-400`-Dot-Farbklasse.
 - [ ] 2 pdf versionen: a) 9 stück pro din a4 b) maßstabsgetreu
 - [ ] jens dazu einweihen
 

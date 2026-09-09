@@ -460,25 +460,87 @@ import Layout from '../layouts/Layout.astro';
 
   // ── Plant card badges & color system ─────────────────────────────────────────
 
-  // Usage: warm tones. Ecosystem: cool/green tones.
-  const USE_BADGES: [keyof PlantData, string, string][] = [
-    ['eatable',      'bg-amber-100 text-amber-800',   t('badgeEatable')],
-    ['culinaric',    'bg-yellow-100 text-yellow-800',  t('badgeCulinaric')],
-    ['meds',         'bg-rose-100 text-rose-700',      t('badgeMeds')],
-    ['material',     'bg-orange-100 text-orange-800',  t('badgeMaterial')],
-    ['fodder',       'bg-lime-100 text-lime-700',      t('badgeFodder')],
-    ['nitrogenFix',  'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300',    t('badgeNitrogenFix')],
-    ['groundCover',  'bg-teal-100 text-teal-800',      t('badgeGroundCover')],
-    ['insects',      'bg-cyan-100 text-cyan-800',      t('badgeInsects')],
-    ['windBreaking', 'bg-sky-100 text-sky-800',        t('badgeWindBreaking')],
-    ['animalProtection', 'bg-violet-100 text-violet-800', t('badgeAnimalProtection')],
+  // Nutzung (uses, warm tones) and Funktionen (ecosystem functions, cool/green
+  // tones) — two separate lists so the table view can show them as distinct
+  // columns with a legend (see legendUsageHeading/legendFunctionsHeading),
+  // instead of one undifferentiated row of dots.
+  // Each entry also carries a literal "-400" dot-color class (3rd field) for the
+  // compact table dots/legend — Tailwind's JIT scanner only generates CSS for
+  // class strings that appear literally in source, so these can't be derived by
+  // string-replacing the pill color at runtime (that silently produces invisible,
+  // ungenerated classes for every color but amber).
+  const USAGE_BADGES: [keyof PlantData, string, string, string][] = [
+    ['eatable',   'bg-amber-100 text-amber-800',   'bg-amber-400',  t('badgeEatable')],
+    ['culinaric', 'bg-yellow-100 text-yellow-800', 'bg-yellow-400', t('badgeCulinaric')],
+    ['meds',      'bg-rose-100 text-rose-700',     'bg-rose-400',   t('badgeMeds')],
+    ['material',  'bg-orange-100 text-orange-800', 'bg-orange-400', t('badgeMaterial')],
+    ['fodder',    'bg-lime-100 text-lime-700',     'bg-lime-400',   t('badgeFodder')],
+    ['fuel',      'bg-red-100 text-red-700',       'bg-red-400',    t('badgeFuel')],
   ];
+  const FUNCTION_BADGES: [keyof PlantData, string, string, string][] = [
+    ['nitrogenFix',      'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300', 'bg-green-400',   t('badgeNitrogenFix')],
+    ['mineralFix',       'bg-emerald-100 text-emerald-800', 'bg-emerald-400', t('badgeMineralFix')],
+    ['groundCover',      'bg-teal-100 text-teal-800',       'bg-teal-400',    t('badgeGroundCover')],
+    ['insects',          'bg-cyan-100 text-cyan-800',       'bg-cyan-400',    t('badgeInsects')],
+    ['windBreaking',     'bg-sky-100 text-sky-800',         'bg-sky-400',     t('badgeWindBreaking')],
+    ['animalProtection', 'bg-violet-100 text-violet-800',   'bg-violet-400',  t('badgeAnimalProtection')],
+  ];
+  const USE_BADGES = [...USAGE_BADGES, ...FUNCTION_BADGES];
 
   function badges(p: PlantData): string {
     return USE_BADGES
       .filter(([k]) => p[k])
-      .map(([,c,l]) => `<span class="inline-block rounded-full px-2 py-0.5 text-xs font-medium ${c}">${l}</span>`)
+      .map(([,c,,l]) => `<span class="inline-block rounded-full px-2 py-0.5 text-xs font-medium ${c}">${l}</span>`)
       .join(' ');
+  }
+
+  /** Compact colored dots for one badge group, each with a real tooltip
+   *  (unlike the old combined useDots, which had title="" — no tooltip at all). */
+  function dotGroup(p: PlantData, group: [keyof PlantData, string, string, string][]): string {
+    return group
+      .filter(([k]) => p[k])
+      .map(([,,dot,l]) => `<span class="inline-block h-2 w-2 rounded-full ${dot}" title="${escapeHtml(l)}"></span>`)
+      .join('');
+  }
+
+  /** Color-key for the table's dot columns — what each dot color/position
+   *  means, since the table itself only has room for colored dots, not labels. */
+  function legendHtml(): string {
+    const chip = (colorClass: string, label: string) =>
+      `<span class="inline-flex items-center gap-1"><span class="inline-block h-2 w-2 rounded-full ${colorClass}"></span>${escapeHtml(label)}</span>`;
+    const usageChips = USAGE_BADGES.map(([,,dot,l]) => chip(dot, l)).join(' ');
+    const functionChips = FUNCTION_BADGES.map(([,,dot,l]) => chip(dot, l)).join(' ');
+    return `
+      <details class="mb-2 rounded-lg bg-stone-50 dark:bg-stone-900 px-3 py-1.5 text-xs text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700">
+        <summary class="cursor-pointer select-none font-medium text-stone-500 dark:text-stone-400">${escapeHtml(t('legendToggle'))}</summary>
+        <div class="mt-2 space-y-1.5">
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-1"><strong class="text-stone-500 dark:text-stone-400">${escapeHtml(t('legendUsageHeading'))}</strong>${usageChips}</div>
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-1"><strong class="text-stone-500 dark:text-stone-400">${escapeHtml(t('legendFunctionsHeading'))}</strong>${functionChips}</div>
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <strong class="text-stone-500 dark:text-stone-400">${escapeHtml(t('legendPhenologyHeading'))}</strong>
+            ${chip('bg-amber-300 dark:bg-amber-500', t('legendFlowering'))}
+            ${chip('bg-green-500 dark:bg-green-400', t('legendFruiting'))}
+          </div>
+        </div>
+      </details>`;
+  }
+
+  /** Compact 12-tick bar for fruitMonths/flowerMonths — a condensed version of
+   *  the full month grid on /kalender, sized for a table cell. */
+  function phenologyBar(p: PlantData): string {
+    const flower = p.flowerMonths ?? [];
+    const fruit = p.fruitMonths ?? [];
+    if (!flower.some(Boolean) && !fruit.some(Boolean)) return '<span class="text-stone-300 dark:text-stone-600">—</span>';
+    const ticks = Array.from({ length: 12 }, (_, i) => {
+      const f = !!flower[i], r = !!fruit[i];
+      const cls = f && r ? 'bg-emerald-400 dark:bg-emerald-500'
+        : f ? 'bg-amber-300 dark:bg-amber-500'
+        : r ? 'bg-green-500 dark:bg-green-400'
+        : 'bg-stone-100 dark:bg-stone-800';
+      return `<span class="h-2.5 w-1 rounded-sm ${cls}"></span>`;
+    }).join('');
+    const title = t('phenologyTitle', { count: flower.filter(Boolean).length, countFruit: fruit.filter(Boolean).length });
+    return `<div class="flex gap-px" title="${escapeHtml(title)}">${ticks}</div>`;
   }
 
   /** Colored left-border accent based on primary use */
@@ -799,12 +861,12 @@ import Layout from '../layouts/Layout.astro';
         const sel = selectedIds.has(p.id);
         const pct = completenessPercent(p);
         const barColor = pct >= 80 ? 'bg-green-400' : pct >= 50 ? 'bg-amber-400' : 'bg-red-300';
-        const useDots = USE_BADGES.filter(([k]) => p[k])
-          .map(([,c]) => `<span class="inline-block h-2 w-2 rounded-full ${c.split(' ')[0].replace('-100', '-400')}" title=""></span>`)
-          .join('');
+        const usageDots = dotGroup(p, USAGE_BADGES);
+        const functionDots = dotGroup(p, FUNCTION_BADGES);
+        const phenologyHtml = phenologyBar(p);
         const printHtml = printStepperHtml(p, t);
         const off = (p.printCount ?? 1) === 0;
-        return { p, srcHtml, sel, pct, barColor, useDots, printHtml, off };
+        return { p, srcHtml, sel, pct, barColor, usageDots, functionDots, phenologyHtml, printHtml, off };
       });
 
       const actionBtns = `
@@ -815,7 +877,7 @@ import Layout from '../layouts/Layout.astro';
       listEl.innerHTML = `
         <!-- Mobile card list (< sm) -->
         <div class="sm:hidden divide-y divide-stone-100">
-          ${rowData.map(({ p, srcHtml, sel, pct, barColor, useDots, printHtml, off }) => `
+          ${rowData.map(({ p, srcHtml, sel, pct, barColor, usageDots, functionDots, phenologyHtml, printHtml, off }) => `
           <div data-id="${p.id}" class="flex items-start gap-2.5 px-3 py-3 ${sel ? 'bg-green-50 dark:bg-green-900/30' : ''}${off ? ' opacity-60' : ''}">
             <input type="checkbox" class="row-check mt-1 shrink-0 accent-green-600" ${sel ? 'checked' : ''} />
             <div class="w-0.5 self-stretch rounded-full ${accentColor(p)} shrink-0"></div>
@@ -831,7 +893,9 @@ import Layout from '../layouts/Layout.astro';
                 ${p.heightM != null ? `<span>↕ ${p.heightM}m</span>` : ''}
                 ${p.widthM != null ? `<span>↔ ${p.widthM}m</span>` : ''}
                 ${p.climateZone ? `<span>Zone ${escapeHtml(p.climateZone)}</span>` : ''}
-                ${useDots ? `<span class="flex gap-0.5">${useDots}</span>` : ''}
+                ${usageDots ? `<span class="flex gap-0.5">${usageDots}</span>` : ''}
+                ${functionDots ? `<span class="flex gap-0.5">${functionDots}</span>` : ''}
+                ${phenologyHtml}
               </div>
               <div class="mt-1.5 flex flex-wrap gap-1">${badges(p)}</div>
               <div class="mt-2 flex items-center gap-2">
@@ -847,6 +911,7 @@ import Layout from '../layouts/Layout.astro';
         </div>
 
         <!-- Desktop table (≥ sm) -->
+        <div class="hidden sm:block">${legendHtml()}</div>
         <div class="hidden sm:block overflow-x-auto">
           <table class="w-full text-sm">
             <thead>
@@ -856,6 +921,8 @@ import Layout from '../layouts/Layout.astro';
                 ${thSort('latinName', t('thLatin'))}
                 ${thSort('heightM', t('thHeightShort'))}
                 <th class="px-3 py-2.5">${escapeHtml(t('thUsage'))}</th>
+                <th class="px-3 py-2.5">${escapeHtml(t('thFunctions'))}</th>
+                <th class="px-3 py-2.5">${escapeHtml(t('thPhenology'))}</th>
                 ${thSort('completeness', t('thCompleteness'))}
                 <th class="px-3 py-2.5">${escapeHtml(t('thCount'))}</th>
                 <th class="px-3 py-2.5">${escapeHtml(t('thSources'))}</th>
@@ -863,7 +930,7 @@ import Layout from '../layouts/Layout.astro';
               </tr>
             </thead>
             <tbody class="divide-y divide-stone-100">
-              ${rowData.map(({ p, srcHtml, sel, pct, barColor, useDots, printHtml, off }) => `
+              ${rowData.map(({ p, srcHtml, sel, pct, barColor, usageDots, functionDots, phenologyHtml, printHtml, off }) => `
               <tr data-id="${p.id}" class="hover:bg-stone-50 dark:hover:bg-stone-800 ${sel ? 'bg-green-50 dark:bg-green-900/30' : ''}${off ? ' opacity-60' : ''}">
                 <td class="px-3 py-2"><input type="checkbox" class="row-check accent-green-600" ${sel ? 'checked' : ''} /></td>
                 <td class="px-3 py-2">
@@ -874,7 +941,9 @@ import Layout from '../layouts/Layout.astro';
                 </td>
                 <td class="px-3 py-2 italic text-stone-500 dark:text-stone-400">${escapeHtml(p.latinName)}</td>
                 <td class="px-3 py-2 text-stone-400 dark:text-stone-500">${p.heightM != null ? p.heightM + 'm' : '—'}</td>
-                <td class="px-3 py-2"><div class="flex gap-0.5">${useDots}</div></td>
+                <td class="px-3 py-2"><div class="flex gap-0.5">${usageDots}</div></td>
+                <td class="px-3 py-2"><div class="flex gap-0.5">${functionDots}</div></td>
+                <td class="px-3 py-2">${phenologyHtml}</td>
                 <td class="px-3 py-2">
                   <div class="flex items-center gap-1.5">
                     <div class="h-1.5 w-16 overflow-hidden rounded-full bg-stone-100 dark:bg-stone-800">
