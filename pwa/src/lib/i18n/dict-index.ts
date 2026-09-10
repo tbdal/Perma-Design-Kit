@@ -43,6 +43,7 @@ export const indexDict: Dict = {
 
   // ── Filters ──────────────────────────────────────────────────────────
   filterLabel: { de: 'Filter:', en: 'Filter:' },
+  filterTextPlaceholder: { de: 'Name filtern…', en: 'Filter by name…' },
   filterEatable: { de: 'Essbar', en: 'Edible' },
   filterMeds: { de: 'Medizinisch', en: 'Medicinal' },
   filterMaterial: { de: 'Material', en: 'Material' },

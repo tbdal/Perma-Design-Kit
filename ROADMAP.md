@@ -91,6 +91,7 @@
 - [ ] **SVG-Template optimieren** — derzeit 5 MB durch ~30 inline Base64-PNGs; via `svgo` / externe Raster
 
 ### UI / UX
+- [x] **Freitext-Filter für die Tabelle** — neues Suchfeld in der Filter-Leiste (`#filter-text`), filtert live nach deutschem/lateinischem Namen (`.toLowerCase().includes()`, gleiche Konvention wie `searchDB()` in `plant-search.ts`), 150ms Debounce. Unabhängig von der oberen Suchleiste (die importiert neue Pflanzen aus externen Quellen). Kombiniert per AND mit den bestehenden Filter-Chips, geteilt über alle drei Ansichten (Kacheln/Liste/Karten) via `applyFilters()`, persistiert in localStorage (`plant-text-filter`) und wird von „Zurücksetzen"/Beispieldaten-Import mitzurückgesetzt.
 - [ ] **Konfigurierbare Farbthemen** — Farbenblindheits-Modus
 - [ ] **Bild-Fallback** — Silhouette nach Pflanzentyp wenn kein Foto vorhanden
 
