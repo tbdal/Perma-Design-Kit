@@ -64,10 +64,64 @@ import Layout from '../layouts/Layout.astro';
     <span class="text-stone-500 dark:text-stone-400" data-i18n="filterLabel">Filter:</span>
     <input type="search" id="filter-text" data-i18n-placeholder="filterTextPlaceholder" placeholder="Name filtern…" class="w-40 rounded-full border-0 bg-stone-100 dark:bg-stone-800 px-2.5 py-1 text-xs text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:ring-2 focus:ring-green-400 focus:outline-none" />
     <span class="h-4 w-px bg-stone-300 dark:bg-stone-700"></span>
-    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="eatable" data-i18n="filterEatable">Essbar</button>
-    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="meds" data-i18n="filterMeds">Medizinisch</button>
-    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="material" data-i18n="filterMaterial">Material</button>
-    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="nitrogenFix" data-i18n="filterNitrogenFix">N-Fixer</button>
+
+    <!-- Nutzung / Funktionen: multi-select dropdowns (OR within, AND across
+         columns) — replace the old single-value eatable/meds/material/
+         nitrogenFix chips, which only covered 4 of the 12 Nutzung+Funktionen
+         fields. Built with <details>, same no-JS-positioning idiom as the
+         table's color legend. -->
+    <details class="filter-dropdown relative">
+      <summary id="filter-usage-summary" class="cursor-pointer select-none rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700"><span data-i18n="filterUsageLabel">Nutzung</span></summary>
+      <div class="absolute z-10 mt-1 w-44 space-y-1 rounded-lg bg-white dark:bg-stone-800 p-2.5 text-xs shadow-lg ring-1 ring-stone-200 dark:ring-stone-700">
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-usage-opt accent-green-600" value="eatable" /> <span data-i18n="badgeEatable">Essbar</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-usage-opt accent-green-600" value="culinaric" /> <span data-i18n="badgeCulinaric">Kulinarisch</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-usage-opt accent-green-600" value="meds" /> <span data-i18n="badgeMeds">Medizin</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-usage-opt accent-green-600" value="material" /> <span data-i18n="badgeMaterial">Material</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-usage-opt accent-green-600" value="fodder" /> <span data-i18n="badgeFodder">Futter</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-usage-opt accent-green-600" value="fuel" /> <span data-i18n="badgeFuel">Brennstoff</span></label>
+      </div>
+    </details>
+    <details class="filter-dropdown relative">
+      <summary id="filter-function-summary" class="cursor-pointer select-none rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700"><span data-i18n="filterFunctionLabel">Funktionen</span></summary>
+      <div class="absolute z-10 mt-1 w-44 space-y-1 rounded-lg bg-white dark:bg-stone-800 p-2.5 text-xs shadow-lg ring-1 ring-stone-200 dark:ring-stone-700">
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-function-opt accent-green-600" value="nitrogenFix" /> <span data-i18n="badgeNitrogenFix">N-Fix</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-function-opt accent-green-600" value="mineralFix" /> <span data-i18n="badgeMineralFix">Mineraliensammler</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-function-opt accent-green-600" value="groundCover" /> <span data-i18n="badgeGroundCover">Bodendecker</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-function-opt accent-green-600" value="insects" /> <span data-i18n="badgeInsects">Insekten</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-function-opt accent-green-600" value="windBreaking" /> <span data-i18n="badgeWindBreaking">Windschutz</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-function-opt accent-green-600" value="animalProtection" /> <span data-i18n="badgeAnimalProtection">Tierschutz</span></label>
+      </div>
+    </details>
+    <select id="filter-phenology" class="rounded-full border-0 bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700 focus:ring-2 focus:ring-green-400 focus:outline-none">
+      <option value="" data-i18n="filterPhenologyAll">Blüte/Frucht: Alle</option>
+      <option value="0" data-i18n="month0">Januar</option>
+      <option value="1" data-i18n="month1">Februar</option>
+      <option value="2" data-i18n="month2">März</option>
+      <option value="3" data-i18n="month3">April</option>
+      <option value="4" data-i18n="month4">Mai</option>
+      <option value="5" data-i18n="month5">Juni</option>
+      <option value="6" data-i18n="month6">Juli</option>
+      <option value="7" data-i18n="month7">August</option>
+      <option value="8" data-i18n="month8">September</option>
+      <option value="9" data-i18n="month9">Oktober</option>
+      <option value="10" data-i18n="month10">November</option>
+      <option value="11" data-i18n="month11">Dezember</option>
+    </select>
+    <select id="filter-height" class="rounded-full border-0 bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700 focus:ring-2 focus:ring-green-400 focus:outline-none">
+      <option value="0" data-i18n="filterHeightAll">H: Alle</option>
+      <option value="1">≥ 1m</option>
+      <option value="3">≥ 3m</option>
+      <option value="5">≥ 5m</option>
+      <option value="10">≥ 10m</option>
+      <option value="20">≥ 20m</option>
+    </select>
+    <select id="filter-completeness" class="rounded-full border-0 bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700 focus:ring-2 focus:ring-green-400 focus:outline-none">
+      <option value="0" data-i18n="filterCompletenessAll">Vollst.: Alle</option>
+      <option value="25">≥ 25%</option>
+      <option value="50">≥ 50%</option>
+      <option value="75">≥ 75%</option>
+      <option value="100">100%</option>
+    </select>
     <span class="h-4 w-px bg-stone-300 dark:bg-stone-700"></span>
     <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="sunFull" data-i18n="filterSunFull">Volle Sonne</button>
     <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="sunMid" data-i18n="filterSunMid">Halbschatten</button>
@@ -308,10 +362,81 @@ import Layout from '../layouts/Layout.astro';
   function persistTextQuery() {
     try { localStorage.setItem('plant-text-filter', textQuery); } catch {}
   }
+
+  // Per-column filters for the Nutzung/Funktionen/Blüte-Frucht/H/Vollst.
+  // table columns. Nutzung/Funktionen are OR-within-the-set (any selected
+  // usage matches), combined with everything else via AND — the usual
+  // faceted-filter convention (picking two usages should widen results
+  // within that facet, not require a plant to have both at once).
+  function loadSet(key: string): Set<string> {
+    try { const raw = localStorage.getItem(key); if (raw) return new Set(JSON.parse(raw)); } catch {}
+    return new Set<string>();
+  }
+  function saveSet(key: string, set: Set<string>) {
+    try { localStorage.setItem(key, JSON.stringify([...set])); } catch {}
+  }
+  const usageFilter = loadSet('plant-filter-usage');
+  const functionFilter = loadSet('plant-filter-function');
+  function persistUsageFilter() { saveSet('plant-filter-usage', usageFilter); }
+  function persistFunctionFilter() { saveSet('plant-filter-function', functionFilter); }
+
+  // One-time migration: eatable/meds/material/nitrogenFix used to live in
+  // activeFilters as chip buttons; those chips are now replaced by the
+  // Nutzung/Funktionen dropdowns, so move any persisted selection over
+  // instead of silently dropping it.
+  (function migrateLegacyChipFilters() {
+    let changed = false;
+    for (const f of ['eatable', 'meds', 'material'] as const) {
+      if (activeFilters.has(f)) { activeFilters.delete(f); usageFilter.add(f); changed = true; }
+    }
+    if (activeFilters.has('nitrogenFix')) { activeFilters.delete('nitrogenFix'); functionFilter.add('nitrogenFix'); changed = true; }
+    if (changed) { persistFilters(); persistUsageFilter(); persistFunctionFilter(); }
+  })();
+
+  let phenologyMonth: number | null = (() => {
+    try {
+      const raw = localStorage.getItem('plant-filter-phenology');
+      return raw ? Number(raw) : null;
+    } catch { return null; }
+  })();
+  function persistPhenologyMonth() {
+    try {
+      if (phenologyMonth == null) localStorage.removeItem('plant-filter-phenology');
+      else localStorage.setItem('plant-filter-phenology', String(phenologyMonth));
+    } catch {}
+  }
+  let heightMin = (() => {
+    try { return Number(localStorage.getItem('plant-filter-height') || '0'); } catch { return 0; }
+  })();
+  function persistHeightMin() {
+    try { localStorage.setItem('plant-filter-height', String(heightMin)); } catch {}
+  }
+  let completenessMin = (() => {
+    try { return Number(localStorage.getItem('plant-filter-completeness') || '0'); } catch { return 0; }
+  })();
+  function persistCompletenessMin() {
+    try { localStorage.setItem('plant-filter-completeness', String(completenessMin)); } catch {}
+  }
+
   function applyFilters(plants: PlantData[]): PlantData[] {
     let result = plants;
     if (activeFilters.size > 0) {
       result = result.filter(p => [...activeFilters].every(f => Boolean((p as any)[f])));
+    }
+    if (usageFilter.size > 0) {
+      result = result.filter(p => [...usageFilter].some(f => Boolean((p as any)[f])));
+    }
+    if (functionFilter.size > 0) {
+      result = result.filter(p => [...functionFilter].some(f => Boolean((p as any)[f])));
+    }
+    if (phenologyMonth != null) {
+      result = result.filter(p => !!p.flowerMonths?.[phenologyMonth!] || !!p.fruitMonths?.[phenologyMonth!]);
+    }
+    if (heightMin > 0) {
+      result = result.filter(p => p.heightM != null && p.heightM >= heightMin);
+    }
+    if (completenessMin > 0) {
+      result = result.filter(p => completenessPercent(p) >= completenessMin);
     }
     const q = textQuery.trim().toLowerCase();
     if (q) {
@@ -1217,12 +1342,8 @@ import Layout from '../layouts/Layout.astro';
     try {
       await importPlants(samplePlants);
       // Filter könnten alle Samples ausblenden — Hinweis im Status, falls so.
-      const before = activeFilters.size > 0 || !!textQuery.trim();
-      activeFilters.clear();
-      persistFilters();
-      textQuery = '';
-      persistTextQuery();
-      filterTextEl.value = '';
+      const before = anyFilterActive();
+      clearAllFilters();
       await renderList();
       alert(t('alertSamplesImported', { n: samplePlants.length, reset: before ? t('alertFiltersReset') : '' }));
     } catch (err) {
@@ -1233,12 +1354,8 @@ import Layout from '../layouts/Layout.astro';
   document.getElementById('btn-load-samples-crawford')!.addEventListener('click', async () => {
     try {
       await importPlants(crawfordPlants);
-      const before = activeFilters.size > 0 || !!textQuery.trim();
-      activeFilters.clear();
-      persistFilters();
-      textQuery = '';
-      persistTextQuery();
-      filterTextEl.value = '';
+      const before = anyFilterActive();
+      clearAllFilters();
       await renderList();
       alert(t('alertCrawfordImported', { n: crawfordPlants.length, reset: before ? t('alertFiltersReset') : '' }));
     } catch (err) {
@@ -1417,6 +1534,10 @@ import Layout from '../layouts/Layout.astro';
   if (cardSelect) cardSelect.value = cardViewMode;
 
   // ── Filter chips ───────────────────────────────────────────────────────
+  function anyFilterActive(): boolean {
+    return activeFilters.size > 0 || usageFilter.size > 0 || functionFilter.size > 0
+      || phenologyMonth != null || heightMin > 0 || completenessMin > 0 || !!textQuery.trim();
+  }
   function syncFilterChips(shown: number, total: number) {
     document.querySelectorAll<HTMLButtonElement>('.filter-chip').forEach(btn => {
       const f = btn.dataset.filter!;
@@ -1429,9 +1550,25 @@ import Layout from '../layouts/Layout.astro';
       btn.classList.toggle('text-stone-600', !active);
       btn.classList.toggle('dark:text-stone-300', !active);
     });
+    const usageSummary = document.getElementById('filter-usage-summary')!;
+    usageSummary.classList.toggle('bg-green-700', usageFilter.size > 0);
+    usageSummary.classList.toggle('text-white', usageFilter.size > 0);
+    usageSummary.classList.toggle('bg-stone-100', usageFilter.size === 0);
+    usageSummary.classList.toggle('dark:bg-stone-800', usageFilter.size === 0);
+    usageSummary.classList.toggle('text-stone-600', usageFilter.size === 0);
+    usageSummary.classList.toggle('dark:text-stone-300', usageFilter.size === 0);
+    usageSummary.textContent = usageFilter.size > 0 ? `${t('filterUsageLabel')} (${usageFilter.size})` : t('filterUsageLabel');
+    const functionSummary = document.getElementById('filter-function-summary')!;
+    functionSummary.classList.toggle('bg-green-700', functionFilter.size > 0);
+    functionSummary.classList.toggle('text-white', functionFilter.size > 0);
+    functionSummary.classList.toggle('bg-stone-100', functionFilter.size === 0);
+    functionSummary.classList.toggle('dark:bg-stone-800', functionFilter.size === 0);
+    functionSummary.classList.toggle('text-stone-600', functionFilter.size === 0);
+    functionSummary.classList.toggle('dark:text-stone-300', functionFilter.size === 0);
+    functionSummary.textContent = functionFilter.size > 0 ? `${t('filterFunctionLabel')} (${functionFilter.size})` : t('filterFunctionLabel');
     const clearBtn = document.getElementById('btn-filter-clear')!;
     const countEl = document.getElementById('filter-count')!;
-    if (activeFilters.size > 0 || textQuery.trim()) {
+    if (anyFilterActive()) {
       clearBtn.classList.remove('hidden');
       countEl.classList.remove('hidden');
       countEl.textContent = t('filterCount', { shown, total });
@@ -1448,6 +1585,48 @@ import Layout from '../layouts/Layout.astro';
       renderList();
     });
   });
+
+  const filterUsageEls = Array.from(document.querySelectorAll<HTMLInputElement>('.filter-usage-opt'));
+  filterUsageEls.forEach(cb => {
+    cb.checked = usageFilter.has(cb.value);
+    cb.addEventListener('change', () => {
+      if (cb.checked) usageFilter.add(cb.value); else usageFilter.delete(cb.value);
+      persistUsageFilter();
+      renderList();
+    });
+  });
+  const filterFunctionEls = Array.from(document.querySelectorAll<HTMLInputElement>('.filter-function-opt'));
+  filterFunctionEls.forEach(cb => {
+    cb.checked = functionFilter.has(cb.value);
+    cb.addEventListener('change', () => {
+      if (cb.checked) functionFilter.add(cb.value); else functionFilter.delete(cb.value);
+      persistFunctionFilter();
+      renderList();
+    });
+  });
+
+  const filterPhenologyEl = document.getElementById('filter-phenology') as HTMLSelectElement;
+  filterPhenologyEl.value = phenologyMonth != null ? String(phenologyMonth) : '';
+  filterPhenologyEl.addEventListener('change', () => {
+    phenologyMonth = filterPhenologyEl.value === '' ? null : Number(filterPhenologyEl.value);
+    persistPhenologyMonth();
+    renderList();
+  });
+  const filterHeightEl = document.getElementById('filter-height') as HTMLSelectElement;
+  filterHeightEl.value = String(heightMin);
+  filterHeightEl.addEventListener('change', () => {
+    heightMin = Number(filterHeightEl.value);
+    persistHeightMin();
+    renderList();
+  });
+  const filterCompletenessEl = document.getElementById('filter-completeness') as HTMLSelectElement;
+  filterCompletenessEl.value = String(completenessMin);
+  filterCompletenessEl.addEventListener('change', () => {
+    completenessMin = Number(filterCompletenessEl.value);
+    persistCompletenessMin();
+    renderList();
+  });
+
   const filterTextEl = document.getElementById('filter-text') as HTMLInputElement;
   filterTextEl.value = textQuery;
   let filterTextDebounce: ReturnType<typeof setTimeout> | undefined;
@@ -1457,12 +1636,30 @@ import Layout from '../layouts/Layout.astro';
     clearTimeout(filterTextDebounce);
     filterTextDebounce = setTimeout(renderList, 150);
   });
-  document.getElementById('btn-filter-clear')!.addEventListener('click', () => {
+  function clearAllFilters() {
     activeFilters.clear();
     persistFilters();
+    usageFilter.clear();
+    persistUsageFilter();
+    filterUsageEls.forEach(cb => { cb.checked = false; });
+    functionFilter.clear();
+    persistFunctionFilter();
+    filterFunctionEls.forEach(cb => { cb.checked = false; });
+    phenologyMonth = null;
+    persistPhenologyMonth();
+    filterPhenologyEl.value = '';
+    heightMin = 0;
+    persistHeightMin();
+    filterHeightEl.value = '0';
+    completenessMin = 0;
+    persistCompletenessMin();
+    filterCompletenessEl.value = '0';
     textQuery = '';
     persistTextQuery();
     filterTextEl.value = '';
+  }
+  document.getElementById('btn-filter-clear')!.addEventListener('click', () => {
+    clearAllFilters();
     renderList();
   });
 
