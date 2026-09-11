@@ -46,7 +46,6 @@ export const indexDict: Dict = {
   filterTextPlaceholder: { de: 'Name filtern…', en: 'Filter by name…' },
   filterUsageLabel: { de: 'Nutzung', en: 'Uses' },
   filterFunctionLabel: { de: 'Funktionen', en: 'Functions' },
-  filterPhenologyAll: { de: 'Blüte/Frucht: Alle', en: 'Bloom/Fruit: All' },
   filterHeightAll: { de: 'H: Alle', en: 'H: All' },
   filterCompletenessAll: { de: 'Vollst.: Alle', en: 'Complete: All' },
   filterSunFull: { de: 'Volle Sonne', en: 'Full sun' },

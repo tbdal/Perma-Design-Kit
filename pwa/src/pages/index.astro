@@ -92,21 +92,44 @@ import Layout from '../layouts/Layout.astro';
         <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-function-opt accent-green-600" value="animalProtection" /> <span data-i18n="badgeAnimalProtection">Tierschutz</span></label>
       </div>
     </details>
-    <select id="filter-phenology" class="rounded-full border-0 bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700 focus:ring-2 focus:ring-green-400 focus:outline-none">
-      <option value="" data-i18n="filterPhenologyAll">Blüte/Frucht: Alle</option>
-      <option value="0" data-i18n="month0">Januar</option>
-      <option value="1" data-i18n="month1">Februar</option>
-      <option value="2" data-i18n="month2">März</option>
-      <option value="3" data-i18n="month3">April</option>
-      <option value="4" data-i18n="month4">Mai</option>
-      <option value="5" data-i18n="month5">Juni</option>
-      <option value="6" data-i18n="month6">Juli</option>
-      <option value="7" data-i18n="month7">August</option>
-      <option value="8" data-i18n="month8">September</option>
-      <option value="9" data-i18n="month9">Oktober</option>
-      <option value="10" data-i18n="month10">November</option>
-      <option value="11" data-i18n="month11">Dezember</option>
-    </select>
+    <!-- Blüte/Frucht: two independent multi-select month dropdowns (not one
+         combined select) — a plant can be filtered by flowering months and
+         fruiting months separately, each OR-within-itself (any selected
+         month matches), the two combined via AND like every other column. -->
+    <details class="filter-dropdown relative">
+      <summary id="filter-flowering-summary" class="cursor-pointer select-none rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700"><span data-i18n="legendFlowering">Blüte</span></summary>
+      <div class="absolute z-10 mt-1 w-36 space-y-1 rounded-lg bg-white dark:bg-stone-800 p-2.5 text-xs shadow-lg ring-1 ring-stone-200 dark:ring-stone-700">
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-flowering-opt accent-amber-500" value="0" /> <span data-i18n="month0">Januar</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-flowering-opt accent-amber-500" value="1" /> <span data-i18n="month1">Februar</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-flowering-opt accent-amber-500" value="2" /> <span data-i18n="month2">März</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-flowering-opt accent-amber-500" value="3" /> <span data-i18n="month3">April</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-flowering-opt accent-amber-500" value="4" /> <span data-i18n="month4">Mai</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-flowering-opt accent-amber-500" value="5" /> <span data-i18n="month5">Juni</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-flowering-opt accent-amber-500" value="6" /> <span data-i18n="month6">Juli</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-flowering-opt accent-amber-500" value="7" /> <span data-i18n="month7">August</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-flowering-opt accent-amber-500" value="8" /> <span data-i18n="month8">September</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-flowering-opt accent-amber-500" value="9" /> <span data-i18n="month9">Oktober</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-flowering-opt accent-amber-500" value="10" /> <span data-i18n="month10">November</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-flowering-opt accent-amber-500" value="11" /> <span data-i18n="month11">Dezember</span></label>
+      </div>
+    </details>
+    <details class="filter-dropdown relative">
+      <summary id="filter-fruiting-summary" class="cursor-pointer select-none rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700"><span data-i18n="legendFruiting">Frucht</span></summary>
+      <div class="absolute z-10 mt-1 w-36 space-y-1 rounded-lg bg-white dark:bg-stone-800 p-2.5 text-xs shadow-lg ring-1 ring-stone-200 dark:ring-stone-700">
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-fruiting-opt accent-green-600" value="0" /> <span data-i18n="month0">Januar</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-fruiting-opt accent-green-600" value="1" /> <span data-i18n="month1">Februar</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-fruiting-opt accent-green-600" value="2" /> <span data-i18n="month2">März</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-fruiting-opt accent-green-600" value="3" /> <span data-i18n="month3">April</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-fruiting-opt accent-green-600" value="4" /> <span data-i18n="month4">Mai</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-fruiting-opt accent-green-600" value="5" /> <span data-i18n="month5">Juni</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-fruiting-opt accent-green-600" value="6" /> <span data-i18n="month6">Juli</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-fruiting-opt accent-green-600" value="7" /> <span data-i18n="month7">August</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-fruiting-opt accent-green-600" value="8" /> <span data-i18n="month8">September</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-fruiting-opt accent-green-600" value="9" /> <span data-i18n="month9">Oktober</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-fruiting-opt accent-green-600" value="10" /> <span data-i18n="month10">November</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-fruiting-opt accent-green-600" value="11" /> <span data-i18n="month11">Dezember</span></label>
+      </div>
+    </details>
     <select id="filter-height" class="rounded-full border-0 bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700 focus:ring-2 focus:ring-green-400 focus:outline-none">
       <option value="0" data-i18n="filterHeightAll">H: Alle</option>
       <option value="1">≥ 1m</option>
@@ -393,18 +416,15 @@ import Layout from '../layouts/Layout.astro';
     if (changed) { persistFilters(); persistUsageFilter(); persistFunctionFilter(); }
   })();
 
-  let phenologyMonth: number | null = (() => {
-    try {
-      const raw = localStorage.getItem('plant-filter-phenology');
-      return raw ? Number(raw) : null;
-    } catch { return null; }
-  })();
-  function persistPhenologyMonth() {
-    try {
-      if (phenologyMonth == null) localStorage.removeItem('plant-filter-phenology');
-      else localStorage.setItem('plant-filter-phenology', String(phenologyMonth));
-    } catch {}
-  }
+  // Blüte/Frucht: two independent month sets (OR within each, AND between
+  // them) rather than one combined month picker — "blüht im Mai" and
+  // "fruchtet im September" are different questions a user might ask.
+  // Values are the checkbox's string value ("0".."11"), same convention as
+  // usageFilter/functionFilter storing field-name strings.
+  const flowerMonthFilter = loadSet('plant-filter-flowering');
+  const fruitMonthFilter = loadSet('plant-filter-fruiting');
+  function persistFlowerMonthFilter() { saveSet('plant-filter-flowering', flowerMonthFilter); }
+  function persistFruitMonthFilter() { saveSet('plant-filter-fruiting', fruitMonthFilter); }
   let heightMin = (() => {
     try { return Number(localStorage.getItem('plant-filter-height') || '0'); } catch { return 0; }
   })();
@@ -429,8 +449,11 @@ import Layout from '../layouts/Layout.astro';
     if (functionFilter.size > 0) {
       result = result.filter(p => [...functionFilter].some(f => Boolean((p as any)[f])));
     }
-    if (phenologyMonth != null) {
-      result = result.filter(p => !!p.flowerMonths?.[phenologyMonth!] || !!p.fruitMonths?.[phenologyMonth!]);
+    if (flowerMonthFilter.size > 0) {
+      result = result.filter(p => [...flowerMonthFilter].some(m => !!p.flowerMonths?.[Number(m)]));
+    }
+    if (fruitMonthFilter.size > 0) {
+      result = result.filter(p => [...fruitMonthFilter].some(m => !!p.fruitMonths?.[Number(m)]));
     }
     if (heightMin > 0) {
       result = result.filter(p => p.heightM != null && p.heightM >= heightMin);
@@ -1536,7 +1559,20 @@ import Layout from '../layouts/Layout.astro';
   // ── Filter chips ───────────────────────────────────────────────────────
   function anyFilterActive(): boolean {
     return activeFilters.size > 0 || usageFilter.size > 0 || functionFilter.size > 0
-      || phenologyMonth != null || heightMin > 0 || completenessMin > 0 || !!textQuery.trim();
+      || flowerMonthFilter.size > 0 || fruitMonthFilter.size > 0
+      || heightMin > 0 || completenessMin > 0 || !!textQuery.trim();
+  }
+  /** Shared active/inactive styling + "(n)" count for a <details> dropdown's <summary>. */
+  function syncDropdownSummary(id: string, count: number, label: string) {
+    const el = document.getElementById(id)!;
+    const active = count > 0;
+    el.classList.toggle('bg-green-700', active);
+    el.classList.toggle('text-white', active);
+    el.classList.toggle('bg-stone-100', !active);
+    el.classList.toggle('dark:bg-stone-800', !active);
+    el.classList.toggle('text-stone-600', !active);
+    el.classList.toggle('dark:text-stone-300', !active);
+    el.textContent = active ? `${label} (${count})` : label;
   }
   function syncFilterChips(shown: number, total: number) {
     document.querySelectorAll<HTMLButtonElement>('.filter-chip').forEach(btn => {
@@ -1550,22 +1586,10 @@ import Layout from '../layouts/Layout.astro';
       btn.classList.toggle('text-stone-600', !active);
       btn.classList.toggle('dark:text-stone-300', !active);
     });
-    const usageSummary = document.getElementById('filter-usage-summary')!;
-    usageSummary.classList.toggle('bg-green-700', usageFilter.size > 0);
-    usageSummary.classList.toggle('text-white', usageFilter.size > 0);
-    usageSummary.classList.toggle('bg-stone-100', usageFilter.size === 0);
-    usageSummary.classList.toggle('dark:bg-stone-800', usageFilter.size === 0);
-    usageSummary.classList.toggle('text-stone-600', usageFilter.size === 0);
-    usageSummary.classList.toggle('dark:text-stone-300', usageFilter.size === 0);
-    usageSummary.textContent = usageFilter.size > 0 ? `${t('filterUsageLabel')} (${usageFilter.size})` : t('filterUsageLabel');
-    const functionSummary = document.getElementById('filter-function-summary')!;
-    functionSummary.classList.toggle('bg-green-700', functionFilter.size > 0);
-    functionSummary.classList.toggle('text-white', functionFilter.size > 0);
-    functionSummary.classList.toggle('bg-stone-100', functionFilter.size === 0);
-    functionSummary.classList.toggle('dark:bg-stone-800', functionFilter.size === 0);
-    functionSummary.classList.toggle('text-stone-600', functionFilter.size === 0);
-    functionSummary.classList.toggle('dark:text-stone-300', functionFilter.size === 0);
-    functionSummary.textContent = functionFilter.size > 0 ? `${t('filterFunctionLabel')} (${functionFilter.size})` : t('filterFunctionLabel');
+    syncDropdownSummary('filter-usage-summary', usageFilter.size, t('filterUsageLabel'));
+    syncDropdownSummary('filter-function-summary', functionFilter.size, t('filterFunctionLabel'));
+    syncDropdownSummary('filter-flowering-summary', flowerMonthFilter.size, t('legendFlowering'));
+    syncDropdownSummary('filter-fruiting-summary', fruitMonthFilter.size, t('legendFruiting'));
     const clearBtn = document.getElementById('btn-filter-clear')!;
     const countEl = document.getElementById('filter-count')!;
     if (anyFilterActive()) {
@@ -1586,32 +1610,26 @@ import Layout from '../layouts/Layout.astro';
     });
   });
 
-  const filterUsageEls = Array.from(document.querySelectorAll<HTMLInputElement>('.filter-usage-opt'));
-  filterUsageEls.forEach(cb => {
-    cb.checked = usageFilter.has(cb.value);
-    cb.addEventListener('change', () => {
-      if (cb.checked) usageFilter.add(cb.value); else usageFilter.delete(cb.value);
-      persistUsageFilter();
-      renderList();
+  /** Wires a checkbox-group dropdown (Nutzung/Funktionen/Blüte/Frucht) to a
+   *  Set-backed filter: initializes checked state, persists + re-renders on
+   *  change. Returns the elements so clearAllFilters() can reset them. */
+  function wireCheckboxGroup(selector: string, set: Set<string>, persist: () => void): HTMLInputElement[] {
+    const els = Array.from(document.querySelectorAll<HTMLInputElement>(selector));
+    els.forEach(cb => {
+      cb.checked = set.has(cb.value);
+      cb.addEventListener('change', () => {
+        if (cb.checked) set.add(cb.value); else set.delete(cb.value);
+        persist();
+        renderList();
+      });
     });
-  });
-  const filterFunctionEls = Array.from(document.querySelectorAll<HTMLInputElement>('.filter-function-opt'));
-  filterFunctionEls.forEach(cb => {
-    cb.checked = functionFilter.has(cb.value);
-    cb.addEventListener('change', () => {
-      if (cb.checked) functionFilter.add(cb.value); else functionFilter.delete(cb.value);
-      persistFunctionFilter();
-      renderList();
-    });
-  });
+    return els;
+  }
+  const filterUsageEls = wireCheckboxGroup('.filter-usage-opt', usageFilter, persistUsageFilter);
+  const filterFunctionEls = wireCheckboxGroup('.filter-function-opt', functionFilter, persistFunctionFilter);
+  const filterFloweringEls = wireCheckboxGroup('.filter-flowering-opt', flowerMonthFilter, persistFlowerMonthFilter);
+  const filterFruitingEls = wireCheckboxGroup('.filter-fruiting-opt', fruitMonthFilter, persistFruitMonthFilter);
 
-  const filterPhenologyEl = document.getElementById('filter-phenology') as HTMLSelectElement;
-  filterPhenologyEl.value = phenologyMonth != null ? String(phenologyMonth) : '';
-  filterPhenologyEl.addEventListener('change', () => {
-    phenologyMonth = filterPhenologyEl.value === '' ? null : Number(filterPhenologyEl.value);
-    persistPhenologyMonth();
-    renderList();
-  });
   const filterHeightEl = document.getElementById('filter-height') as HTMLSelectElement;
   filterHeightEl.value = String(heightMin);
   filterHeightEl.addEventListener('change', () => {
@@ -1645,9 +1663,12 @@ import Layout from '../layouts/Layout.astro';
     functionFilter.clear();
     persistFunctionFilter();
     filterFunctionEls.forEach(cb => { cb.checked = false; });
-    phenologyMonth = null;
-    persistPhenologyMonth();
-    filterPhenologyEl.value = '';
+    flowerMonthFilter.clear();
+    persistFlowerMonthFilter();
+    filterFloweringEls.forEach(cb => { cb.checked = false; });
+    fruitMonthFilter.clear();
+    persistFruitMonthFilter();
+    filterFruitingEls.forEach(cb => { cb.checked = false; });
     heightMin = 0;
     persistHeightMin();
     filterHeightEl.value = '0';
