@@ -1,4 +1,4 @@
-import { getAllPlants, getAllPolycultures } from './db';
+import { getAllPlants, getAllPolycultures, getAllGardenPlans } from './db';
 import { loadSettings } from './settings';
 
 export const GIST_FILENAME = 'perma-design-kit-backup.json';
@@ -20,9 +20,9 @@ export function rememberSyncAt(provider: string) {
 }
 
 export async function buildBackupJson(): Promise<string> {
-  const [plants, polycultures] = await Promise.all([getAllPlants(), getAllPolycultures()]);
+  const [plants, polycultures, gardenPlans] = await Promise.all([getAllPlants(), getAllPolycultures(), getAllGardenPlans()]);
   const settings = loadSettings();
-  return JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), settings, plants, polycultures }, null, 2);
+  return JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), settings, plants, polycultures, gardenPlans }, null, 2);
 }
 
 export type SyncResult = { ok: boolean; provider: 'webdav' | 'gist' | null; error?: string };

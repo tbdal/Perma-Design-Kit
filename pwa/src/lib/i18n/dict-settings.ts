@@ -82,7 +82,7 @@ export const settingsDict: Dict = {
   webdavDownloading: { de: 'Lade herunter…', en: 'Downloading…' },
   webdavErrorDownload: { de: 'Fehler: {msg}. Prüfe URL, Zugangsdaten und CORS.', en: 'Error: {msg}. Check URL, credentials and CORS.' },
   invalidBackupFormat: { de: 'Ungültiges Backup-Format', en: 'Invalid backup format' },
-  restoredCount: { de: '{plants} Pflanzen, {guilds} Polykulturen wiederhergestellt.', en: '{plants} plants, {guilds} polycultures restored.' },
+  restoredCount: { de: '{plants} Pflanzen, {guilds} Polykulturen, {gardenPlans} Gartenpläne wiederhergestellt.', en: '{plants} plants, {guilds} polycultures, {gardenPlans} garden plans restored.' },
 
   fsaSummary: { de: 'Lokale Datei (Chrome / Edge)', en: 'Local file (Chrome / Edge)' },
   fsaDesc: { de: 'Schreibt das Backup direkt in eine Datei auf deinem Gerät oder liest es von dort. Die Datei kannst du z. B. in einem Cloud-Ordner ablegen (iCloud Drive, Dropbox, Google Drive Offline-Ordner). Nur in Chromium-basierten Browsern verfügbar.', en: 'Writes the backup directly to a file on your device or reads it from there. You can put the file in a cloud-synced folder (iCloud Drive, Dropbox, Google Drive offline folder). Only available in Chromium-based browsers.' },
@@ -90,7 +90,7 @@ export const settingsDict: Dict = {
   btnFsaRead: { de: 'Aus Datei laden ↓', en: 'Load from file ↓' },
   fsaSaved: { de: 'Gespeichert.', en: 'Saved.' },
   fsaInvalidFormat: { de: 'Ungültiges Format', en: 'Invalid format' },
-  fsaConfirmRead: { de: '{plants} Pflanzen{guildPart} aus Datei einlesen und bestehende überschreiben?', en: '{plants} plants{guildPart} read from file and overwrite existing ones?' },
+  fsaConfirmRead: { de: '{plants} Pflanzen{guildPart}{gardenPlanPart} aus Datei einlesen und bestehende überschreiben?', en: '{plants} plants{guildPart}{gardenPlanPart} read from file and overwrite existing ones?' },
 
   gistSummary: { de: 'GitHub Gist (geräteübergreifend)', en: 'GitHub Gist (cross-device)' },
   gistDescPre: { de: 'Speichert das Backup als privates GitHub Gist. Du brauchst einen GitHub-Account und ein', en: 'Stores the backup as a private GitHub Gist. You need a GitHub account and a' },
@@ -120,9 +120,10 @@ export const settingsDict: Dict = {
   shareFailed: { de: 'Teilen fehlgeschlagen: {err}', en: 'Sharing failed: {err}' },
   restoreNoPlants: { de: 'Keine Pflanzen im Backup gefunden', en: 'No plants found in backup' },
   restoreGuildPart: { de: ' + {n} Polykulturen', en: ' + {n} polycultures' },
+  restoreGardenPlanPart: { de: ' + {n} Gartenpläne', en: ' + {n} garden plans' },
   restoreSettingsPart: { de: ' + Einstellungen', en: ' + settings' },
-  restoreConfirm: { de: '{plants} Pflanzen{guildPart}{settingsPart} aus Backup einlesen? Bestehende Einträge mit gleicher ID werden überschrieben.', en: 'Read {plants} plants{guildPart}{settingsPart} from backup? Existing entries with the same ID will be overwritten.' },
-  restoreToast: { de: '{plants} Pflanzen{guildPart} wiederhergestellt', en: '{plants} plants{guildPart} restored' },
+  restoreConfirm: { de: '{plants} Pflanzen{guildPart}{gardenPlanPart}{settingsPart} aus Backup einlesen? Bestehende Einträge mit gleicher ID werden überschrieben.', en: 'Read {plants} plants{guildPart}{gardenPlanPart}{settingsPart} from backup? Existing entries with the same ID will be overwritten.' },
+  restoreToast: { de: '{plants} Pflanzen{guildPart}{gardenPlanPart} wiederhergestellt', en: '{plants} plants{guildPart}{gardenPlanPart} restored' },
   restoreFailed: { de: 'Backup-Import fehlgeschlagen: {msg}', en: 'Backup import failed: {msg}' },
 
   reloadMasterConfirm: { de: 'Golden-Master-Pflanzen erneut importieren? Bestehende Pflanzen mit gleicher ID werden überschrieben.', en: 'Re-import golden-master plants? Existing plants with the same ID will be overwritten.' },

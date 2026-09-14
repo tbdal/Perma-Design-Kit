@@ -49,10 +49,25 @@ export const gartenplanDict: Dict = {
   pickerHeading: { de: 'Pflanzen', en: 'Plants' },
   pickerFilterPlaceholder: { de: 'Pflanze filtern…', en: 'Filter plants…' },
   hintArmed: { de: 'Auf die Fläche tippen zum Platzieren.', en: 'Tap the area to place it.' },
-  unplacedFromPolycultureHeading: { de: 'Aus Polykultur übernommen', en: 'Imported from polyculture' },
+  unplacedHeading: { de: 'Noch zu platzieren', en: 'Still to place' },
   selectedPanelHeading: { de: 'Ausgewählt', en: 'Selected' },
   selectedPanelEmpty: { de: 'Klicke eine platzierte Pflanze an, um sie zu bearbeiten.', en: 'Click a placed plant to edit it.' },
   btnRemovePlacement: { de: 'Entfernen', en: 'Remove' },
   labelPlacementNotes: { de: 'Notizen', en: 'Notes' },
   noPlantsInCollection: { de: 'Noch keine Pflanzen im Bestand — erst auf der Pflanzenseite hinzufügen.', en: 'No plants in your collection yet — add some on the Plants page first.' },
+
+  // ── Suggestions (compatScore, reused from Polykulturen) ──────────────
+  suggestionsHeading: { de: 'Vorschläge', en: 'Suggestions' },
+  suggestionsIntro: { de: 'Pflanzen aus deinem Bestand, die mit den bereits platzierten in Sonne/Wasser/pH überlappen.', en: 'Plants from your collection that overlap with what’s already placed in sun/water/pH.' },
+  sunWaterPhTitle: { de: 'Übereinstimmung Sonne/Wasser/pH', en: 'Sun/water/pH match' },
+  btnAdd: { de: '+ Hinzuf.', en: '+ Add' },
+
+  // ── Info box + layer legend ────────────────────────────────────────
+  infoToggle: { de: 'ℹ️ Wie funktioniert das?', en: 'ℹ️ How does this work?' },
+  infoHowItWorks: { de: 'Fläche zeichnen (Eckpunkte anklicken) → Pflanze in der Liste anklicken → auf die Fläche tippen zum Platzieren → platzierte Pflanzen per Ziehen frei verschieben.', en: 'Draw the area (click vertices) → click a plant in the list → tap the area to place it → drag placed plants to reposition them.' },
+  infoGrowthModel: { de: 'Die Größe der Pflanzen mit dem Regler ist ein Schätzmodell, keine Artdaten: PFAF liefert nur die finale Größe plus grob „langsam/mittel/schnell" — daraus wird eine Wachstumskurve angenähert (Reifealter schnell≈6, mittel≈15, langsam≈30 Jahre).', en: 'The size shown by the slider is an estimate, not species data: PFAF only provides the final size plus a rough "slow/medium/fast" rate — a growth curve is approximated from that (maturity age fast≈6, medium≈15, slow≈30 years).' },
+  infoShapeModel: { de: 'Baum/Strauch/Kraut werden aus der Höhe abgeleitet (keine echte Datenbank-Angabe) und als stilisierte, unregelmäßige Form dargestellt — keine artgenauen Umrisse.', en: 'Tree/shrub/herb is derived from height (not a real database field) and shown as a stylized, irregular shape — not a species-accurate outline.' },
+  layerTree: { de: 'Baum', en: 'Tree' },
+  layerShrub: { de: 'Strauch', en: 'Shrub' },
+  layerHerb: { de: 'Kraut/Bodendecker', en: 'Herb/groundcover' },
 };

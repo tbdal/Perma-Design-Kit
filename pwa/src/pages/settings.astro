@@ -208,7 +208,7 @@ import Layout from '../layouts/Layout.astro';
     isPlausibleOptedOut, setPlausibleOptOut,
     type AppSettings, type ViewMode, type CardVariant, type ThemePref,
   } from '../lib/settings';
-  import { getAllPlants, importPlants, clearAllPlants, importPolycultures } from '../lib/db';
+  import { getAllPlants, importPlants, clearAllPlants, importPolycultures, importGardenPlans } from '../lib/db';
   import { buildBackupJson, rememberSyncAt, isAutoSyncEnabled, GIST_FILENAME, GIST_FILENAME_LEGACY } from '../lib/sync';
   import { escapeHtml } from '../lib/html';
   import { createT, applyStaticI18n, getLang } from '../lib/i18n/core';
@@ -495,15 +495,17 @@ import Layout from '../layouts/Layout.astro';
       const restoredPlants = Array.isArray(data) ? data : (data.plants ?? []);
       if (!Array.isArray(restoredPlants)) throw new Error(t('invalidBackupFormat'));
       const restoredPolycultures = Array.isArray(data) ? [] : (data.polycultures ?? data.guilds ?? []);
+      const restoredGardenPlans = Array.isArray(data) ? [] : (data.gardenPlans ?? []);
       await importPlants(restoredPlants);
       if (restoredPolycultures.length) await importPolycultures(restoredPolycultures);
+      if (restoredGardenPlans.length) await importGardenPlans(restoredGardenPlans);
       if (!Array.isArray(data) && data.settings) {
         saveSettings(data.settings);
         settings = loadSettings();
         renderSources(); renderPrefs();
       }
       await renderStats();
-      setWebdavStatus(t('restoredCount', { plants: restoredPlants.length, guilds: restoredPolycultures.length }), 'ok');
+      setWebdavStatus(t('restoredCount', { plants: restoredPlants.length, guilds: restoredPolycultures.length, gardenPlans: restoredGardenPlans.length }), 'ok');
     } catch (err) {
       setWebdavStatus(t('webdavErrorDownload', { msg: (err as Error).message }), 'err');
     }
@@ -556,16 +558,22 @@ import Layout from '../layouts/Layout.astro';
         const plants = Array.isArray(data) ? data : (data.plants ?? []);
         if (!Array.isArray(plants)) throw new Error(t('fsaInvalidFormat'));
         const polycultures = Array.isArray(data) ? [] : (data.polycultures ?? data.guilds ?? []);
-        if (!confirm(t('fsaConfirmRead', { plants: plants.length, guildPart: polycultures.length ? t('restoreGuildPart', { n: polycultures.length }) : '' }))) return;
+        const gardenPlans = Array.isArray(data) ? [] : (data.gardenPlans ?? []);
+        if (!confirm(t('fsaConfirmRead', {
+          plants: plants.length,
+          guildPart: polycultures.length ? t('restoreGuildPart', { n: polycultures.length }) : '',
+          gardenPlanPart: gardenPlans.length ? t('restoreGardenPlanPart', { n: gardenPlans.length }) : '',
+        }))) return;
         await importPlants(plants);
         if (polycultures.length) await importPolycultures(polycultures);
+        if (gardenPlans.length) await importGardenPlans(gardenPlans);
         if (!Array.isArray(data) && data.settings) {
           saveSettings(data.settings);
           settings = loadSettings();
           renderSources(); renderPrefs();
         }
         await renderStats();
-        setFsaStatus(t('restoredCount', { plants: plants.length, guilds: polycultures.length }), 'ok');
+        setFsaStatus(t('restoredCount', { plants: plants.length, guilds: polycultures.length, gardenPlans: gardenPlans.length }), 'ok');
       } catch (err) {
         if ((err as Error).name !== 'AbortError') setFsaStatus(t('genericError', { msg: String(err) }), 'err');
       }
@@ -666,15 +674,17 @@ import Layout from '../layouts/Layout.astro';
       const plants = Array.isArray(data) ? data : (data.plants ?? []);
       if (!Array.isArray(plants)) throw new Error(t('invalidBackupFormat'));
       const polycultures = Array.isArray(data) ? [] : (data.polycultures ?? data.guilds ?? []);
+      const gardenPlans = Array.isArray(data) ? [] : (data.gardenPlans ?? []);
       await importPlants(plants);
       if (polycultures.length) await importPolycultures(polycultures);
+      if (gardenPlans.length) await importGardenPlans(gardenPlans);
       if (!Array.isArray(data) && data.settings) {
         saveSettings(data.settings);
         settings = loadSettings();
         renderSources(); renderPrefs();
       }
       await renderStats();
-      setGistStatus(t('restoredCount', { plants: plants.length, guilds: polycultures.length }), 'ok');
+      setGistStatus(t('restoredCount', { plants: plants.length, guilds: polycultures.length, gardenPlans: gardenPlans.length }), 'ok');
     } catch (err) {
       setGistStatus(t('gistErrorDownload', { msg: (err as Error).message }), 'err');
     }
@@ -693,19 +703,22 @@ import Layout from '../layouts/Layout.astro';
         throw new Error(t('restoreNoPlants'));
       }
       const polycultures: any[] = Array.isArray(data) ? [] : (data.polycultures ?? data.guilds ?? []);
+      const gardenPlans: any[] = Array.isArray(data) ? [] : (data.gardenPlans ?? []);
       const restoreSettings = !Array.isArray(data) && data.settings;
       const guildPart = polycultures.length ? t('restoreGuildPart', { n: polycultures.length }) : '';
+      const gardenPlanPart = gardenPlans.length ? t('restoreGardenPlanPart', { n: gardenPlans.length }) : '';
       const settingsPart = restoreSettings ? t('restoreSettingsPart') : '';
-      const msg = t('restoreConfirm', { plants: plants.length, guildPart, settingsPart });
+      const msg = t('restoreConfirm', { plants: plants.length, guildPart, gardenPlanPart, settingsPart });
       if (!confirm(msg)) { input.value = ''; return; }
       await importPlants(plants);
       if (polycultures.length) await importPolycultures(polycultures);
+      if (gardenPlans.length) await importGardenPlans(gardenPlans);
       if (restoreSettings) {
         saveSettings(data.settings);
         settings = loadSettings();
         renderSources(); renderPrefs();
       }
-      showToast(t('restoreToast', { plants: plants.length, guildPart }));
+      showToast(t('restoreToast', { plants: plants.length, guildPart, gardenPlanPart }));
       await renderStats();
     } catch (err) {
       alert(t('restoreFailed', { msg: err instanceof Error ? err.message : String(err) }));

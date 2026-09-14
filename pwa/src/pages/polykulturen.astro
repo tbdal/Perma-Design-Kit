@@ -81,6 +81,7 @@ import Layout from '../layouts/Layout.astro';
     type Polyculture, type PolycultureMember, type PolycultureRole, type PlantData,
   } from '../lib/types';
   import { escapeHtml } from '../lib/html';
+  import { compatScore } from '../lib/compat';
   import { createT, applyStaticI18n } from '../lib/i18n/core';
   import { polyculturesDict } from '../lib/i18n/dict-polykulturen';
 
@@ -136,26 +137,6 @@ import Layout from '../layouts/Layout.astro';
     if (!p) return t('unknownPlant');
     const label = p.commonName ? `${p.commonName} (${p.latinName})` : p.latinName || '—';
     return escapeHtml(label);
-  }
-
-  // ── Compatibility scoring ──────────────────────────────────────────────
-  // For a candidate plant, compute Sun/Water/pH overlap with the anchor.
-  // Returns 0..3 (one point per dimension where at least one shared flag).
-  function compatScore(candidate: PlantData, anchor: PlantData): number {
-    const dims: (keyof PlantData)[][] = [
-      ['sunFull','sunMid','sunShadow'],
-      ['waterDry','waterMid','waterWet'],
-      ['phVeryAcid','phAcid','phNeutral','phAlkaline','phVeryAlkaline'],
-    ];
-    let score = 0;
-    for (const dim of dims) {
-      const anchorAny = dim.some(k => Boolean((anchor as any)[k]));
-      const candAny   = dim.some(k => Boolean((candidate as any)[k]));
-      if (!anchorAny || !candAny) { score++; continue; } // unknown ⇒ neutral, don't penalize
-      const overlap = dim.some(k => Boolean((anchor as any)[k]) && Boolean((candidate as any)[k]));
-      if (overlap) score++;
-    }
-    return score;
   }
 
   // ── Listenansicht ──────────────────────────────────────────────────────

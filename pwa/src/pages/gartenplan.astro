@@ -96,9 +96,25 @@ import Layout from '../layouts/Layout.astro';
         <button id="btn-redraw-area" data-i18n="btnRedrawArea" class="text-xs font-medium text-stone-500 dark:text-stone-400 hover:text-red-600 dark:hover:text-red-400">Fläche neu zeichnen</button>
       </div>
 
+      <details class="mb-3 rounded-lg bg-stone-50 dark:bg-stone-900 px-3 py-1.5 text-xs text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700">
+        <summary class="cursor-pointer select-none font-medium text-stone-500 dark:text-stone-400" data-i18n="infoToggle">ℹ️ Wie funktioniert das?</summary>
+        <div class="mt-2 space-y-1.5">
+          <p data-i18n="infoHowItWorks">Fläche zeichnen (Eckpunkte anklicken) → Pflanze in der Liste anklicken → auf die Fläche tippen zum Platzieren → platzierte Pflanzen per Ziehen frei verschieben.</p>
+          <p data-i18n="infoGrowthModel">Die Größe der Pflanzen mit dem Regler ist ein <strong>Schätzmodell</strong>, keine Artdaten: PFAF liefert nur die finale Größe plus grob „langsam/mittel/schnell" — daraus wird eine Wachstumskurve angenähert (Reifealter schnell≈6, mittel≈15, langsam≈30 Jahre).</p>
+          <p data-i18n="infoShapeModel">Baum/Strauch/Kraut werden aus der Höhe abgeleitet (keine echte Datenbank-Angabe) und als stilisierte, unregelmäßige Form dargestellt — keine artgenauen Umrisse.</p>
+        </div>
+      </details>
+
       <div class="grid gap-6 lg:grid-cols-3">
-        <div class="lg:col-span-2 rounded-xl bg-white dark:bg-stone-800 p-3 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
-          <svg id="plan-svg" class="w-full touch-none" style="touch-action:none"></svg>
+        <div class="lg:col-span-2 space-y-2">
+          <div class="rounded-xl bg-white dark:bg-stone-800 p-3 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+            <svg id="plan-svg" class="w-full touch-none" style="touch-action:none"></svg>
+          </div>
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-1 px-1 text-xs text-stone-500 dark:text-stone-400">
+            <span class="inline-flex items-center gap-1.5"><span class="inline-block h-2.5 w-2.5 rounded-full" style="background-color:#166534"></span><span data-i18n="layerTree">Baum</span></span>
+            <span class="inline-flex items-center gap-1.5"><span class="inline-block h-2.5 w-2.5 rounded-full" style="background-color:#65a30d"></span><span data-i18n="layerShrub">Strauch</span></span>
+            <span class="inline-flex items-center gap-1.5"><span class="inline-block h-2.5 w-2.5 rounded-full" style="background-color:#a3e635"></span><span data-i18n="layerHerb">Kraut/Bodendecker</span></span>
+          </div>
         </div>
 
         <aside class="space-y-4">
@@ -109,8 +125,14 @@ import Layout from '../layouts/Layout.astro';
             <p id="armed-hint" class="mt-2 hidden text-xs font-medium text-green-700 dark:text-green-400" data-i18n="hintArmed">Auf die Fläche tippen zum Platzieren.</p>
           </div>
 
+          <div id="suggestions-section" class="hidden rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+            <h2 class="mb-1 text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="suggestionsHeading">Vorschläge</h2>
+            <p class="mb-2 text-[10px] text-stone-500 dark:text-stone-400" data-i18n="suggestionsIntro">Pflanzen aus deinem Bestand, die mit den bereits platzierten in Sonne/Wasser/pH überlappen.</p>
+            <div id="suggestions-list" class="space-y-0.5"></div>
+          </div>
+
           <div id="unplaced-section" class="hidden rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
-            <h2 class="mb-2 text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="unplacedFromPolycultureHeading">Aus Polykultur übernommen</h2>
+            <h2 class="mb-2 text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="unplacedHeading">Noch zu platzieren</h2>
             <div id="unplaced-list" class="space-y-0.5"></div>
           </div>
 
@@ -132,6 +154,9 @@ import Layout from '../layouts/Layout.astro';
   import { getAllPlants, getAllPolycultures, getAllGardenPlans, saveGardenPlan, deleteGardenPlan } from '../lib/db';
   import { createEmptyGardenPlan, type GardenPlan, type GardenPlanPlacement, type GardenPlanPoint, type Polyculture, type PlantData } from '../lib/types';
   import { displayRadiusM } from '../lib/growth-model';
+  import { deriveLayer, LAYER_STYLE, type PlantLayer } from '../lib/plant-layer';
+  import { blobPathD } from '../lib/blob-shape';
+  import { compatScore } from '../lib/compat';
   import { newId } from '../lib/id';
   import { escapeHtml } from '../lib/html';
   import { createT, applyStaticI18n } from '../lib/i18n/core';
@@ -178,6 +203,8 @@ import Layout from '../layouts/Layout.astro';
   const armedHint = document.getElementById('armed-hint')!;
   const unplacedSection = document.getElementById('unplaced-section')!;
   const unplacedListEl = document.getElementById('unplaced-list')!;
+  const suggestionsSection = document.getElementById('suggestions-section')!;
+  const suggestionsListEl = document.getElementById('suggestions-list')!;
   const selectedPanel = document.getElementById('selected-panel')!;
 
   // ── State ───────────────────────────────────────────────────────────────
@@ -192,7 +219,7 @@ import Layout from '../layouts/Layout.astro';
   let armedPlantId: string | null = null;
   let unplacedPlantIds: string[] = []; // page-local — not persisted structurally
   let selectedPlacementId: string | null = null;
-  let circleMap = new Map<string, SVGCircleElement>();
+  let markerMap = new Map<string, SVGGElement>();
 
   function showToast(msg: string) {
     toast.textContent = msg;
@@ -402,6 +429,7 @@ import Layout from '../layouts/Layout.astro';
     yearsLabel.textContent = t('yearsSuffix', { years: editing.yearsSincePlanting });
     renderPlantPicker();
     renderUnplacedList();
+    renderSuggestions();
     renderSelectedPanel();
     renderPlanSvg();
   }
@@ -446,6 +474,48 @@ import Layout from '../layouts/Layout.astro';
         armedPlantId = armedPlantId === id ? null : id;
         armedHint.classList.toggle('hidden', !armedPlantId);
         renderUnplacedList();
+      });
+    });
+  }
+
+  /** Ranks unplaced/uncollected candidates by average compatScore (reused
+   *  from Polykulturen — Sonne/Wasser/pH overlap) against everything already
+   *  placed. Suggestions only ever land in the unplaced list — never
+   *  auto-placed onto the canvas, placement stays a manual action. */
+  function renderSuggestions() {
+    if (!editing) return;
+    const placedPlants = editing.placements
+      .map(pl => plantsById.get(pl.plantId))
+      .filter((p): p is PlantData => !!p);
+    if (placedPlants.length === 0) {
+      suggestionsSection.classList.add('hidden');
+      suggestionsListEl.innerHTML = '';
+      return;
+    }
+    const excluded = new Set([...editing.placements.map(pl => pl.plantId), ...unplacedPlantIds]);
+    const candidates = plants
+      .filter(p => !excluded.has(p.id))
+      .map(p => ({ p, score: placedPlants.reduce((sum, ref) => sum + compatScore(p, ref), 0) / placedPlants.length }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5);
+    if (candidates.length === 0) {
+      suggestionsSection.classList.add('hidden');
+      suggestionsListEl.innerHTML = '';
+      return;
+    }
+    suggestionsSection.classList.remove('hidden');
+    suggestionsListEl.innerHTML = candidates.map(({ p, score }) => `
+      <div class="flex items-center justify-between gap-2 rounded px-2 py-1 text-xs hover:bg-stone-100 dark:hover:bg-stone-800">
+        <span class="min-w-0 flex-1 truncate text-stone-700 dark:text-stone-200" title="${plantLabel(p)}">${plantLabel(p)}</span>
+        <span class="shrink-0 font-mono text-[10px] text-stone-400" title="${t('sunWaterPhTitle')}">${score.toFixed(1)}/3</span>
+        <button data-suggest-plant="${p.id}" class="shrink-0 rounded bg-green-100 dark:bg-green-900/40 px-2 py-0.5 font-medium text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/60">${t('btnAdd')}</button>
+      </div>`).join('');
+    suggestionsListEl.querySelectorAll<HTMLButtonElement>('[data-suggest-plant]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.suggestPlant!;
+        if (!unplacedPlantIds.includes(id)) unplacedPlantIds.push(id);
+        renderUnplacedList();
+        renderSuggestions();
       });
     });
   }
@@ -496,10 +566,33 @@ import Layout from '../layouts/Layout.astro';
       selectedPlacementId = null;
       renderPlanSvg();
       renderSelectedPanel();
+      renderSuggestions();
     });
   }
 
-  // ── Plan SVG: grid + boundary + plant circles ───────────────────────────
+  // ── Plan SVG: grid + boundary + plant markers ───────────────────────────
+  // Each placement renders as a <g transform="translate(x,y)"> containing a
+  // wobbly "blob" outline (blob-shape.ts — deterministic per placement id,
+  // not random per render), a center dot, and an always-visible name label.
+  // Layer (tree/shrub/herb) drives the blob's color and irregularity via
+  // LAYER_STYLE (plant-layer.ts) — a heuristic classification, not real
+  // per-species artwork, see the info box for the caveat shown to users.
+  function updateMarkerShape(group: SVGGElement, placement: GardenPlanPlacement, p: PlantData | undefined) {
+    const radiusM = p ? displayRadiusM(p, editing!.yearsSincePlanting) : 0.2;
+    const radiusU = radiusM * SVG_UNITS_PER_METER;
+    const layer = p ? deriveLayer(p) : 'shrub';
+    const style = LAYER_STYLE[layer];
+    const selected = selectedPlacementId === placement.id;
+    const blob = group.querySelector('.marker-blob') as SVGPathElement;
+    blob.setAttribute('d', blobPathD(radiusU, placement.id, style.lobes, style.wobble));
+    blob.setAttribute('fill', style.fill);
+    blob.setAttribute('stroke', selected ? '#facc15' : style.stroke);
+    blob.setAttribute('stroke-width', selected ? '3' : '2');
+    const label = group.querySelector('.marker-label') as SVGTextElement;
+    label.setAttribute('y', String(radiusU + 14));
+    label.textContent = p ? (p.commonName || p.latinName) : '?';
+  }
+
   function renderPlanSvg() {
     if (!editing) return;
     const w = editing.areaWidthM, h = editing.areaHeightM;
@@ -508,58 +601,61 @@ import Layout from '../layouts/Layout.astro';
     planSvg.innerHTML = `
       ${gridDefsAndBackground(w, h, editing.gridSpacingM, 'plan-grid')}
       <polygon points="${pointsAttr}" fill="#15803d" fill-opacity="0.08" stroke="#15803d" stroke-width="2"/>
-      <g id="plan-circles"></g>`;
-    circleMap = new Map();
-    const circlesGroup = planSvg.querySelector('#plan-circles')!;
+      <g id="plan-markers"></g>`;
+    markerMap = new Map();
+    const markersGroup = planSvg.querySelector('#plan-markers')!;
     for (const placement of editing.placements) {
       const p = plantsById.get(placement.plantId);
-      const radiusM = p ? displayRadiusM(p, editing.yearsSincePlanting) : 0.2;
-      const circle = document.createElementNS(SVG_NS, 'circle');
-      circle.setAttribute('cx', String(placement.xM * SVG_UNITS_PER_METER));
-      circle.setAttribute('cy', String(placement.yM * SVG_UNITS_PER_METER));
-      circle.setAttribute('r', String(radiusM * SVG_UNITS_PER_METER));
-      circle.setAttribute('fill', selectedPlacementId === placement.id ? '#22c55e' : '#4ade80');
-      circle.setAttribute('fill-opacity', '0.55');
-      circle.setAttribute('stroke', '#15803d');
-      circle.setAttribute('stroke-width', '2');
-      circle.setAttribute('data-placement-id', placement.id);
-      circle.style.cursor = 'grab';
-      wireCircleDrag(circle, placement);
-      circlesGroup.appendChild(circle);
+      const group = document.createElementNS(SVG_NS, 'g') as SVGGElement;
+      group.setAttribute('transform', `translate(${placement.xM * SVG_UNITS_PER_METER},${placement.yM * SVG_UNITS_PER_METER})`);
+      group.setAttribute('data-placement-id', placement.id);
+      group.style.cursor = 'grab';
+      const blob = document.createElementNS(SVG_NS, 'path');
+      blob.setAttribute('class', 'marker-blob');
+      blob.setAttribute('fill-opacity', '0.6');
+      group.appendChild(blob);
       const dot = document.createElementNS(SVG_NS, 'circle');
-      dot.setAttribute('cx', String(placement.xM * SVG_UNITS_PER_METER));
-      dot.setAttribute('cy', String(placement.yM * SVG_UNITS_PER_METER));
       dot.setAttribute('r', '3');
-      dot.setAttribute('fill', '#15803d');
+      dot.setAttribute('fill', '#1c1917');
       dot.style.pointerEvents = 'none';
-      circlesGroup.appendChild(dot);
-      circleMap.set(placement.id, circle);
+      group.appendChild(dot);
+      const label = document.createElementNS(SVG_NS, 'text');
+      label.setAttribute('class', 'marker-label');
+      label.setAttribute('text-anchor', 'middle');
+      label.setAttribute('font-size', '13');
+      label.setAttribute('fill', '#1c1917');
+      label.setAttribute('stroke', '#ffffff');
+      label.setAttribute('stroke-width', '3');
+      label.setAttribute('paint-order', 'stroke');
+      label.style.pointerEvents = 'none';
+      group.appendChild(label);
+      updateMarkerShape(group, placement, p);
+      wirePlacementDrag(group, placement);
+      markersGroup.appendChild(group);
+      markerMap.set(placement.id, group);
     }
   }
 
-  function wireCircleDrag(circle: SVGCircleElement, placement: GardenPlanPlacement) {
+  function wirePlacementDrag(group: SVGGElement, placement: GardenPlanPlacement) {
     let dragging = false;
     let moved = false;
     let startClientX = 0, startClientY = 0;
-    circle.addEventListener('pointerdown', (e: PointerEvent) => {
+    group.addEventListener('pointerdown', (e: PointerEvent) => {
       e.stopPropagation();
       dragging = true;
       moved = false;
       startClientX = e.clientX;
       startClientY = e.clientY;
-      circle.setPointerCapture(e.pointerId);
+      group.setPointerCapture(e.pointerId);
     });
-    circle.addEventListener('pointermove', (e: PointerEvent) => {
+    group.addEventListener('pointermove', (e: PointerEvent) => {
       if (!dragging) return;
       if (Math.hypot(e.clientX - startClientX, e.clientY - startClientY) > 4) moved = true;
       if (!moved) return;
       const pt = clientToMeters(planSvg, e.clientX, e.clientY);
-      circle.setAttribute('cx', String(pt.xM * SVG_UNITS_PER_METER));
-      circle.setAttribute('cy', String(pt.yM * SVG_UNITS_PER_METER));
-      const dot = circle.nextElementSibling as SVGCircleElement | null;
-      if (dot) { dot.setAttribute('cx', circle.getAttribute('cx')!); dot.setAttribute('cy', circle.getAttribute('cy')!); }
+      group.setAttribute('transform', `translate(${pt.xM * SVG_UNITS_PER_METER},${pt.yM * SVG_UNITS_PER_METER})`);
     });
-    circle.addEventListener('pointerup', (e: PointerEvent) => {
+    group.addEventListener('pointerup', (e: PointerEvent) => {
       dragging = false;
       if (moved) {
         const pt = clientToMeters(planSvg, e.clientX, e.clientY);
@@ -575,13 +671,14 @@ import Layout from '../layouts/Layout.astro';
 
   planSvg.addEventListener('pointerdown', (e: PointerEvent) => {
     if (!editing || !armedPlantId) return;
-    if ((e.target as Element).closest('circle[data-placement-id]')) return; // handled by circle's own listener
+    if ((e.target as Element).closest('g[data-placement-id]')) return; // handled by the marker's own listener
     const pt = clientToMeters(planSvg, e.clientX, e.clientY);
     if (!pointInPolygon(pt, editing.boundary)) return;
     const placement: GardenPlanPlacement = { id: newId(), plantId: armedPlantId, xM: pt.xM, yM: pt.yM, notes: '' };
     editing.placements.push(placement);
     unplacedPlantIds = unplacedPlantIds.filter(id => id !== armedPlantId);
     renderUnplacedList();
+    renderSuggestions();
     renderPlanSvg();
   });
 
@@ -590,10 +687,9 @@ import Layout from '../layouts/Layout.astro';
     editing.yearsSincePlanting = Number(yearsInput.value);
     yearsLabel.textContent = t('yearsSuffix', { years: editing.yearsSincePlanting });
     for (const placement of editing.placements) {
-      const p = plantsById.get(placement.plantId);
-      const circle = circleMap.get(placement.id);
-      if (!p || !circle) continue;
-      circle.setAttribute('r', String(displayRadiusM(p, editing.yearsSincePlanting) * SVG_UNITS_PER_METER));
+      const group = markerMap.get(placement.id);
+      if (!group) continue;
+      updateMarkerShape(group, placement, plantsById.get(placement.plantId));
     }
   });
 
