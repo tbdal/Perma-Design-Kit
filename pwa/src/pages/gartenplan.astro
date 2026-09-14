@@ -1,0 +1,651 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="Perma Design Kit — Gartenplan">
+  <!-- ── Listenansicht ─────────────────────────────────────────────────── -->
+  <section id="plan-list-view">
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+      <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-100" data-i18n="pageTitle">Gartenplan</h1>
+      <button id="btn-new-plan" data-i18n="btnNewPlan" class="rounded-lg bg-green-700 px-3.5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">+ Neuer Gartenplan</button>
+    </div>
+    <p class="mb-4 text-sm text-stone-500 dark:text-stone-400" data-i18n="introText">Zeichne eine Fläche, platziere Pflanzen darauf und sieh mit dem Schieberegler, wie groß sie nach x Jahren ungefähr werden.</p>
+    <div id="plan-list" class="grid gap-4 sm:grid-cols-2"></div>
+    <div id="plan-empty" class="hidden rounded-xl border-2 border-dashed border-stone-300 dark:border-stone-600 py-16 text-center">
+      <p class="text-stone-500 dark:text-stone-400" data-i18n="emptyStateText">Noch keine Gartenpläne angelegt.</p>
+      <button id="btn-empty-new" data-i18n="btnEmptyNew" class="mt-3 inline-block rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white shadow hover:bg-green-800">Ersten Gartenplan anlegen</button>
+    </div>
+  </section>
+
+  <!-- ── Editor ────────────────────────────────────────────────────────── -->
+  <section id="plan-editor-view" hidden>
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+      <button id="btn-back-to-list" data-i18n="btnBackToList" class="text-sm font-medium text-stone-600 dark:text-stone-300 hover:text-green-700 dark:hover:text-green-400">← Zurück zur Liste</button>
+      <div class="flex items-center gap-2">
+        <button id="btn-delete-plan" data-i18n="btnDeletePlan" class="rounded-lg bg-red-100 dark:bg-red-900/40 px-3 py-1.5 text-sm font-medium text-red-700 dark:text-red-300 ring-1 ring-red-300 dark:ring-red-800 hover:bg-red-200 dark:hover:bg-red-900/60">Löschen</button>
+      </div>
+    </div>
+
+    <!-- Phase A: Grunddaten + Fläche zeichnen -->
+    <div id="phase-a">
+      <div class="grid gap-6 lg:grid-cols-3">
+        <div class="lg:col-span-1 space-y-4">
+          <div class="rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 space-y-3">
+            <label class="block">
+              <span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="labelName">Name</span>
+              <input id="g-name" type="text" data-i18n-placeholder="placeholderName" placeholder="z.B. Vorgarten Süd" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none" />
+            </label>
+            <label class="block">
+              <span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="labelDescription">Beschreibung</span>
+              <input id="g-description" type="text" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none" />
+            </label>
+            <label class="block">
+              <span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="labelLinkedPolyculture">Bestehende Polykultur verknüpfen (optional)</span>
+              <select id="g-polyculture" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none"></select>
+            </label>
+            <div class="grid grid-cols-2 gap-3">
+              <label class="block">
+                <span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="labelAreaWidth">Breite (m)</span>
+                <input id="g-width" type="number" min="2" max="50" step="0.5" value="10" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none" />
+              </label>
+              <label class="block">
+                <span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="labelAreaHeight">Tiefe (m)</span>
+                <input id="g-height" type="number" min="2" max="50" step="0.5" value="10" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none" />
+              </label>
+            </div>
+            <label class="block">
+              <span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="labelGridSpacing">Rastergröße</span>
+              <select id="g-grid-spacing" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none">
+                <option value="0.5">0.5 m</option>
+                <option value="1" selected>1 m</option>
+                <option value="2">2 m</option>
+              </select>
+            </label>
+            <label class="block">
+              <span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="labelNotes">Notizen</span>
+              <textarea id="g-notes" rows="2" data-i18n-placeholder="placeholderNotes" placeholder="Standort, Boden, Beobachtungen…" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none"></textarea>
+            </label>
+            <button id="btn-start-drawing" data-i18n="btnStartDrawing" class="w-full rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white shadow hover:bg-green-800">Fläche zeichnen starten</button>
+          </div>
+        </div>
+
+        <div class="lg:col-span-2 space-y-3">
+          <div id="drawing-hint" class="hidden text-sm text-stone-600 dark:text-stone-300">
+            <span data-i18n="hintDrawing">Klicke auf die Fläche, um Eckpunkte zu setzen (mind. 3).</span>
+            <span id="vertex-count" class="ml-1 font-medium"></span>
+          </div>
+          <div id="drawing-wrap" class="hidden rounded-xl bg-white dark:bg-stone-800 p-3 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+            <svg id="drawing-svg" class="w-full touch-none" style="touch-action:none"></svg>
+          </div>
+          <div id="drawing-controls" class="hidden flex flex-wrap gap-2">
+            <button id="btn-undo-point" data-i18n="btnUndoPoint" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-700">Letzten Punkt entfernen</button>
+            <button id="btn-clear-points" data-i18n="btnClearPoints" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-700">Neu beginnen</button>
+            <button id="btn-finish-boundary" data-i18n="btnFinishBoundary" disabled class="rounded-lg bg-green-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-40">Fläche abschließen</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase B: Platzierung + Wachstums-Schieberegler -->
+    <div id="phase-b" class="hidden">
+      <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <label class="text-sm font-medium text-stone-600 dark:text-stone-300" for="g-years" data-i18n="labelYearsSincePlanting">Jahre seit Pflanzung</label>
+          <input id="g-years" type="range" min="0" max="30" step="1" value="0" class="w-48" />
+          <span id="years-label" class="w-20 text-sm font-medium text-stone-700 dark:text-stone-200"></span>
+        </div>
+        <button id="btn-redraw-area" data-i18n="btnRedrawArea" class="text-xs font-medium text-stone-500 dark:text-stone-400 hover:text-red-600 dark:hover:text-red-400">Fläche neu zeichnen</button>
+      </div>
+
+      <div class="grid gap-6 lg:grid-cols-3">
+        <div class="lg:col-span-2 rounded-xl bg-white dark:bg-stone-800 p-3 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+          <svg id="plan-svg" class="w-full touch-none" style="touch-action:none"></svg>
+        </div>
+
+        <aside class="space-y-4">
+          <div class="rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+            <h2 class="mb-2 text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="pickerHeading">Pflanzen</h2>
+            <input id="picker-filter" type="search" data-i18n-placeholder="pickerFilterPlaceholder" placeholder="Pflanze filtern…" class="mb-2 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-xs shadow-inner focus:border-green-500 focus:outline-none" />
+            <div id="plant-picker" class="max-h-56 space-y-0.5 overflow-y-auto"></div>
+            <p id="armed-hint" class="mt-2 hidden text-xs font-medium text-green-700 dark:text-green-400" data-i18n="hintArmed">Auf die Fläche tippen zum Platzieren.</p>
+          </div>
+
+          <div id="unplaced-section" class="hidden rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+            <h2 class="mb-2 text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="unplacedFromPolycultureHeading">Aus Polykultur übernommen</h2>
+            <div id="unplaced-list" class="space-y-0.5"></div>
+          </div>
+
+          <div class="rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+            <h2 class="mb-2 text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="selectedPanelHeading">Ausgewählt</h2>
+            <div id="selected-panel"></div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <button id="btn-save-plan" data-i18n="btnSavePlan" class="mt-5 rounded-lg bg-green-700 px-5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">Gartenplan speichern</button>
+  </section>
+
+  <div id="toast" class="fixed bottom-6 right-6 hidden rounded-lg bg-green-700 px-4 py-2.5 text-sm font-medium text-white shadow-lg"></div>
+</Layout>
+
+<script>
+  import { getAllPlants, getAllPolycultures, getAllGardenPlans, saveGardenPlan, deleteGardenPlan } from '../lib/db';
+  import { createEmptyGardenPlan, type GardenPlan, type GardenPlanPlacement, type GardenPlanPoint, type Polyculture, type PlantData } from '../lib/types';
+  import { displayRadiusM } from '../lib/growth-model';
+  import { newId } from '../lib/id';
+  import { escapeHtml } from '../lib/html';
+  import { createT, applyStaticI18n } from '../lib/i18n/core';
+  import { gartenplanDict } from '../lib/i18n/dict-gartenplan';
+
+  const t = createT(gartenplanDict);
+  applyStaticI18n(gartenplanDict);
+
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+  const SVG_UNITS_PER_METER = 100;
+  const SNAP_TOLERANCE_PX = 12;
+
+  // ── DOM refs ────────────────────────────────────────────────────────────
+  const listView = document.getElementById('plan-list-view')!;
+  const editorView = document.getElementById('plan-editor-view')!;
+  const listEl = document.getElementById('plan-list')!;
+  const emptyEl = document.getElementById('plan-empty')!;
+  const toast = document.getElementById('toast')!;
+
+  const phaseA = document.getElementById('phase-a')!;
+  const phaseB = document.getElementById('phase-b')!;
+
+  const fName = document.getElementById('g-name') as HTMLInputElement;
+  const fDescription = document.getElementById('g-description') as HTMLInputElement;
+  const fPolyculture = document.getElementById('g-polyculture') as HTMLSelectElement;
+  const fWidth = document.getElementById('g-width') as HTMLInputElement;
+  const fHeight = document.getElementById('g-height') as HTMLInputElement;
+  const fGridSpacing = document.getElementById('g-grid-spacing') as HTMLSelectElement;
+  const fNotes = document.getElementById('g-notes') as HTMLTextAreaElement;
+
+  const drawingHint = document.getElementById('drawing-hint')!;
+  const drawingWrap = document.getElementById('drawing-wrap')!;
+  const drawingSvg = document.getElementById('drawing-svg') as unknown as SVGSVGElement;
+  const drawingControls = document.getElementById('drawing-controls')!;
+  const vertexCountEl = document.getElementById('vertex-count')!;
+  const btnStartDrawing = document.getElementById('btn-start-drawing') as HTMLButtonElement;
+  const btnFinishBoundary = document.getElementById('btn-finish-boundary') as HTMLButtonElement;
+
+  const planSvg = document.getElementById('plan-svg') as unknown as SVGSVGElement;
+  const yearsInput = document.getElementById('g-years') as HTMLInputElement;
+  const yearsLabel = document.getElementById('years-label')!;
+  const pickerFilter = document.getElementById('picker-filter') as HTMLInputElement;
+  const plantPickerEl = document.getElementById('plant-picker')!;
+  const armedHint = document.getElementById('armed-hint')!;
+  const unplacedSection = document.getElementById('unplaced-section')!;
+  const unplacedListEl = document.getElementById('unplaced-list')!;
+  const selectedPanel = document.getElementById('selected-panel')!;
+
+  // ── State ───────────────────────────────────────────────────────────────
+  let plants: PlantData[] = [];
+  let plantsById = new Map<string, PlantData>();
+  let polycultures: Polyculture[] = [];
+  let polyculturesById = new Map<string, Polyculture>();
+  let plans: GardenPlan[] = [];
+  let editing: GardenPlan | null = null;
+
+  let drawingPoints: GardenPlanPoint[] = [];
+  let armedPlantId: string | null = null;
+  let unplacedPlantIds: string[] = []; // page-local — not persisted structurally
+  let selectedPlacementId: string | null = null;
+  let circleMap = new Map<string, SVGCircleElement>();
+
+  function showToast(msg: string) {
+    toast.textContent = msg;
+    toast.classList.remove('hidden');
+    setTimeout(() => toast.classList.add('hidden'), 2000);
+  }
+
+  function plantLabel(p: PlantData | undefined): string {
+    if (!p) return '—';
+    const label = p.commonName ? `${p.commonName} (${p.latinName})` : p.latinName || '—';
+    return escapeHtml(label);
+  }
+
+  // ── Geometry helpers ────────────────────────────────────────────────────
+  function clientToMeters(svg: SVGSVGElement, clientX: number, clientY: number): GardenPlanPoint {
+    const pt = svg.createSVGPoint();
+    pt.x = clientX; pt.y = clientY;
+    const inv = svg.getScreenCTM()!.inverse();
+    const p = pt.matrixTransform(inv);
+    return { xM: p.x / SVG_UNITS_PER_METER, yM: p.y / SVG_UNITS_PER_METER };
+  }
+
+  function snapIfClose(svg: SVGSVGElement, pt: GardenPlanPoint, spacingM: number): GardenPlanPoint {
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return pt;
+    const screenPxPerSvgUnit = Math.sqrt(ctm.a * ctm.a + ctm.b * ctm.b);
+    const toleranceM = (SNAP_TOLERANCE_PX / screenPxPerSvgUnit) / SVG_UNITS_PER_METER;
+    const nearestX = Math.round(pt.xM / spacingM) * spacingM;
+    const nearestY = Math.round(pt.yM / spacingM) * spacingM;
+    const dist = Math.hypot(pt.xM - nearestX, pt.yM - nearestY);
+    return dist <= toleranceM ? { xM: nearestX, yM: nearestY } : pt;
+  }
+
+  /** Ray-casting point-in-polygon test, coordinates in meters. */
+  function pointInPolygon(pt: GardenPlanPoint, poly: GardenPlanPoint[]): boolean {
+    let inside = false;
+    for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+      const xi = poly[i].xM, yi = poly[i].yM;
+      const xj = poly[j].xM, yj = poly[j].yM;
+      const intersect = (yi > pt.yM) !== (yj > pt.yM)
+        && pt.xM < (xj - xi) * (pt.yM - yi) / (yj - yi) + xi;
+      if (intersect) inside = !inside;
+    }
+    return inside;
+  }
+
+  function gridDefsAndBackground(widthM: number, heightM: number, spacingM: number, patternId: string): string {
+    const spacingU = spacingM * SVG_UNITS_PER_METER;
+    return `
+      <defs>
+        <pattern id="${patternId}" width="${spacingU}" height="${spacingU}" patternUnits="userSpaceOnUse">
+          <path d="M ${spacingU} 0 L 0 0 0 ${spacingU}" fill="none" stroke="#d6d3d1" stroke-width="1"/>
+        </pattern>
+      </defs>
+      <rect width="${widthM * SVG_UNITS_PER_METER}" height="${heightM * SVG_UNITS_PER_METER}" fill="url(#${patternId})" stroke="#a8a29e" stroke-width="2"/>`;
+  }
+
+  // ── Listenansicht ──────────────────────────────────────────────────────
+  function renderList() {
+    if (plans.length === 0) {
+      emptyEl.classList.remove('hidden');
+      listEl.classList.add('hidden');
+      return;
+    }
+    emptyEl.classList.add('hidden');
+    listEl.classList.remove('hidden');
+    listEl.innerHTML = plans.map(plan => {
+      const poly = plan.polycultureId ? polyculturesById.get(plan.polycultureId) : undefined;
+      return `
+        <article data-plan-id="${plan.id}" class="cursor-pointer rounded-xl bg-white dark:bg-stone-800 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:ring-green-300 dark:hover:ring-green-700">
+          <h3 class="text-base font-semibold text-stone-900 dark:text-stone-100">${escapeHtml(plan.name || t('planUnnamed'))}</h3>
+          ${plan.description ? `<p class="mt-0.5 text-xs text-stone-500 dark:text-stone-400">${escapeHtml(plan.description)}</p>` : ''}
+          ${poly ? `<p class="mt-2 text-xs text-stone-500 dark:text-stone-400">${t('linkedPolycultureLabel')} ${escapeHtml(poly.name || '—')}</p>` : ''}
+          <p class="mt-2 text-sm text-stone-700 dark:text-stone-200">${t('placementCount', { count: plan.placements.length })}</p>
+          <p class="mt-1 text-xs text-stone-400 dark:text-stone-500">${t('areaSizeLabel', { w: plan.areaWidthM, h: plan.areaHeightM })}</p>
+        </article>`;
+    }).join('');
+    listEl.querySelectorAll<HTMLElement>('[data-plan-id]').forEach(el => {
+      el.addEventListener('click', () => openEditor(el.dataset.planId!));
+    });
+  }
+
+  // ── Editor ─────────────────────────────────────────────────────────────
+  function openEditor(id: string | null) {
+    editing = id ? (plans.find(p => p.id === id) ?? createEmptyGardenPlan()) : createEmptyGardenPlan();
+    drawingPoints = [];
+    armedPlantId = null;
+    unplacedPlantIds = [];
+    selectedPlacementId = null;
+
+    fName.value = editing.name;
+    fDescription.value = editing.description;
+    fNotes.value = editing.notes;
+    fWidth.value = String(editing.areaWidthM);
+    fHeight.value = String(editing.areaHeightM);
+    fGridSpacing.value = String(editing.gridSpacingM);
+    fPolyculture.innerHTML = `<option value="">${t('linkedPolycultureNone')}</option>` + polycultures
+      .map(pc => `<option value="${pc.id}" ${pc.id === editing!.polycultureId ? 'selected' : ''}>${escapeHtml(pc.name || t('planUnnamed'))}</option>`)
+      .join('');
+
+    const lockInputs = editing.boundary.length > 0;
+    [fWidth, fHeight, fGridSpacing].forEach(el => { el.disabled = lockInputs; });
+    btnStartDrawing.classList.toggle('hidden', lockInputs);
+    drawingHint.classList.add('hidden');
+    drawingWrap.classList.add('hidden');
+    drawingControls.classList.add('hidden');
+
+    if (editing.boundary.length > 0) {
+      enterPhaseB();
+    } else {
+      phaseA.classList.remove('hidden');
+      phaseB.classList.add('hidden');
+    }
+
+    listView.hidden = true;
+    editorView.hidden = false;
+    window.scrollTo({ top: 0 });
+  }
+
+  function closeEditor() {
+    editing = null;
+    listView.hidden = false;
+    editorView.hidden = true;
+  }
+
+  // ── Phase A: Fläche zeichnen ────────────────────────────────────────────
+  function areaWidthM(): number { return Math.max(2, Math.min(50, Number(fWidth.value) || 10)); }
+  function areaHeightM(): number { return Math.max(2, Math.min(50, Number(fHeight.value) || 10)); }
+  function gridSpacingM(): number { return Number(fGridSpacing.value) || 1; }
+
+  function renderDrawingSvg() {
+    const w = areaWidthM(), h = areaHeightM(), spacing = gridSpacingM();
+    drawingSvg.setAttribute('viewBox', `0 0 ${w * SVG_UNITS_PER_METER} ${h * SVG_UNITS_PER_METER}`);
+    const pointsAttr = drawingPoints.map(p => `${p.xM * SVG_UNITS_PER_METER},${p.yM * SVG_UNITS_PER_METER}`).join(' ');
+    const markers = drawingPoints.map(p =>
+      `<circle cx="${p.xM * SVG_UNITS_PER_METER}" cy="${p.yM * SVG_UNITS_PER_METER}" r="6" fill="#15803d"/>`
+    ).join('');
+    drawingSvg.innerHTML = `
+      ${gridDefsAndBackground(w, h, spacing, 'drawing-grid')}
+      ${drawingPoints.length >= 2 ? `<polyline points="${pointsAttr}" fill="none" stroke="#15803d" stroke-width="3"/>` : ''}
+      ${drawingPoints.length >= 3 ? `<polygon points="${pointsAttr}" fill="#15803d" fill-opacity="0.12" stroke="none"/>` : ''}
+      ${markers}`;
+    vertexCountEl.textContent = t('vertexCount', { count: drawingPoints.length });
+    btnFinishBoundary.disabled = drawingPoints.length < 3;
+  }
+
+  btnStartDrawing.addEventListener('click', () => {
+    [fWidth, fHeight, fGridSpacing].forEach(el => { el.disabled = true; });
+    btnStartDrawing.classList.add('hidden');
+    drawingHint.classList.remove('hidden');
+    drawingWrap.classList.remove('hidden');
+    drawingControls.classList.remove('hidden');
+    drawingPoints = [];
+    renderDrawingSvg();
+  });
+
+  drawingSvg.addEventListener('pointerdown', (e: PointerEvent) => {
+    const raw = clientToMeters(drawingSvg, e.clientX, e.clientY);
+    const snapped = snapIfClose(drawingSvg, raw, gridSpacingM());
+    const clamped: GardenPlanPoint = {
+      xM: Math.max(0, Math.min(areaWidthM(), snapped.xM)),
+      yM: Math.max(0, Math.min(areaHeightM(), snapped.yM)),
+    };
+    drawingPoints.push(clamped);
+    renderDrawingSvg();
+  });
+
+  document.getElementById('btn-undo-point')!.addEventListener('click', () => {
+    drawingPoints.pop();
+    renderDrawingSvg();
+  });
+  document.getElementById('btn-clear-points')!.addEventListener('click', () => {
+    drawingPoints = [];
+    renderDrawingSvg();
+  });
+  btnFinishBoundary.addEventListener('click', () => {
+    if (!editing || drawingPoints.length < 3) return;
+    editing.areaWidthM = areaWidthM();
+    editing.areaHeightM = areaHeightM();
+    editing.gridSpacingM = gridSpacingM();
+    editing.boundary = drawingPoints.slice();
+    enterPhaseB();
+  });
+
+  document.getElementById('btn-redraw-area')!.addEventListener('click', () => {
+    if (!editing) return;
+    if (!confirm(t('confirmRedrawArea'))) return;
+    editing.boundary = [];
+    editing.placements = [];
+    drawingPoints = [];
+    [fWidth, fHeight, fGridSpacing].forEach(el => { el.disabled = false; });
+    btnStartDrawing.classList.remove('hidden');
+    drawingHint.classList.add('hidden');
+    drawingWrap.classList.add('hidden');
+    drawingControls.classList.add('hidden');
+    phaseA.classList.remove('hidden');
+    phaseB.classList.add('hidden');
+    window.scrollTo({ top: 0 });
+  });
+
+  // ── Phase B: Platzierung ────────────────────────────────────────────────
+  function enterPhaseB() {
+    if (!editing) return;
+    phaseA.classList.add('hidden');
+    phaseB.classList.remove('hidden');
+    yearsInput.value = String(editing.yearsSincePlanting);
+    yearsLabel.textContent = t('yearsSuffix', { years: editing.yearsSincePlanting });
+    renderPlantPicker();
+    renderUnplacedList();
+    renderSelectedPanel();
+    renderPlanSvg();
+  }
+
+  function renderPlantPicker() {
+    const q = pickerFilter.value.trim().toLowerCase();
+    const filtered = q
+      ? plants.filter(p => p.latinName.toLowerCase().includes(q) || (p.commonName && p.commonName.toLowerCase().includes(q)))
+      : plants;
+    if (filtered.length === 0) {
+      plantPickerEl.innerHTML = `<p class="text-xs text-stone-400 dark:text-stone-500">${t('noPlantsInCollection')}</p>`;
+      return;
+    }
+    plantPickerEl.innerHTML = filtered.map(p => `
+      <button data-picker-plant="${p.id}" class="block w-full truncate rounded px-2 py-1 text-left text-xs ${p.id === armedPlantId ? 'bg-green-700 text-white' : 'text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800'}">${plantLabel(p)}</button>
+    `).join('');
+    plantPickerEl.querySelectorAll<HTMLButtonElement>('[data-picker-plant]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.pickerPlant!;
+        armedPlantId = armedPlantId === id ? null : id;
+        armedHint.classList.toggle('hidden', !armedPlantId);
+        renderPlantPicker();
+      });
+    });
+  }
+  pickerFilter.addEventListener('input', renderPlantPicker);
+
+  function renderUnplacedList() {
+    if (unplacedPlantIds.length === 0) {
+      unplacedSection.classList.add('hidden');
+      unplacedListEl.innerHTML = '';
+      return;
+    }
+    unplacedSection.classList.remove('hidden');
+    unplacedListEl.innerHTML = unplacedPlantIds.map(id => {
+      const p = plantsById.get(id);
+      return `<button data-unplaced-plant="${id}" class="block w-full truncate rounded px-2 py-1 text-left text-xs ${id === armedPlantId ? 'bg-green-700 text-white' : 'text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800'}">${plantLabel(p)}</button>`;
+    }).join('');
+    unplacedListEl.querySelectorAll<HTMLButtonElement>('[data-unplaced-plant]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.unplacedPlant!;
+        armedPlantId = armedPlantId === id ? null : id;
+        armedHint.classList.toggle('hidden', !armedPlantId);
+        renderUnplacedList();
+      });
+    });
+  }
+
+  document.getElementById('g-polyculture')!.addEventListener('change', () => {
+    if (!editing) return;
+    editing.polycultureId = fPolyculture.value || null;
+  });
+
+  /** Copies a linked polyculture's members in as an unplaced list. Idempotent —
+   *  safe to click more than once; only adds members not already placed or
+   *  already pending, so nothing already in progress is duplicated or lost. */
+  function importPolycultureMembers() {
+    if (!editing || !editing.polycultureId) return;
+    const poly = polyculturesById.get(editing.polycultureId);
+    if (!poly) return;
+    const already = new Set([...editing.placements.map(pl => pl.plantId), ...unplacedPlantIds]);
+    const toAdd = poly.members.map(m => m.plantId).filter(id => !already.has(id));
+    if (toAdd.length === 0) { showToast(t('toastPlanSaved')); return; }
+    unplacedPlantIds.push(...toAdd);
+    renderUnplacedList();
+  }
+
+  function renderSelectedPanel() {
+    if (!editing || !selectedPlacementId) {
+      selectedPanel.innerHTML = `<p class="text-xs text-stone-400 dark:text-stone-500">${t('selectedPanelEmpty')}</p>`;
+      return;
+    }
+    const placement = editing.placements.find(pl => pl.id === selectedPlacementId);
+    if (!placement) {
+      selectedPanel.innerHTML = `<p class="text-xs text-stone-400 dark:text-stone-500">${t('selectedPanelEmpty')}</p>`;
+      return;
+    }
+    const p = plantsById.get(placement.plantId);
+    selectedPanel.innerHTML = `
+      <p class="mb-2 text-sm font-medium text-stone-800 dark:text-stone-100">${plantLabel(p)}</p>
+      <label class="block">
+        <span class="text-xs font-medium text-stone-500 dark:text-stone-400">${t('labelPlacementNotes')}</span>
+        <textarea id="placement-notes" rows="2" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-xs shadow-inner focus:border-green-500 focus:outline-none">${escapeHtml(placement.notes)}</textarea>
+      </label>
+      <button id="btn-remove-placement" class="mt-2 rounded-md bg-red-100 dark:bg-red-900/40 px-2.5 py-1 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/60">${t('btnRemovePlacement')}</button>`;
+    document.getElementById('placement-notes')!.addEventListener('input', (e) => {
+      placement.notes = (e.target as HTMLTextAreaElement).value;
+    });
+    document.getElementById('btn-remove-placement')!.addEventListener('click', () => {
+      if (!editing) return;
+      editing.placements = editing.placements.filter(pl => pl.id !== selectedPlacementId);
+      selectedPlacementId = null;
+      renderPlanSvg();
+      renderSelectedPanel();
+    });
+  }
+
+  // ── Plan SVG: grid + boundary + plant circles ───────────────────────────
+  function renderPlanSvg() {
+    if (!editing) return;
+    const w = editing.areaWidthM, h = editing.areaHeightM;
+    const pointsAttr = editing.boundary.map(p => `${p.xM * SVG_UNITS_PER_METER},${p.yM * SVG_UNITS_PER_METER}`).join(' ');
+    planSvg.setAttribute('viewBox', `0 0 ${w * SVG_UNITS_PER_METER} ${h * SVG_UNITS_PER_METER}`);
+    planSvg.innerHTML = `
+      ${gridDefsAndBackground(w, h, editing.gridSpacingM, 'plan-grid')}
+      <polygon points="${pointsAttr}" fill="#15803d" fill-opacity="0.08" stroke="#15803d" stroke-width="2"/>
+      <g id="plan-circles"></g>`;
+    circleMap = new Map();
+    const circlesGroup = planSvg.querySelector('#plan-circles')!;
+    for (const placement of editing.placements) {
+      const p = plantsById.get(placement.plantId);
+      const radiusM = p ? displayRadiusM(p, editing.yearsSincePlanting) : 0.2;
+      const circle = document.createElementNS(SVG_NS, 'circle');
+      circle.setAttribute('cx', String(placement.xM * SVG_UNITS_PER_METER));
+      circle.setAttribute('cy', String(placement.yM * SVG_UNITS_PER_METER));
+      circle.setAttribute('r', String(radiusM * SVG_UNITS_PER_METER));
+      circle.setAttribute('fill', selectedPlacementId === placement.id ? '#22c55e' : '#4ade80');
+      circle.setAttribute('fill-opacity', '0.55');
+      circle.setAttribute('stroke', '#15803d');
+      circle.setAttribute('stroke-width', '2');
+      circle.setAttribute('data-placement-id', placement.id);
+      circle.style.cursor = 'grab';
+      wireCircleDrag(circle, placement);
+      circlesGroup.appendChild(circle);
+      const dot = document.createElementNS(SVG_NS, 'circle');
+      dot.setAttribute('cx', String(placement.xM * SVG_UNITS_PER_METER));
+      dot.setAttribute('cy', String(placement.yM * SVG_UNITS_PER_METER));
+      dot.setAttribute('r', '3');
+      dot.setAttribute('fill', '#15803d');
+      dot.style.pointerEvents = 'none';
+      circlesGroup.appendChild(dot);
+      circleMap.set(placement.id, circle);
+    }
+  }
+
+  function wireCircleDrag(circle: SVGCircleElement, placement: GardenPlanPlacement) {
+    let dragging = false;
+    let moved = false;
+    let startClientX = 0, startClientY = 0;
+    circle.addEventListener('pointerdown', (e: PointerEvent) => {
+      e.stopPropagation();
+      dragging = true;
+      moved = false;
+      startClientX = e.clientX;
+      startClientY = e.clientY;
+      circle.setPointerCapture(e.pointerId);
+    });
+    circle.addEventListener('pointermove', (e: PointerEvent) => {
+      if (!dragging) return;
+      if (Math.hypot(e.clientX - startClientX, e.clientY - startClientY) > 4) moved = true;
+      if (!moved) return;
+      const pt = clientToMeters(planSvg, e.clientX, e.clientY);
+      circle.setAttribute('cx', String(pt.xM * SVG_UNITS_PER_METER));
+      circle.setAttribute('cy', String(pt.yM * SVG_UNITS_PER_METER));
+      const dot = circle.nextElementSibling as SVGCircleElement | null;
+      if (dot) { dot.setAttribute('cx', circle.getAttribute('cx')!); dot.setAttribute('cy', circle.getAttribute('cy')!); }
+    });
+    circle.addEventListener('pointerup', (e: PointerEvent) => {
+      dragging = false;
+      if (moved) {
+        const pt = clientToMeters(planSvg, e.clientX, e.clientY);
+        placement.xM = pt.xM;
+        placement.yM = pt.yM;
+      } else {
+        selectedPlacementId = placement.id;
+        renderPlanSvg();
+        renderSelectedPanel();
+      }
+    });
+  }
+
+  planSvg.addEventListener('pointerdown', (e: PointerEvent) => {
+    if (!editing || !armedPlantId) return;
+    if ((e.target as Element).closest('circle[data-placement-id]')) return; // handled by circle's own listener
+    const pt = clientToMeters(planSvg, e.clientX, e.clientY);
+    if (!pointInPolygon(pt, editing.boundary)) return;
+    const placement: GardenPlanPlacement = { id: newId(), plantId: armedPlantId, xM: pt.xM, yM: pt.yM, notes: '' };
+    editing.placements.push(placement);
+    unplacedPlantIds = unplacedPlantIds.filter(id => id !== armedPlantId);
+    renderUnplacedList();
+    renderPlanSvg();
+  });
+
+  yearsInput.addEventListener('input', () => {
+    if (!editing) return;
+    editing.yearsSincePlanting = Number(yearsInput.value);
+    yearsLabel.textContent = t('yearsSuffix', { years: editing.yearsSincePlanting });
+    for (const placement of editing.placements) {
+      const p = plantsById.get(placement.plantId);
+      const circle = circleMap.get(placement.id);
+      if (!p || !circle) continue;
+      circle.setAttribute('r', String(displayRadiusM(p, editing.yearsSincePlanting) * SVG_UNITS_PER_METER));
+    }
+  });
+
+  // ── Init + save/delete ──────────────────────────────────────────────────
+  async function init() {
+    plants = await getAllPlants();
+    plantsById = new Map(plants.map(p => [p.id, p]));
+    polycultures = await getAllPolycultures();
+    polyculturesById = new Map(polycultures.map(pc => [pc.id, pc]));
+    plans = await getAllGardenPlans();
+    renderList();
+  }
+
+  document.getElementById('btn-new-plan')!.addEventListener('click', () => openEditor(null));
+  document.getElementById('btn-empty-new')!.addEventListener('click', () => openEditor(null));
+  document.getElementById('btn-back-to-list')!.addEventListener('click', closeEditor);
+
+  document.getElementById('btn-save-plan')!.addEventListener('click', async () => {
+    if (!editing) return;
+    if (!fName.value.trim()) { alert(t('alertEnterName')); return; }
+    editing.name = fName.value.trim();
+    editing.description = fDescription.value.trim();
+    editing.notes = fNotes.value;
+    editing.polycultureId = fPolyculture.value || null;
+    await saveGardenPlan(editing);
+    plans = await getAllGardenPlans();
+    renderList();
+    closeEditor();
+    showToast(t('toastPlanSaved'));
+  });
+
+  document.getElementById('btn-delete-plan')!.addEventListener('click', async () => {
+    if (!editing) return;
+    if (!confirm(t('confirmDeletePlan', { name: editing.name || t('planUnnamed') }))) return;
+    await deleteGardenPlan(editing.id);
+    plans = await getAllGardenPlans();
+    renderList();
+    closeEditor();
+    showToast(t('toastPlanDeleted'));
+  });
+
+  // "Mitglieder übernehmen" lives next to the polyculture select but is only
+  // meaningful once one is chosen — inserted here rather than as static
+  // markup so its i18n string can include the button semantics cleanly.
+  (function insertImportMembersButton() {
+    const wrap = document.createElement('div');
+    wrap.className = 'mt-1';
+    wrap.innerHTML = `<button id="btn-import-members" type="button" class="rounded-md bg-blue-100 dark:bg-blue-900/40 px-2.5 py-1 text-xs font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/60">${t('btnImportMembers')}</button>
+      <p class="mt-1 text-[10px] text-stone-400 dark:text-stone-500">${t('importMembersHint')}</p>`;
+    fPolyculture.closest('label')!.after(wrap);
+    wrap.querySelector('#btn-import-members')!.addEventListener('click', importPolycultureMembers);
+  })();
+
+  init();
+</script>

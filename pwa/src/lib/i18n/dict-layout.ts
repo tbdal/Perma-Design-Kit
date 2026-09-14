@@ -12,6 +12,7 @@ export const layoutDict: Dict = {
 
   navPlants: { de: 'Pflanzen', en: 'Plants' },
   navGuilds: { de: 'Polykulturen', en: 'Polycultures' },
+  navGardenPlan: { de: 'Gartenplan', en: 'Garden plan' },
   navCalendar: { de: 'Kalender', en: 'Calendar' },
   navSettings: { de: 'Einstellungen', en: 'Settings' },
   themeToggleLabel: { de: 'Theme umschalten', en: 'Toggle theme' },

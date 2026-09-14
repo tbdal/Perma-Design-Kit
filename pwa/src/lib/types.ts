@@ -67,6 +67,53 @@ export function createEmptyPolyculture(): Polyculture {
   };
 }
 
+// ── Garden plans ────────────────────────────────────────────────────────────
+
+export interface GardenPlanPoint { xM: number; yM: number; }
+
+export interface GardenPlanPlacement {
+  id: string;        // own id — a plant can be placed more than once (e.g. a row of carrots)
+  plantId: string;
+  xM: number;
+  yM: number;
+  notes: string;
+}
+
+export interface GardenPlan {
+  id: string;
+  name: string;
+  description: string;
+  polycultureId: string | null;  // one-time prefill source only — no ongoing sync
+  areaWidthM: number;
+  areaHeightM: number;
+  gridSpacingM: number;          // 0.5 | 1 | 2
+  boundary: GardenPlanPoint[];   // polygon vertices, meters, plan-local origin (top-left)
+  placements: GardenPlanPlacement[];
+  yearsSincePlanting: number;    // last slider position — persisted so reopening restores the view
+  notes: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export function createEmptyGardenPlan(): GardenPlan {
+  const now = new Date().toISOString();
+  return {
+    id: newId(),
+    name: '',
+    description: '',
+    polycultureId: null,
+    areaWidthM: 10,
+    areaHeightM: 10,
+    gridSpacingM: 1,
+    boundary: [],
+    placements: [],
+    yearsSincePlanting: 0,
+    notes: '',
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
 // ── Data sources ────────────────────────────────────────────────────────────
 
 export type DataSource = 'wikidata' | 'pfaf' | 'naturadb' | 'manual' | 'csv' | 'sample';

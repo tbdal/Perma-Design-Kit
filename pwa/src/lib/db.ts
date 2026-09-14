@@ -1,5 +1,5 @@
 import { openDB, type DBSchema } from 'idb';
-import type { PlantData, Polyculture } from './types';
+import type { PlantData, Polyculture, GardenPlan } from './types';
 
 interface PlantDB extends DBSchema {
   plants: {
@@ -10,6 +10,10 @@ interface PlantDB extends DBSchema {
   polycultures: {
     key: string;
     value: Polyculture;
+  };
+  gardenPlans: {
+    key: string;
+    value: GardenPlan;
   };
 }
 
@@ -24,7 +28,9 @@ const DB_NAME = 'permaculture-guilds';
 // v4: renamed the 'guilds' store to 'polycultures' (Gilde → Polykultur
 // terminology rename). Existing records are copied over, then the old
 // store is dropped, so nobody's saved polycultures disappear.
-const DB_VERSION = 4;
+// v5: adds the 'gardenPlans' store for the Gartenplan feature. Additive/
+// idempotent, same self-healing pattern as prior bumps.
+const DB_VERSION = 5;
 
 function getDB() {
   return openDB<PlantDB>(DB_NAME, DB_VERSION, {
@@ -41,6 +47,9 @@ function getDB() {
           for (const item of all) await newStore.put(item);
           db.deleteObjectStore('guilds');
         }
+      }
+      if (!db.objectStoreNames.contains('gardenPlans')) {
+        db.createObjectStore('gardenPlans', { keyPath: 'id' });
       }
     },
   });
@@ -112,6 +121,38 @@ export async function importPolycultures(polycultures: Polyculture[]): Promise<v
   const tx = db.transaction('polycultures', 'readwrite');
   for (const polyculture of polycultures) {
     await tx.store.put(polyculture);
+  }
+  await tx.done;
+}
+
+// ── Garden plans ──────────────────────────────────────────────────────────
+
+export async function getAllGardenPlans(): Promise<GardenPlan[]> {
+  const db = await getDB();
+  return db.getAll('gardenPlans');
+}
+
+export async function getGardenPlan(id: string): Promise<GardenPlan | undefined> {
+  const db = await getDB();
+  return db.get('gardenPlans', id);
+}
+
+export async function saveGardenPlan(plan: GardenPlan): Promise<void> {
+  plan.updatedAt = new Date().toISOString();
+  const db = await getDB();
+  await db.put('gardenPlans', plan);
+}
+
+export async function deleteGardenPlan(id: string): Promise<void> {
+  const db = await getDB();
+  await db.delete('gardenPlans', id);
+}
+
+export async function importGardenPlans(plans: GardenPlan[]): Promise<void> {
+  const db = await getDB();
+  const tx = db.transaction('gardenPlans', 'readwrite');
+  for (const plan of plans) {
+    await tx.store.put(plan);
   }
   await tx.done;
 }
