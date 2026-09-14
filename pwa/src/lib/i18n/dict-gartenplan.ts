@@ -41,6 +41,7 @@ export const gartenplanDict: Dict = {
   btnClearPoints: { de: 'Neu beginnen', en: 'Start over' },
   btnFinishBoundary: { de: 'Fläche abschließen', en: 'Finish area' },
   btnRedrawArea: { de: 'Fläche neu zeichnen', en: 'Redraw area' },
+  btnExportPdf: { de: 'PDF exportieren', en: 'Export PDF' },
   confirmRedrawArea: { de: 'Fläche neu zeichnen? Das löscht die bisherige Umrandung und alle platzierten Pflanzen.', en: 'Redraw the area? This clears the current boundary and all placed plants.' },
 
   // ── Phase B: placement + growth slider ───────────────────────────────

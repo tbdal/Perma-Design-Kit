@@ -1,7 +1,8 @@
-import { PDFDocument, PDFPage, PDFRef, degrees, drawImage as pdfDrawImage } from 'pdf-lib';
+import { PDFDocument, PDFPage, PDFRef, StandardFonts, degrees, rgb, drawImage as pdfDrawImage } from 'pdf-lib';
 import { renderPolyCardToCanvas, renderStripeCardToCanvas } from './card-canvas';
 import { renderBaumscheibeSvg } from './baumscheibe-render';
-import type { PlantData } from './types';
+import { renderGardenPlanFullSvg } from './gartenplan-render';
+import type { GardenPlan, PlantData } from './types';
 import { escapeHtml } from './html';
 
 // Card dimensions in mm
@@ -442,4 +443,71 @@ export async function exportBaumscheibeSheetPDF(plants: PlantData[]): Promise<vo
   const pdfDoc = await PDFDocument.create();
   for (const group of groups) await embedBaumscheibeSheetPage(pdfDoc, group);
   downloadPdf(await pdfDoc.save(), 'baumscheiben-9cm-sheet.pdf');
+}
+
+// ── Gartenplan export ────────────────────────────────────────────────────────
+//
+// Unlike Baumscheibe (a 5 MB raster-heavy template), the Gartenplan SVG is
+// pure vector (a handful of paths/circles/text) — small and fast to
+// rasterize, so no Firefox-specific print-window fallback is needed here;
+// the same canvas→JPEG→embedJpg path used everywhere else works fine.
+
+const GARDENPLAN_MARGIN_MM = { top: 20, bottom: 18, side: 12 };
+const GARDENPLAN_RASTER_PX_PER_MM = 6; // ≈150dpi at typical plan sizes
+
+/** Portrait for a taller-than-wide plan, landscape otherwise — picked from
+ *  the plan's own aspect ratio rather than always defaulting to one. */
+function gardenPlanPageSizeMm(plan: GardenPlan): { w: number; h: number } {
+  return plan.areaWidthM > plan.areaHeightM ? { w: 297, h: 210 } : { w: 210, h: 297 };
+}
+
+export async function exportGardenPlanPDF(plan: GardenPlan, plantsById: Map<string, PlantData>): Promise<void> {
+  const pdfDoc = await PDFDocument.create();
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const { w: pageWmm, h: pageHmm } = gardenPlanPageSizeMm(plan);
+  const page = pdfDoc.addPage([pt(pageWmm), pt(pageHmm)]);
+
+  const title = plan.name || 'Gartenplan';
+  const caption = `${plan.yearsSincePlanting} Jahre seit Pflanzung · ${plan.areaWidthM}×${plan.areaHeightM} m · exportiert ${new Date().toLocaleDateString('de-DE')}`;
+
+  page.drawText(title, { x: pt(GARDENPLAN_MARGIN_MM.side), y: pt(pageHmm - 14), size: 16, font: fontBold });
+  page.drawText(caption, { x: pt(GARDENPLAN_MARGIN_MM.side), y: pt(pageHmm - 20), size: 8, font, color: rgb(0.4, 0.4, 0.4) });
+
+  // Fit the plan's own aspect ratio into the remaining space below the
+  // title and above the legend, centered — the plan area itself is not
+  // necessarily the same aspect ratio as the page.
+  const availW = pageWmm - GARDENPLAN_MARGIN_MM.side * 2;
+  const availH = pageHmm - GARDENPLAN_MARGIN_MM.top - GARDENPLAN_MARGIN_MM.bottom;
+  const planAspect = plan.areaWidthM / plan.areaHeightM;
+  let drawWmm = availW, drawHmm = availW / planAspect;
+  if (drawHmm > availH) { drawHmm = availH; drawWmm = availH * planAspect; }
+  const drawXmm = GARDENPLAN_MARGIN_MM.side + (availW - drawWmm) / 2;
+  const drawYmmFromTop = GARDENPLAN_MARGIN_MM.top + (availH - drawHmm) / 2;
+
+  const svg = renderGardenPlanFullSvg(plan, plantsById, plan.yearsSincePlanting);
+  const pxW = Math.round(drawWmm * GARDENPLAN_RASTER_PX_PER_MM);
+  const pxH = Math.round(drawHmm * GARDENPLAN_RASTER_PX_PER_MM);
+  const canvas = await svgStringToCanvas(svg, pxW, pxH);
+  const img = await pdfDoc.embedJpg(canvasToJpegBytes(canvas));
+  const drawYpt = pt(pageHmm) - pt(drawYmmFromTop) - pt(drawHmm);
+  page.drawImage(img, { x: pt(drawXmm), y: drawYpt, width: pt(drawWmm), height: pt(drawHmm) });
+
+  // Layer legend, bottom-left.
+  const legend: [string, string][] = [
+    ['Baum', '#166534'],
+    ['Strauch', '#65a30d'],
+    ['Kraut/Bodendecker', '#a3e635'],
+  ];
+  let legendX = GARDENPLAN_MARGIN_MM.side;
+  const legendY = 10;
+  for (const [label, hex] of legend) {
+    const [r, g, b] = [hex.slice(1, 3), hex.slice(3, 5), hex.slice(5, 7)].map(h => parseInt(h, 16) / 255);
+    page.drawEllipse({ x: pt(legendX + 1.5), y: pt(legendY + 1.5), xScale: pt(1.5), yScale: pt(1.5), color: rgb(r, g, b) });
+    page.drawText(label, { x: pt(legendX + 5), y: pt(legendY), size: 8, font });
+    legendX += label.length * 1.8 + 12;
+  }
+
+  const filename = `${(plan.name || 'gartenplan').toLowerCase().replace(/[^a-z0-9]+/g, '-')}.pdf`;
+  downloadPdf(await pdfDoc.save(), filename);
 }
