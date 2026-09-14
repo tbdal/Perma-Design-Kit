@@ -109,6 +109,34 @@
 - [ ] **Pflanzenbild-Upload** — Bild lokal speichern (Base64 in IndexedDB oder File in OPFS)
 - [ ] Fehlende Felder: Boden-Typ, Ausbreitungsart, Wurzeltiefe
 
+### von Opus 
+  1. Kein Testnetz. Das Projekt hat bis heute keine Testsuite — jede
+  Regression fällt nur auf, wenn ich sie manuell per Playwright suche.
+  Bei inzwischen ~10 Seiten und Modulen wie Wachstumsmodell,
+  Blob-Geometrie, compatScore, PFAF-Parser wäre eine kleine Vitest-Suite
+  für die reinen Funktionen (growth-model.ts, blob-shape.ts, compat.ts,
+  plant-layer.ts, CSV-Import) in ~1 Stunde gebaut und würde dauerhaft
+  Zeit sparen. Mein klarer Top-Vorschlag.
+
+  2. gartenplan.astro ist mit ~800 Zeilen zu groß geworden — dasselbe
+  Muster wie index.astro. Die Renderer sind schon in Libs ausgelagert,
+  aber State + Handler liegen alle in einem <script>-Block. Aufteilen
+  lohnt sich, bevor es weiter wächst.
+
+  3. PFAF-Parser ist fragil. Wir hatten diese Session schon zwei echte
+  Bugs darin (Bootstrap-Regex, Prosa-Matching). Der Parser hat null Tests
+  und bricht still, wenn PFAF sein Markup ändert — ein Satz
+  gespeicherter HTML-Fixtures plus Tests wäre günstig und würde genau die
+  Klasse Fehler abfangen, die uns zweimal getroffen hat.
+
+  4. Datenqualität sichtbar machen. Das Wachstumsmodell, die
+  Ebenen-Ableitung und die Formen sind alles Heuristiken. In der Infobox
+  steht es, aber in Karten und PDF-Export nicht — ein kleiner Hinweis
+  dort wäre ehrlicher, gerade wenn Dritte die Ausdrucke sehen.
+
+  5. Bundle-Größe. Der Build warnt bei jedem Lauf über Chunks >500 kB.
+  Three.js und pdf-lib sind bereits lazy, der Rest ist ungeprüft — einmal
+  reinschauen lohnt sich, gerade für eine PWA auf dem Handy im Garten.
 ---
 
 ## Mittelfristig
