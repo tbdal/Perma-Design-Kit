@@ -339,9 +339,10 @@ import Layout from '../layouts/Layout.astro';
   import { renderBaumscheibeCardHtml } from '../lib/baumscheibe-render';
   import { createT, applyStaticI18n } from '../lib/i18n/core';
   import { indexDict } from '../lib/i18n/dict-index';
+  import { plantDetailDict } from '../lib/i18n/dict-plant-detail';
 
-  const t = createT(indexDict);
-  applyStaticI18n(indexDict);
+  const t = createT(indexDict, plantDetailDict);
+  applyStaticI18n(indexDict, plantDetailDict);
 
   const listEl = document.getElementById('plant-list')!;
   const dialog = document.getElementById('plant-dialog') as HTMLDialogElement;

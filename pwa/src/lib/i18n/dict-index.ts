@@ -91,7 +91,6 @@ export const indexDict: Dict = {
   btnEnrichShort: { de: 'Ergänzen', en: 'Enrich' },
   btnEditShort: { de: 'Bearb.', en: 'Edit' },
   btnPdfShort: { de: 'PDF', en: 'PDF' },
-  zoneLabel: { de: 'Zone {zone}', en: 'Zone {zone}' },
   printStepperTitle: { de: 'Druckanzahl', en: 'Print count' },
   printStepperLess: { de: 'Weniger drucken', en: 'Print fewer' },
   printStepperMore: { de: 'Mehr drucken', en: 'Print more' },
@@ -108,25 +107,12 @@ export const indexDict: Dict = {
   thHeightShort: { de: 'H', en: 'H' },
   thUsage: { de: 'Nutzung', en: 'Uses' },
   thFunctions: { de: 'Funktionen', en: 'Functions' },
-  thPhenology: { de: 'Blüte/Frucht', en: 'Bloom/Fruit' },
   thCompleteness: { de: 'Vollst.', en: 'Complete' },
   thCount: { de: 'Anz.', en: 'Qty.' },
   thSources: { de: 'Quellen', en: 'Sources' },
   thActions: { de: 'Aktionen', en: 'Actions' },
 
   // ── Usage/ecosystem badges (short labels) ───────────────────────────
-  badgeEatable: { de: 'Essbar', en: 'Edible' },
-  badgeCulinaric: { de: 'Kulinarisch', en: 'Culinary' },
-  badgeMeds: { de: 'Medizin', en: 'Medicinal' },
-  badgeMaterial: { de: 'Material', en: 'Material' },
-  badgeFodder: { de: 'Futter', en: 'Fodder' },
-  badgeFuel: { de: 'Brennstoff', en: 'Fuel' },
-  badgeNitrogenFix: { de: 'N-Fix', en: 'N-fix' },
-  badgeMineralFix: { de: 'Mineraliensammler', en: 'Mineral accumulator' },
-  badgeGroundCover: { de: 'Bodendecker', en: 'Ground cover' },
-  badgeInsects: { de: 'Insekten', en: 'Insects' },
-  badgeWindBreaking: { de: 'Windschutz', en: 'Windbreak' },
-  badgeAnimalProtection: { de: 'Tierschutz', en: 'Animal shelter' },
 
   // ── Table legend (Nutzung/Funktionen color key) ─────────────────────
   legendToggle: { de: 'Farblegende', en: 'Color legend' },
