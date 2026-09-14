@@ -94,6 +94,10 @@ import Layout from '../layouts/Layout.astro';
           <span id="years-label" class="w-20 text-sm font-medium text-stone-700 dark:text-stone-200"></span>
         </div>
         <div class="flex items-center gap-3">
+          <div class="flex items-center gap-1 rounded-lg bg-stone-100 dark:bg-stone-800 p-0.5 text-xs">
+            <button id="btn-view-2d" data-i18n="btnView2d" class="rounded-md bg-white dark:bg-stone-700 px-2.5 py-1 font-medium text-stone-800 dark:text-stone-100 shadow-sm">2D</button>
+            <button id="btn-view-3d" data-i18n="btnView3d" class="rounded-md px-2.5 py-1 font-medium text-stone-500 dark:text-stone-400">3D</button>
+          </div>
           <button id="btn-export-pdf" data-i18n="btnExportPdf" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">PDF exportieren</button>
           <button id="btn-redraw-area" data-i18n="btnRedrawArea" class="text-xs font-medium text-stone-500 dark:text-stone-400 hover:text-red-600 dark:hover:text-red-400">Fläche neu zeichnen</button>
         </div>
@@ -105,6 +109,7 @@ import Layout from '../layouts/Layout.astro';
           <p data-i18n="infoHowItWorks">Fläche zeichnen (Eckpunkte anklicken) → Pflanze in der Liste anklicken → auf die Fläche tippen zum Platzieren → platzierte Pflanzen per Ziehen frei verschieben.</p>
           <p data-i18n="infoGrowthModel">Die Größe der Pflanzen mit dem Regler ist ein <strong>Schätzmodell</strong>, keine Artdaten: PFAF liefert nur die finale Größe plus grob „langsam/mittel/schnell" — daraus wird eine Wachstumskurve angenähert (Reifealter schnell≈6, mittel≈15, langsam≈30 Jahre).</p>
           <p data-i18n="infoShapeModel">Baum/Strauch/Kraut werden aus der Höhe abgeleitet (keine echte Datenbank-Angabe) und als stilisierte, unregelmäßige Form dargestellt — keine artgenauen Umrisse.</p>
+          <p data-i18n="infoView3d">Die 3D-Ansicht ist ebenso stilisiert wie die 2D-Formen — kein artgenaues Modell, nur zur räumlichen Orientierung.</p>
         </div>
       </details>
 
@@ -112,6 +117,7 @@ import Layout from '../layouts/Layout.astro';
         <div class="lg:col-span-2 space-y-2">
           <div class="rounded-xl bg-white dark:bg-stone-800 p-3 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <svg id="plan-svg" class="w-full touch-none" style="touch-action:none"></svg>
+            <div id="plan-3d-container" hidden class="h-[480px] w-full touch-none" style="touch-action:none"></div>
           </div>
           <div class="flex flex-wrap items-center gap-x-4 gap-y-1 px-1 text-xs text-stone-500 dark:text-stone-400">
             <span class="inline-flex items-center gap-1.5"><span class="inline-block h-2.5 w-2.5 rounded-full" style="background-color:#166534"></span><span data-i18n="layerTree">Baum</span></span>
@@ -159,6 +165,7 @@ import Layout from '../layouts/Layout.astro';
   import { displayRadiusM } from '../lib/growth-model';
   import { deriveLayer, LAYER_STYLE, type PlantLayer } from '../lib/plant-layer';
   import { blobPathD } from '../lib/blob-shape';
+  import { pointInPolygon } from '../lib/gartenplan-geometry';
   import { compatScore } from '../lib/compat';
   import { newId } from '../lib/id';
   import { escapeHtml, withButtonSpinner } from '../lib/html';
@@ -200,6 +207,9 @@ import Layout from '../layouts/Layout.astro';
   const btnFinishBoundary = document.getElementById('btn-finish-boundary') as HTMLButtonElement;
 
   const planSvg = document.getElementById('plan-svg') as unknown as SVGSVGElement;
+  const plan3dContainer = document.getElementById('plan-3d-container') as HTMLDivElement;
+  const btnView2d = document.getElementById('btn-view-2d') as HTMLButtonElement;
+  const btnView3d = document.getElementById('btn-view-3d') as HTMLButtonElement;
   const yearsInput = document.getElementById('g-years') as HTMLInputElement;
   const yearsLabel = document.getElementById('years-label')!;
   const pickerFilter = document.getElementById('picker-filter') as HTMLInputElement;
@@ -223,6 +233,7 @@ import Layout from '../layouts/Layout.astro';
   let armedPlantId: string | null = null;
   let unplacedPlantIds: string[] = []; // page-local — not persisted structurally
   let selectedPlacementId: string | null = null;
+  let view3d: import('../lib/gartenplan-3d').GardenPlan3DView | null = null;
   let markerMap = new Map<string, SVGGElement>();
 
   function showToast(msg: string) {
@@ -258,18 +269,6 @@ import Layout from '../layouts/Layout.astro';
   }
 
   /** Ray-casting point-in-polygon test, coordinates in meters. */
-  function pointInPolygon(pt: GardenPlanPoint, poly: GardenPlanPoint[]): boolean {
-    let inside = false;
-    for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-      const xi = poly[i].xM, yi = poly[i].yM;
-      const xj = poly[j].xM, yj = poly[j].yM;
-      const intersect = (yi > pt.yM) !== (yj > pt.yM)
-        && pt.xM < (xj - xi) * (pt.yM - yi) / (yj - yi) + xi;
-      if (intersect) inside = !inside;
-    }
-    return inside;
-  }
-
   function gridDefsAndBackground(widthM: number, heightM: number, spacingM: number, patternId: string): string {
     const spacingU = spacingM * SVG_UNITS_PER_METER;
     return `
@@ -308,6 +307,12 @@ import Layout from '../layouts/Layout.astro';
 
   // ── Editor ─────────────────────────────────────────────────────────────
   function openEditor(id: string | null) {
+    view3d?.dispose();
+    view3d = null;
+    plan3dContainer.hidden = true;
+    planSvg.classList.remove('hidden');
+    setViewToggleActive(true);
+
     editing = id ? (plans.find(p => p.id === id) ?? createEmptyGardenPlan()) : createEmptyGardenPlan();
     drawingPoints = [];
     armedPlantId = null;
@@ -344,6 +349,8 @@ import Layout from '../layouts/Layout.astro';
   }
 
   function closeEditor() {
+    view3d?.dispose();
+    view3d = null;
     editing = null;
     listView.hidden = false;
     editorView.hidden = true;
@@ -408,6 +415,55 @@ import Layout from '../layouts/Layout.astro';
     enterPhaseB();
   });
 
+  const VIEW_TOGGLE_ACTIVE_CLS = ['bg-white', 'dark:bg-stone-700', 'text-stone-800', 'dark:text-stone-100', 'shadow-sm'];
+  const VIEW_TOGGLE_INACTIVE_CLS = ['text-stone-500', 'dark:text-stone-400'];
+  function setViewToggleActive(active2d: boolean) {
+    VIEW_TOGGLE_ACTIVE_CLS.forEach(c => btnView2d.classList.toggle(c, active2d));
+    VIEW_TOGGLE_INACTIVE_CLS.forEach(c => btnView2d.classList.toggle(c, !active2d));
+    VIEW_TOGGLE_ACTIVE_CLS.forEach(c => btnView3d.classList.toggle(c, !active2d));
+    VIEW_TOGGLE_INACTIVE_CLS.forEach(c => btnView3d.classList.toggle(c, active2d));
+  }
+
+  btnView2d.addEventListener('click', () => {
+    if (!editing) return;
+    view3d?.dispose();
+    view3d = null;
+    plan3dContainer.hidden = true;
+    planSvg.classList.remove('hidden');
+    setViewToggleActive(true);
+    renderPlanSvg();
+  });
+
+  btnView3d.addEventListener('click', async () => {
+    if (!editing) return;
+    planSvg.classList.add('hidden');
+    plan3dContainer.hidden = false;
+    setViewToggleActive(false);
+    const { createGardenPlan3DView } = await import('../lib/gartenplan-3d');
+    view3d?.dispose();
+    view3d = createGardenPlan3DView(plan3dContainer, editing, plantsById, {
+      onGroundTap(xM, yM) {
+        if (!editing || !armedPlantId) return;
+        const placement: GardenPlanPlacement = { id: newId(), plantId: armedPlantId, xM, yM, notes: '' };
+        editing.placements.push(placement);
+        unplacedPlantIds = unplacedPlantIds.filter(id => id !== armedPlantId);
+        renderUnplacedList();
+        renderSuggestions();
+        view3d?.refreshPlacements();
+      },
+      onPlacementDragEnd(placementId, xM, yM) {
+        const pl = editing?.placements.find(p => p.id === placementId);
+        if (pl) { pl.xM = xM; pl.yM = yM; }
+      },
+      onPlacementSelected(placementId) {
+        selectedPlacementId = placementId;
+        view3d?.setSelectedPlacement(placementId);
+        renderSelectedPanel();
+      },
+    });
+    view3d.setArmedPlant(armedPlantId);
+  });
+
   document.getElementById('btn-export-pdf')!.addEventListener('click', async (e) => {
     if (!editing) return;
     syncFormIntoEditing();
@@ -417,6 +473,10 @@ import Layout from '../layouts/Layout.astro';
   document.getElementById('btn-redraw-area')!.addEventListener('click', () => {
     if (!editing) return;
     if (!confirm(t('confirmRedrawArea'))) return;
+    view3d?.dispose();
+    view3d = null;
+    plan3dContainer.hidden = true;
+    planSvg.classList.remove('hidden');
     editing.boundary = [];
     editing.placements = [];
     drawingPoints = [];
@@ -461,6 +521,7 @@ import Layout from '../layouts/Layout.astro';
         const id = btn.dataset.pickerPlant!;
         armedPlantId = armedPlantId === id ? null : id;
         armedHint.classList.toggle('hidden', !armedPlantId);
+        view3d?.setArmedPlant(armedPlantId);
         renderPlantPicker();
       });
     });
@@ -483,6 +544,7 @@ import Layout from '../layouts/Layout.astro';
         const id = btn.dataset.unplacedPlant!;
         armedPlantId = armedPlantId === id ? null : id;
         armedHint.classList.toggle('hidden', !armedPlantId);
+        view3d?.setArmedPlant(armedPlantId);
         renderUnplacedList();
       });
     });
@@ -575,6 +637,7 @@ import Layout from '../layouts/Layout.astro';
       editing.placements = editing.placements.filter(pl => pl.id !== selectedPlacementId);
       selectedPlacementId = null;
       renderPlanSvg();
+      view3d?.refreshPlacements();
       renderSelectedPanel();
       renderSuggestions();
     });
@@ -701,6 +764,7 @@ import Layout from '../layouts/Layout.astro';
       if (!group) continue;
       updateMarkerShape(group, placement, plantsById.get(placement.plantId));
     }
+    view3d?.updateYears(editing.yearsSincePlanting);
   });
 
   // ── Init + save/delete ──────────────────────────────────────────────────

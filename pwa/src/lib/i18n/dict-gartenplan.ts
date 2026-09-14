@@ -42,6 +42,9 @@ export const gartenplanDict: Dict = {
   btnFinishBoundary: { de: 'Fläche abschließen', en: 'Finish area' },
   btnRedrawArea: { de: 'Fläche neu zeichnen', en: 'Redraw area' },
   btnExportPdf: { de: 'PDF exportieren', en: 'Export PDF' },
+  btnView2d: { de: '2D', en: '2D' },
+  btnView3d: { de: '3D', en: '3D' },
+  infoView3d: { de: 'Die 3D-Ansicht ist ebenso stilisiert wie die 2D-Formen — kein artgenaues Modell, nur zur räumlichen Orientierung.', en: 'The 3D view is just as stylized as the 2D shapes — not a species-accurate model, only for spatial orientation.' },
   confirmRedrawArea: { de: 'Fläche neu zeichnen? Das löscht die bisherige Umrandung und alle platzierten Pflanzen.', en: 'Redraw the area? This clears the current boundary and all placed plants.' },
 
   // ── Phase B: placement + growth slider ───────────────────────────────
