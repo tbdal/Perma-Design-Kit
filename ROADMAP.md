@@ -109,13 +109,34 @@
 - [ ] **Pflanzenbild-Upload** — Bild lokal speichern (Base64 in IndexedDB oder File in OPFS)
 - [ ] Fehlende Felder: Boden-Typ, Ausbreitungsart, Wurzeltiefe
 
-### Code-Qualität (Verbesserungsvorschläge)
-- [ ] **Testsuite für reine Funktionen** — bisher gibt es keine Tests, Regressionen fallen nur bei manuellen Playwright-Läufen auf. Eine kleine Vitest-Suite für `growth-model.ts`, `blob-shape.ts`, `compat.ts`, `plant-layer.ts`, `gartenplan-geometry.ts` und den CSV-Import wäre in ca. 1 Stunde gebaut. Höchste Priorität.
-- [ ] **PFAF-Parser absichern** — `plant-proxy-server.mjs` hatte in einer Session zwei echte Bugs (Bootstrap-Regex, Prosa- statt Tag-Matching) und bricht still, wenn PFAF sein Markup ändert. Gespeicherte HTML-Fixtures (z.B. Comfrey, Robinia, Acer) plus Tests gegen die erwarteten Felder.
-- [ ] **`gartenplan.astro` aufteilen** — ~800 Zeilen, State und alle Handler in einem `<script>`-Block (gleiches Muster wie `index.astro`). Renderer sind schon in Libs, State/Interaktion noch nicht — aufteilen, bevor es weiter wächst.
-- [ ] **Heuristik-Hinweis auch außerhalb der Infobox** — Wachstumsmodell, Ebenen-Ableitung und Pflanzenformen sind Schätzungen; das steht nur in der Gartenplan-Infobox. Ein kurzer Hinweis im PDF-Export (und ggf. auf Karten) wäre ehrlicher, wenn Dritte die Ausdrucke sehen.
-- [ ] **Bundle-Größe prüfen** — der Build warnt bei jedem Lauf vor Chunks >500 kB. Three.js und pdf-lib werden bereits lazy geladen, der Rest ist ungeprüft; relevant für eine PWA, die mobil im Garten genutzt wird.
+### von Opus 
+  1. Kein Testnetz. Das Projekt hat bis heute keine Testsuite — jede
+  Regression fällt nur auf, wenn ich sie manuell per Playwright suche.
+  Bei inzwischen ~10 Seiten und Modulen wie Wachstumsmodell,
+  Blob-Geometrie, compatScore, PFAF-Parser wäre eine kleine Vitest-Suite
+  für die reinen Funktionen (growth-model.ts, blob-shape.ts, compat.ts,
+  plant-layer.ts, CSV-Import) in ~1 Stunde gebaut und würde dauerhaft
+  Zeit sparen. Mein klarer Top-Vorschlag.
 
+  2. gartenplan.astro ist mit ~800 Zeilen zu groß geworden — dasselbe
+  Muster wie index.astro. Die Renderer sind schon in Libs ausgelagert,
+  aber State + Handler liegen alle in einem <script>-Block. Aufteilen
+  lohnt sich, bevor es weiter wächst.
+
+  3. PFAF-Parser ist fragil. Wir hatten diese Session schon zwei echte
+  Bugs darin (Bootstrap-Regex, Prosa-Matching). Der Parser hat null Tests
+  und bricht still, wenn PFAF sein Markup ändert — ein Satz
+  gespeicherter HTML-Fixtures plus Tests wäre günstig und würde genau die
+  Klasse Fehler abfangen, die uns zweimal getroffen hat.
+
+  4. Datenqualität sichtbar machen. Das Wachstumsmodell, die
+  Ebenen-Ableitung und die Formen sind alles Heuristiken. In der Infobox
+  steht es, aber in Karten und PDF-Export nicht — ein kleiner Hinweis
+  dort wäre ehrlicher, gerade wenn Dritte die Ausdrucke sehen.
+
+  5. Bundle-Größe. Der Build warnt bei jedem Lauf über Chunks >500 kB.
+  Three.js und pdf-lib sind bereits lazy, der Rest ist ungeprüft — einmal
+  reinschauen lohnt sich, gerade für eine PWA auf dem Handy im Garten.
 ---
 
 ## Mittelfristig
