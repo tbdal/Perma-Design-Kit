@@ -53,17 +53,30 @@ export interface SearchResult {
   description?: string;
 }
 
+// Whole-word match, not substring: bare .includes() flagged "species of
+// plant" — Wikidata's generic fallback description for thousands of minor
+// taxa that lack a richer one — as a non-plant, because "ant" is a
+// substring of "plant". Confirmed live: this silently dropped e.g. Cynara
+// cardunculus itself from search results while its cultivars/subspecies
+// (which happen to have richer, non-generic descriptions) still showed up.
+// Word-boundary matching also incidentally fixes German compound
+// false-positives like "Vogelbeere" (contains "vogel" but isn't one) and
+// "Wurmfarn" (contains "wurm"). `s?` allows the plural (birds, insects, …)
+// without reintroducing the "plant(s)" false-positive, since the boundary
+// before the root word still requires a non-letter.
+const NON_PLANT_WORDS = [
+  'animal', 'mammal', 'bird', 'fish', 'reptile', 'insect', 'amphibian',
+  'beetle', 'butterfly', 'moth', 'spider', 'bee', 'wasp', 'ant', 'worm',
+  'tier', 'säugetier', 'vogel', 'fisch', 'reptil', 'insekt', 'käfer',
+  'schmetterling', 'spinne', 'wurm',
+];
+const NON_PLANT_RE = new RegExp(`\\b(${NON_PLANT_WORDS.join('|')})s?\\b`);
+
 /** Return false if the description clearly identifies a non-plant organism. */
 function looksLikePlant(descDe: string, descEn: string): boolean {
   const text = `${descDe} ${descEn}`.toLowerCase();
-  if (!text) return true; // no description → keep
-  const nonPlant = [
-    'animal', 'mammal', 'bird', 'fish', 'reptile', 'insect', 'amphibian',
-    'beetle', 'butterfly', 'moth', 'spider', 'bee', 'wasp', 'ant', 'worm',
-    'tier', 'säugetier', 'vogel', 'fisch', 'reptil', 'insekt', 'käfer',
-    'schmetterling', 'spinne', 'wurm',
-  ];
-  return !nonPlant.some(w => text.includes(w));
+  if (!text.trim()) return true; // no description → keep
+  return !NON_PLANT_RE.test(text);
 }
 
 /** Active request controller — cancelled when a newer search starts */

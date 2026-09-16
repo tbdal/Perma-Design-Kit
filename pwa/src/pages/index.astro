@@ -332,7 +332,7 @@ import Layout from '../layouts/Layout.astro';
   import { validatePlant } from '../lib/validate';
   import { searchPlants, fetchProxyData, fetchPlantDetails } from '../lib/plant-search';
   import { newId } from '../lib/id';
-  import { escapeHtml, withButtonSpinner } from '../lib/html';
+  import { escapeHtml, withButtonSpinner, loadingPlaceholderHtml } from '../lib/html';
   import { isSourceEnabled, loadSettings } from '../lib/settings';
   import { exportCardsPDF, exportSingleCardPDF, exportBaumscheibePDF, exportBaumscheibesPDF, exportBaumscheibeSheetPDF } from '../lib/pdf-export';
   import { renderPolyCardHtml, renderStripeCardHtml, printStepperHtml } from '../lib/card-html';
@@ -361,7 +361,7 @@ import Layout from '../layouts/Layout.astro';
   let editingPlant: PlantData | null = null;
   let cachedPlants: PlantData[] = [];
   let lastCheckedId: string | null = null;
-  let sortField: 'commonName' | 'latinName' | 'heightM' | 'completeness' = 'commonName';
+  let sortField: 'commonName' | 'latinName' | 'heightM' | 'widthM' | 'completeness' = 'commonName';
   let sortDir: 'asc' | 'desc' = 'asc';
 
   // Active filters: Set of PlantData boolean field names (AND logic).
@@ -777,6 +777,9 @@ import Layout from '../layouts/Layout.astro';
       } else if (sortField === 'heightM') {
         va = a.heightM ?? Infinity;
         vb = b.heightM ?? Infinity;
+      } else if (sortField === 'widthM') {
+        va = a.widthM ?? Infinity;
+        vb = b.widthM ?? Infinity;
       } else {
         va = ((a[sortField] as string) || '').toLowerCase();
         vb = ((b[sortField] as string) || '').toLowerCase();
@@ -945,6 +948,10 @@ import Layout from '../layouts/Layout.astro';
       const isBaumscheibe = cardViewMode === 'baumscheibe';
       document.getElementById('btn-pdf-sheet')!.classList.toggle('hidden', !isBaumscheibe);
       listEl.className = isStripe ? 'flex flex-col items-stretch gap-2' : 'flex flex-wrap justify-center gap-6';
+      // Baumscheibe rendering awaits an SVG fetch + per-plant DOM work and can
+      // take a visible moment for more than a couple of cards — poly/stripe
+      // cards are near-instant, so skip the placeholder there to avoid flicker.
+      if (isBaumscheibe) listEl.innerHTML = loadingPlaceholderHtml(t('loadingCards'));
       const cardHtmls = await Promise.all(displayPlants.map(async (p) => {
         if (isBaumscheibe) return renderBaumscheibeCardHtml(p);
         return isStripe ? renderStripeCardHtml(p) : renderPolyCardHtml(p);
@@ -1098,6 +1105,7 @@ import Layout from '../layouts/Layout.astro';
                 ${thSort('commonName', t('thName'))}
                 ${thSort('latinName', t('thLatin'))}
                 ${thSort('heightM', t('thHeightShort'))}
+                ${thSort('widthM', t('thWidthShort'))}
                 <th class="px-3 py-2.5">${escapeHtml(t('thUsage'))}</th>
                 <th class="px-3 py-2.5">${escapeHtml(t('thFunctions'))}</th>
                 <th class="px-3 py-2.5">${escapeHtml(t('thPhenology'))}</th>
@@ -1119,6 +1127,7 @@ import Layout from '../layouts/Layout.astro';
                 </td>
                 <td class="px-3 py-2 italic text-stone-500 dark:text-stone-400">${escapeHtml(p.latinName)}</td>
                 <td class="px-3 py-2 text-stone-400 dark:text-stone-500">${p.heightM != null ? p.heightM + 'm' : '—'}</td>
+                <td class="px-3 py-2 text-stone-400 dark:text-stone-500">${p.widthM != null ? p.widthM + 'm' : '—'}</td>
                 <td class="px-3 py-2"><div class="flex gap-0.5">${usageDots}</div></td>
                 <td class="px-3 py-2"><div class="flex gap-0.5">${functionDots}</div></td>
                 <td class="px-3 py-2">${phenologyHtml}</td>
@@ -1357,7 +1366,12 @@ import Layout from '../layouts/Layout.astro';
   });
   document.getElementById('btn-bulk-pdf')!.addEventListener('click', async () => {
     const plants = cachedPlants.filter(p => selectedIds.has(p.id));
-    if (plants.length > 0) await exportCardsPDF(plants);
+    if (plants.length === 0) return;
+    const btn = document.getElementById('btn-bulk-pdf') as HTMLButtonElement;
+    await withButtonSpinner(btn, async () => {
+      if (cardViewMode === 'baumscheibe') await exportBaumscheibesPDF(plants);
+      else await exportCardsPDF(plants);
+    });
   });
 
   // ── Standard actions ──────────────────────────────────────────────────────────
@@ -1703,10 +1717,15 @@ import Layout from '../layouts/Layout.astro';
   });
 
   // ── Daten-Overflow-Menü: schließt beim Item-Klick + Klick-außerhalb ─────
+  // "Lade alle fehlenden Daten" läuft nach dem Klick weiter (Fortschritt
+  // "1/N…" im Button-Text) — das Menü darf dafür nicht sofort zuklappen,
+  // sonst ist der Fortschritt unsichtbar. Alle anderen Items schließen
+  // weiterhin sofort, da sie synchron sind oder ihr eigenes Feedback
+  // (Toast/Alert) außerhalb des Menüs zeigen.
   const dataMenu = document.getElementById('data-menu') as HTMLDetailsElement | null;
   dataMenu?.addEventListener('click', (e) => {
     const t = e.target as HTMLElement;
-    if (t.tagName === 'BUTTON' && t.id !== 'data-menu') dataMenu.open = false;
+    if (t.tagName === 'BUTTON' && t.id !== 'data-menu' && t.id !== 'btn-enrich-all') dataMenu.open = false;
   });
   document.addEventListener('click', (e) => {
     if (dataMenu?.open && !dataMenu.contains(e.target as Node)) dataMenu.open = false;

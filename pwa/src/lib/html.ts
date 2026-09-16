@@ -29,3 +29,15 @@ export async function withButtonSpinner<T>(btn: HTMLButtonElement, task: () => P
     btn.disabled = originalDisabled;
   }
 }
+
+/** Full-width placeholder shown in place of a list/grid while it's (re)generating —
+ *  same "sanduhr" idea as `withButtonSpinner`, but for a whole container rather
+ *  than a single button (e.g. the card grid while Baumscheiben are being
+ *  rendered, which awaits an SVG fetch + per-plant DOM work and can take a
+ *  visible moment for more than a couple of plants). */
+export function loadingPlaceholderHtml(label: string): string {
+  return `<div class="col-span-full flex flex-col items-center justify-center gap-3 py-16 text-stone-400 dark:text-stone-500">
+    <span class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-current/20 border-t-current"></span>
+    <span class="text-sm">${escapeHtml(label)}</span>
+  </div>`;
+}

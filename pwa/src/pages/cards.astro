@@ -176,7 +176,7 @@ import Layout from '../layouts/Layout.astro';
   import { createEmptyPlant, type PlantData } from '../lib/types';
   import { renderPolyCardHtml, renderStripeCardHtml, printStepperHtml } from '../lib/card-html';
   import { renderBaumscheibeCardHtml } from '../lib/baumscheibe-render';
-  import { escapeHtml, withButtonSpinner } from '../lib/html';
+  import { escapeHtml, withButtonSpinner, loadingPlaceholderHtml } from '../lib/html';
   import { loadSettings } from '../lib/settings';
   import { createT, applyStaticI18n } from '../lib/i18n/core';
   import { cardsDict } from '../lib/i18n/dict-cards';
@@ -260,6 +260,10 @@ import Layout from '../layouts/Layout.astro';
     container.className = isStripe
       ? 'flex flex-col items-stretch gap-2'
       : 'flex flex-wrap justify-center gap-6';
+    // Baumscheibe rendering awaits an SVG fetch + per-plant DOM work and can
+    // take a visible moment for more than a couple of cards — poly/stripe
+    // cards are near-instant, so skip the placeholder there to avoid flicker.
+    if (isBaumscheibe) container.innerHTML = loadingPlaceholderHtml(t('loadingCards'));
 
     const cardHtmls = await Promise.all(plants.map(async (p) => {
       if (isBaumscheibe) return renderBaumscheibeCardHtml(p);

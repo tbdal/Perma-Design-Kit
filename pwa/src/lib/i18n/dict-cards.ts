@@ -2,6 +2,7 @@ import type { Dict } from './core';
 
 export const cardsDict: Dict = {
   pageTitle: { de: 'Karten', en: 'Cards' },
+  loadingCards: { de: 'Karten werden erstellt…', en: 'Generating cards…' },
   printStepperTitle: { de: 'Druckanzahl', en: 'Print count' },
   printStepperLess: { de: 'Weniger drucken', en: 'Print fewer' },
   printStepperMore: { de: 'Mehr drucken', en: 'Print more' },
