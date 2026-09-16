@@ -79,6 +79,41 @@ function looksLikePlant(descDe: string, descEn: string): boolean {
   return !NON_PLANT_RE.test(text);
 }
 
+/** Collects Wikidata P1843 ("taxon common name") claims by language, first
+ *  value per language wins. Distinct from `entity.labels` — Wikidata bots
+ *  commonly mirror the scientific name into every language's `labels` entry
+ *  when no vernacular name exists for that language, so `labels.de` being
+ *  non-empty does NOT mean a real German common name exists. */
+function taxonCommonNames(entity: any): Record<string, string> {
+  const out: Record<string, string> = {};
+  const claims = entity.claims?.P1843 || [];
+  for (const c of claims) {
+    const v = c.mainsnak?.datavalue?.value;
+    if (v?.language && v?.text && !(v.language in out)) out[v.language] = v.text;
+  }
+  return out;
+}
+
+/** Picks the best available common name for an entity, preferring a real
+ *  German vernacular name (P1843/de) over `labels.de`, since the latter is
+ *  often just the scientific name mirrored in by Wikidata when no true
+ *  German common name has been entered (e.g. Tagetes patula → labels.de is
+ *  literally "Tagetes patula", identical to the Latin name). Falls through
+ *  German → English (same distinction) → the raw labels as a last resort,
+ *  so behavior never regresses to an empty name where one was shown before. */
+function bestCommonName(entity: any, latin: string): string {
+  const common = taxonCommonNames(entity);
+  const labelDe = entity.labels?.de?.value;
+  const labelEn = entity.labels?.en?.value;
+  const latinLower = latin.trim().toLowerCase();
+  const isMirrored = (s?: string) => !s || s.trim().toLowerCase() === latinLower;
+  if (common.de) return common.de;
+  if (labelDe && !isMirrored(labelDe)) return labelDe;
+  if (common.en) return common.en;
+  if (labelEn && !isMirrored(labelEn)) return labelEn;
+  return labelDe || labelEn || '';
+}
+
 /** Active request controller — cancelled when a newer search starts */
 let activeController: AbortController | null = null;
 
@@ -137,8 +172,6 @@ export async function searchPlants(query: string): Promise<SearchResult[]> {
               const entity = detailData.entities?.[item.title];
               if (!entity) continue;
               const taxonClaim = entity.claims?.P225?.[0]?.mainsnak?.datavalue?.value;
-              const labelDe = entity.labels?.de?.value;
-              const labelEn = entity.labels?.en?.value;
               const descDe = entity.descriptions?.de?.value;
               const descEn = entity.descriptions?.en?.value;
               const latin = taxonClaim || '';
@@ -148,7 +181,7 @@ export async function searchPlants(query: string): Promise<SearchResult[]> {
               if (!looksLikePlant(descDe || '', descEn || '')) continue;
               results.push({
                 latinName: latin,
-                commonName: labelDe || labelEn || taxonClaim || '',
+                commonName: bestCommonName(entity, latin),
                 wikidataId: item.title,
                 description: descDe || descEn || '',
               });
@@ -211,10 +244,8 @@ export async function fetchPlantDetails(wikidataId: string): Promise<Partial<Pla
   const taxon = claim('P225');
   if (taxon) result.latinName = taxon;
 
-  const labelDe = entity.labels?.de?.value;
-  const labelEn = entity.labels?.en?.value;
-  if (labelDe) result.commonName = labelDe;
-  else if (labelEn) result.commonName = labelEn;
+  const commonName = bestCommonName(entity, taxon || '');
+  if (commonName) result.commonName = commonName;
 
   const imageName = claim('P18');
   if (imageName) {
