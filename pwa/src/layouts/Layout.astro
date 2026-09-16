@@ -2,8 +2,13 @@
 import '../styles/global.css';
 interface Props {
   title: string;
+  /** Widens the header/main/footer container beyond the default max-w-6xl —
+   *  for pages whose content (e.g. the plant table's many dot/filter
+   *  columns) needs more horizontal room than prose pages do. */
+  wide?: boolean;
 }
-const { title } = Astro.props;
+const { title, wide = false } = Astro.props;
+const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
 ---
 <!doctype html>
 <html lang="de" class="h-full">
@@ -74,7 +79,7 @@ const { title } = Astro.props;
     </div>
 
     <header class="sticky top-0 z-50 bg-green-900 dark:bg-green-950 shadow-lg">
-      <nav class="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3 sm:px-6">
+      <nav class={`mx-auto flex ${containerMaxW} items-center gap-2 px-4 py-3 sm:px-6`}>
         <a href="/" class="flex shrink-0 items-center gap-2 text-lg font-bold tracking-tight text-white">
           <svg class="h-7 w-7" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
             <polyline points="16,11 20.1,14 16,19.2 9.7,14 16,6.6 24.5,14 16,23.6 16,27"
@@ -112,12 +117,12 @@ const { title } = Astro.props;
         </div>
       </nav>
     </header>
-    <main class="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6">
+    <main class={`mx-auto w-full ${containerMaxW} flex-1 px-4 py-6 sm:px-6`}>
       <slot />
     </main>
 
     <footer class="border-t border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 py-4 text-sm text-stone-500 dark:text-stone-400">
-      <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 sm:px-6">
+      <div class={`mx-auto flex ${containerMaxW} flex-wrap items-center justify-between gap-2 px-4 sm:px-6`}>
         <span>© 2026 Perma Design Kit</span>
         <nav class="flex flex-wrap gap-4">
           <a href="/hilfe" data-i18n="footerHelp" class="hover:text-stone-700 dark:hover:text-stone-200 hover:underline">Hilfe</a>
