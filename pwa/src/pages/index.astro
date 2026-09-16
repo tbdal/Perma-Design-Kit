@@ -1441,8 +1441,15 @@ import Layout from '../layouts/Layout.astro';
   document.getElementById('btn-enrich-all')!.addEventListener('click', async () => {
     const b = document.getElementById('btn-enrich-all') as HTMLButtonElement;
     const origText = b.textContent;
-    const plants = (await getAllPlants()).filter(p => p.latinName);
-    if (plants.length === 0) { alert(t('alertNoLatinNamePlants')); return; }
+    const allPlants = (await getAllPlants()).filter(p => p.latinName);
+    if (allPlants.length === 0) { alert(t('alertNoLatinNamePlants')); return; }
+    // Only plants with unfilled fields need a PFAF/Wikidata round trip — a
+    // 100%-complete plant would make the exact same requests for no possible
+    // change (enrichPlant only ever fills currently-empty fields), needlessly
+    // hammering both services. Same 10-field heuristic as the "Vollst." column.
+    const plants = allPlants.filter(p => completenessPercent(p) < 100);
+    const skipped = allPlants.length - plants.length;
+    if (plants.length === 0) { alert(t('alertEnrichAllNoneNeeded', { skipped })); return; }
     b.disabled = true;
     let plantsUpdated = 0, fieldsFilled = 0, failed = 0;
     for (let i = 0; i < plants.length; i++) {
@@ -1464,6 +1471,7 @@ import Layout from '../layouts/Layout.astro';
     await renderList();
     alert(
       t('alertEnrichAllSummary', { updated: plantsUpdated, total: plants.length, fields: fieldsFilled }) +
+      (skipped > 0 ? t('alertEnrichAllSkipped', { skipped }) : '') +
       (failed > 0 ? t('alertEnrichAllFailed', { failed }) : '')
     );
   });

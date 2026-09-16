@@ -211,6 +211,8 @@ export const indexDict: Dict = {
   alertCrawfordImported: { de: '{n} Pflanzen (Crawford) importiert{reset}. Nur lateinische Namen sind gesetzt — mit „↻" pro Pflanze anreichern.', en: '{n} plants (Crawford) imported{reset}. Only Latin names are set — enrich each plant with "↻".' },
   alertNoLatinNamePlants: { de: 'Keine Pflanzen mit lateinischem Namen vorhanden.', en: 'No plants with a Latin name found.' },
   alertEnrichAllSummary: { de: '{updated} von {total} Pflanzen aktualisiert, {fields} Felder ergänzt.', en: '{updated} of {total} plants updated, {fields} fields filled.' },
+  alertEnrichAllSkipped: { de: ' {skipped} bereits vollständige Pflanzen übersprungen.', en: ' {skipped} already-complete plants skipped.' },
+  alertEnrichAllNoneNeeded: { de: 'Alle {skipped} Pflanzen sind bereits vollständig — nichts zu laden.', en: 'All {skipped} plants are already complete — nothing to load.' },
   alertEnrichAllFailed: { de: ' {failed} fehlgeschlagen (siehe Konsole).', en: ' {failed} failed (see console).' },
   alertNoCsvPlants: { de: 'Keine Pflanzen in der CSV gefunden.', en: 'No plants found in the CSV.' },
   enrichWikidataStatus: { de: 'Wikidata...', en: 'Wikidata...' },
