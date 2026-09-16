@@ -238,6 +238,23 @@ import Layout from '../layouts/Layout.astro';
   let view3d: import('../lib/gartenplan-3d').GardenPlan3DView | null = null;
   let markerMap = new Map<string, SVGGElement>();
 
+  // ── Autosave ────────────────────────────────────────────────────────────
+  // Saving previously only happened on an explicit "Speichern" click, so a
+  // reload/crash/accidental tab-close mid-edit silently lost the drawn
+  // boundary or any placed plants. Debounced so rapid mutations (dragging a
+  // plant, moving the years slider) don't hammer IndexedDB on every event.
+  const LAST_PLAN_KEY = 'pgd-gartenplan-last-id';
+  let autosaveTimer: ReturnType<typeof setTimeout> | null = null;
+  function scheduleAutosave() {
+    if (!editing) return;
+    if (autosaveTimer) clearTimeout(autosaveTimer);
+    const plan = editing;
+    autosaveTimer = setTimeout(async () => {
+      plan.updatedAt = new Date().toISOString();
+      await saveGardenPlan(plan);
+    }, 500);
+  }
+
   function showToast(msg: string) {
     toast.textContent = msg;
     toast.classList.remove('hidden');
@@ -271,6 +288,29 @@ import Layout from '../layouts/Layout.astro';
   }
 
   /** Ray-casting point-in-polygon test, coordinates in meters. */
+  /** Meter tick labels along the top (X) and left (Y) edge of the grid, one
+   *  per grid line — so a drawn area's real-world size is readable at a
+   *  glance instead of having to count squares. `pointer-events="none"` on
+   *  the whole label group keeps them from intercepting clicks/drags meant
+   *  for the grid rect beneath (placing plants, drawing the boundary). */
+  function gridTickLabels(widthM: number, heightM: number, spacingM: number): string {
+    const round2 = (n: number) => Math.round(n * 100) / 100;
+    const xSteps = Math.floor(widthM / spacingM);
+    const ySteps = Math.floor(heightM / spacingM);
+    const labels: string[] = [];
+    for (let i = 1; i <= xSteps; i++) {
+      const m = round2(i * spacingM);
+      const x = m * SVG_UNITS_PER_METER;
+      labels.push(`<text x="${x}" y="11" font-size="9" fill="#a8a29e" text-anchor="middle">${m}</text>`);
+    }
+    for (let i = 1; i <= ySteps; i++) {
+      const m = round2(i * spacingM);
+      const y = m * SVG_UNITS_PER_METER;
+      labels.push(`<text x="3" y="${y + 9}" font-size="9" fill="#a8a29e" text-anchor="start">${m}</text>`);
+    }
+    return `<g pointer-events="none">${labels.join('')}</g>`;
+  }
+
   function gridDefsAndBackground(widthM: number, heightM: number, spacingM: number, patternId: string): string {
     const spacingU = spacingM * SVG_UNITS_PER_METER;
     return `
@@ -279,7 +319,8 @@ import Layout from '../layouts/Layout.astro';
           <path d="M ${spacingU} 0 L 0 0 0 ${spacingU}" fill="none" stroke="#d6d3d1" stroke-width="1"/>
         </pattern>
       </defs>
-      <rect width="${widthM * SVG_UNITS_PER_METER}" height="${heightM * SVG_UNITS_PER_METER}" fill="url(#${patternId})" stroke="#a8a29e" stroke-width="2"/>`;
+      <rect width="${widthM * SVG_UNITS_PER_METER}" height="${heightM * SVG_UNITS_PER_METER}" fill="url(#${patternId})" stroke="#a8a29e" stroke-width="2"/>
+      ${gridTickLabels(widthM, heightM, spacingM)}`;
   }
 
   // ── Listenansicht ──────────────────────────────────────────────────────
@@ -320,6 +361,7 @@ import Layout from '../layouts/Layout.astro';
     armedPlantId = null;
     unplacedPlantIds = [];
     selectedPlacementId = null;
+    try { localStorage.setItem(LAST_PLAN_KEY, editing.id); } catch {}
 
     fName.value = editing.name;
     fDescription.value = editing.description;
@@ -356,6 +398,7 @@ import Layout from '../layouts/Layout.astro';
     editing = null;
     listView.hidden = false;
     editorView.hidden = true;
+    try { localStorage.removeItem(LAST_PLAN_KEY); } catch {}
   }
 
   // ── Phase A: Fläche zeichnen ────────────────────────────────────────────
@@ -452,10 +495,12 @@ import Layout from '../layouts/Layout.astro';
         renderUnplacedList();
         renderSuggestions();
         view3d?.refreshPlacements();
+        scheduleAutosave();
       },
       onPlacementDragEnd(placementId, xM, yM) {
         const pl = editing?.placements.find(p => p.id === placementId);
         if (pl) { pl.xM = xM; pl.yM = yM; }
+        scheduleAutosave();
       },
       onPlacementSelected(placementId) {
         selectedPlacementId = placementId;
@@ -490,6 +535,7 @@ import Layout from '../layouts/Layout.astro';
     phaseA.classList.remove('hidden');
     phaseB.classList.add('hidden');
     window.scrollTo({ top: 0 });
+    scheduleAutosave();
   });
 
   // ── Phase B: Platzierung ────────────────────────────────────────────────
@@ -633,6 +679,7 @@ import Layout from '../layouts/Layout.astro';
       <button id="btn-remove-placement" class="mt-2 rounded-md bg-red-100 dark:bg-red-900/40 px-2.5 py-1 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/60">${t('btnRemovePlacement')}</button>`;
     document.getElementById('placement-notes')!.addEventListener('input', (e) => {
       placement.notes = (e.target as HTMLTextAreaElement).value;
+      scheduleAutosave();
     });
     document.getElementById('btn-remove-placement')!.addEventListener('click', () => {
       if (!editing) return;
@@ -670,6 +717,7 @@ import Layout from '../layouts/Layout.astro';
 
   function renderPlanSvg() {
     if (!editing) return;
+    scheduleAutosave();
     const w = editing.areaWidthM, h = editing.areaHeightM;
     const pointsAttr = editing.boundary.map(p => `${p.xM * SVG_UNITS_PER_METER},${p.yM * SVG_UNITS_PER_METER}`).join(' ');
     planSvg.setAttribute('viewBox', `0 0 ${w * SVG_UNITS_PER_METER} ${h * SVG_UNITS_PER_METER}`);
@@ -736,6 +784,7 @@ import Layout from '../layouts/Layout.astro';
         const pt = clientToMeters(planSvg, e.clientX, e.clientY);
         placement.xM = pt.xM;
         placement.yM = pt.yM;
+        scheduleAutosave();
       } else {
         selectedPlacementId = placement.id;
         renderPlanSvg();
@@ -767,6 +816,7 @@ import Layout from '../layouts/Layout.astro';
       updateMarkerShape(group, placement, plantsById.get(placement.plantId));
     }
     view3d?.updateYears(editing.yearsSincePlanting);
+    scheduleAutosave();
   });
 
   // ── Init + save/delete ──────────────────────────────────────────────────
@@ -777,15 +827,24 @@ import Layout from '../layouts/Layout.astro';
     polyculturesById = new Map(polycultures.map(pc => [pc.id, pc]));
     plans = await getAllGardenPlans();
     renderList();
+
+    // Resume the plan that was open when the page was last left (reload,
+    // crash, accidental tab close) — but only if the user didn't explicitly
+    // go back to the list (closeEditor clears this key), so "back to list"
+    // stays a real navigation, not something a reload undoes.
+    let lastId: string | null = null;
+    try { lastId = localStorage.getItem(LAST_PLAN_KEY); } catch {}
+    if (lastId && plans.some(p => p.id === lastId)) openEditor(lastId);
   }
 
   document.getElementById('btn-new-plan')!.addEventListener('click', () => openEditor(null));
   document.getElementById('btn-empty-new')!.addEventListener('click', () => openEditor(null));
   document.getElementById('btn-back-to-list')!.addEventListener('click', closeEditor);
 
-  /** Form fields only sync into `editing` on save — export can happen
-   *  without saving first, so it needs the same sync or it'd silently
-   *  ignore a typed-but-unsaved name/description in the PDF title. */
+  /** Form fields sync into `editing` on every change (for autosave) as well
+   *  as on save/export — export can happen without saving first, so it
+   *  needs the same sync or it'd silently ignore a typed-but-unsaved
+   *  name/description in the PDF title. */
   function syncFormIntoEditing() {
     if (!editing) return;
     editing.name = fName.value.trim();
@@ -793,6 +852,11 @@ import Layout from '../layouts/Layout.astro';
     editing.notes = fNotes.value;
     editing.polycultureId = fPolyculture.value || null;
   }
+
+  [fName, fDescription, fNotes].forEach(el => {
+    el.addEventListener('input', () => { syncFormIntoEditing(); scheduleAutosave(); });
+  });
+  fPolyculture.addEventListener('change', () => { syncFormIntoEditing(); scheduleAutosave(); });
 
   document.getElementById('btn-save-plan')!.addEventListener('click', async () => {
     if (!editing) return;
