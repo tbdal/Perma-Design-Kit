@@ -146,13 +146,22 @@ import Layout from '../layouts/Layout.astro';
       <option value="100">100%</option>
     </select>
     <span class="h-4 w-px bg-stone-300 dark:bg-stone-700"></span>
-    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="sunFull" data-i18n="filterSunFull">Volle Sonne</button>
-    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="sunMid" data-i18n="filterSunMid">Halbschatten</button>
-    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="sunShadow" data-i18n="filterSunShadow">Schatten</button>
-    <span class="h-4 w-px bg-stone-300 dark:bg-stone-700"></span>
-    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="waterDry" data-i18n="filterWaterDry">Trocken</button>
-    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="waterMid" data-i18n="filterWaterMid">Mittel</button>
-    <button class="filter-chip rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700" data-filter="waterWet" data-i18n="filterWaterWet">Nass</button>
+    <details class="filter-dropdown relative">
+      <summary id="filter-sun-summary" class="cursor-pointer select-none rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700"><span data-i18n="thSun">Sonne</span></summary>
+      <div class="absolute z-10 mt-1 w-40 space-y-1 rounded-lg bg-white dark:bg-stone-800 p-2.5 text-xs shadow-lg ring-1 ring-stone-200 dark:ring-stone-700">
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-sun-opt accent-amber-500" value="sunFull" /> <span data-i18n="filterSunFull">Volle Sonne</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-sun-opt accent-amber-500" value="sunMid" /> <span data-i18n="filterSunMid">Halbschatten</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-sun-opt accent-amber-500" value="sunShadow" /> <span data-i18n="filterSunShadow">Schatten</span></label>
+      </div>
+    </details>
+    <details class="filter-dropdown relative">
+      <summary id="filter-water-summary" class="cursor-pointer select-none rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700"><span data-i18n="thWater">Wasser</span></summary>
+      <div class="absolute z-10 mt-1 w-40 space-y-1 rounded-lg bg-white dark:bg-stone-800 p-2.5 text-xs shadow-lg ring-1 ring-stone-200 dark:ring-stone-700">
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-water-opt accent-blue-500" value="waterDry" /> <span data-i18n="filterWaterDry">Trocken</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-water-opt accent-blue-500" value="waterMid" /> <span data-i18n="filterWaterMid">Mittel</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-water-opt accent-blue-500" value="waterWet" /> <span data-i18n="filterWaterWet">Nass</span></label>
+      </div>
+    </details>
     <span class="h-4 w-px bg-stone-300 dark:bg-stone-700"></span>
     <button id="btn-filter-clear" data-i18n="filterClear" class="hidden rounded-full bg-stone-200 dark:bg-stone-700 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-300 dark:hover:bg-stone-700">Zurücksetzen ×</button>
     <span id="filter-count" class="hidden text-stone-500 dark:text-stone-400"></span>
@@ -364,18 +373,6 @@ import Layout from '../layouts/Layout.astro';
   let sortField: 'commonName' | 'latinName' | 'heightM' | 'widthM' | 'completeness' = 'commonName';
   let sortDir: 'asc' | 'desc' = 'asc';
 
-  // Active filters: Set of PlantData boolean field names (AND logic).
-  const activeFilters: Set<string> = (() => {
-    try {
-      const raw = localStorage.getItem('plant-filters');
-      if (raw) return new Set(JSON.parse(raw));
-    } catch {}
-    return new Set<string>();
-  })();
-  function persistFilters() {
-    try { localStorage.setItem('plant-filters', JSON.stringify([...activeFilters])); } catch {}
-  }
-
   // Free-text filter — separate from the top search bar, which searches
   // external sources (local DB / Wikidata / PFAF) to import new plants, not
   // the already-imported list. Matches commonName/latinName only, same
@@ -401,20 +398,30 @@ import Layout from '../layouts/Layout.astro';
   }
   const usageFilter = loadSet('plant-filter-usage');
   const functionFilter = loadSet('plant-filter-function');
+  const sunFilter = loadSet('plant-filter-sun');
+  const waterFilter = loadSet('plant-filter-water');
   function persistUsageFilter() { saveSet('plant-filter-usage', usageFilter); }
   function persistFunctionFilter() { saveSet('plant-filter-function', functionFilter); }
+  function persistSunFilter() { saveSet('plant-filter-sun', sunFilter); }
+  function persistWaterFilter() { saveSet('plant-filter-water', waterFilter); }
 
-  // One-time migration: eatable/meds/material/nitrogenFix used to live in
-  // activeFilters as chip buttons; those chips are now replaced by the
-  // Nutzung/Funktionen dropdowns, so move any persisted selection over
-  // instead of silently dropping it.
+  // One-time migration: the old filter-chip buttons (eatable/meds/material/
+  // nitrogenFix, and — until Sonne/Wasser got their own table columns —
+  // sunFull/sunMid/sunShadow/waterDry/waterMid/waterWet too) stored their
+  // selection in one combined 'plant-filters' Set. All of those fields now
+  // live in per-column dropdowns instead, so move any persisted selection
+  // over rather than silently dropping it. No live Set is kept for the old
+  // key afterward — read the raw value once and retire it.
   (function migrateLegacyChipFilters() {
-    let changed = false;
-    for (const f of ['eatable', 'meds', 'material'] as const) {
-      if (activeFilters.has(f)) { activeFilters.delete(f); usageFilter.add(f); changed = true; }
-    }
-    if (activeFilters.has('nitrogenFix')) { activeFilters.delete('nitrogenFix'); functionFilter.add('nitrogenFix'); changed = true; }
-    if (changed) { persistFilters(); persistUsageFilter(); persistFunctionFilter(); }
+    let legacy: Set<string>;
+    try { legacy = new Set(JSON.parse(localStorage.getItem('plant-filters') || '[]')); } catch { legacy = new Set(); }
+    if (legacy.size === 0) return;
+    for (const f of ['eatable', 'meds', 'material'] as const) if (legacy.has(f)) usageFilter.add(f);
+    if (legacy.has('nitrogenFix')) functionFilter.add('nitrogenFix');
+    for (const f of ['sunFull', 'sunMid', 'sunShadow'] as const) if (legacy.has(f)) sunFilter.add(f);
+    for (const f of ['waterDry', 'waterMid', 'waterWet'] as const) if (legacy.has(f)) waterFilter.add(f);
+    persistUsageFilter(); persistFunctionFilter(); persistSunFilter(); persistWaterFilter();
+    try { localStorage.removeItem('plant-filters'); } catch {}
   })();
 
   // Blüte/Frucht: two independent month sets (OR within each, AND between
@@ -441,14 +448,17 @@ import Layout from '../layouts/Layout.astro';
 
   function applyFilters(plants: PlantData[]): PlantData[] {
     let result = plants;
-    if (activeFilters.size > 0) {
-      result = result.filter(p => [...activeFilters].every(f => Boolean((p as any)[f])));
-    }
     if (usageFilter.size > 0) {
       result = result.filter(p => [...usageFilter].some(f => Boolean((p as any)[f])));
     }
     if (functionFilter.size > 0) {
       result = result.filter(p => [...functionFilter].some(f => Boolean((p as any)[f])));
+    }
+    if (sunFilter.size > 0) {
+      result = result.filter(p => [...sunFilter].some(f => Boolean((p as any)[f])));
+    }
+    if (waterFilter.size > 0) {
+      result = result.filter(p => [...waterFilter].some(f => Boolean((p as any)[f])));
     }
     if (flowerMonthFilter.size > 0) {
       result = result.filter(p => [...flowerMonthFilter].some(m => !!p.flowerMonths?.[Number(m)]));
@@ -662,6 +672,21 @@ import Layout from '../layouts/Layout.astro';
     ['windBreaking',     'bg-sky-100 text-sky-800',         '#c6c6c6', t('badgeWindBreaking')],
     ['animalProtection', 'bg-violet-100 text-violet-800',   '#ba7010', t('badgeAnimalProtection')],
   ];
+  // Sonne/Wasser — same dot-group convention as Nutzung/Funktionen, no
+  // Baumscheibe-wedge source for these (that template has one generic icon
+  // per sun/water group, not per-state), so the hexes are chosen freely but
+  // thematically: warm yellow→orange→grey for sun exposure, tan→sky→deep
+  // blue for water availability.
+  const SUN_BADGES: [keyof PlantData, string, string, string][] = [
+    ['sunFull',   'bg-yellow-100 text-yellow-800', '#fbbf24', t('filterSunFull')],
+    ['sunMid',    'bg-orange-100 text-orange-800', '#fb923c', t('filterSunMid')],
+    ['sunShadow', 'bg-slate-200 text-slate-700',   '#64748b', t('filterSunShadow')],
+  ];
+  const WATER_BADGES: [keyof PlantData, string, string, string][] = [
+    ['waterDry', 'bg-amber-100 text-amber-800', '#d97706', t('filterWaterDry')],
+    ['waterMid', 'bg-sky-100 text-sky-800',     '#38bdf8', t('filterWaterMid')],
+    ['waterWet', 'bg-blue-100 text-blue-800',   '#1d4ed8', t('filterWaterWet')],
+  ];
   const USE_BADGES = [...USAGE_BADGES, ...FUNCTION_BADGES];
 
   function badges(p: PlantData): string {
@@ -687,12 +712,16 @@ import Layout from '../layouts/Layout.astro';
       `<span class="inline-flex items-center gap-1"><span class="inline-block h-2 w-2 rounded-full" style="background-color:${colorHex}"></span>${escapeHtml(label)}</span>`;
     const usageChips = USAGE_BADGES.map(([,,dot,l]) => chip(dot, l)).join(' ');
     const functionChips = FUNCTION_BADGES.map(([,,dot,l]) => chip(dot, l)).join(' ');
+    const sunChips = SUN_BADGES.map(([,,dot,l]) => chip(dot, l)).join(' ');
+    const waterChips = WATER_BADGES.map(([,,dot,l]) => chip(dot, l)).join(' ');
     return `
       <details id="color-legend" open class="mx-3 mb-2 sm:mx-0 rounded-lg bg-stone-50 dark:bg-stone-900 px-3 py-1.5 text-xs text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700">
         <summary class="cursor-pointer select-none font-medium text-stone-500 dark:text-stone-400">${escapeHtml(t('legendToggle'))}</summary>
         <div class="mt-2 space-y-1.5">
           <div class="flex flex-wrap items-center gap-x-3 gap-y-1"><strong class="text-stone-500 dark:text-stone-400">${escapeHtml(t('legendUsageHeading'))}</strong>${usageChips}</div>
           <div class="flex flex-wrap items-center gap-x-3 gap-y-1"><strong class="text-stone-500 dark:text-stone-400">${escapeHtml(t('legendFunctionsHeading'))}</strong>${functionChips}</div>
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-1"><strong class="text-stone-500 dark:text-stone-400">${escapeHtml(t('thSun'))}:</strong>${sunChips}</div>
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-1"><strong class="text-stone-500 dark:text-stone-400">${escapeHtml(t('thWater'))}:</strong>${waterChips}</div>
           <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
             <strong class="text-stone-500 dark:text-stone-400">${escapeHtml(t('legendPhenologyHeading'))}</strong>
             ${chip('#fcd34d', t('legendFlowering'))}
@@ -1047,10 +1076,12 @@ import Layout from '../layouts/Layout.astro';
         const barColor = pct >= 80 ? 'bg-green-400' : pct >= 50 ? 'bg-amber-400' : 'bg-red-300';
         const usageDots = dotGroup(p, USAGE_BADGES);
         const functionDots = dotGroup(p, FUNCTION_BADGES);
+        const sunDots = dotGroup(p, SUN_BADGES);
+        const waterDots = dotGroup(p, WATER_BADGES);
         const phenologyHtml = phenologyBar(p);
         const printHtml = printStepperHtml(p, t);
         const off = (p.printCount ?? 1) === 0;
-        return { p, srcHtml, sel, pct, barColor, usageDots, functionDots, phenologyHtml, printHtml, off };
+        return { p, srcHtml, sel, pct, barColor, usageDots, functionDots, sunDots, waterDots, phenologyHtml, printHtml, off };
       });
 
       const actionBtns = `
@@ -1063,7 +1094,7 @@ import Layout from '../layouts/Layout.astro';
 
         <!-- Mobile card list (< sm) -->
         <div class="sm:hidden divide-y divide-stone-100">
-          ${rowData.map(({ p, srcHtml, sel, pct, barColor, usageDots, functionDots, phenologyHtml, printHtml, off }) => `
+          ${rowData.map(({ p, srcHtml, sel, pct, barColor, usageDots, functionDots, sunDots, waterDots, phenologyHtml, printHtml, off }) => `
           <div data-id="${p.id}" class="flex items-start gap-2.5 px-3 py-3 ${sel ? 'bg-green-50 dark:bg-green-900/30' : ''}${off ? ' opacity-60' : ''}">
             <input type="checkbox" class="row-check mt-1 shrink-0 accent-green-600" ${sel ? 'checked' : ''} />
             <div class="w-0.5 self-stretch rounded-full ${accentColor(p)} shrink-0"></div>
@@ -1081,6 +1112,8 @@ import Layout from '../layouts/Layout.astro';
                 ${p.climateZone ? `<span>Zone ${escapeHtml(p.climateZone)}</span>` : ''}
                 ${usageDots ? `<span class="flex gap-0.5">${usageDots}</span>` : ''}
                 ${functionDots ? `<span class="flex gap-0.5">${functionDots}</span>` : ''}
+                ${sunDots ? `<span class="flex gap-0.5">${sunDots}</span>` : ''}
+                ${waterDots ? `<span class="flex gap-0.5">${waterDots}</span>` : ''}
                 ${phenologyHtml}
               </div>
               <div class="mt-1.5 flex flex-wrap gap-1">${badges(p)}</div>
@@ -1108,6 +1141,8 @@ import Layout from '../layouts/Layout.astro';
                 ${thSort('widthM', t('thWidthShort'))}
                 <th class="px-3 py-2.5">${escapeHtml(t('thUsage'))}</th>
                 <th class="px-3 py-2.5">${escapeHtml(t('thFunctions'))}</th>
+                <th class="px-3 py-2.5">${escapeHtml(t('thSun'))}</th>
+                <th class="px-3 py-2.5">${escapeHtml(t('thWater'))}</th>
                 <th class="px-3 py-2.5">${escapeHtml(t('thPhenology'))}</th>
                 ${thSort('completeness', t('thCompleteness'))}
                 <th class="px-3 py-2.5">${escapeHtml(t('thCount'))}</th>
@@ -1116,7 +1151,7 @@ import Layout from '../layouts/Layout.astro';
               </tr>
             </thead>
             <tbody class="divide-y divide-stone-100">
-              ${rowData.map(({ p, srcHtml, sel, pct, barColor, usageDots, functionDots, phenologyHtml, printHtml, off }) => `
+              ${rowData.map(({ p, srcHtml, sel, pct, barColor, usageDots, functionDots, sunDots, waterDots, phenologyHtml, printHtml, off }) => `
               <tr data-id="${p.id}" class="hover:bg-stone-50 dark:hover:bg-stone-800 ${sel ? 'bg-green-50 dark:bg-green-900/30' : ''}${off ? ' opacity-60' : ''}">
                 <td class="px-3 py-2"><input type="checkbox" class="row-check accent-green-600" ${sel ? 'checked' : ''} /></td>
                 <td class="px-3 py-2">
@@ -1130,6 +1165,8 @@ import Layout from '../layouts/Layout.astro';
                 <td class="px-3 py-2 text-stone-400 dark:text-stone-500">${p.widthM != null ? p.widthM + 'm' : '—'}</td>
                 <td class="px-3 py-2"><div class="flex gap-0.5">${usageDots}</div></td>
                 <td class="px-3 py-2"><div class="flex gap-0.5">${functionDots}</div></td>
+                <td class="px-3 py-2"><div class="flex gap-0.5">${sunDots}</div></td>
+                <td class="px-3 py-2"><div class="flex gap-0.5">${waterDots}</div></td>
                 <td class="px-3 py-2">${phenologyHtml}</td>
                 <td class="px-3 py-2">
                   <div class="flex items-center gap-1.5">
@@ -1573,7 +1610,7 @@ import Layout from '../layouts/Layout.astro';
 
   // ── Filter chips ───────────────────────────────────────────────────────
   function anyFilterActive(): boolean {
-    return activeFilters.size > 0 || usageFilter.size > 0 || functionFilter.size > 0
+    return usageFilter.size > 0 || functionFilter.size > 0 || sunFilter.size > 0 || waterFilter.size > 0
       || flowerMonthFilter.size > 0 || fruitMonthFilter.size > 0
       || heightMin > 0 || completenessMin > 0 || !!textQuery.trim();
   }
@@ -1590,19 +1627,10 @@ import Layout from '../layouts/Layout.astro';
     el.textContent = active ? `${label} (${count})` : label;
   }
   function syncFilterChips(shown: number, total: number) {
-    document.querySelectorAll<HTMLButtonElement>('.filter-chip').forEach(btn => {
-      const f = btn.dataset.filter!;
-      const active = activeFilters.has(f);
-      btn.classList.toggle('bg-green-700', active);
-      btn.classList.toggle('text-white', active);
-      btn.classList.toggle('ring-green-700', active);
-      btn.classList.toggle('bg-stone-100', !active);
-      btn.classList.toggle('dark:bg-stone-800', !active);
-      btn.classList.toggle('text-stone-600', !active);
-      btn.classList.toggle('dark:text-stone-300', !active);
-    });
     syncDropdownSummary('filter-usage-summary', usageFilter.size, t('filterUsageLabel'));
     syncDropdownSummary('filter-function-summary', functionFilter.size, t('filterFunctionLabel'));
+    syncDropdownSummary('filter-sun-summary', sunFilter.size, t('thSun'));
+    syncDropdownSummary('filter-water-summary', waterFilter.size, t('thWater'));
     syncDropdownSummary('filter-flowering-summary', flowerMonthFilter.size, t('legendFlowering'));
     syncDropdownSummary('filter-fruiting-summary', fruitMonthFilter.size, t('legendFruiting'));
     const clearBtn = document.getElementById('btn-filter-clear')!;
@@ -1616,16 +1644,8 @@ import Layout from '../layouts/Layout.astro';
       countEl.classList.add('hidden');
     }
   }
-  document.querySelectorAll<HTMLButtonElement>('.filter-chip').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const f = btn.dataset.filter!;
-      if (activeFilters.has(f)) activeFilters.delete(f); else activeFilters.add(f);
-      persistFilters();
-      renderList();
-    });
-  });
 
-  /** Wires a checkbox-group dropdown (Nutzung/Funktionen/Blüte/Frucht) to a
+  /** Wires a checkbox-group dropdown (Nutzung/Funktionen/Sonne/Wasser/Blüte/Frucht) to a
    *  Set-backed filter: initializes checked state, persists + re-renders on
    *  change. Returns the elements so clearAllFilters() can reset them. */
   function wireCheckboxGroup(selector: string, set: Set<string>, persist: () => void): HTMLInputElement[] {
@@ -1642,6 +1662,8 @@ import Layout from '../layouts/Layout.astro';
   }
   const filterUsageEls = wireCheckboxGroup('.filter-usage-opt', usageFilter, persistUsageFilter);
   const filterFunctionEls = wireCheckboxGroup('.filter-function-opt', functionFilter, persistFunctionFilter);
+  const filterSunEls = wireCheckboxGroup('.filter-sun-opt', sunFilter, persistSunFilter);
+  const filterWaterEls = wireCheckboxGroup('.filter-water-opt', waterFilter, persistWaterFilter);
   const filterFloweringEls = wireCheckboxGroup('.filter-flowering-opt', flowerMonthFilter, persistFlowerMonthFilter);
   const filterFruitingEls = wireCheckboxGroup('.filter-fruiting-opt', fruitMonthFilter, persistFruitMonthFilter);
 
@@ -1670,14 +1692,18 @@ import Layout from '../layouts/Layout.astro';
     filterTextDebounce = setTimeout(renderList, 150);
   });
   function clearAllFilters() {
-    activeFilters.clear();
-    persistFilters();
     usageFilter.clear();
     persistUsageFilter();
     filterUsageEls.forEach(cb => { cb.checked = false; });
     functionFilter.clear();
     persistFunctionFilter();
     filterFunctionEls.forEach(cb => { cb.checked = false; });
+    sunFilter.clear();
+    persistSunFilter();
+    filterSunEls.forEach(cb => { cb.checked = false; });
+    waterFilter.clear();
+    persistWaterFilter();
+    filterWaterEls.forEach(cb => { cb.checked = false; });
     flowerMonthFilter.clear();
     persistFlowerMonthFilter();
     filterFloweringEls.forEach(cb => { cb.checked = false; });

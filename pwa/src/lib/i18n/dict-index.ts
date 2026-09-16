@@ -109,6 +109,8 @@ export const indexDict: Dict = {
   thWidthShort: { de: 'B', en: 'W' },
   thUsage: { de: 'Nutzung', en: 'Uses' },
   thFunctions: { de: 'Funktionen', en: 'Functions' },
+  thSun: { de: 'Sonne', en: 'Sun' },
+  thWater: { de: 'Wasser', en: 'Water' },
   thCompleteness: { de: 'Vollst.', en: 'Complete' },
   thCount: { de: 'Anz.', en: 'Qty.' },
   thSources: { de: 'Quellen', en: 'Sources' },
