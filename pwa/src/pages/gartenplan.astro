@@ -423,6 +423,7 @@ import Layout from '../layouts/Layout.astro';
   }
 
   btnStartDrawing.addEventListener('click', () => {
+    if (!fName.value.trim()) { alert(t('alertEnterName')); fName.focus(); return; }
     [fWidth, fHeight, fGridSpacing].forEach(el => { el.disabled = true; });
     btnStartDrawing.classList.add('hidden');
     drawingHint.classList.remove('hidden');
