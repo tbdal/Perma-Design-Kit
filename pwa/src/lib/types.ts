@@ -146,6 +146,9 @@ export interface PlantData {
   id: string;
   latinName: string;
   commonName: string;
+  // User-chosen cultivar/variety name (e.g. "Black Krim") — never filled by
+  // Wikidata/PFAF, purely a manual field for the grower's own record.
+  varietyName: string;
   // Dimensions
   heightM: number | null;
   widthM: number | null;
@@ -207,6 +210,7 @@ export function createEmptyPlant(): PlantData {
     id: newId(),
     latinName: '',
     commonName: '',
+    varietyName: '',
     heightM: null,
     widthM: null,
     eatableScore: 0,

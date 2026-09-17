@@ -198,6 +198,8 @@ import Layout from '../layouts/Layout.astro';
               <input type="text" id="f-latinName" required class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
             <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="commonName" data-i18n="fieldCommonName">Deutscher Name</span>
               <input type="text" id="f-commonName" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
+            <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="varietyName" data-i18n="fieldVarietyName">Sortenname (selbstgewählt)</span>
+              <input type="text" id="f-varietyName" data-i18n-placeholder="varietyNamePlaceholder" placeholder="z.B. Black Krim" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
             <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="heightM" data-i18n="fieldHeightM">Höhe (m)</span>
               <input type="number" id="f-heightM" step="0.1" min="0" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
             <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="widthM" data-i18n="fieldWidthM">Breite (m)</span>
@@ -343,7 +345,7 @@ import Layout from '../layouts/Layout.astro';
   import { newId } from '../lib/id';
   import { escapeHtml, withButtonSpinner, loadingPlaceholderHtml } from '../lib/html';
   import { isSourceEnabled, loadSettings } from '../lib/settings';
-  import { exportCardsPDF, exportSingleCardPDF, exportBaumscheibePDF, exportBaumscheibesPDF, exportBaumscheibeSheetPDF } from '../lib/pdf-export';
+  import { exportPolyCardsPDF, exportStripeCardsPDF, exportSingleCardPDF, exportSingleStripeCardPDF, exportBaumscheibePDF, exportBaumscheibesPDF, exportBaumscheibeSheetPDF } from '../lib/pdf-export';
   import { renderPolyCardHtml, renderStripeCardHtml, printStepperHtml } from '../lib/card-html';
   import { renderBaumscheibeCardHtml } from '../lib/baumscheibe-render';
   import { createT, applyStaticI18n } from '../lib/i18n/core';
@@ -482,7 +484,7 @@ import Layout from '../layouts/Layout.astro';
     return result;
   }
 
-  const textFields = ['latinName', 'commonName', 'climateZone', 'imageUrl'] as const;
+  const textFields = ['latinName', 'commonName', 'varietyName', 'climateZone', 'imageUrl'] as const;
   const numberFields = ['heightM', 'widthM', 'eatableScore', 'medsScore', 'materialScore'] as const;
   const boolFields = [
     'eatable', 'culinaric', 'meds', 'material', 'fodder', 'fuel',
@@ -1032,6 +1034,7 @@ import Layout from '../layouts/Layout.astro';
           await withButtonSpinner(b, async () => {
             try {
               if (cardViewMode === 'baumscheibe') await exportBaumscheibePDF(plant);
+              else if (cardViewMode === 'stripe') await exportSingleStripeCardPDF(plant);
               else await exportSingleCardPDF(plant);
             }
             catch (err) { alert(t('alertPdfError', { error: err instanceof Error ? err.message : String(err) })); }
@@ -1377,7 +1380,8 @@ import Layout from '../layouts/Layout.astro';
     const btn = document.getElementById('btn-pdf-all') as HTMLButtonElement;
     await withButtonSpinner(btn, async () => {
       if (cardViewMode === 'baumscheibe') await exportBaumscheibesPDF(cachedPlants);
-      else await exportCardsPDF(cachedPlants);
+      else if (cardViewMode === 'stripe') await exportStripeCardsPDF(cachedPlants);
+      else await exportPolyCardsPDF(cachedPlants);
     });
   });
   document.getElementById('btn-pdf-sheet')!.addEventListener('click', async () => {
@@ -1429,7 +1433,8 @@ import Layout from '../layouts/Layout.astro';
     const btn = document.getElementById('btn-bulk-pdf') as HTMLButtonElement;
     await withButtonSpinner(btn, async () => {
       if (cardViewMode === 'baumscheibe') await exportBaumscheibesPDF(plants);
-      else await exportCardsPDF(plants);
+      else if (cardViewMode === 'stripe') await exportStripeCardsPDF(plants);
+      else await exportPolyCardsPDF(plants);
     });
   });
 

@@ -126,7 +126,13 @@ function downloadPdf(bytes: Uint8Array, filename: string) {
 
 // ── Exports ──────────────────────────────────────────────────────────────────
 
-export async function exportCardsPDF(plants: PlantData[]): Promise<void> {
+// exportPolyCardsPDF/exportStripeCardsPDF used to be one exportCardsPDF()
+// that always put Poly cards first, then Stripe cards, in the same PDF —
+// so exporting while the "Streifen" card type was selected still produced
+// a PDF that opened on (and was mostly) Poly cards. Split so each card
+// type's export contains only that type, matching what's currently shown.
+
+export async function exportPolyCardsPDF(plants: PlantData[]): Promise<void> {
   plants = expandByPrintCount(plants);
   if (plants.length === 0) return;
 
@@ -159,6 +165,15 @@ export async function exportCardsPDF(plants: PlantData[]): Promise<void> {
     }
   }
 
+  downloadPdf(await pdfDoc.save(), 'perma-design-kit-poly-cards.pdf');
+}
+
+export async function exportStripeCardsPDF(plants: PlantData[]): Promise<void> {
+  plants = expandByPrintCount(plants);
+  if (plants.length === 0) return;
+
+  const pdfDoc = await PDFDocument.create();
+
   // Landscape A4 – stripe cards
   const sPageW = pt(297), sPageH = pt(210), sMargin = pt(3);
   const sCardW = pt(STRIPE_MM.w), sCardH = pt(STRIPE_MM.h);
@@ -178,7 +193,7 @@ export async function exportCardsPDF(plants: PlantData[]): Promise<void> {
     sy += sCardH + pt(2);
   }
 
-  downloadPdf(await pdfDoc.save(), 'perma-design-kit-cards.pdf');
+  downloadPdf(await pdfDoc.save(), 'perma-design-kit-stripe-cards.pdf');
 }
 
 export async function exportSingleCardPDF(plant: PlantData): Promise<void> {
@@ -192,6 +207,19 @@ export async function exportSingleCardPDF(plant: PlantData): Promise<void> {
   drawCanvasOnPage(page, imageRef, 0, 0, cardW, cardH);
 
   downloadPdf(await pdfDoc.save(), `${plant.latinName || 'plant'}-card.pdf`);
+}
+
+export async function exportSingleStripeCardPDF(plant: PlantData): Promise<void> {
+  const pdfDoc = await PDFDocument.create();
+  const cardW  = pt(STRIPE_MM.w), cardH = pt(STRIPE_MM.h);
+  const page   = pdfDoc.addPage([cardW, cardH]);
+
+  const imgDataUrl = await plantImageDataUrl(plant);
+  const canvas     = await renderStripeCardToCanvas(plant, imgDataUrl);
+  const imageRef   = embedCanvasRgb(pdfDoc, canvas);
+  drawCanvasOnPage(page, imageRef, 0, 0, cardW, cardH);
+
+  downloadPdf(await pdfDoc.save(), `${plant.latinName || 'plant'}-stripe.pdf`);
 }
 
 // ── Baumscheibe (SVG template) export ────────────────────────────────────────

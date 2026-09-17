@@ -133,6 +133,8 @@ export const indexDict: Dict = {
   fieldsetBasics: { de: 'Grunddaten', en: 'Basics' },
   fieldLatinName: { de: 'Lateinischer Name', en: 'Latin name' },
   fieldCommonName: { de: 'Deutscher Name', en: 'Common name' },
+  fieldVarietyName: { de: 'Sortenname (selbstgewählt)', en: 'Variety name (self-chosen)' },
+  varietyNamePlaceholder: { de: 'z.B. Black Krim', en: 'e.g. Black Krim' },
   fieldHeightM: { de: 'Höhe (m)', en: 'Height (m)' },
   fieldWidthM: { de: 'Breite (m)', en: 'Width (m)' },
   fieldClimateZone: { de: 'Klimazone', en: 'Climate zone' },
