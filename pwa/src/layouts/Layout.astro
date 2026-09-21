@@ -147,28 +147,30 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
           <p data-i18n="welcomeStorage2">Das bedeutet: Es ist privat und funktioniert offline — aber die Daten sind nicht auf anderen Geräten oder in anderen Browsern verfügbar. Wenn du die Website-Daten löschst (Browser zurücksetzen, „Cookies &amp; Websitedaten löschen", Privatmodus), sind sie weg.</p>
           <p data-i18n="welcomeStorage3">Lege deshalb regelmäßig ein Backup an (Einstellungen → Daten) oder richte die automatische Sicherung per WebDAV / GitHub Gist ein.</p>
         </div>
-        <div class="welcome-step hidden space-y-2 text-sm text-stone-600 dark:text-stone-300">
-          <p class="font-semibold text-stone-900 dark:text-stone-100" data-i18n="welcomePlantsHead">🌱 Pflanzen sammeln</p>
-          <p data-i18n="welcomePlants1">Suche oben nach einer Pflanze (deutscher oder lateinischer Name): Daten kommen aus Wikidata und PFAF und lassen sich jederzeit von Hand korrigieren. Über „Daten" lassen sich fehlende Angaben nachladen, CSV/JSON importieren und exportieren.</p>
-          <p data-i18n="welcomePlants2">Tabelle, Kacheln und Kartenansicht lassen sich filtern und sortieren — z. B. nach Sonne, Wasser, Wuchs oder Ebene.</p>
-        </div>
-        <div class="welcome-step hidden space-y-2 text-sm text-stone-600 dark:text-stone-300">
-          <p class="font-semibold text-stone-900 dark:text-stone-100" data-i18n="welcomeCardsHead">🖨️ Karten drucken</p>
-          <p data-i18n="welcomeCards1">Aus jeder Pflanze entsteht eine Karte: Pflanzenkarte, Streifenkarte oder Baumscheibe. Über die Druckanzahl pro Pflanze steuerst du, wie oft sie im PDF erscheint (0 = nicht drucken).</p>
-        </div>
-        <div class="welcome-step hidden space-y-2 text-sm text-stone-600 dark:text-stone-300">
-          <p class="font-semibold text-stone-900 dark:text-stone-100" data-i18n="welcomePlanHead">🗺️ Planen</p>
-          <p data-i18n="welcomePlan1">In „Polykulturen" stellst du Pflanzengemeinschaften zusammen, im „Gartenplan" zeichnest du deine Fläche und platzierst Pflanzen maßstäblich — mit Wachstumsregler, 2D- und 3D-Ansicht. Der Kalender zeigt Blüte und Ernte im Jahresverlauf.</p>
-        </div>
         <div class="mt-5 flex items-center justify-between">
-          <span id="welcome-progress" class="text-xs text-stone-400"></span>
+          <button id="welcome-skip" type="button" data-i18n="tourSkip" class="rounded-lg px-3 py-1.5 text-sm text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800">Überspringen</button>
           <div class="flex gap-2">
-            <button id="welcome-prev" type="button" data-i18n="welcomePrev" class="rounded-lg px-3 py-1.5 text-sm text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800">Zurück</button>
-            <button id="welcome-next" type="button" data-i18n="welcomeNext" class="rounded-lg bg-green-700 px-4 py-1.5 text-sm font-medium text-white hover:bg-green-800">Weiter</button>
+            <button id="welcome-next" type="button" data-i18n="welcomeStartTour" class="rounded-lg bg-green-700 px-4 py-1.5 text-sm font-medium text-white hover:bg-green-800">Rundgang starten</button>
           </div>
         </div>
       </div>
     </dialog>
+
+    <!-- Rundgang: abgedunkelte Seite, Spotlight auf dem jeweiligen Bereich -->
+    <div id="tour-block" hidden class="fixed inset-0 z-[60]"></div>
+    <div id="tour-spot" hidden class="pointer-events-none fixed z-[61] rounded-lg transition-all duration-200" style="box-shadow:0 0 0 200vmax rgba(15,23,42,.72), 0 0 0 3px rgba(74,222,128,.9);"></div>
+    <div id="tour-card" hidden class="fixed z-[62] w-[min(20rem,calc(100vw-2rem))] rounded-xl bg-white dark:bg-stone-900 p-4 text-sm text-stone-700 dark:text-stone-200 shadow-2xl ring-1 ring-stone-200 dark:ring-stone-700">
+      <p id="tour-title" class="font-semibold text-stone-900 dark:text-stone-100"></p>
+      <p id="tour-text" class="mt-1"></p>
+      <div class="mt-3 flex items-center justify-between gap-2">
+        <span id="tour-progress" class="text-xs text-stone-400"></span>
+        <div class="flex gap-1.5">
+          <button id="tour-skip" type="button" data-i18n="tourSkip" class="rounded-lg px-2.5 py-1 text-xs text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800">Überspringen</button>
+          <button id="tour-prev" type="button" data-i18n="welcomePrev" class="rounded-lg px-2.5 py-1 text-xs text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800">Zurück</button>
+          <button id="tour-next" type="button" class="rounded-lg bg-green-700 px-3 py-1 text-xs font-medium text-white hover:bg-green-800"></button>
+        </div>
+      </div>
+    </div>
 
     <!-- Tastatur-Shortcut-Cheatsheet (öffnet mit ?) -->
     <dialog id="shortcuts-modal" class="m-auto w-full max-w-md rounded-2xl bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-100 p-0 shadow-2xl backdrop:bg-black/40">
@@ -209,34 +211,95 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
     </div>
 
     <script>
-      // First-visit intro. Skipped on the legal/help pages so they stay readable;
-      // "Einführung" in the footer reopens it any time.
+      // First-visit intro: a storage explainer dialog, then a spotlight tour
+      // over the real page. Skipped on the legal/help pages so they stay
+      // readable; "Einführung" in the footer replays it.
+      import { createT } from '../lib/i18n/core';
+      import { layoutDict } from '../lib/i18n/dict-layout';
+      const tt = createT(layoutDict);
       const WELCOME_KEY = 'pdk-welcome-seen';
+      const markSeen = () => { try { localStorage.setItem(WELCOME_KEY, '1'); } catch {} };
+
+      type TourStep = { selector: string; closest?: string; fallback?: string; title: string; text: string; fallbackText?: string };
+      const TOUR_STEPS: TourStep[] = [
+        { selector: '#plant-search', title: 'tourSearchTitle', text: 'tourSearchText' },
+        { selector: '.btn-edit', closest: '[data-id]', fallback: '#btn-add', title: 'tourEditTitle', text: 'tourEditText', fallbackText: 'tourEditTextEmpty' },
+        { selector: '#btn-view-list', title: 'tourListTitle', text: 'tourListText' },
+        { selector: '#btn-view-cards', title: 'tourCardsTitle', text: 'tourCardsText' },
+        { selector: 'a[data-nav="/polykulturen"]', title: 'tourGuildsTitle', text: 'tourGuildsText' },
+        { selector: 'a[data-nav="/gartenplan"]', title: 'tourPlanTitle', text: 'tourPlanText' },
+      ];
+      const visible = (el: Element | null): el is HTMLElement => {
+        if (!el) return false;
+        const r = (el as HTMLElement).getBoundingClientRect();
+        return r.width > 0 && r.height > 0;
+      };
+
+      function runTour() {
+        const block = document.getElementById('tour-block')!;
+        const spot = document.getElementById('tour-spot')!;
+        const card = document.getElementById('tour-card')!;
+        const prev = document.getElementById('tour-prev') as HTMLButtonElement;
+        const next = document.getElementById('tour-next') as HTMLButtonElement;
+        // Only steps whose target exists on this page (nav links are hidden on small screens, etc.)
+        const steps = TOUR_STEPS.map(s => {
+          const main = Array.from(document.querySelectorAll(s.selector)).find(visible);
+          const box = main && s.closest ? (main.closest(s.closest) as HTMLElement | null) : null;
+          if (main) return { el: box && visible(box) ? box : main, title: s.title, text: s.text };
+          const fb = s.fallback ? Array.from(document.querySelectorAll(s.fallback)).find(visible) : null;
+          return fb ? { el: fb, title: s.title, text: s.fallbackText ?? s.text } : null;
+        }).filter((s): s is { el: HTMLElement; title: string; text: string } => !!s);
+        if (steps.length === 0) return;
+        let idx = 0;
+        const place = () => {
+          const cur = steps[idx];
+          const r = cur.el.getBoundingClientRect();
+          const pad = 6;
+          Object.assign(spot.style, { left: `${r.left - pad}px`, top: `${r.top - pad}px`, width: `${r.width + 2 * pad}px`, height: `${r.height + 2 * pad}px` });
+          const cw = card.offsetWidth, ch = card.offsetHeight, vw = window.innerWidth, vh = window.innerHeight;
+          const below = r.bottom + pad + 12 + ch <= vh;
+          const top = below ? r.bottom + pad + 12 : Math.max(8, r.top - pad - 12 - ch);
+          const left = Math.min(Math.max(8, r.left + r.width / 2 - cw / 2), vw - cw - 8);
+          Object.assign(card.style, { top: `${top}px`, left: `${left}px` });
+        };
+        const show = () => {
+          const cur = steps[idx];
+          cur.el.scrollIntoView({ block: 'center', behavior: 'instant' as ScrollBehavior });
+          document.getElementById('tour-title')!.textContent = tt(cur.title);
+          document.getElementById('tour-text')!.textContent = tt(cur.text);
+          document.getElementById('tour-progress')!.textContent = `${idx + 1} / ${steps.length}`;
+          prev.style.visibility = idx === 0 ? 'hidden' : 'visible';
+          next.textContent = tt(idx === steps.length - 1 ? 'welcomeDone' : 'welcomeNext');
+          place();
+        };
+        const end = () => {
+          markSeen();
+          for (const el of [block, spot, card]) el.hidden = true;
+          window.removeEventListener('resize', place);
+          document.removeEventListener('keydown', onKey, true);
+        };
+        const onKey = (e: KeyboardEvent) => {
+          if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); end(); }
+          else if (e.key === 'ArrowRight' || e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); next.click(); }
+          else if (e.key === 'ArrowLeft') { e.preventDefault(); e.stopPropagation(); prev.click(); }
+        };
+        prev.onclick = () => { if (idx > 0) { idx--; show(); } };
+        next.onclick = () => { if (idx >= steps.length - 1) end(); else { idx++; show(); } };
+        (document.getElementById('tour-skip') as HTMLButtonElement).onclick = end;
+        for (const el of [block, spot, card]) el.hidden = false;
+        window.addEventListener('resize', place);
+        document.addEventListener('keydown', onKey, true);
+        show();
+      }
+
       const modal = document.getElementById('welcome-modal') as HTMLDialogElement | null;
       if (modal) {
-        const steps = Array.from(modal.querySelectorAll<HTMLElement>('.welcome-step'));
-        const prev = document.getElementById('welcome-prev') as HTMLButtonElement;
-        const next = document.getElementById('welcome-next') as HTMLButtonElement;
-        const progress = document.getElementById('welcome-progress')!;
-        let idx = 0;
-        const render = () => {
-          steps.forEach((el, i) => el.classList.toggle('hidden', i !== idx));
-          prev.style.visibility = idx === 0 ? 'hidden' : 'visible';
-          progress.textContent = `${idx + 1} / ${steps.length}`;
-          const key = idx === steps.length - 1 ? 'welcomeDone' : 'welcomeNext';
-          next.setAttribute('data-i18n', key);
-          import('../lib/i18n/core').then(async ({ createT }) => {
-            const { layoutDict } = await import('../lib/i18n/dict-layout');
-            next.textContent = createT(layoutDict)(key);
-          });
-        };
-        const markSeen = () => { try { localStorage.setItem(WELCOME_KEY, '1'); } catch {} };
-        const close = () => { markSeen(); modal.close(); };
-        prev.addEventListener('click', () => { idx = Math.max(0, idx - 1); render(); });
-        next.addEventListener('click', () => { if (idx >= steps.length - 1) close(); else { idx++; render(); } });
-        document.getElementById('welcome-close')?.addEventListener('click', close);
+        const startTour = () => { markSeen(); modal.close(); runTour(); };
+        document.getElementById('welcome-next')?.addEventListener('click', startTour);
+        document.getElementById('welcome-skip')?.addEventListener('click', () => { markSeen(); modal.close(); });
+        document.getElementById('welcome-close')?.addEventListener('click', () => { markSeen(); modal.close(); });
         modal.addEventListener('cancel', markSeen);
-        const open = () => { idx = 0; render(); if (!modal.open) modal.showModal(); };
+        const open = () => { if (!modal.open) modal.showModal(); };
         document.getElementById('open-welcome')?.addEventListener('click', open);
         let seen = false;
         try { seen = !!localStorage.getItem(WELCOME_KEY); } catch {}
