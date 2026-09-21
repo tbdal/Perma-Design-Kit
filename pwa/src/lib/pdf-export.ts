@@ -362,9 +362,10 @@ const SHEET_PER_PAGE = SHEET_COLS * SHEET_ROWS;
 // Kept minimal on purpose: 3 rows of ~91.7mm tiles (90mm disc + crop margin)
 // already total ~275mm against a 297mm-tall A4 page, so there's only ~22mm
 // of slack to split between gaps and the outer margin. A larger gap here
-// directly eats into that margin — see the "PDF-Blatt" ROADMAP entry for the
-// clipping issue this caused when a real device's print pipeline enforced
-// more margin than this had room for.
+// directly eats into that margin — see CHANGELOG.md "Größen angepasst: 6
+// Baumscheiben pro Seite, 9cm Durchmesser" for the clipping issue this
+// caused when a real device's print pipeline enforced more margin than
+// this had room for.
 const SHEET_GAP_MM = 1;
 const A4_MM = { w: 210, h: 297 };
 

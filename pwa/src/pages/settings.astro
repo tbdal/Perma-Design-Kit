@@ -246,7 +246,7 @@ import Layout from '../layouts/Layout.astro';
   function renderSources() {
     sourcesList.innerHTML = settings.sources.map((src, i) => {
       // NaturaDB is hidden from Settings — unresolved licensing (see
-      // ROADMAP.md "Lizenz & Datenquellen"), scraping hard-disabled
+      // CHANGELOG.md "NaturaDB-Scraping vorerst deaktiviert"), scraping hard-disabled
       // server-side regardless of this toggle. Kept in DEFAULT_SOURCES
       // (not filtered before .map) so `i` still matches settings.sources'
       // real indices for the other cards' data-idx-based save handler.

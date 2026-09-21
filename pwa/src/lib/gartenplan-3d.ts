@@ -213,9 +213,10 @@ export function createGardenPlan3DView(
   controls.addEventListener('change', requestRender);
 
   // ── Interaction: raycasting for place/drag, letting OrbitControls handle
-  // everything else untouched (see gartenplan-3d design notes / ROADMAP for
-  // why a capture-phase listener on the container, not the canvas, is what
-  // reliably wins the race against OrbitControls' own pointerdown handler). ──
+  // everything else untouched (see CHANGELOG.md "Gartenplan: 3D-Ansicht mit
+  // vollem Editing" for why a capture-phase listener on the container, not
+  // the canvas, reliably wins the race against OrbitControls' own
+  // pointerdown handler). ──
   const raycaster = new THREE.Raycaster();
   const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
   const ndc = new THREE.Vector2();

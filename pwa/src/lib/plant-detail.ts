@@ -8,7 +8,7 @@ type Translate = (key: string, vars?: Record<string, string | number>) => string
  *  and the Gartenplan's detail panel so the two can't drift apart.
  *  Tuple: [PlantData key, pill classes, dot hex, i18n key].
  *  The dot hex values come from the Baumscheibe template's own color wedges
- *  where one exists for that field (see ROADMAP "tabellenansicht verbessern"). */
+ *  where one exists for that field (see CHANGELOG.md "tabellenansicht verbessern"). */
 export const USAGE_BADGE_DEFS: [keyof PlantData, string, string, string][] = [
   ['eatable',   'bg-amber-100 text-amber-800',   '#dc330c', 'badgeEatable'],
   ['culinaric', 'bg-yellow-100 text-yellow-800', '#f88a70', 'badgeCulinaric'],

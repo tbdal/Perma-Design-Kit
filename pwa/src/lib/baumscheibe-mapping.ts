@@ -8,7 +8,8 @@ import type { PlantData } from './types';
 // "ph2_acid"). Renderer matches any label in the array. The u_*/f_*/ph<N>_*
 // correspondence was derived by comparing this template's element positions
 // (getBBox) against the previous template's already-correct labels, not by
-// guessing from the names — see the "Baumscheibe 2.3" ROADMAP entry.
+// guessing from the names — see CHANGELOG.md "SVG neu generiert:
+// baumscheibe2.3_inkl-label.svg".
 
 export const TEXT_FIELDS: Partial<Record<keyof PlantData, string[]>> = {
   // latinName / commonName are handled separately in the renderer —

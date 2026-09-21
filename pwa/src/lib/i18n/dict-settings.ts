@@ -11,7 +11,7 @@ export const settingsDict: Dict = {
   apiKeyPlaceholder: { de: 'API Key eingeben...', en: 'Enter API key...' },
   sourceDescWikidata: { de: 'Freie Wissensdatenbank — Taxon-Namen, Bilder, Grunddaten. CORS-frei, kein Proxy nötig.', en: 'Free knowledge base — taxon names, images, basic data. CORS-free, no proxy needed.' },
   sourceDescPfaf: { de: 'Essbarkeit, Medizin, Material-Scores, pH, Sonne, Wasser, Wachstum. Läuft über Proxy.', en: 'Edibility, medicinal, material scores, pH, sun, water, growth. Runs via proxy.' },
-  sourceDescNaturadb: { de: 'Deutsche Namen, Höhe/Breite, Frucht-/Blütemonate, Licht, Wasser. Vorerst deaktiviert (ungeklärte Lizenzlage, siehe ROADMAP.md) — der Proxy liefert dafür keine Daten mehr, unabhängig von diesem Schalter.', en: 'German names, height/width, fruit/flower months, light, water. Currently disabled (unresolved licensing, see ROADMAP.md) — the proxy no longer returns data for it regardless of this toggle.' },
+  sourceDescNaturadb: { de: 'Deutsche Namen, Höhe/Breite, Frucht-/Blütemonate, Licht, Wasser. Vorerst deaktiviert (ungeklärte Lizenzlage, siehe CHANGELOG.md) — der Proxy liefert dafür keine Daten mehr, unabhängig von diesem Schalter.', en: 'German names, height/width, fruit/flower months, light, water. Currently disabled (unresolved licensing, see CHANGELOG.md) — the proxy no longer returns data for it regardless of this toggle.' },
 
   sectionView: { de: 'Ansicht', en: 'View' },
   viewSubtitle: { de: 'Welche Ansicht beim App-Start gezeigt wird.', en: 'Which view is shown when the app starts.' },

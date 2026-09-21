@@ -52,7 +52,7 @@ export const DEFAULT_SOURCES: DataSource[] = [
   {
     id: "naturadb",
     name: "NaturaDB",
-    description: "Deutsche Namen, Höhe/Breite, Frucht-/Blütemonate, Licht, Wasser. Vorerst deaktiviert (ungeklärte Lizenzlage, siehe ROADMAP.md) — der Proxy liefert dafür keine Daten mehr, unabhängig von diesem Schalter.",
+    description: "Deutsche Namen, Höhe/Breite, Frucht-/Blütemonate, Licht, Wasser. Vorerst deaktiviert (ungeklärte Lizenzlage, siehe CHANGELOG.md) — der Proxy liefert dafür keine Daten mehr, unabhängig von diesem Schalter.",
     enabled: false,
     needsApiKey: false,
     apiKey: "",
