@@ -12,12 +12,13 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
   - [ ] Durchmesser auf Baumscheibe etwas runterschieben
   - [ ] raleway schriftart für höhe, breite und Härtegrad nutzen
 - [ ] Produkt-Tour: einführung in webseite für ersten Start: erklärung der funktionen. wie lässt 
-- [ ] zweite pdf-version maßstabsgetreu. 1:50 
-- [ ] tabelle als pdf druckbar machen
+  - [ ] kannst du vor dem erstem Start eine kurze Erläuterung einblenden, was das permamente Speichern im Browser bedeutet
+- [ ] eine zweite pdf-version der Baumscheibe, welche maßstabsgetreu in 1:50 die Baumscheibe auf druckbar macht. Der Maßstab soll änderbar sind. Dabei soll die maximale Fläche des Papiers genutzt werden, d.h. die Anordnung der Baumscheiben auf dem Druck so gewählt werden, dass möglichst wenig weiße Fläche übrig bleibt. Ränder wie bisher. Auswahl als A4, A3 und A2 ermöglichen. 
+- [ ] tabelle als pdf druckbar machen. Auch als zweite Graustufenversion die verschiedenen Kriterien gut unterscheidbar machen.
 - [ ] naturadb anrufen (Anfrage: Erlaubnis für gemeinnützige, nicht-kommerzielle Nutzung der Daten?)
 - [ ] Toensmeier: können wir seine Daten dafür nutzen? @Joern
 - [ ] tabelle: button oder andere funktion damit gefilterte alle für druck (anzahl) auf einmal angepasst werden können
-- [ ] kannst du vor dem erstem Start eine kurze Erläuterung einblenden, was das permamente Speichern im Browser bedeutet
+
 - [ ] besuchsstatistiken, wie?
 
 ## später / Fragen für Präsentation
