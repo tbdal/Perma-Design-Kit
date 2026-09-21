@@ -31,6 +31,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] unfarbige Felder in Baumscheibe
 - [ ] medicinal & material sinnvoll auf Baumscheibe?
 - [ ] plantlist-icon nutzen?
+- [ ] erweiterung: essbarkeit: Pflanzenteile (aus PFAF) angeben
 
 
 
