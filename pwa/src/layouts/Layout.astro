@@ -138,7 +138,7 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
     <dialog id="welcome-modal" class="m-auto w-full max-w-lg rounded-2xl bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-100 p-0 shadow-2xl backdrop:bg-black/50">
       <div class="p-6">
         <div class="mb-3 flex items-center justify-between">
-          <h2 class="text-lg font-bold" id="welcome-title" data-i18n="welcomeTitle">Willkommen beim Perma Design Kit</h2>
+          <h2 class="text-lg font-bold" id="welcome-title" data-i18n="welcomeTitle">Willkommen im Perma Design Kit</h2>
           <button id="welcome-close" type="button" data-i18n-aria-label="closeBtn" aria-label="Schließen" class="text-2xl leading-none text-stone-400 hover:text-stone-700 dark:hover:text-stone-200">×</button>
         </div>
         <div class="welcome-step space-y-2 text-sm text-stone-600 dark:text-stone-300">
@@ -220,10 +220,10 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
       const WELCOME_KEY = 'pdk-welcome-seen';
       const markSeen = () => { try { localStorage.setItem(WELCOME_KEY, '1'); } catch {} };
 
-      type TourStep = { selector: string; closest?: string; fallback?: string; title: string; text: string; fallbackText?: string };
+      type TourStep = { selector: string; closest?: string; dummy?: boolean; fallback?: string; title: string; text: string; fallbackText?: string };
       const TOUR_STEPS: TourStep[] = [
-        { selector: '#plant-search', title: 'tourSearchTitle', text: 'tourSearchText' },
-        { selector: '.btn-edit', closest: '[data-id]', fallback: '#btn-add', title: 'tourEditTitle', text: 'tourEditText', fallbackText: 'tourEditTextEmpty' },
+        { selector: '#plant-search', closest: 'div', title: 'tourSearchTitle', text: 'tourSearchText' },
+        { selector: '#tour-dummy .btn-edit', dummy: true, title: 'tourEditTitle', text: 'tourEditText' },
         { selector: '#btn-view-list', title: 'tourListTitle', text: 'tourListText' },
         { selector: '#btn-view-cards', title: 'tourCardsTitle', text: 'tourCardsText' },
         { selector: 'a[data-nav="/polykulturen"]', title: 'tourGuildsTitle', text: 'tourGuildsText' },
@@ -241,6 +241,20 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
         const card = document.getElementById('tour-card')!;
         const prev = document.getElementById('tour-prev') as HTMLButtonElement;
         const next = document.getElementById('tour-next') as HTMLButtonElement;
+        // Step 2 points at the edit button of an example plant (not saved), so
+        // it works even on an empty list and while the real button is hover-only.
+        let dummy: HTMLElement | null = null;
+        const list = document.getElementById('plant-list');
+        if (list) {
+          dummy = document.createElement('div');
+          dummy.id = 'tour-dummy';
+          dummy.className = 'flex items-center justify-between gap-3 rounded-xl bg-white dark:bg-stone-800 px-4 py-3 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700';
+          dummy.innerHTML = '<div><p class="text-sm font-bold text-stone-800 dark:text-stone-100"></p><p class="text-xs italic text-stone-500 dark:text-stone-400">Exemplum plantus</p></div>'
+            + '<button type="button" class="btn-edit rounded-md bg-stone-100 dark:bg-stone-700 px-2.5 py-1 text-xs font-medium text-stone-700 dark:text-stone-200"></button>';
+          dummy.querySelector('p')!.textContent = tt('tourDummyName');
+          dummy.querySelector('button')!.textContent = '✎ ' + tt('tourDummyEdit');
+          list.prepend(dummy);
+        }
         // Only steps whose target exists on this page (nav links are hidden on small screens, etc.)
         const steps = TOUR_STEPS.map(s => {
           const main = Array.from(document.querySelectorAll(s.selector)).find(visible);
@@ -249,6 +263,7 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
           const fb = s.fallback ? Array.from(document.querySelectorAll(s.fallback)).find(visible) : null;
           return fb ? { el: fb, title: s.title, text: s.fallbackText ?? s.text } : null;
         }).filter((s): s is { el: HTMLElement; title: string; text: string } => !!s);
+        if (dummy) dummy.hidden = true;
         if (steps.length === 0) return;
         let idx = 0;
         const place = () => {
@@ -264,6 +279,7 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
         };
         const show = () => {
           const cur = steps[idx];
+          if (dummy) dummy.hidden = !dummy.contains(cur.el);
           cur.el.scrollIntoView({ block: 'center', behavior: 'instant' as ScrollBehavior });
           document.getElementById('tour-title')!.textContent = tt(cur.title);
           document.getElementById('tour-text')!.textContent = tt(cur.text);
@@ -275,6 +291,7 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
         const end = () => {
           markSeen();
           for (const el of [block, spot, card]) el.hidden = true;
+          dummy?.remove();
           window.removeEventListener('resize', place);
           document.removeEventListener('keydown', onKey, true);
         };
