@@ -10,6 +10,7 @@
     "proxy": "node server/plant-proxy-server.mjs",
     "build": "astro build && node scripts/version-sw.mjs",
     "preview": "astro preview",
+    "deploy": "bash scripts/deploy.sh",
     "astro": "astro"
   },
   "dependencies": {
