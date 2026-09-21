@@ -4,18 +4,25 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 
 ## Kurzfristig
 - [ ] domain kaufen, Impressum, besuchsstatistiken. link zu github, Spendenbutton @Andi
-- [ ] Baumscheibe @Jörn
-  - [ ] Wasser und Sonne sind im SVG nicht vollständig
+- [ ] Baumscheibe @Andi
+  - [ ] Wasser und Sonne sind im SVG nicht vollständig -> psd erneut in svg konvertieren @Andi
   - [ ] Zeichen für Baum/Strauch.. ebene -> psd erneut in svg konvertieren @Andi
-  - [ ] Bewertung
+  - [ ] Bewertung edibility, medicinal & material --> jetzt nur edibility nutzen
+    - [ ] Toensmeier: können wir seine Daten dafür nutzen? @Joern
+  - [ ] plantlist-icon ausblenden
+  - [ ] Durchmesser auf Baumscheibe etwas runterschieben
+  - [ ] raleway schriftart für höhe, breite und Härtegrad nutzen
 - [ ] Tabelle: Baum/Strauch/Krautebene als Spalte und Filter/sortierfunktion
-- [ ] einführung in webseite: erklärung der funktionen. per cookie?
-- [ ] 2 pdf versionen: a) 9 stück pro din a4 b) maßstabsgetreu
+- [ ] einführung in webseite für ersten Start: erklärung der funktionen. wie lässt 
+- [ ] zweite pdf-version maßstabsgetreu. 1:50 
+- [ ] tabelle als pdf druckbar machen
 - [ ] naturadb anrufen
 
 ## später / Fragen für Präsentation
 - [ ] Boden-Dreieck mappen und aktiveren
 - [ ] unfarbige Felder in Baumscheibe
+- [ ] medicinal & material sinnvoll auf Baumscheibe?
+- [ ] plantlist-icon nutzen?
 
 ### Debugging
 #### Darstellung Scheibe & mapping prüfen
