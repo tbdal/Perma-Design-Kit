@@ -6,7 +6,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] Impressum, link zu github neben Impressum, Spendenbutton @Andi
 - [ ] Baumscheibe @Andi
   - [ ] Wasser und Sonne sind im SVG nicht vollständig -> psd erneut in svg konvertieren @Andi
-  - [ ] Zeichen für Baum/Strauch.. ebene -> psd erneut in svg konvertieren @Andi
+  - [x] Zeichen für Baum/Strauch.. ebene -> psd erneut in svg konvertieren @Andi
   - [ ] Bewertung edibility, medicinal & material --> jetzt nur edibility nutzen
   - [ ] plantlist-icon ausblenden
   - [ ] Durchmesser auf Baumscheibe etwas runterschieben
