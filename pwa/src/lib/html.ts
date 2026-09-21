@@ -41,3 +41,13 @@ export function loadingPlaceholderHtml(label: string): string {
     <span class="text-sm">${escapeHtml(label)}</span>
   </div>`;
 }
+
+/** Small attribution strip laid over the bottom edge of a photo. The photo's
+ *  container must be position:relative. Empty string when there's no credit.
+ *  Needed for Wikimedia Commons images (CC BY / CC BY-SA require author +
+ *  license wherever the image is shown). */
+export function imageCreditOverlayHtml(credit: string | undefined): string {
+  if (!credit) return '';
+  const c = escapeHtml(credit);
+  return `<div title="${c}" style="position:absolute;left:0;right:0;bottom:0;padding:1px 4px;background:rgba(0,0,0,.55);color:#fff;font-size:8px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:Arial,sans-serif;">${c}</div>`;
+}

@@ -1,6 +1,6 @@
 import type { PlantData } from './types';
 import { hasSource } from './types';
-import { escapeHtml } from './html';
+import { escapeHtml, imageCreditOverlayHtml } from './html';
 
 /** PFAF's database text is CC BY 4.0, which requires attribution wherever the
  *  data is republished — including on printed/exported cards, not just in the
@@ -151,9 +151,10 @@ export function renderPolyCardHtml(plant: PlantData, imgSrc?: string): string {
     `</div>` +
 
     // ── Photo ─────────────────────────────────────────────────────────────────
-    `<div style="height:128px;background:#e8e8e8;flex-shrink:0;overflow:hidden;">` +
+    `<div style="height:128px;background:#e8e8e8;flex-shrink:0;overflow:hidden;position:relative;">` +
       (img
-        ? `<img src="${escapeHtml(img)}" style="width:100%;height:100%;object-fit:cover;" />`
+        ? `<img src="${escapeHtml(img)}" style="width:100%;height:100%;object-fit:cover;" />` +
+          imageCreditOverlayHtml(plant.imageCredit)
         : `<div style="height:100%;display:flex;align-items:center;justify-content:center;` +
                `color:#aaa;font-size:11px;">Kein Bild</div>`) +
     `</div>` +
@@ -264,7 +265,7 @@ export function renderStripeCardHtml(plant: PlantData, imgSrc?: string): string 
     `display:flex;align-items:center;box-sizing:border-box;">` +
 
     // Photo
-    `<div style="width:50px;height:50px;flex-shrink:0;background:#e8e8e8;overflow:hidden;">` +
+    `<div title="${escapeHtml(plant.imageCredit || '')}" style="width:50px;height:50px;flex-shrink:0;background:#e8e8e8;overflow:hidden;">` +
       (img ? `<img src="${escapeHtml(img)}" style="width:100%;height:100%;object-fit:cover;" />` : '') +
     `</div>` +
 

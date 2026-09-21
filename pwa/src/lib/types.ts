@@ -199,6 +199,9 @@ export interface PlantData {
   flowerMonths: boolean[];
   // Image
   imageUrl: string;
+  // Attribution line for imageUrl (author · license · source), required by
+  // most Wikimedia Commons licenses (CC BY / CC BY-SA) wherever the image is shown.
+  imageCredit: string;
   // Number of times to print this plant's card (0 = excluded from exports, default 1)
   printCount: number;
   // Provenance: source per field (optional, not all plants have this)
@@ -250,6 +253,7 @@ export function createEmptyPlant(): PlantData {
     fruitMonths: Array(12).fill(false),
     flowerMonths: Array(12).fill(false),
     imageUrl: '',
+    imageCredit: '',
     printCount: 1,
   };
 }

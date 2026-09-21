@@ -168,6 +168,16 @@ export async function renderPolyCardToCanvas(
   ctx.fillRect(0, y, W, imgH);
   if (imgDataUrl) {
     await drawImage(ctx, imgDataUrl, 0, y, W, imgH);
+    if (plant.imageCredit) {
+      // Attribution strip (CC BY / CC BY-SA need author + license on the print too).
+      ctx.fillStyle = 'rgba(0,0,0,0.55)';
+      ctx.fillRect(0, y + imgH - 12, W, 12);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '8px Arial, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(plant.imageCredit, 4, y + imgH - 6, W - 8);
+    }
   } else {
     sectionLabel(ctx, W / 2 - 22, y + imgH / 2, 'Kein Bild');
   }

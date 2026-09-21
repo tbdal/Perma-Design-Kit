@@ -27,6 +27,7 @@ export const cardsDict: Dict = {
   labelClimateZone: { de: 'Klimazone', en: 'Climate zone' },
   climateZonePlaceholder: { de: 'z.B. 5-9', en: 'e.g. 5-9' },
   labelImageUrl: { de: 'Bild-URL', en: 'Image URL' },
+  labelImageCredit: { de: 'Bildnachweis (Urheber · Lizenz · Quelle)', en: 'Image credit (author · license · source)' },
 
   fieldsetUsage: { de: 'Nutzung', en: 'Uses' },
   labelEatable: { de: 'Essbar', en: 'Edible' },

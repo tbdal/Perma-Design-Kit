@@ -225,6 +225,50 @@ export async function searchPlants(query: string): Promise<SearchResult[]> {
   return results;
 }
 
+/** File name (spaces, no "File:" prefix) if `url` is a Commons Special:FilePath link. */
+export function commonsFileName(url: string): string | null {
+  const m = url.match(/commons\.wikimedia\.org\/wiki\/Special:FilePath\/([^?]+)/);
+  if (!m) return null;
+  try { return decodeURIComponent(m[1]).replace(/_/g, ' '); } catch { return null; }
+}
+
+/** True for plants with a Commons image but no attribution stored yet. */
+export function needsImageCredit(p: Pick<PlantData, 'imageUrl' | 'imageCredit'>): boolean {
+  return !!p.imageUrl && !p.imageCredit && !!commonsFileName(p.imageUrl);
+}
+
+/** Attribution line ("Foto: <author> · <license> · Wikimedia Commons") built
+ *  from the Commons file's own metadata — most Commons licenses (CC BY, CC
+ *  BY-SA) require author + license wherever the image is shown. Empty string
+ *  if Commons has no usable metadata (or the request fails). */
+export async function fetchCommonsCredit(fileName: string): Promise<string> {
+  try {
+    const url = new URL('https://commons.wikimedia.org/w/api.php');
+    url.searchParams.set('action', 'query');
+    url.searchParams.set('titles', `File:${fileName}`);
+    url.searchParams.set('prop', 'imageinfo');
+    url.searchParams.set('iiprop', 'extmetadata');
+    url.searchParams.set('format', 'json');
+    url.searchParams.set('origin', '*');
+    const res = await fetch(url.toString());
+    if (!res.ok) return '';
+    const data = await res.json();
+    const page: any = Object.values(data.query?.pages ?? {})[0];
+    const meta = page?.imageinfo?.[0]?.extmetadata;
+    if (!meta) return '';
+    // Artist is an HTML snippet (often a link) — reduce to plain text.
+    const artistHtml: string = meta.Artist?.value ?? '';
+    const artist = artistHtml
+      ? (new DOMParser().parseFromString(artistHtml, 'text/html').body.textContent ?? '').replace(/\s+/g, ' ').trim().slice(0, 60)
+      : '';
+    const license: string = (meta.LicenseShortName?.value ?? '').trim();
+    if (!artist && !license) return '';
+    return [artist ? `Foto: ${artist}` : '', license, 'Wikimedia Commons'].filter(Boolean).join(' · ');
+  } catch {
+    return '';
+  }
+}
+
 /**
  * Fetch detailed plant data from Wikidata for a specific entity.
  */
@@ -259,6 +303,8 @@ export async function fetchPlantDetails(wikidataId: string): Promise<Partial<Pla
   if (imageName) {
     const encoded = encodeURIComponent(imageName.replace(/ /g, '_'));
     result.imageUrl = `https://commons.wikimedia.org/wiki/Special:FilePath/${encoded}?width=400`;
+    const credit = await fetchCommonsCredit(imageName.replace(/_/g, ' '));
+    if (credit) result.imageCredit = credit;
   }
 
   const height = claim('P2048') || claim('P2044');
