@@ -702,13 +702,13 @@ import Layout from '../layouts/Layout.astro';
     ['waterMid', 'bg-sky-100 text-sky-800',     '#38bdf8', t('filterWaterMid')],
     ['waterWet', 'bg-blue-100 text-blue-800',   '#1d4ed8', t('filterWaterWet')],
   ];
-  // Wuchsgeschwindigkeit — same dot-group convention, green ramp from pale
-  // (slow) to saturated (fast) since there's no Baumscheibe-wedge source
-  // for this either (one generic growth icon, not per-speed).
+  // Wuchsgeschwindigkeit — same dot-group convention, traffic-light colors
+  // (red→amber→green for slow→mid→fast) since there's no Baumscheibe-wedge
+  // source for this either (one generic growth icon, not per-speed).
   const GROWTH_BADGES: [keyof PlantData, string, string, string][] = [
-    ['growSpeedLow',  'bg-lime-100 text-lime-800',       '#bef264', t('lblGrowSpeedLow')],
-    ['growSpeedMid',  'bg-green-100 text-green-800',     '#4ade80', t('lblGrowSpeedMid')],
-    ['growSpeedHigh', 'bg-emerald-100 text-emerald-800', '#059669', t('lblGrowSpeedHigh')],
+    ['growSpeedLow',  'bg-red-100 text-red-800',     '#ef4444', t('lblGrowSpeedLow')],
+    ['growSpeedMid',  'bg-amber-100 text-amber-800', '#f59e0b', t('lblGrowSpeedMid')],
+    ['growSpeedHigh', 'bg-green-100 text-green-800', '#22c55e', t('lblGrowSpeedHigh')],
   ];
   const USE_BADGES = [...USAGE_BADGES, ...FUNCTION_BADGES];
 
