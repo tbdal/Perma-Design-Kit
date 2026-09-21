@@ -19,10 +19,7 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
     <link rel="manifest" href="/manifest.json" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <!-- Raleway: matches the Baumscheibe template's own "COMMON NAME" placeholder
-         font (see baumscheibe-render.ts NAME_BOXES). OFL-licensed via Google Fonts. -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@500&display=swap" rel="stylesheet" />
+         font (see baumscheibe-render.ts NAME_BOXES). OFL-licensed, self-hosted (see global.css) — not loaded from Google Fonts, to avoid IP transfer to Google. -->
     <title>{title}</title>
     <script is:inline>
       // Set <html lang> before paint (mirrors the theme script below) so
@@ -40,7 +37,7 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
          │  Then register the new domain in the Plausible dashboard at     │
          │  https://plausible.io/sites — otherwise events are not counted. │
          └─────────────────────────────────────────────────────────────────┘ -->
-    <script defer data-domain="permaculture-guild-designer.netlify.app" src="https://plausible.io/js/script.js"></script>
+    <script defer data-domain="permadesignkit.org" src="https://plausible.io/js/script.js"></script>
     <script is:inline>
       // Apply theme before paint to avoid a flash of light UI in dark mode.
       (function () {

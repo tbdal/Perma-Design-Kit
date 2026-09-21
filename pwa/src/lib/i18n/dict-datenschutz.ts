@@ -3,7 +3,7 @@ import type { Dict } from './core';
 export const datenschutzDict: Dict = {
   dsTitle: { de: 'Datenschutz­erklärung', en: 'Privacy Policy' },
   dsAsOfLabel: { de: 'Stand:', en: 'Last updated:' },
-  dsAsOfDate: { de: '1. Mai 2026', en: 'May 1, 2026' },
+  dsAsOfDate: { de: '21. September 2026', en: 'September 21, 2026' },
 
   dsSummaryTitle: { de: 'Kurzfassung', en: 'Summary' },
   dsSummaryBody: {
@@ -59,8 +59,8 @@ export const datenschutzDict: Dict = {
 
   dsHostingTitle: { de: 'Hosting', en: 'Hosting' },
   dsHostingBody: {
-    de: 'Die Anwendung wird von einem eigenen Server ausgeliefert. Beim Aufruf der Seite werden technisch notwendige Server-Logs (z.B. IP-Adresse, Zeitstempel, User-Agent) verarbeitet.',
-    en: 'The application is served from our own server. When the page is accessed, technically necessary server logs (e.g. IP address, timestamp, user agent) are processed.',
+    de: 'Die Anwendung wird von einem eigenen Server (Betrieb durch den Verantwortlichen) ausgeliefert. Beim Aufruf wird deine IP-Adresse technisch bedingt kurzzeitig im Arbeitsspeicher verarbeitet, um die Verbindung herzustellen (Art. 6 Abs. 1 lit. f DSGVO). Es werden keine Zugriffs-Logdateien gespeichert; IP-Adressen werden nicht dauerhaft aufbewahrt. Für die Anfragen an den Pflanzendaten-Proxy wird die IP-Adresse ausschließlich für eine Missbrauchsbegrenzung (Rate-Limit) maximal 60 Sekunden im Arbeitsspeicher gehalten und nicht gespeichert.',
+    en: 'The application is served from our own server (operated by the controller). When you access it, your IP address is processed briefly in memory for technical reasons to establish the connection (Art. 6(1)(f) GDPR). No access log files are stored; IP addresses are not retained. For requests to the plant-data proxy, the IP address is held in memory for at most 60 seconds solely for abuse limiting (rate limit) and is not stored.',
   },
 
   dsCookiesTitle: { de: 'Cookies', en: 'Cookies' },
