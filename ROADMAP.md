@@ -3,7 +3,7 @@
 Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Kurzfristig
-- [ ] domain kaufen
+- [ ] domain kaufen, Impressum
 - [ ] Baumscheibe @Jörn
   - [ ] Wasser und Sonne sind im SVG nicht vollständig
   - [ ] unfarbige Felder in Baumscheibe
