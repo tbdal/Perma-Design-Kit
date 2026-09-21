@@ -172,14 +172,16 @@ export async function renderBaumscheibeSvg(plant: PlantData): Promise<string> {
 
   // heightM/widthM/climateZone are pre-existing template <text> elements
   // (copied over from the old template, still styled with the old font:Inter
-  // bold). Override to Raleway to match commonName's font.
+  // bold). Override to match latinName's font (NAME_BOXES.latinName,
+  // "Voice-of-the-Highlander" requested/Georgia-serif fallback — see the
+  // comment above NAME_BOXES; not loaded here either, same fallback applies).
   for (const [field, labels] of Object.entries(TEXT_FIELDS)) {
     if (!labels) continue;
     const v = (plant as any)[field];
     const text = v == null || v === '' ? '' : String(v);
     for (const el of findByLabel(svg, labels)) {
       setText(el, text);
-      (el as SVGElement).style.fontFamily = "'Raleway', sans-serif";
+      (el as SVGElement).style.fontFamily = NAME_BOXES.latinName.fontFamily;
     }
   }
 
