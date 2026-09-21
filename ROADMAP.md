@@ -4,9 +4,11 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 
 ## Kurzfristig
 - [ ] domain kaufen
-- [ ] Boden rausnehmen? @Jörn
-- [ ] unfarbige Felder in Baumscheibe @Jörn
-- [ ] Zeichen auf Baumscheibe für Baum/Strauch.. ebene @Jörn
+- [ ] Baumscheibe @Jörn
+  - [ ] Wasser und Sonne sind im SVG nicht vollständig
+  - [ ] unfarbige Felder in Baumscheibe
+  - [ ] Zeichen für Baum/Strauch.. ebene
+  - [ ] Boden rausnehmen?
 - [ ] Spendenbutton
 - [ ] Funktionen und nutzen in Pflanzenkarte mit Baumscheibe abgleichen
 - [ ] 2 pdf versionen: a) 9 stück pro din a4 b) maßstabsgetreu
