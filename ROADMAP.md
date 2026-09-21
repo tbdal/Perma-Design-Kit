@@ -17,6 +17,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] zweite pdf-version maßstabsgetreu. 1:50 
 - [ ] tabelle als pdf druckbar machen
 - [ ] naturadb anrufen
+- [ ] tabelle: button oder andere funktion damit gefilterte alle für druck (anzahl) auf einmal angepasst werden können
 
 ## später / Fragen für Präsentation
 - [ ] Boden-Dreieck mappen und aktiveren
