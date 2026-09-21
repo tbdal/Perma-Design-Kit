@@ -2,26 +2,26 @@ import type { Dict } from './core';
 
 export const impressumDict: Dict = {
   imTitle: { de: 'Impressum', en: 'Legal Notice' },
-  imTmgNote: { de: 'Angaben gemäß § 5 TMG', en: 'Information pursuant to Sec. 5 TMG (German Telemedia Act)' },
+  imTmgNote: { de: 'Angaben gemäß § 5 DDG', en: 'Information pursuant to Sec. 5 DDG (German Digital Services Act)' },
 
   imProviderTitle: { de: 'Anbieter', en: 'Provider' },
-  imPlaceholderName: { de: '[Vor- und Nachname]', en: '[First and last name]' },
-  imPlaceholderStreet: { de: '[Straße und Hausnummer]', en: '[Street and house number]' },
-  imPlaceholderCity: { de: '[PLZ und Ort]', en: '[Postal code and city]' },
-  imPlaceholderCountry: { de: '[Land]', en: '[Country]' },
+  imPlaceholderName: { de: 'Andreas Linder', en: 'Andreas Linder' },
+  imPlaceholderStreet: { de: 'Achterschlag 83', en: 'Achterschlag 83' },
+  imPlaceholderCity: { de: '21039 Hamburg', en: '21039 Hamburg' },
+  imPlaceholderCountry: { de: 'Deutschland', en: 'Germany' },
   imContactTitle: { de: 'Kontakt', en: 'Contact' },
   imEmailLabel: { de: 'E-Mail:', en: 'Email:' },
-  imPlaceholderEmail: { de: '[E-Mail-Adresse]', en: '[email address]' },
+  imPlaceholderEmail: { de: 'info@permadesignkit.org', en: 'info@permadesignkit.org' },
   imPhoneLabel: { de: 'Telefon (optional):', en: 'Phone (optional):' },
   imPlaceholderPhone: { de: '[Telefonnummer]', en: '[phone number]' },
 
   imContentResponsibleTitle: { de: 'Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV', en: 'Responsible for content pursuant to Sec. 18 (2) MStV (German Interstate Media Treaty)' },
-  imContentResponsibleBody: { de: '[Vor- und Nachname], [Anschrift wie oben]', en: '[First and last name], [address as above]' },
+  imContentResponsibleBody: { de: 'Andreas Linder, Anschrift wie oben', en: 'Andreas Linder, address as above' },
 
   imLiabilityContentTitle: { de: 'Haftung für Inhalte', en: 'Liability for Content' },
   imLiabilityContentBody: {
-    de: 'Die Inhalte dieser Seite wurden mit größtmöglicher Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte kann jedoch keine Gewähr übernommen werden. Als Diensteanbieter sind wir gemäß § 7 Abs. 1 TMG für eigene Inhalte auf diesen Seiten verantwortlich. Nach §§ 8 bis 10 TMG sind wir als Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige Tätigkeit hinweisen.',
-    en: 'The content of this site has been created with the greatest possible care. However, we cannot guarantee the accuracy, completeness, or timeliness of the content. As a service provider, we are responsible for our own content on these pages in accordance with Sec. 7 (1) TMG (German Telemedia Act). However, pursuant to Sec. 8 to 10 TMG, we as a service provider are not obligated to monitor transmitted or stored third-party information, or to investigate circumstances that indicate unlawful activity.',
+    de: 'Die Inhalte dieser Seite wurden mit größtmöglicher Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte kann jedoch keine Gewähr übernommen werden. Als Diensteanbieter sind wir gemäß § 7 Abs. 1 DDG für eigene Inhalte auf diesen Seiten verantwortlich. Nach §§ 8 bis 10 DDG sind wir als Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige Tätigkeit hinweisen.',
+    en: 'The content of this site has been created with the greatest possible care. However, we cannot guarantee the accuracy, completeness, or timeliness of the content. As a service provider, we are responsible for our own content on these pages in accordance with Sec. 7 (1) DDG (German Digital Services Act). However, pursuant to Sec. 8 to 10 DDG, we as a service provider are not obligated to monitor transmitted or stored third-party information, or to investigate circumstances that indicate unlawful activity.',
   },
 
   imLiabilityLinksTitle: { de: 'Haftung für Links', en: 'Liability for Links' },
