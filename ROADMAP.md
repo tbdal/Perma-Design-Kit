@@ -4,7 +4,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 
 ## Kurzfristig
 - [ ] domain kaufen
-
+- [ ] Boden rausnehmen? @Jörn
 - [ ] unfarbige Felder in Baumscheibe @Jörn
 - [ ] Zeichen auf Baumscheibe für Baum/Strauch.. ebene @Jörn
 - [ ] Spendenbutton
