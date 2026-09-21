@@ -8,6 +8,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
   - [ ] Bewertung edibility, medicinal & material --> jetzt nur edibility nutzen. dafür die 5 streifen oben, gruppe "rating" befüllen
   - [ ] plantlist-icon ausblenden
   - [ ] raleway schriftart für höhe, breite und Härtegrad nutzen
+  - [ ] Maßstab angeben (klein & unscheinbar)
 - [ ] Produkt-Tour: einführung in webseite für ersten Start: erklärung der funktionen. wie lässt 
   - [ ] kannst du vor dem erstem Start eine kurze Erläuterung einblenden, was das permamente Speichern im Browser bedeutet
 - [ ] eine zweite pdf-version der Baumscheibe, welche maßstabsgetreu in 1:50 die Baumscheibe auf druckbar macht. Der Maßstab soll änderbar sind. Dabei soll die maximale Fläche des Papiers genutzt werden, d.h. die Anordnung der Baumscheiben auf dem Druck so gewählt werden, dass möglichst wenig weiße Fläche übrig bleibt. Ränder wie bisher. Auswahl als A4, A3 und A2 ermöglichen. 
