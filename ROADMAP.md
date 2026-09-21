@@ -2,25 +2,28 @@
 
 Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELOG.md).
 
-## Kurzfristig
-- [ ] Impressum, link zu github neben Impressum, Spendenbutton @Andi
-- [ ] Baumscheibe @Andi
-  - [ ] Wasser und Sonne sind im SVG nicht vollständig -> psd erneut in svg konvertieren @Andi
-  - [x] Zeichen für Baum/Strauch.. ebene -> psd erneut in svg konvertieren @Andi
-  - [ ] Bewertung edibility, medicinal & material --> jetzt nur edibility nutzen
+## jetzt: hier mit [o] abhaken, damit ich sehe, was passiert ist
+- [ ] link zu github neben Impressum mit icon
+- [ ] Baumscheibe
+  - [ ] Bewertung edibility, medicinal & material --> jetzt nur edibility nutzen. dafür die 5 streifen oben, gruppe "rating" befüllen
   - [ ] plantlist-icon ausblenden
-  - [ ] Durchmesser auf Baumscheibe etwas runterschieben
   - [ ] raleway schriftart für höhe, breite und Härtegrad nutzen
 - [ ] Produkt-Tour: einführung in webseite für ersten Start: erklärung der funktionen. wie lässt 
   - [ ] kannst du vor dem erstem Start eine kurze Erläuterung einblenden, was das permamente Speichern im Browser bedeutet
 - [ ] eine zweite pdf-version der Baumscheibe, welche maßstabsgetreu in 1:50 die Baumscheibe auf druckbar macht. Der Maßstab soll änderbar sind. Dabei soll die maximale Fläche des Papiers genutzt werden, d.h. die Anordnung der Baumscheiben auf dem Druck so gewählt werden, dass möglichst wenig weiße Fläche übrig bleibt. Ränder wie bisher. Auswahl als A4, A3 und A2 ermöglichen. 
-- [ ] tabelle als pdf druckbar machen. Auch als zweite Graustufenversion die verschiedenen Kriterien gut unterscheidbar machen.
-- [ ] naturadb anrufen (Anfrage: Erlaubnis für gemeinnützige, nicht-kommerzielle Nutzung der Daten?)
-- [ ] Toensmeier: können wir seine Daten dafür nutzen? @Joern
+- [ ] tabelle als pdf druckbar machen. Auch als zweite Graustufenversion die verschiedenen Kriterien gut unterscheidbar macht
 - [ ] tabelle: button oder andere funktion damit gefilterte alle für druck (anzahl) auf einmal angepasst werden können
 - [ ] englische pflanznamen bei englischer ui anzeigen
-
 - [ ] besuchsstatistiken, wie?
+
+## kurzfristig
+- [ ] Durchmesser auf Baumscheibe etwas runterschieben
+- [ ] prüfen: Wasser und Sonne sind im SVG nicht vollständig -> psd erneut in svg konvertieren @Andi
+- [ ] naturadb anrufen (Anfrage: Erlaubnis für gemeinnützige, nicht-kommerzielle Nutzung der Daten?)
+- [ ] Toensmeier: können wir seine Daten dafür nutzen? @Joern
+- [ ] spendenbutton: vorschlag machen
+- [ ] plausible
+
 
 ## später / Fragen für Präsentation
 - [ ] Boden-Dreieck mappen und aktiveren
@@ -28,8 +31,11 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] medicinal & material sinnvoll auf Baumscheibe?
 - [ ] plantlist-icon nutzen?
 
+
+
 - [x] domain permadesignkit.org gekauft
 - [x] Tabelle: Baum/Strauch/Krautebene als Spalte und Filter/sortierfunktion
+- [x] Zeichen für Baum/Strauch.. ebene -> psd erneut in svg konvertieren
 ### Debugging
 #### Darstellung Scheibe & mapping prüfen
 - [ ] testen: **warum wird bei Beinwell Material und Brennstoff aktiviert - wo steht das bei pfaf?** — Zwei getrennte Befunde: **Material ist korrekt** — PFAFs eigenes „Other Uses Rating" für Comfrey/Beinwell steht bei 4 von 5, `material = materialScore > 2` bildet das nur ab. **Brennstoff war ein echter Bug**, jetzt behoben in `plant-proxy-server.mjs`: (1) die `fieldSection`-Extraktion (`/boots[^"]*"[^>]*>…<\/div>/gi`) matchte ungewollt auch die Kette „boots**trap**" aus dem Bootstrap-CDN-Link im `<head>`, wodurch der träge Capture bis zum nächsten `</div>` zig KB unbeteiligter Kopfzeilen-/Script-Inhalte mitriss — gefixt durch `class="boots\d*"[^>]*>…` (erfordert das `class="`-Präfix). (2) Der eigentliche Auslöser für den falschen Wert: `fuel`/`fodder`/`groundCover`/etc. wurden per loser Prosa-Suche (`/\bFuel\b/i` etc.) statt anhand von PFAFs echten Tag-Links geprüft — Comfrey ist bei PFAF nur mit Biomass/Compost/Gum/Dynamic accumulator/Food Forest getaggt, aber der Tooltip-Text des (korrekten) Biomass-Tags lautet „…can be converted into **fuel** etc.", und der Fließtext unter „Landscape Uses" erwähnt beiläufig „**Ground cover**" — beides wurde fälschlich als eigenes Tag erkannt. Fix: `hasUseTag()` prüft jetzt den exakten Anker-Text (`>Fuel</a>`) der zugewiesenen Tags, nicht mehr Fließtext-Vorkommen — geprüft gegen reale PFAF-Seiten (Comfrey, Robinia pseudoacacia, Acer campestre), nicht geraten. `windBreaking`/`animalProtection` bleiben Prosa-basiert (bestätigt: PFAF hat für „Windbreak"/„Living Trellis" gar keine eigene Tag-Kategorie, auch bei klassischen Windschutz-Arten wie Elaeagnus x ebbingei nicht), aber jetzt auf den korrekt eingegrenzten `fieldSection`-Ausschnitt statt den überlaufenden Blob angewandt. Live gegen `/api/plant-proxy` verifiziert: Comfrey liefert jetzt `fuel: false, fodder: false, groundCover: false, material: true, mineralFix: true`; Robinia/Acer weiterhin korrekt `fuel: true`.
