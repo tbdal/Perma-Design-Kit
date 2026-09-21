@@ -99,16 +99,22 @@ function taxonCommonNames(entity: any): Record<string, string> {
  *  often just the scientific name mirrored in by Wikidata when no true
  *  German common name has been entered (e.g. Tagetes patula → labels.de is
  *  literally "Tagetes patula", identical to the Latin name). Falls through
- *  German → English (same distinction) → the raw labels as a last resort,
- *  so behavior never regresses to an empty name where one was shown before. */
+ *  German → the German Wikipedia article title (a human-picked name even
+ *  when the Wikidata item's own label was never properly set — e.g. Malus
+ *  domestica's item has labels.de/en AND P1843 both mirrored/missing, yet
+ *  its dewiki sitelink is "Kulturapfel") → English (same de-first logic) →
+ *  the raw labels as a last resort, so behavior never regresses to an
+ *  empty name where one was shown before. */
 function bestCommonName(entity: any, latin: string): string {
   const common = taxonCommonNames(entity);
   const labelDe = entity.labels?.de?.value;
   const labelEn = entity.labels?.en?.value;
+  const dewikiTitle = entity.sitelinks?.dewiki?.title;
   const latinLower = latin.trim().toLowerCase();
   const isMirrored = (s?: string) => !s || s.trim().toLowerCase() === latinLower;
   if (common.de) return common.de;
   if (labelDe && !isMirrored(labelDe)) return labelDe;
+  if (dewikiTitle && !isMirrored(dewikiTitle)) return dewikiTitle;
   if (common.en) return common.en;
   if (labelEn && !isMirrored(labelEn)) return labelEn;
   return labelDe || labelEn || '';
@@ -160,7 +166,8 @@ export async function searchPlants(query: string): Promise<SearchResult[]> {
           const detailUrl = new URL('https://www.wikidata.org/w/api.php');
           detailUrl.searchParams.set('action', 'wbgetentities');
           detailUrl.searchParams.set('ids', ids);
-          detailUrl.searchParams.set('props', 'labels|descriptions|claims');
+          detailUrl.searchParams.set('props', 'labels|descriptions|claims|sitelinks');
+          detailUrl.searchParams.set('sitefilter', 'dewiki');
           detailUrl.searchParams.set('languages', 'de|en|la');
           detailUrl.searchParams.set('format', 'json');
           detailUrl.searchParams.set('origin', '*');
@@ -225,7 +232,8 @@ export async function fetchPlantDetails(wikidataId: string): Promise<Partial<Pla
   const url = new URL('https://www.wikidata.org/w/api.php');
   url.searchParams.set('action', 'wbgetentities');
   url.searchParams.set('ids', wikidataId);
-  url.searchParams.set('props', 'labels|claims');
+  url.searchParams.set('props', 'labels|claims|sitelinks');
+  url.searchParams.set('sitefilter', 'dewiki');
   url.searchParams.set('languages', 'de|en|la');
   url.searchParams.set('format', 'json');
   url.searchParams.set('origin', '*');
