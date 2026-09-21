@@ -7,13 +7,15 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] Baumscheibe @Jörn
   - [ ] Wasser und Sonne sind im SVG nicht vollständig
   - [ ] unfarbige Felder in Baumscheibe
-  - [ ] Zeichen für Baum/Strauch.. ebene
-  - [ ] Boden rausnehmen?
+  - [ ] Zeichen für Baum/Strauch.. ebene -> psd erneut in svg konvertieren @Andi
+
+- [ ] Tabelle: Baum/Strauch/Krautebene als Spalte und Filter/sortierfunktion
 - [ ] einführung in webseite: erklärung der funktionen. per cookie?
 - [ ] 2 pdf versionen: a) 9 stück pro din a4 b) maßstabsgetreu
 - [ ] naturadb anrufen
 
-
+## später
+- [ ] Boden-Dreieck mappen und aktiveren 
 
 ### Debugging
 #### Darstellung Scheibe & mapping prüfen
