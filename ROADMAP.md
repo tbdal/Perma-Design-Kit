@@ -16,7 +16,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] einführung in webseite für ersten Start: erklärung der funktionen. wie lässt 
 - [ ] zweite pdf-version maßstabsgetreu. 1:50 
 - [ ] tabelle als pdf druckbar machen
-- [ ] naturadb anrufen
+- [ ] naturadb anrufen (Anfrage: Erlaubnis für gemeinnützige, nicht-kommerzielle Nutzung der Daten?)
 - [ ] tabelle: button oder andere funktion damit gefilterte alle für druck (anzahl) auf einmal angepasst werden können
 
 ## später / Fragen für Präsentation
