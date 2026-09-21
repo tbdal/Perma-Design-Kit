@@ -3,7 +3,7 @@
 Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Kurzfristig
-- [ ] Impressum, besuchsstatistiken. link zu github, Spendenbutton @Andi
+- [ ] Impressum, link zu github neben Impressum, Spendenbutton @Andi
 - [ ] Baumscheibe @Andi
   - [ ] Wasser und Sonne sind im SVG nicht vollständig -> psd erneut in svg konvertieren @Andi
   - [ ] Zeichen für Baum/Strauch.. ebene -> psd erneut in svg konvertieren @Andi
@@ -19,6 +19,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] Toensmeier: können wir seine Daten dafür nutzen? @Joern
 - [ ] tabelle: button oder andere funktion damit gefilterte alle für druck (anzahl) auf einmal angepasst werden können
 - [ ] kannst du vor dem erstem Start eine kurze Erläuterung einblenden, was das permamente Speichern im Browser bedeutet
+- [ ] besuchsstatistiken, wie?
 
 ## später / Fragen für Präsentation
 - [ ] Boden-Dreieck mappen und aktiveren
