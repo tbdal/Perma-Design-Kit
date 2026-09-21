@@ -8,7 +8,6 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
   - [ ] Wasser und Sonne sind im SVG nicht vollständig -> psd erneut in svg konvertieren @Andi
   - [ ] Zeichen für Baum/Strauch.. ebene -> psd erneut in svg konvertieren @Andi
   - [ ] Bewertung edibility, medicinal & material --> jetzt nur edibility nutzen
-    - [ ] Toensmeier: können wir seine Daten dafür nutzen? @Joern
   - [ ] plantlist-icon ausblenden
   - [ ] Durchmesser auf Baumscheibe etwas runterschieben
   - [ ] raleway schriftart für höhe, breite und Härtegrad nutzen
@@ -17,6 +16,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] zweite pdf-version maßstabsgetreu. 1:50 
 - [ ] tabelle als pdf druckbar machen
 - [ ] naturadb anrufen (Anfrage: Erlaubnis für gemeinnützige, nicht-kommerzielle Nutzung der Daten?)
+- [ ] Toensmeier: können wir seine Daten dafür nutzen? @Joern
 - [ ] tabelle: button oder andere funktion damit gefilterte alle für druck (anzahl) auf einmal angepasst werden können
 
 ## später / Fragen für Präsentation
