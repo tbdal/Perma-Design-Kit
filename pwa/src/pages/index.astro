@@ -910,6 +910,24 @@ import Layout from '../layouts/Layout.astro';
     return false;
   }
 
+  // A REAL (non-manual, non-mirrored) commonName already stored — e.g.
+  // PFAF's English "Apple" — doesn't count as "fillable" above, so it stays
+  // stuck even after bestCommonName()'s German-preferring logic (in
+  // plant-search.ts) improves and could now offer "Kulturapfel" instead.
+  // Wikidata specifically (never PFAF — PFAF is English-only and must never
+  // clobber a German name) gets one extra chance per commonName: replace an
+  // existing non-manual value if its own answer is both real (not just its
+  // own mirrored-Latin-name fallback) and actually different.
+  function isCommonNameUpgrade(newValue: unknown, cur: unknown, plant: PlantData): boolean {
+    if (typeof newValue !== 'string' || !newValue) return false;
+    if (plant._sources?.commonName === 'manual') return false;
+    const latinLower = plant.latinName.trim().toLowerCase();
+    const newLower = newValue.trim().toLowerCase();
+    if (newLower === latinLower) return false;
+    const curLower = typeof cur === 'string' ? cur.trim().toLowerCase() : '';
+    return newLower !== curLower;
+  }
+
   async function enrichPlant(plant: PlantData): Promise<number> {
     if (!plant.latinName) return 0;
     if (!plant._sources) plant._sources = {};
@@ -942,7 +960,9 @@ import Layout from '../layouts/Layout.astro';
           const filled: Partial<PlantData> = {};
           for (const [key, value] of Object.entries(details)) {
             const cur = (plant as any)[key];
-            if (isFillable(key, cur, plant) && value) {
+            const fillable = isFillable(key, cur, plant) ||
+              (key === 'commonName' && isCommonNameUpgrade(value, cur, plant));
+            if (fillable && value) {
               (plant as any)[key] = value; (filled as any)[key] = value; enriched++;
             }
           }
