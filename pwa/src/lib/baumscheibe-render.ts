@@ -2,6 +2,7 @@ import type { PlantData } from './types';
 import { hasSource } from './types';
 import { TEXT_FIELDS, BOOL_FIELDS } from './baumscheibe-mapping';
 import { deriveLayer } from './plant-layer';
+import { displayCommonName } from './plant-name';
 
 const TEMPLATE_URL = '/baumscheibe-template.svg';
 let templatePromise: Promise<SVGSVGElement> | null = null;
@@ -181,6 +182,17 @@ function setLayerIcon(svg: SVGSVGElement, plant: PlantData) {
   for (const el of findByLabel(svg, ['l_rhizo', 'l_climber'])) setVisible(el, false);
 }
 
+// The "rating2" group holds five stacked stripe images ("rating 1".."rating 5",
+// growing in width) at the top of the disc — only "rating 4" was visible as a
+// design preview. Shows the stripe matching the edibility score (eatableScore,
+// 0–5; 0 = no stripe). Medicinal/material scores are deliberately not shown.
+function setRatingStripe(svg: SVGSVGElement, plant: PlantData) {
+  const score = Math.max(0, Math.min(5, Math.round(plant.eatableScore || 0)));
+  for (let n = 1; n <= 5; n++) {
+    for (const el of findByLabel(svg, [`rating ${n}`])) setVisible(el, n === score);
+  }
+}
+
 /** Render a plant into the Baumscheibe SVG template; returns serialized SVG markup. */
 export async function renderBaumscheibeSvg(plant: PlantData): Promise<string> {
   const tpl = await loadTemplate();
@@ -194,24 +206,25 @@ export async function renderBaumscheibeSvg(plant: PlantData): Promise<string> {
 
   // heightM/widthM/climateZone are pre-existing template <text> elements
   // (copied over from the old template, still styled with the old font:Inter
-  // bold). Override to match latinName's font (NAME_BOXES.latinName,
-  // "Voice-of-the-Highlander" requested/Georgia-serif fallback — see the
-  // comment above NAME_BOXES; not loaded here either, same fallback applies).
+  // bold). Override to Raleway (loaded above).
   for (const [field, labels] of Object.entries(TEXT_FIELDS)) {
     if (!labels) continue;
     const v = (plant as any)[field];
     const text = v == null || v === '' ? '' : String(v);
     for (const el of findByLabel(svg, labels)) {
       setText(el, text);
-      (el as SVGElement).style.fontFamily = NAME_BOXES.latinName.fontFamily;
+      (el as SVGElement).style.fontFamily = "'Raleway', sans-serif";
     }
   }
 
-  await injectNameText(svg, 'commonName', plant.commonName || '');
+  await injectNameText(svg, 'commonName', displayCommonName(plant));
   await injectNameText(svg, 'latinName',  plant.latinName  || '');
   injectMonthCalendar(svg, plant.fruitMonths, plant.flowerMonths);
   setGrowthSpeedIcon(svg, plant);
   setLayerIcon(svg, plant);
+  setRatingStripe(svg, plant);
+  // The plantlist badge ("A=Agroforestry" …) has no data behind it — always hidden.
+  for (const el of findByLabel(svg, ['plantlist'])) setVisible(el, false);
   if (hasSource(plant, 'pfaf')) injectPfafAttribution(svg);
 
   for (const [field, labels] of Object.entries(BOOL_FIELDS)) {

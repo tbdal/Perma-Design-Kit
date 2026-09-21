@@ -73,6 +73,7 @@ import Layout from '../layouts/Layout.astro';
 
 <script>
   import { getAllPlants, savePlant } from '../lib/db';
+  import { displayName, displayCommonName } from '../lib/plant-name';
   import { getAllPolycultures, getPolyculture, savePolyculture, deletePolyculture } from '../lib/db';
   import { searchPlants, importPlantFromSearch } from '../lib/plant-search';
   import {
@@ -135,7 +136,8 @@ import Layout from '../layouts/Layout.astro';
   /** HTML-escaped label — safe to interpolate directly into innerHTML/attributes. */
   function plantLabel(p: PlantData | undefined): string {
     if (!p) return t('unknownPlant');
-    const label = p.commonName ? `${p.commonName} (${p.latinName})` : p.latinName || '—';
+    const cn = displayCommonName(p);
+    const label = cn ? `${cn} (${p.latinName})` : p.latinName || '—';
     return escapeHtml(label);
   }
 
@@ -332,7 +334,7 @@ import Layout from '../layouts/Layout.astro';
           editing!.members.push({ plantId: plant.id, role, notes: '' });
           renderMembers();
           renderSuggestions();
-          showToast(t('toastImported', { name: plant.commonName || plant.latinName }));
+          showToast(t('toastImported', { name: displayName(plant) }));
         } catch (err) {
           alert(t('alertImportFailed', { latin, error: err instanceof Error ? err.message : String(err) }));
           btn.disabled = false;

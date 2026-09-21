@@ -124,10 +124,51 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
         <nav class="flex flex-wrap gap-4">
           <a href="/hilfe" data-i18n="footerHelp" class="hover:text-stone-700 dark:hover:text-stone-200 hover:underline">Hilfe</a>
           <a href="/datenschutz" data-i18n="footerPrivacy" class="hover:text-stone-700 dark:hover:text-stone-200 hover:underline">Datenschutz</a>
+          <button type="button" id="open-welcome" data-i18n="footerIntro" class="hover:text-stone-700 dark:hover:text-stone-200 hover:underline">Einführung</button>
           <a href="/impressum" data-i18n="footerImprint" class="hover:text-stone-700 dark:hover:text-stone-200 hover:underline">Impressum</a>
+          <a href="https://github.com/tbdal/Perma-Design-Kit" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub" class="inline-flex items-center gap-1 hover:text-stone-700 dark:hover:text-stone-200 hover:underline">
+            <svg class="h-4 w-4" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+            GitHub
+          </a>
         </nav>
       </div>
     </footer>
+
+    <!-- Willkommens-Tour beim ersten Besuch (erklärt u.a. das lokale Speichern im Browser) -->
+    <dialog id="welcome-modal" class="m-auto w-full max-w-lg rounded-2xl bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-100 p-0 shadow-2xl backdrop:bg-black/50">
+      <div class="p-6">
+        <div class="mb-3 flex items-center justify-between">
+          <h2 class="text-lg font-bold" id="welcome-title" data-i18n="welcomeTitle">Willkommen beim Perma Design Kit</h2>
+          <button id="welcome-close" type="button" data-i18n-aria-label="closeBtn" aria-label="Schließen" class="text-2xl leading-none text-stone-400 hover:text-stone-700 dark:hover:text-stone-200">×</button>
+        </div>
+        <div class="welcome-step space-y-2 text-sm text-stone-600 dark:text-stone-300">
+          <p class="font-semibold text-stone-900 dark:text-stone-100" data-i18n="welcomeStorageHead">💾 Deine Daten bleiben in deinem Browser</p>
+          <p data-i18n="welcomeStorage1">Es gibt kein Benutzerkonto und keinen Server, der deine Pflanzen oder Gartenpläne speichert. Alles wird dauerhaft im Speicher dieses Browsers auf diesem Gerät abgelegt (IndexedDB).</p>
+          <p data-i18n="welcomeStorage2">Das bedeutet: Es ist privat und funktioniert offline — aber die Daten sind nicht auf anderen Geräten oder in anderen Browsern verfügbar. Wenn du die Website-Daten löschst (Browser zurücksetzen, „Cookies &amp; Websitedaten löschen", Privatmodus), sind sie weg.</p>
+          <p data-i18n="welcomeStorage3">Lege deshalb regelmäßig ein Backup an (Einstellungen → Daten) oder richte die automatische Sicherung per WebDAV / GitHub Gist ein.</p>
+        </div>
+        <div class="welcome-step hidden space-y-2 text-sm text-stone-600 dark:text-stone-300">
+          <p class="font-semibold text-stone-900 dark:text-stone-100" data-i18n="welcomePlantsHead">🌱 Pflanzen sammeln</p>
+          <p data-i18n="welcomePlants1">Suche oben nach einer Pflanze (deutscher oder lateinischer Name): Daten kommen aus Wikidata und PFAF und lassen sich jederzeit von Hand korrigieren. Über „Daten" lassen sich fehlende Angaben nachladen, CSV/JSON importieren und exportieren.</p>
+          <p data-i18n="welcomePlants2">Tabelle, Kacheln und Kartenansicht lassen sich filtern und sortieren — z. B. nach Sonne, Wasser, Wuchs oder Ebene.</p>
+        </div>
+        <div class="welcome-step hidden space-y-2 text-sm text-stone-600 dark:text-stone-300">
+          <p class="font-semibold text-stone-900 dark:text-stone-100" data-i18n="welcomeCardsHead">🖨️ Karten drucken</p>
+          <p data-i18n="welcomeCards1">Aus jeder Pflanze entsteht eine Karte: Pflanzenkarte, Streifenkarte oder Baumscheibe. Über die Druckanzahl pro Pflanze steuerst du, wie oft sie im PDF erscheint (0 = nicht drucken).</p>
+        </div>
+        <div class="welcome-step hidden space-y-2 text-sm text-stone-600 dark:text-stone-300">
+          <p class="font-semibold text-stone-900 dark:text-stone-100" data-i18n="welcomePlanHead">🗺️ Planen</p>
+          <p data-i18n="welcomePlan1">In „Polykulturen" stellst du Pflanzengemeinschaften zusammen, im „Gartenplan" zeichnest du deine Fläche und platzierst Pflanzen maßstäblich — mit Wachstumsregler, 2D- und 3D-Ansicht. Der Kalender zeigt Blüte und Ernte im Jahresverlauf.</p>
+        </div>
+        <div class="mt-5 flex items-center justify-between">
+          <span id="welcome-progress" class="text-xs text-stone-400"></span>
+          <div class="flex gap-2">
+            <button id="welcome-prev" type="button" data-i18n="welcomePrev" class="rounded-lg px-3 py-1.5 text-sm text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800">Zurück</button>
+            <button id="welcome-next" type="button" data-i18n="welcomeNext" class="rounded-lg bg-green-700 px-4 py-1.5 text-sm font-medium text-white hover:bg-green-800">Weiter</button>
+          </div>
+        </div>
+      </div>
+    </dialog>
 
     <!-- Tastatur-Shortcut-Cheatsheet (öffnet mit ?) -->
     <dialog id="shortcuts-modal" class="m-auto w-full max-w-md rounded-2xl bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-100 p-0 shadow-2xl backdrop:bg-black/40">
@@ -167,6 +208,42 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
       </div>
     </div>
 
+    <script>
+      // First-visit intro. Skipped on the legal/help pages so they stay readable;
+      // "Einführung" in the footer reopens it any time.
+      const WELCOME_KEY = 'pdk-welcome-seen';
+      const modal = document.getElementById('welcome-modal') as HTMLDialogElement | null;
+      if (modal) {
+        const steps = Array.from(modal.querySelectorAll<HTMLElement>('.welcome-step'));
+        const prev = document.getElementById('welcome-prev') as HTMLButtonElement;
+        const next = document.getElementById('welcome-next') as HTMLButtonElement;
+        const progress = document.getElementById('welcome-progress')!;
+        let idx = 0;
+        const render = () => {
+          steps.forEach((el, i) => el.classList.toggle('hidden', i !== idx));
+          prev.style.visibility = idx === 0 ? 'hidden' : 'visible';
+          progress.textContent = `${idx + 1} / ${steps.length}`;
+          const key = idx === steps.length - 1 ? 'welcomeDone' : 'welcomeNext';
+          next.setAttribute('data-i18n', key);
+          import('../lib/i18n/core').then(async ({ createT }) => {
+            const { layoutDict } = await import('../lib/i18n/dict-layout');
+            next.textContent = createT(layoutDict)(key);
+          });
+        };
+        const markSeen = () => { try { localStorage.setItem(WELCOME_KEY, '1'); } catch {} };
+        const close = () => { markSeen(); modal.close(); };
+        prev.addEventListener('click', () => { idx = Math.max(0, idx - 1); render(); });
+        next.addEventListener('click', () => { if (idx >= steps.length - 1) close(); else { idx++; render(); } });
+        document.getElementById('welcome-close')?.addEventListener('click', close);
+        modal.addEventListener('cancel', markSeen);
+        const open = () => { idx = 0; render(); if (!modal.open) modal.showModal(); };
+        document.getElementById('open-welcome')?.addEventListener('click', open);
+        let seen = false;
+        try { seen = !!localStorage.getItem(WELCOME_KEY); } catch {}
+        const legal = /^\/(impressum|datenschutz|hilfe)\/?$/.test(location.pathname);
+        if (!seen && !legal) open();
+      }
+    </script>
     <script>
       import { autoSyncIfConfigured } from '../lib/sync';
       document.addEventListener('visibilitychange', () => {

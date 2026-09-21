@@ -1,9 +1,10 @@
-import { PDFDocument, PDFPage, PDFRef, StandardFonts, degrees, rgb, drawImage as pdfDrawImage } from 'pdf-lib';
+import { PDFDocument, PDFPage, PDFRef, StandardFonts, degrees, rgb, drawImage as pdfDrawImage, pushGraphicsState, popGraphicsState, moveTo, appendBezierCurve, closePath, clip, endPath } from 'pdf-lib';
 import { renderPolyCardToCanvas, renderStripeCardToCanvas } from './card-canvas';
 import { renderBaumscheibeSvg } from './baumscheibe-render';
 import { renderGardenPlanFullSvg } from './gartenplan-render';
 import type { GardenPlan, PlantData } from './types';
 import { escapeHtml } from './html';
+import { packCircles } from './circle-pack';
 
 // Card dimensions in mm
 const POLY_MM   = { w: 70,  h: 120 };
@@ -115,7 +116,7 @@ async function plantImageDataUrl(plant: PlantData): Promise<string | undefined> 
 
 // ── Download helper ──────────────────────────────────────────────────────────
 
-function downloadPdf(bytes: Uint8Array, filename: string) {
+export function downloadPdf(bytes: Uint8Array, filename: string) {
   const blob = new Blob([bytes], { type: 'application/pdf' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
@@ -472,6 +473,94 @@ export async function exportBaumscheibeSheetPDF(plants: PlantData[]): Promise<vo
   const pdfDoc = await PDFDocument.create();
   for (const group of groups) await embedBaumscheibeSheetPage(pdfDoc, group);
   downloadPdf(await pdfDoc.save(), 'baumscheiben-9cm-sheet.pdf');
+}
+
+// ── Maßstabsgetreue Baumscheiben ─────────────────────────────────────────────
+//
+// Each disc is printed with its plant's real crown width (widthM) at 1:scale,
+// e.g. 4 m at 1:50 → 80 mm. Discs are packed onto A4/A3/A2 pages by
+// packCircles() so as little paper as possible stays white.
+export type ScaledPaper = 'A4' | 'A3' | 'A2';
+const PAPER_MM: Record<ScaledPaper, { w: number; h: number }> = {
+  A4: { w: 210, h: 297 }, A3: { w: 297, h: 420 }, A2: { w: 420, h: 594 },
+};
+const SCALED_PAGE_MARGIN_MM = 5; // same outer margin as the Pflanzenkarten sheets
+const SCALED_GAP_MM = 2;
+const FALLBACK_WIDTH_M = 1;
+
+function discDiameterMm(p: PlantData, scale: number): number {
+  const widthM = p.widthM ?? p.heightM ?? FALLBACK_WIDTH_M;
+  return Math.max(5, widthM * 1000 / scale);
+}
+
+/** Circular clip path (4 bézier arcs) for the following drawing operators. */
+function pushCircleClip(page: ReturnType<PDFDocument['addPage']>, cx: number, cy: number, r: number) {
+  const k = 0.5522847498 * r;
+  page.pushOperators(
+    pushGraphicsState(),
+    moveTo(cx + r, cy),
+    appendBezierCurve(cx + r, cy + k, cx + k, cy + r, cx, cy + r),
+    appendBezierCurve(cx - k, cy + r, cx - r, cy + k, cx - r, cy),
+    appendBezierCurve(cx - r, cy - k, cx - k, cy - r, cx, cy - r),
+    appendBezierCurve(cx + k, cy - r, cx + r, cy - k, cx + r, cy),
+    closePath(), clip(), endPath(),
+  );
+}
+
+/** Returns how many discs had to be shrunk to fit the paper (bigger than the page). */
+export async function exportBaumscheibeScaledPDF(plants: PlantData[], scale: number, paper: ScaledPaper): Promise<{ pages: number; shrunk: number }> {
+  plants = expandByPrintCount(plants);
+  if (plants.length === 0 || !(scale > 0)) return { pages: 0, shrunk: 0 };
+  const { w: pw, h: ph } = PAPER_MM[paper];
+  const packed = packCircles(plants.map(p => discDiameterMm(p, scale)), pw, ph, SCALED_PAGE_MARGIN_MM, SCALED_GAP_MM);
+  const pageCount = Math.max(...packed.map(c => c.page)) + 1;
+  const shrunk = packed.filter(c => c.shrunk).length;
+  // Disc artwork occupies DISC_RADIUS_UNITS of the crop's CROP_HALF; the image
+  // is scaled so the disc itself gets exactly the requested diameter.
+  const cropOverDisc = CROP_HALF / DISC_RADIUS_UNITS;
+  const clipOverDisc = (DISC_RADIUS_UNITS + 10) / DISC_RADIUS_UNITS;
+
+  if (isFirefox) {
+    const svgs = await Promise.all(plants.map(async p => cropSvgToDisc(await renderBaumscheibeSvg(p))));
+    const pages = Array.from({ length: pageCount }, (_, pg) => {
+      const cells = packed.filter(c => c.page === pg).map(c => {
+        const side = c.r * 2 * cropOverDisc, clipD = c.r * 2 * clipOverDisc;
+        return `<div style="position:absolute;left:${c.cx - clipD / 2}mm;top:${c.cy - clipD / 2}mm;width:${clipD}mm;height:${clipD}mm;border-radius:50%;overflow:hidden;">` +
+          `<div style="position:absolute;left:${(clipD - side) / 2}mm;top:${(clipD - side) / 2}mm;width:${side}mm;height:${side}mm;">` +
+          `${svgs[c.index].replace('<svg', '<svg style="width:100%;height:100%;display:block;"')}</div></div>`;
+      }).join('');
+      const caption = `<div style="position:absolute;left:${SCALED_PAGE_MARGIN_MM}mm;bottom:1.2mm;font:6pt Helvetica,Arial,sans-serif;color:#999;">Maßstab 1:${scale}</div>`;
+      return `<div style="position:relative;width:${pw}mm;height:${ph}mm;overflow:hidden;${pg < pageCount - 1 ? 'page-break-after:always;' : ''}">${cells}${caption}</div>`;
+    }).join('');
+    const w = window.open('', '_blank');
+    if (!w) { alert('Popup-Blocker aktiv? Bitte für diese Seite erlauben und nochmal probieren.'); return { pages: pageCount, shrunk }; }
+    w.document.open();
+    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Baumscheiben 1:${scale}</title><style>@page{size:${pw}mm ${ph}mm;margin:0}html,body{margin:0;padding:0}</style></head><body>${pages}</body></html>`);
+    w.document.close();
+    await new Promise(r => setTimeout(r, 300));
+    w.focus(); w.print();
+    return { pages: pageCount, shrunk };
+  }
+
+  const pdfDoc = await PDFDocument.create();
+  const pages = Array.from({ length: pageCount }, () => pdfDoc.addPage([pt(pw), pt(ph)]));
+  // Small, unobtrusive scale note in the bottom page margin.
+  const capFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  for (const pg of pages) pg.drawText(`Maßstab 1:${scale}`, { x: pt(SCALED_PAGE_MARGIN_MM), y: pt(1.2), size: 6, font: capFont, color: rgb(0.6, 0.6, 0.6) });
+  for (const c of packed) {
+    const page = pages[c.page];
+    const sideMm = c.r * 2 * cropOverDisc;
+    // ~200 dpi at print size, capped so A2-sized discs don't blow up memory
+    const px = Math.min(3000, Math.max(200, Math.round(sideMm / 25.4 * 200)));
+    const svg = cropSvgToDisc(await renderBaumscheibeSvg(plants[c.index]));
+    const img = await pdfDoc.embedJpg(canvasToJpegBytes(await svgStringToCanvas(svg, px, px)));
+    const cxPt = pt(c.cx), cyPt = pt(ph - c.cy);
+    pushCircleClip(page, cxPt, cyPt, pt(c.r * clipOverDisc));
+    page.drawImage(img, { x: cxPt - pt(sideMm) / 2, y: cyPt - pt(sideMm) / 2, width: pt(sideMm), height: pt(sideMm) });
+    page.pushOperators(popGraphicsState());
+  }
+  downloadPdf(await pdfDoc.save(), `baumscheiben-1zu${scale}-${paper}.pdf`);
+  return { pages: pageCount, shrunk };
 }
 
 // ── Gartenplan export ────────────────────────────────────────────────────────

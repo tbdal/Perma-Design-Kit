@@ -146,6 +146,8 @@ export interface PlantData {
   id: string;
   latinName: string;
   commonName: string;
+  /** English common name, shown instead of commonName when the UI language is English. */
+  commonNameEn: string;
   // User-chosen cultivar/variety name (e.g. "Black Krim") — never filled by
   // Wikidata/PFAF, purely a manual field for the grower's own record.
   varietyName: string;
@@ -213,6 +215,7 @@ export function createEmptyPlant(): PlantData {
     id: newId(),
     latinName: '',
     commonName: '',
+    commonNameEn: '',
     varietyName: '',
     heightM: null,
     widthM: null,

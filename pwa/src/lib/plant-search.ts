@@ -120,6 +120,16 @@ function bestCommonName(entity: any, latin: string): string {
   return labelDe || labelEn || '';
 }
 
+/** English counterpart of bestCommonName: P1843[en], then the English label
+ *  (unless it just mirrors the Latin name). Empty if Wikidata has nothing. */
+function bestEnglishName(entity: any, latin: string): string {
+  const common = taxonCommonNames(entity);
+  const labelEn = entity.labels?.en?.value;
+  if (common.en) return common.en;
+  if (labelEn && labelEn.trim().toLowerCase() !== latin.trim().toLowerCase()) return labelEn;
+  return '';
+}
+
 /** Active request controller — cancelled when a newer search starts */
 let activeController: AbortController | null = null;
 
@@ -298,6 +308,8 @@ export async function fetchPlantDetails(wikidataId: string): Promise<Partial<Pla
 
   const commonName = bestCommonName(entity, taxon || '');
   if (commonName) result.commonName = commonName;
+  const commonNameEn = bestEnglishName(entity, taxon || '');
+  if (commonNameEn) result.commonNameEn = commonNameEn;
 
   const imageName = claim('P18');
   if (imageName) {
@@ -354,6 +366,9 @@ export async function fetchProxyData(latinName: string): Promise<Partial<PlantDa
         (result as any)[f] = data[f];
       }
     }
+
+    // PFAF's common names are English.
+    if (typeof data.commonName === 'string' && data.commonName.trim()) result.commonNameEn = data.commonName.trim();
 
     if (data.fruitMonths?.some((v: boolean) => v)) result.fruitMonths = data.fruitMonths;
     if (data.flowerMonths?.some((v: boolean) => v)) result.flowerMonths = data.flowerMonths;

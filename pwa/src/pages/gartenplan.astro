@@ -161,6 +161,7 @@ import Layout from '../layouts/Layout.astro';
 
 <script>
   import { getAllPlants, getAllPolycultures, getAllGardenPlans, saveGardenPlan, deleteGardenPlan } from '../lib/db';
+  import { displayName, displayCommonName } from '../lib/plant-name';
   import { createEmptyGardenPlan, type GardenPlan, type GardenPlanPlacement, type GardenPlanPoint, type Polyculture, type PlantData } from '../lib/types';
   import { displayRadiusM } from '../lib/growth-model';
   import { deriveLayer, LAYER_STYLE, type PlantLayer } from '../lib/plant-layer';
@@ -263,7 +264,8 @@ import Layout from '../layouts/Layout.astro';
 
   function plantLabel(p: PlantData | undefined): string {
     if (!p) return '—';
-    const label = p.commonName ? `${p.commonName} (${p.latinName})` : p.latinName || '—';
+    const cn = displayCommonName(p);
+    const label = cn ? `${cn} (${p.latinName})` : p.latinName || '—';
     return escapeHtml(label);
   }
 
@@ -556,7 +558,7 @@ import Layout from '../layouts/Layout.astro';
   function renderPlantPicker() {
     const q = pickerFilter.value.trim().toLowerCase();
     const filtered = q
-      ? plants.filter(p => p.latinName.toLowerCase().includes(q) || (p.commonName && p.commonName.toLowerCase().includes(q)))
+      ? plants.filter(p => p.latinName.toLowerCase().includes(q) || [p.commonName, p.commonNameEn].some(n => n && n.toLowerCase().includes(q)))
       : plants;
     if (filtered.length === 0) {
       plantPickerEl.innerHTML = `<p class="text-xs text-stone-400 dark:text-stone-500">${t('noPlantsInCollection')}</p>`;
@@ -713,7 +715,7 @@ import Layout from '../layouts/Layout.astro';
     blob.setAttribute('stroke-width', selected ? '3' : '2');
     const label = group.querySelector('.marker-label') as SVGTextElement;
     label.setAttribute('y', String(radiusU + 14));
-    label.textContent = p ? (p.commonName || p.latinName) : '?';
+    label.textContent = p ? (displayName(p)) : '?';
   }
 
   function renderPlanSvg() {

@@ -39,6 +39,8 @@ import Layout from '../layouts/Layout.astro';
           <button id="btn-csv-template" data-i18n="menuCsvTemplate" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">CSV-Vorlage ↓</button>
           <hr class="my-1 border-stone-200 dark:border-stone-700">
           <button id="btn-export" data-i18n="menuExportAll" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Alle exportieren (JSON)</button>
+          <button id="btn-table-pdf" data-i18n="menuTablePdf" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Tabelle als PDF (Farbe)</button>
+          <button id="btn-table-pdf-gray" data-i18n="menuTablePdfGray" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Tabelle als PDF (Graustufen)</button>
           <hr class="my-1 border-stone-200 dark:border-stone-700">
           <button id="btn-load-samples" data-i18n="menuLoadSamples" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Beispieldaten laden</button>
           <button id="btn-load-samples-crawford" data-i18n="menuLoadSamplesCrawford" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Beispieldaten laden (Crawford)</button>
@@ -57,6 +59,12 @@ import Layout from '../layouts/Layout.astro';
     </select>
     <button id="btn-pdf-all" data-i18n="pdfAllBtn" class="rounded-lg bg-green-700 px-3 py-1.5 text-sm font-medium text-white shadow transition hover:bg-green-800">PDF ↓</button>
     <button id="btn-pdf-sheet" data-i18n="pdfSheetBtn" data-i18n-title="pdfSheetTitle" title="6 Baumscheiben je 9cm Durchmesser auf einer A4-Seite, kompakt zum Ausschneiden" class="hidden rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700">PDF (6/Seite, 9cm)</button>
+    <span id="scaled-pdf-group" class="hidden inline-flex items-center gap-1.5 rounded-lg bg-stone-100 dark:bg-stone-800 px-2 py-1 text-sm text-stone-700 dark:text-stone-200 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+      <button id="btn-pdf-scaled" data-i18n="pdfScaledBtn" data-i18n-title="pdfScaledTitle" title="Baumscheiben im Maßstab (Kronenbreite der Pflanze), platzsparend auf Papier verteilt" class="rounded-md bg-green-700 px-2.5 py-1 text-sm font-medium text-white hover:bg-green-800">PDF (Maßstab)</button>
+      <span>1:</span>
+      <input type="number" id="scaled-denominator" min="1" max="10000" value="50" class="w-16 rounded-md border-0 bg-white dark:bg-stone-900 px-1.5 py-0.5 text-sm ring-1 ring-stone-300 dark:ring-stone-600" />
+      <select id="scaled-paper" class="rounded-md border-0 bg-white dark:bg-stone-900 px-1.5 py-0.5 text-sm ring-1 ring-stone-300 dark:ring-stone-600"><option>A4</option><option>A3</option><option>A2</option></select>
+    </span>
   </div>
 
   <!-- Lokal-Filter (chips, AND-Logik) -->
@@ -181,6 +189,11 @@ import Layout from '../layouts/Layout.astro';
     <span class="h-4 w-px bg-stone-300 dark:bg-stone-700"></span>
     <button id="btn-filter-clear" data-i18n="filterClear" class="hidden rounded-full bg-stone-200 dark:bg-stone-700 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-300 dark:hover:bg-stone-700">Zurücksetzen ×</button>
     <span id="filter-count" class="hidden text-stone-500 dark:text-stone-400"></span>
+    <span class="ml-auto flex items-center gap-1.5" id="bulk-print-count">
+      <span class="text-stone-500 dark:text-stone-400" data-i18n="printCountAllLabel">Druckanzahl:</span>
+      <input type="number" id="bulk-print-count-value" min="0" max="99" value="1" class="w-14 rounded-full border-0 bg-stone-100 dark:bg-stone-800 px-2 py-1 text-xs text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 focus:ring-2 focus:ring-green-500 focus:outline-none" />
+      <button id="btn-bulk-print-count" type="button" class="rounded-full bg-stone-200 dark:bg-stone-700 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-300 dark:hover:bg-stone-600"></button>
+    </span>
   </div>
 
   <!-- Bulk bar (hidden until items selected in list view) -->
@@ -214,6 +227,8 @@ import Layout from '../layouts/Layout.astro';
               <input type="text" id="f-latinName" required class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
             <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="commonName" data-i18n="fieldCommonName">Deutscher Name</span>
               <input type="text" id="f-commonName" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
+            <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="commonNameEn" data-i18n="fieldCommonNameEn">Englischer Name</span>
+              <input type="text" id="f-commonNameEn" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
             <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="varietyName" data-i18n="fieldVarietyName">Sortenname (selbstgewählt)</span>
               <input type="text" id="f-varietyName" data-i18n-placeholder="varietyNamePlaceholder" placeholder="z.B. Black Krim" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
             <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="heightM" data-i18n="fieldHeightM">Höhe (m)</span>
@@ -354,6 +369,7 @@ import Layout from '../layouts/Layout.astro';
 
 <script>
   import { getAllPlants, savePlant, deletePlant, importPlants } from '../lib/db';
+  import { displayName } from '../lib/plant-name';
   import { createEmptyPlant, type PlantData, type DataSource, SOURCE_LABEL, SOURCE_COLOR } from '../lib/types';
   import { samplePlants } from '../lib/sample-data';
   import { crawfordPlants } from '../lib/sample-data-crawford';
@@ -364,10 +380,10 @@ import Layout from '../layouts/Layout.astro';
   import { escapeHtml, withButtonSpinner, loadingPlaceholderHtml, imageCreditOverlayHtml } from '../lib/html';
   import { isSourceEnabled, loadSettings } from '../lib/settings';
   import { deriveLayer, LAYER_STYLE, type PlantLayer } from '../lib/plant-layer';
-  import { exportPolyCardsPDF, exportStripeCardsPDF, exportSingleCardPDF, exportSingleStripeCardPDF, exportBaumscheibePDF, exportBaumscheibesPDF, exportBaumscheibeSheetPDF } from '../lib/pdf-export';
+  import { exportPolyCardsPDF, exportStripeCardsPDF, exportSingleCardPDF, exportSingleStripeCardPDF, exportBaumscheibePDF, exportBaumscheibesPDF, exportBaumscheibeSheetPDF, exportBaumscheibeScaledPDF, type ScaledPaper } from '../lib/pdf-export';
   import { renderPolyCardHtml, renderStripeCardHtml, printStepperHtml } from '../lib/card-html';
   import { renderBaumscheibeCardHtml } from '../lib/baumscheibe-render';
-  import { createT, applyStaticI18n } from '../lib/i18n/core';
+  import { createT, applyStaticI18n, getLang } from '../lib/i18n/core';
   import { indexDict } from '../lib/i18n/dict-index';
   import { plantDetailDict } from '../lib/i18n/dict-plant-detail';
 
@@ -507,13 +523,13 @@ import Layout from '../layouts/Layout.astro';
     if (q) {
       result = result.filter(p =>
         p.latinName.toLowerCase().includes(q) ||
-        (p.commonName && p.commonName.toLowerCase().includes(q))
+        [p.commonName, p.commonNameEn].some(n => n && n.toLowerCase().includes(q))
       );
     }
     return result;
   }
 
-  const textFields = ['latinName', 'commonName', 'varietyName', 'climateZone', 'imageUrl', 'imageCredit'] as const;
+  const textFields = ['latinName', 'commonName', 'commonNameEn', 'varietyName', 'climateZone', 'imageUrl', 'imageCredit'] as const;
   const numberFields = ['heightM', 'widthM', 'eatableScore', 'medsScore', 'materialScore'] as const;
   const boolFields = [
     'eatable', 'culinaric', 'meds', 'material', 'fodder', 'fuel',
@@ -1103,11 +1119,14 @@ import Layout from '../layouts/Layout.astro';
     const filtered = applyFilters(cachedPlants);
     const displayPlants = viewMode === 'list' ? sortedPlants(filtered) : filtered;
     syncFilterChips(filtered.length, cachedPlants.length);
+    const bulkPrintBtn = document.getElementById('btn-bulk-print-count');
+    if (bulkPrintBtn) bulkPrintBtn.textContent = t('printCountAllBtn', { n: filtered.length });
 
     if (viewMode === 'cards') {
       const isStripe = cardViewMode === 'stripe';
       const isBaumscheibe = cardViewMode === 'baumscheibe';
       document.getElementById('btn-pdf-sheet')!.classList.toggle('hidden', !isBaumscheibe);
+      document.getElementById('scaled-pdf-group')!.classList.toggle('hidden', !isBaumscheibe);
       listEl.className = isStripe ? 'flex flex-col items-stretch gap-2' : 'flex flex-wrap justify-center gap-6';
       // Baumscheibe rendering awaits an SVG fetch + per-plant DOM work and can
       // take a visible moment for more than a couple of cards — poly/stripe
@@ -1123,7 +1142,7 @@ import Layout from '../layouts/Layout.astro';
         <div class="group relative overflow-hidden rounded-xl shadow-md ring-1 ring-stone-200 dark:ring-stone-700 transition hover:shadow-lg hover:ring-green-300${(p.printCount ?? 1) === 0 ? ' opacity-60' : ''}" data-id="${p.id}" data-idx="${i}">
           <div class="pointer-events-none${isStripe ? ' overflow-x-auto' : ''}">${cardHtml}</div>
           <div class="relative z-10 flex items-center justify-between bg-white/90 dark:bg-stone-800/90 px-3 py-1.5">
-            <span class="text-xs text-stone-400 dark:text-stone-500">${escapeHtml(p.commonName || p.latinName)}</span>
+            <span class="text-xs text-stone-400 dark:text-stone-500">${escapeHtml(displayName(p))}</span>
             <div class="flex items-center gap-1.5">
               ${printStepperHtml(p, t)}
               <button class="btn-edit inline-flex items-center gap-1 rounded-md bg-stone-100 dark:bg-stone-800 px-2.5 py-1 text-xs font-medium text-stone-600 dark:text-stone-300 transition hover:bg-blue-100 dark:hover:bg-blue-900/60 hover:text-blue-800 dark:hover:text-blue-200">${escapeHtml(t('btnEditShort'))}</button>
@@ -1161,14 +1180,14 @@ import Layout from '../layouts/Layout.astro';
           <div class="absolute left-0 top-0 h-full w-1 ${accentColor(p)}"></div>
           <!-- Image thumbnail -->
           ${p.imageUrl ? `<div class="relative h-32 overflow-hidden bg-stone-100 dark:bg-stone-800 pl-1">
-            <img src="${escapeHtml(p.imageUrl)}" alt="${escapeHtml(p.commonName || p.latinName)}" class="h-full w-full object-cover" loading="lazy" onerror="this.closest('.group').querySelector('.img-wrapper')?.remove()" />
+            <img src="${escapeHtml(p.imageUrl)}" alt="${escapeHtml(displayName(p))}" class="h-full w-full object-cover" loading="lazy" onerror="this.closest('.group').querySelector('.img-wrapper')?.remove()" />
             ${imageCreditOverlayHtml(p.imageCredit)}
           </div>` : ''}
           <!-- Content -->
           <div class="flex-1 pl-4 pr-3 pt-3 pb-1">
             <div class="mb-1 flex items-start justify-between gap-2">
               <div class="min-w-0">
-                <h3 class="truncate text-sm font-bold text-stone-800 dark:text-stone-100">${escapeHtml(p.commonName || p.latinName)}</h3>
+                <h3 class="truncate text-sm font-bold text-stone-800 dark:text-stone-100">${escapeHtml(displayName(p))}</h3>
                 <p class="truncate text-xs italic text-stone-500 dark:text-stone-400">${escapeHtml(p.latinName)}</p>
               </div>
               <div class="flex shrink-0 gap-1 sm:opacity-0 sm:transition sm:group-hover:opacity-100">
@@ -1237,7 +1256,7 @@ import Layout from '../layouts/Layout.astro';
             <div class="min-w-0 flex-1">
               <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0">
-                  <p class="truncate text-sm font-semibold text-stone-800 dark:text-stone-100">${escapeHtml(p.commonName || p.latinName)}</p>
+                  <p class="truncate text-sm font-semibold text-stone-800 dark:text-stone-100">${escapeHtml(displayName(p))}</p>
                   <p class="truncate text-xs italic text-stone-500 dark:text-stone-400">${escapeHtml(p.latinName)}</p>
                 </div>
                 <div class="flex shrink-0 gap-1">${actionBtns}</div>
@@ -1297,7 +1316,7 @@ import Layout from '../layouts/Layout.astro';
                 <td class="px-3 py-2">
                   <div class="flex items-center gap-1.5">
                     <div class="h-5 w-0.5 rounded-full ${accentColor(p)} shrink-0"></div>
-                    <span class="font-medium text-stone-800 dark:text-stone-100">${escapeHtml(p.commonName || p.latinName)}</span>
+                    <span class="font-medium text-stone-800 dark:text-stone-100">${escapeHtml(displayName(p))}</span>
                   </div>
                 </td>
                 <td class="px-3 py-2 italic text-stone-500 dark:text-stone-400">${escapeHtml(p.latinName)}</td>
@@ -1501,6 +1520,39 @@ import Layout from '../layouts/Layout.astro';
       else await exportPolyCardsPDF(cachedPlants);
     });
   });
+  // Table as PDF — exports what the table currently shows (filters + sort).
+  for (const [id, gray] of [['btn-table-pdf', false], ['btn-table-pdf-gray', true]] as const) {
+    document.getElementById(id)!.addEventListener('click', async () => {
+      const { exportPlantTablePDF } = await import('../lib/table-pdf');
+      const rows = sortedPlants(applyFilters(cachedPlants));
+      if (rows.length === 0) return;
+      const badgeKey: Record<string, string> = {
+        eatable: 'badgeEatable', culinaric: 'badgeCulinaric', meds: 'badgeMeds', material: 'badgeMaterial', fodder: 'badgeFodder', fuel: 'badgeFuel',
+        nitrogenFix: 'badgeNitrogenFix', mineralFix: 'badgeMineralFix', groundCover: 'badgeGroundCover', insects: 'badgeInsects', windBreaking: 'badgeWindBreaking', animalProtection: 'badgeAnimalProtection',
+        sunFull: 'filterSunFull', sunMid: 'filterSunMid', sunShadow: 'filterSunShadow',
+        waterDry: 'filterWaterDry', waterMid: 'filterWaterMid', waterWet: 'filterWaterWet',
+        growSpeedLow: 'lblGrowSpeedLow', growSpeedMid: 'lblGrowSpeedMid', growSpeedHigh: 'lblGrowSpeedHigh',
+      };
+      await withButtonSpinner(document.getElementById(id) as HTMLButtonElement, () => exportPlantTablePDF(rows, gray, {
+        title: t('tablePdfTitle'), page: t('tablePdfPage'), name: t('thName'), latin: t('thLatin'), layer: t('thLayer'),
+        uses: t('legendUsageHeading').replace(/:$/, ''), functions: t('legendFunctionsHeading').replace(/:$/, ''),
+        sun: t('thSun'), water: t('thWater'), growth: t('thGrowthSpeed'),
+        bloom: t('legendFlowering'), fruit: t('legendFruiting'), legend: t('tablePdfLegend'), monthsNote: t('tablePdfMonths'),
+        layerNames: { tree: t('layerTree'), shrub: t('layerShrub'), herb: t('layerHerb') },
+        chip: Object.fromEntries(Object.entries(badgeKey).map(([k, v]) => [k, t(v)])),
+      }));
+    });
+  }
+
+  document.getElementById('btn-pdf-scaled')!.addEventListener('click', async () => {
+    const scale = parseFloat((document.getElementById('scaled-denominator') as HTMLInputElement).value);
+    const paper = (document.getElementById('scaled-paper') as HTMLSelectElement).value as ScaledPaper;
+    if (!(scale > 0)) return;
+    const btn = document.getElementById('btn-pdf-scaled') as HTMLButtonElement;
+    const res = await withButtonSpinner(btn, () => exportBaumscheibeScaledPDF(cachedPlants, scale, paper));
+    if (res && res.shrunk > 0) alert(t('pdfScaledShrunk', { n: res.shrunk }));
+  });
+
   document.getElementById('btn-pdf-sheet')!.addEventListener('click', async () => {
     if (cachedPlants.length === 0) return;
     const btn = document.getElementById('btn-pdf-sheet') as HTMLButtonElement;
@@ -1591,7 +1643,7 @@ import Layout from '../layouts/Layout.astro';
     // 100%-complete plant would make the exact same requests for no possible
     // change (enrichPlant only ever fills currently-empty fields), needlessly
     // hammering both services. Same 10-field heuristic as the "Vollst." column.
-    const plants = allPlants.filter(p => completenessPercent(p) < 100 || needsImageCredit(p));
+    const plants = allPlants.filter(p => completenessPercent(p) < 100 || needsImageCredit(p) || (getLang() === 'en' && !p.commonNameEn));
     const skipped = allPlants.length - plants.length;
     if (plants.length === 0) { alert(t('alertEnrichAllNoneNeeded', { skipped })); return; }
     b.disabled = true;
@@ -1779,6 +1831,16 @@ import Layout from '../layouts/Layout.astro';
     el.classList.toggle('dark:text-stone-300', !active);
     el.textContent = active ? `${label} (${count})` : label;
   }
+  // Set the print count of every plant matching the current filters at once.
+  document.getElementById('btn-bulk-print-count')!.addEventListener('click', async () => {
+    const raw = parseInt((document.getElementById('bulk-print-count-value') as HTMLInputElement).value, 10);
+    const n = Number.isFinite(raw) ? Math.max(0, Math.min(99, raw)) : 1;
+    const targets = applyFilters(cachedPlants);
+    if (targets.length === 0) return;
+    for (const p of targets) { p.printCount = n; await savePlant(p); }
+    renderList();
+  });
+
   function syncFilterChips(shown: number, total: number) {
     syncDropdownSummary('filter-usage-summary', usageFilter.size, t('filterUsageLabel'));
     syncDropdownSummary('filter-function-summary', functionFilter.size, t('filterFunctionLabel'));

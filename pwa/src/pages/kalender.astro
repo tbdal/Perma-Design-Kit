@@ -52,9 +52,10 @@ import Layout from '../layouts/Layout.astro';
 
 <script>
   import { getAllPlants } from '../lib/db';
+  import { displayName, displayCommonName } from '../lib/plant-name';
   import type { PlantData } from '../lib/types';
   import { escapeHtml } from '../lib/html';
-  import { createT, applyStaticI18n } from '../lib/i18n/core';
+  import { createT, applyStaticI18n, getLang } from '../lib/i18n/core';
   import { kalenderDict } from '../lib/i18n/dict-kalender';
 
   const t = createT(kalenderDict);
@@ -87,7 +88,7 @@ import Layout from '../layouts/Layout.astro';
     const showR = filterFruit.checked;
     return allPlants.filter(p => {
       if (!hasActivity(p)) return false;
-      if (q && !p.latinName.toLowerCase().includes(q) && !(p.commonName || '').toLowerCase().includes(q)) return false;
+      if (q && !p.latinName.toLowerCase().includes(q) && ![p.commonName, p.commonNameEn].some(n => (n || '').toLowerCase().includes(q))) return false;
       if (!showF && !showR) return false;
       const hasFlower = showF && !!(p.flowerMonths?.some(Boolean));
       const hasFruit  = showR && !!(p.fruitMonths?.some(Boolean));
@@ -143,8 +144,8 @@ import Layout from '../layouts/Layout.astro';
     }).join('');
 
     const rows = plants.map(p => {
-      const name = escapeHtml(p.commonName || p.latinName);
-      const sub  = p.commonName ? `<span class="block text-[10px] italic text-stone-400 dark:text-stone-500 truncate">${escapeHtml(p.latinName)}</span>` : '';
+      const name = escapeHtml(displayName(p));
+      const sub  = displayCommonName(p) ? `<span class="block text-[10px] italic text-stone-400 dark:text-stone-500 truncate">${escapeHtml(p.latinName)}</span>` : '';
       const cells = MONTHS.map((_, i) => {
         const flower = showF && !!(p.flowerMonths?.[i]);
         const fruit  = showR && !!(p.fruitMonths?.[i]);
@@ -195,7 +196,7 @@ import Layout from '../layouts/Layout.astro';
   getAllPlants().then(plants => {
     allPlants = plants
       .filter(hasActivity)
-      .sort((a, b) => (a.commonName || a.latinName).localeCompare(b.commonName || b.latinName, 'de'));
+      .sort((a, b) => displayName(a).localeCompare(displayName(b), getLang()));
     render();
   });
 </script>

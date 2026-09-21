@@ -1,6 +1,7 @@
 import type { PlantData } from './types';
 import { hasSource } from './types';
 import { escapeHtml, imageCreditOverlayHtml } from './html';
+import { displayCommonName } from './plant-name';
 
 /** PFAF's database text is CC BY 4.0, which requires attribution wherever the
  *  data is republished — including on printed/exported cards, not just in the
@@ -147,7 +148,7 @@ export function renderPolyCardHtml(plant: PlantData, imgSrc?: string): string {
       `<div style="font-size:13px;font-weight:bold;line-height:1.2;white-space:nowrap;` +
            `overflow:hidden;text-overflow:ellipsis;">${escapeHtml(plant.latinName || '—')}</div>` +
       `<div style="font-size:11px;opacity:0.85;white-space:nowrap;overflow:hidden;` +
-           `text-overflow:ellipsis;">${escapeHtml(plant.commonName || '\u00a0')}</div>` +
+           `text-overflow:ellipsis;">${escapeHtml(displayCommonName(plant) || '\u00a0')}</div>` +
     `</div>` +
 
     // ── Photo ─────────────────────────────────────────────────────────────────
@@ -274,7 +275,7 @@ export function renderStripeCardHtml(plant: PlantData, imgSrc?: string): string 
       `<div style="font-size:11px;font-weight:bold;color:${C.header};white-space:nowrap;` +
            `overflow:hidden;text-overflow:ellipsis;">${escapeHtml(plant.latinName || '—')}</div>` +
       `<div style="font-size:9px;color:#666;white-space:nowrap;overflow:hidden;` +
-           `text-overflow:ellipsis;">${escapeHtml(plant.commonName || '')}</div>` +
+           `text-overflow:ellipsis;">${escapeHtml(displayCommonName(plant))}</div>` +
     `</div>` +
 
     // Specs

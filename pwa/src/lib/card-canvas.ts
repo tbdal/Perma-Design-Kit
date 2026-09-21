@@ -4,6 +4,7 @@
  * No external renderer, no CSS parsing, no oklch issues.
  */
 import type { PlantData } from './types';
+import { displayCommonName } from './plant-name';
 
 const MONTHS = ['J','F','M','A','M','J','J','A','S','O','N','D'];
 
@@ -158,7 +159,7 @@ export async function renderPolyCardToCanvas(
   ctx.fillText(plant.latinName || '—', 8, 7, W - 16);
   ctx.font = '11px Arial, sans-serif';
   ctx.globalAlpha = 0.85;
-  ctx.fillText(plant.commonName || '', 8, 24, W - 16);
+  ctx.fillText(displayCommonName(plant), 8, 24, W - 16);
   ctx.globalAlpha = 1;
   y = 44;
 
@@ -331,7 +332,7 @@ export async function renderStripeCardToCanvas(
   ctx.fillText(plant.latinName || '—', x + 6, 7, 140);
   ctx.fillStyle = '#555555';
   ctx.font = '9px Arial, sans-serif';
-  ctx.fillText(plant.commonName || '', x + 6, 21, 140);
+  ctx.fillText(displayCommonName(plant), x + 6, 21, 140);
   x += 158;
 
   // Specs
