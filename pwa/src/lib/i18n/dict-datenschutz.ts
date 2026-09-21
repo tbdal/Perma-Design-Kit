@@ -49,7 +49,7 @@ export const datenschutzDict: Dict = {
   },
   dsExtLi1Body: { de: 'direkte API-Anfragen aus deinem Browser für Such­ergebnisse und Pflanzen­details.', en: 'direct API requests from your browser for search results and plant details.' },
   dsExtLi2Body1: { de: 'Anfragen werden über einen eigenen Server-Proxy (', en: 'requests are routed through our own server proxy (' },
-  dsExtLi2Body2: { de: ') weitergeleitet, weil die Quelle keinen direkten Browser-Zugriff erlaubt. (NaturaDB ist aktuell deaktiviert, siehe CHANGELOG.md.)', en: ') because the source does not allow direct browser access. (NaturaDB is currently disabled, see CHANGELOG.md.)' },
+  dsExtLi2Body2: { de: ') weitergeleitet, weil die Quelle keinen direkten Browser-Zugriff erlaubt.', en: ') because the source does not allow direct browser access.' },
   dsExtLi3Body: { de: 'Pflanzen­bilder werden bei Bedarf direkt von dort geladen.', en: 'plant images are loaded directly from there when needed.' },
   dsExtLi4Body1: { de: 'nur wenn du Gist-Sync aktiviert hast. Anfragen gehen mit deinem Personal Access Token direkt an', en: 'only if you have enabled Gist sync. Requests go with your personal access token directly to' },
   dsExternalOutro: {

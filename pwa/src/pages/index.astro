@@ -1777,7 +1777,6 @@ import Layout from '../layouts/Layout.astro';
                 const src: DataSource = isSourceEnabled('pfaf') ? 'pfaf' : 'naturadb';
                 trackSources(plant, filled, src);
                 if (isSourceEnabled('pfaf')) sourceLabels.push('PFAF');
-                if (isSourceEnabled('naturadb')) sourceLabels.push('NaturaDB');
               }
             }
 

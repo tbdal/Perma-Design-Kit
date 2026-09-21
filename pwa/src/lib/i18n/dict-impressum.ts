@@ -26,8 +26,8 @@ export const impressumDict: Dict = {
 
   imLiabilityLinksTitle: { de: 'Haftung für Links', en: 'Liability for Links' },
   imLiabilityLinksBody: {
-    de: 'Die Anwendung verlinkt auf externe Quellen (u.a. Wikidata, PFAF, NaturaDB, Wikimedia Commons). Auf den Inhalt dieser externen Seiten haben wir keinen Einfluss. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber der Seiten verantwortlich.',
-    en: 'The application links to external sources (including Wikidata, PFAF, NaturaDB, Wikimedia Commons). We have no influence on the content of these external sites. The respective provider or operator of the linked sites is always responsible for their content.',
+    de: 'Die Anwendung verlinkt auf externe Quellen (u.a. Wikidata, PFAF, Wikimedia Commons). Auf den Inhalt dieser externen Seiten haben wir keinen Einfluss. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber der Seiten verantwortlich.',
+    en: 'The application links to external sources (including Wikidata, PFAF, Wikimedia Commons). We have no influence on the content of these external sites. The respective provider or operator of the linked sites is always responsible for their content.',
   },
 
   imCopyrightTitle: { de: 'Urheberrecht', en: 'Copyright' },

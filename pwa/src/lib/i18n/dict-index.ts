@@ -236,5 +236,5 @@ export const indexDict: Dict = {
   alertEnrichAllFailed: { de: ' {failed} fehlgeschlagen (siehe Konsole).', en: ' {failed} failed (see console).' },
   alertNoCsvPlants: { de: 'Keine Pflanzen in der CSV gefunden.', en: 'No plants found in the CSV.' },
   enrichWikidataStatus: { de: 'Wikidata...', en: 'Wikidata...' },
-  enrichPfafStatus: { de: 'PFAF/NaturaDB...', en: 'PFAF/NaturaDB...' },
+  enrichPfafStatus: { de: 'PFAF...', en: 'PFAF...' },
 };
