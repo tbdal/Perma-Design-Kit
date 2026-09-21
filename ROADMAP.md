@@ -9,6 +9,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
   - [ ] unfarbige Felder in Baumscheibe
   - [ ] Zeichen für Baum/Strauch.. ebene
   - [ ] Boden rausnehmen?
+- [ ] einführung in webseite: erklärung der funktionen
 - [ ] Funktionen und nutzen in Pflanzenkarte mit Baumscheibe abgleichen
 - [ ] 2 pdf versionen: a) 9 stück pro din a4 b) maßstabsgetreu
 - [ ] naturadb anrufen
