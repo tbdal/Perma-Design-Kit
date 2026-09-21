@@ -3,19 +3,19 @@
 Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Kurzfristig
-- [ ] domain kaufen, Impressum, besuchsstatistiken. link zu github, Spendenbutton
+- [ ] domain kaufen, Impressum, besuchsstatistiken. link zu github, Spendenbutton @Andi
 - [ ] Baumscheibe @Jörn
   - [ ] Wasser und Sonne sind im SVG nicht vollständig
-  - [ ] unfarbige Felder in Baumscheibe
   - [ ] Zeichen für Baum/Strauch.. ebene -> psd erneut in svg konvertieren @Andi
-
+  - [ ] Bewertung
 - [ ] Tabelle: Baum/Strauch/Krautebene als Spalte und Filter/sortierfunktion
 - [ ] einführung in webseite: erklärung der funktionen. per cookie?
 - [ ] 2 pdf versionen: a) 9 stück pro din a4 b) maßstabsgetreu
 - [ ] naturadb anrufen
 
-## später
-- [ ] Boden-Dreieck mappen und aktiveren 
+## später / Fragen für Präsentation
+- [ ] Boden-Dreieck mappen und aktiveren
+- [ ] unfarbige Felder in Baumscheibe
 
 ### Debugging
 #### Darstellung Scheibe & mapping prüfen
