@@ -162,6 +162,14 @@ import Layout from '../layouts/Layout.astro';
         <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-water-opt accent-blue-500" value="waterWet" /> <span data-i18n="filterWaterWet">Nass</span></label>
       </div>
     </details>
+    <details class="filter-dropdown relative">
+      <summary id="filter-growspeed-summary" class="cursor-pointer select-none rounded-full bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700"><span data-i18n="thGrowthSpeed">Wuchs</span></summary>
+      <div class="absolute z-10 mt-1 w-40 space-y-1 rounded-lg bg-white dark:bg-stone-800 p-2.5 text-xs shadow-lg ring-1 ring-stone-200 dark:ring-stone-700">
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-growspeed-opt accent-green-500" value="growSpeedLow" /> <span data-i18n="lblGrowSpeedLow">Langsam</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-growspeed-opt accent-green-500" value="growSpeedMid" /> <span data-i18n="lblGrowSpeedMid">Mittel</span></label>
+        <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-growspeed-opt accent-green-500" value="growSpeedHigh" /> <span data-i18n="lblGrowSpeedHigh">Schnell</span></label>
+      </div>
+    </details>
     <span class="h-4 w-px bg-stone-300 dark:bg-stone-700"></span>
     <button id="btn-filter-clear" data-i18n="filterClear" class="hidden rounded-full bg-stone-200 dark:bg-stone-700 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-300 dark:hover:bg-stone-700">Zurücksetzen ×</button>
     <span id="filter-count" class="hidden text-stone-500 dark:text-stone-400"></span>
@@ -372,7 +380,7 @@ import Layout from '../layouts/Layout.astro';
   let editingPlant: PlantData | null = null;
   let cachedPlants: PlantData[] = [];
   let lastCheckedId: string | null = null;
-  let sortField: 'commonName' | 'latinName' | 'heightM' | 'widthM' | 'completeness' = 'commonName';
+  let sortField: 'commonName' | 'latinName' | 'heightM' | 'widthM' | 'completeness' | 'growSpeed' = 'commonName';
   let sortDir: 'asc' | 'desc' = 'asc';
 
   // Free-text filter — separate from the top search bar, which searches
@@ -402,10 +410,12 @@ import Layout from '../layouts/Layout.astro';
   const functionFilter = loadSet('plant-filter-function');
   const sunFilter = loadSet('plant-filter-sun');
   const waterFilter = loadSet('plant-filter-water');
+  const growSpeedFilter = loadSet('plant-filter-growspeed');
   function persistUsageFilter() { saveSet('plant-filter-usage', usageFilter); }
   function persistFunctionFilter() { saveSet('plant-filter-function', functionFilter); }
   function persistSunFilter() { saveSet('plant-filter-sun', sunFilter); }
   function persistWaterFilter() { saveSet('plant-filter-water', waterFilter); }
+  function persistGrowSpeedFilter() { saveSet('plant-filter-growspeed', growSpeedFilter); }
 
   // One-time migration: the old filter-chip buttons (eatable/meds/material/
   // nitrogenFix, and — until Sonne/Wasser got their own table columns —
@@ -461,6 +471,9 @@ import Layout from '../layouts/Layout.astro';
     }
     if (waterFilter.size > 0) {
       result = result.filter(p => [...waterFilter].some(f => Boolean((p as any)[f])));
+    }
+    if (growSpeedFilter.size > 0) {
+      result = result.filter(p => [...growSpeedFilter].some(f => Boolean((p as any)[f])));
     }
     if (flowerMonthFilter.size > 0) {
       result = result.filter(p => [...flowerMonthFilter].some(m => !!p.flowerMonths?.[Number(m)]));
@@ -689,6 +702,14 @@ import Layout from '../layouts/Layout.astro';
     ['waterMid', 'bg-sky-100 text-sky-800',     '#38bdf8', t('filterWaterMid')],
     ['waterWet', 'bg-blue-100 text-blue-800',   '#1d4ed8', t('filterWaterWet')],
   ];
+  // Wuchsgeschwindigkeit — same dot-group convention, green ramp from pale
+  // (slow) to saturated (fast) since there's no Baumscheibe-wedge source
+  // for this either (one generic growth icon, not per-speed).
+  const GROWTH_BADGES: [keyof PlantData, string, string, string][] = [
+    ['growSpeedLow',  'bg-lime-100 text-lime-800',       '#bef264', t('lblGrowSpeedLow')],
+    ['growSpeedMid',  'bg-green-100 text-green-800',     '#4ade80', t('lblGrowSpeedMid')],
+    ['growSpeedHigh', 'bg-emerald-100 text-emerald-800', '#059669', t('lblGrowSpeedHigh')],
+  ];
   const USE_BADGES = [...USAGE_BADGES, ...FUNCTION_BADGES];
 
   function badges(p: PlantData): string {
@@ -716,6 +737,7 @@ import Layout from '../layouts/Layout.astro';
     const functionChips = FUNCTION_BADGES.map(([,,dot,l]) => chip(dot, l)).join(' ');
     const sunChips = SUN_BADGES.map(([,,dot,l]) => chip(dot, l)).join(' ');
     const waterChips = WATER_BADGES.map(([,,dot,l]) => chip(dot, l)).join(' ');
+    const growthChips = GROWTH_BADGES.map(([,,dot,l]) => chip(dot, l)).join(' ');
     return `
       <details id="color-legend" open class="mx-3 mb-2 sm:mx-0 rounded-lg bg-stone-50 dark:bg-stone-900 px-3 py-1.5 text-xs text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700">
         <summary class="cursor-pointer select-none font-medium text-stone-500 dark:text-stone-400">${escapeHtml(t('legendToggle'))}</summary>
@@ -724,6 +746,7 @@ import Layout from '../layouts/Layout.astro';
           <div class="flex flex-wrap items-center gap-x-3 gap-y-1"><strong class="text-stone-500 dark:text-stone-400">${escapeHtml(t('legendFunctionsHeading'))}</strong>${functionChips}</div>
           <div class="flex flex-wrap items-center gap-x-3 gap-y-1"><strong class="text-stone-500 dark:text-stone-400">${escapeHtml(t('thSun'))}:</strong>${sunChips}</div>
           <div class="flex flex-wrap items-center gap-x-3 gap-y-1"><strong class="text-stone-500 dark:text-stone-400">${escapeHtml(t('thWater'))}:</strong>${waterChips}</div>
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-1"><strong class="text-stone-500 dark:text-stone-400">${escapeHtml(t('thGrowthSpeed'))}:</strong>${growthChips}</div>
           <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
             <strong class="text-stone-500 dark:text-stone-400">${escapeHtml(t('legendPhenologyHeading'))}</strong>
             ${chip('#fcd34d', t('legendFlowering'))}
@@ -799,6 +822,16 @@ import Layout from '../layouts/Layout.astro';
 
   // ── Sorting ───────────────────────────────────────────────────────────────────
 
+  /** Slow=1 / Mid=2 / High=3, unset=Infinity (sorts last, same convention as
+   *  heightM/widthM below) — lets growth speed sort as an ordinal despite
+   *  being stored as three separate booleans rather than one field. */
+  function growSpeedRank(p: PlantData): number {
+    if (p.growSpeedHigh) return 3;
+    if (p.growSpeedMid) return 2;
+    if (p.growSpeedLow) return 1;
+    return Infinity;
+  }
+
   function sortedPlants(plants: PlantData[]): PlantData[] {
     return [...plants].sort((a, b) => {
       let va: string | number, vb: string | number;
@@ -811,6 +844,9 @@ import Layout from '../layouts/Layout.astro';
       } else if (sortField === 'widthM') {
         va = a.widthM ?? Infinity;
         vb = b.widthM ?? Infinity;
+      } else if (sortField === 'growSpeed') {
+        va = growSpeedRank(a);
+        vb = growSpeedRank(b);
       } else {
         va = ((a[sortField] as string) || '').toLowerCase();
         vb = ((b[sortField] as string) || '').toLowerCase();
@@ -1123,10 +1159,11 @@ import Layout from '../layouts/Layout.astro';
         const functionDots = dotGroup(p, FUNCTION_BADGES);
         const sunDots = dotGroup(p, SUN_BADGES);
         const waterDots = dotGroup(p, WATER_BADGES);
+        const growthDots = dotGroup(p, GROWTH_BADGES);
         const phenologyHtml = phenologyBar(p);
         const printHtml = printStepperHtml(p, t);
         const off = (p.printCount ?? 1) === 0;
-        return { p, srcHtml, sel, pct, barColor, usageDots, functionDots, sunDots, waterDots, phenologyHtml, printHtml, off };
+        return { p, srcHtml, sel, pct, barColor, usageDots, functionDots, sunDots, waterDots, growthDots, phenologyHtml, printHtml, off };
       });
 
       const actionBtns = `
@@ -1139,7 +1176,7 @@ import Layout from '../layouts/Layout.astro';
 
         <!-- Mobile card list (< sm) -->
         <div class="sm:hidden divide-y divide-stone-100">
-          ${rowData.map(({ p, srcHtml, sel, pct, barColor, usageDots, functionDots, sunDots, waterDots, phenologyHtml, printHtml, off }) => `
+          ${rowData.map(({ p, srcHtml, sel, pct, barColor, usageDots, functionDots, sunDots, waterDots, growthDots, phenologyHtml, printHtml, off }) => `
           <div data-id="${p.id}" class="flex items-start gap-2.5 px-3 py-3 ${sel ? 'bg-green-50 dark:bg-green-900/30' : ''}${off ? ' opacity-60' : ''}">
             <input type="checkbox" class="row-check mt-1 shrink-0 accent-green-600" ${sel ? 'checked' : ''} />
             <div class="w-0.5 self-stretch rounded-full ${accentColor(p)} shrink-0"></div>
@@ -1159,6 +1196,7 @@ import Layout from '../layouts/Layout.astro';
                 ${functionDots ? `<span class="flex gap-0.5">${functionDots}</span>` : ''}
                 ${sunDots ? `<span class="flex gap-0.5">${sunDots}</span>` : ''}
                 ${waterDots ? `<span class="flex gap-0.5">${waterDots}</span>` : ''}
+                ${growthDots ? `<span class="flex gap-0.5">${growthDots}</span>` : ''}
                 ${phenologyHtml}
               </div>
               <div class="mt-1.5 flex flex-wrap gap-1">${badges(p)}</div>
@@ -1188,6 +1226,7 @@ import Layout from '../layouts/Layout.astro';
                 <th class="px-3 py-2.5">${escapeHtml(t('thFunctions'))}</th>
                 <th class="px-3 py-2.5">${escapeHtml(t('thSun'))}</th>
                 <th class="px-3 py-2.5">${escapeHtml(t('thWater'))}</th>
+                ${thSort('growSpeed', t('thGrowthSpeed'))}
                 <th class="px-3 py-2.5">${escapeHtml(t('thPhenology'))}</th>
                 ${thSort('completeness', t('thCompleteness'))}
                 <th class="px-3 py-2.5">${escapeHtml(t('thCount'))}</th>
@@ -1196,7 +1235,7 @@ import Layout from '../layouts/Layout.astro';
               </tr>
             </thead>
             <tbody class="divide-y divide-stone-100">
-              ${rowData.map(({ p, srcHtml, sel, pct, barColor, usageDots, functionDots, sunDots, waterDots, phenologyHtml, printHtml, off }) => `
+              ${rowData.map(({ p, srcHtml, sel, pct, barColor, usageDots, functionDots, sunDots, waterDots, growthDots, phenologyHtml, printHtml, off }) => `
               <tr data-id="${p.id}" class="hover:bg-stone-50 dark:hover:bg-stone-800 ${sel ? 'bg-green-50 dark:bg-green-900/30' : ''}${off ? ' opacity-60' : ''}">
                 <td class="px-3 py-2"><input type="checkbox" class="row-check accent-green-600" ${sel ? 'checked' : ''} /></td>
                 <td class="px-3 py-2">
@@ -1212,6 +1251,7 @@ import Layout from '../layouts/Layout.astro';
                 <td class="px-3 py-2"><div class="flex gap-0.5">${functionDots}</div></td>
                 <td class="px-3 py-2"><div class="flex gap-0.5">${sunDots}</div></td>
                 <td class="px-3 py-2"><div class="flex gap-0.5">${waterDots}</div></td>
+                <td class="px-3 py-2"><div class="flex gap-0.5">${growthDots}</div></td>
                 <td class="px-3 py-2">${phenologyHtml}</td>
                 <td class="px-3 py-2">
                   <div class="flex items-center gap-1.5">
@@ -1666,6 +1706,7 @@ import Layout from '../layouts/Layout.astro';
   // ── Filter chips ───────────────────────────────────────────────────────
   function anyFilterActive(): boolean {
     return usageFilter.size > 0 || functionFilter.size > 0 || sunFilter.size > 0 || waterFilter.size > 0
+      || growSpeedFilter.size > 0
       || flowerMonthFilter.size > 0 || fruitMonthFilter.size > 0
       || heightMin > 0 || completenessMin > 0 || !!textQuery.trim();
   }
@@ -1686,6 +1727,7 @@ import Layout from '../layouts/Layout.astro';
     syncDropdownSummary('filter-function-summary', functionFilter.size, t('filterFunctionLabel'));
     syncDropdownSummary('filter-sun-summary', sunFilter.size, t('thSun'));
     syncDropdownSummary('filter-water-summary', waterFilter.size, t('thWater'));
+    syncDropdownSummary('filter-growspeed-summary', growSpeedFilter.size, t('thGrowthSpeed'));
     syncDropdownSummary('filter-flowering-summary', flowerMonthFilter.size, t('legendFlowering'));
     syncDropdownSummary('filter-fruiting-summary', fruitMonthFilter.size, t('legendFruiting'));
     const clearBtn = document.getElementById('btn-filter-clear')!;
@@ -1719,6 +1761,7 @@ import Layout from '../layouts/Layout.astro';
   const filterFunctionEls = wireCheckboxGroup('.filter-function-opt', functionFilter, persistFunctionFilter);
   const filterSunEls = wireCheckboxGroup('.filter-sun-opt', sunFilter, persistSunFilter);
   const filterWaterEls = wireCheckboxGroup('.filter-water-opt', waterFilter, persistWaterFilter);
+  const filterGrowSpeedEls = wireCheckboxGroup('.filter-growspeed-opt', growSpeedFilter, persistGrowSpeedFilter);
   const filterFloweringEls = wireCheckboxGroup('.filter-flowering-opt', flowerMonthFilter, persistFlowerMonthFilter);
   const filterFruitingEls = wireCheckboxGroup('.filter-fruiting-opt', fruitMonthFilter, persistFruitMonthFilter);
 
@@ -1759,6 +1802,9 @@ import Layout from '../layouts/Layout.astro';
     waterFilter.clear();
     persistWaterFilter();
     filterWaterEls.forEach(cb => { cb.checked = false; });
+    growSpeedFilter.clear();
+    persistGrowSpeedFilter();
+    filterGrowSpeedEls.forEach(cb => { cb.checked = false; });
     flowerMonthFilter.clear();
     persistFlowerMonthFilter();
     filterFloweringEls.forEach(cb => { cb.checked = false; });

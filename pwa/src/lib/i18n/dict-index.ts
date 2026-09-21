@@ -111,6 +111,7 @@ export const indexDict: Dict = {
   thFunctions: { de: 'Funktionen', en: 'Functions' },
   thSun: { de: 'Sonne', en: 'Sun' },
   thWater: { de: 'Wasser', en: 'Water' },
+  thGrowthSpeed: { de: 'Wuchs', en: 'Growth' },
   thCompleteness: { de: 'Vollst.', en: 'Complete' },
   thCount: { de: 'Anz.', en: 'Qty.' },
   thSources: { de: 'Quellen', en: 'Sources' },
