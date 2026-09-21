@@ -1,6 +1,7 @@
 import type { PlantData } from './types';
 import { hasSource } from './types';
 import { TEXT_FIELDS, BOOL_FIELDS } from './baumscheibe-mapping';
+import { deriveLayer } from './plant-layer';
 
 const TEMPLATE_URL = '/baumscheibe-template.svg';
 let templatePromise: Promise<SVGSVGElement> | null = null;
@@ -149,14 +150,35 @@ function injectPfafAttribution(svg: SVGSVGElement) {
   svg.appendChild(text);
 }
 
-/** The 2.3 template's "growth speed" group has a single generic icon (not
- *  three distinct Low/Mid/High icons), so it can only show "a growth speed
- *  is known" — visible when any of the three booleans is true. */
+// The "growth speed" group's three icons (speed1/speed2/speed3, one chevron-
+// count per icon) were all stacked at the same position in the PSD with only
+// one shown as a design preview — the 2026-09-21 template reconversion
+// force-included all three (see psd2svg/psd2svg_skript.py) instead of the
+// single generic icon the previous template had, so this can now show the
+// actual Low/Mid/High state instead of just "a speed is known".
+const GROWTH_SPEED_LABELS = { growSpeedLow: 'speed1', growSpeedMid: 'speed2', growSpeedHigh: 'speed3' } as const;
+
 function setGrowthSpeedIcon(svg: SVGSVGElement, plant: PlantData) {
-  const [group] = findByLabel(svg, ['growth speed']);
-  if (!group) return;
-  const on = plant.growSpeedLow || plant.growSpeedMid || plant.growSpeedHigh;
-  group.querySelectorAll('image').forEach(el => setVisible(el, on));
+  const active = plant.growSpeedLow ? 'growSpeedLow' : plant.growSpeedMid ? 'growSpeedMid' : plant.growSpeedHigh ? 'growSpeedHigh' : null;
+  for (const [field, label] of Object.entries(GROWTH_SPEED_LABELS)) {
+    for (const el of findByLabel(svg, [label])) setVisible(el, field === active);
+  }
+}
+
+// Same story for "layer" (Baum/Strauch/Kraut/Rhizom/Kletterpflanze), all
+// five stacked at the same position with only l_tree previously visible.
+// There's no PlantData field for layer type, but deriveLayer() (the same
+// heuristic the Gartenplan and plant table already use, from heightM +
+// groundCover) gives a reasonable single state to show — l_rhizo/l_climber
+// have no derivable signal and stay hidden always.
+const LAYER_LABELS = { tree: 'l_tree', shrub: 'l_shrub', herb: 'l_herb' } as const;
+
+function setLayerIcon(svg: SVGSVGElement, plant: PlantData) {
+  const active = deriveLayer(plant);
+  for (const [layer, label] of Object.entries(LAYER_LABELS)) {
+    for (const el of findByLabel(svg, [label])) setVisible(el, layer === active);
+  }
+  for (const el of findByLabel(svg, ['l_rhizo', 'l_climber'])) setVisible(el, false);
 }
 
 /** Render a plant into the Baumscheibe SVG template; returns serialized SVG markup. */
@@ -189,6 +211,7 @@ export async function renderBaumscheibeSvg(plant: PlantData): Promise<string> {
   await injectNameText(svg, 'latinName',  plant.latinName  || '');
   injectMonthCalendar(svg, plant.fruitMonths, plant.flowerMonths);
   setGrowthSpeedIcon(svg, plant);
+  setLayerIcon(svg, plant);
   if (hasSource(plant, 'pfaf')) injectPfafAttribution(svg);
 
   for (const [field, labels] of Object.entries(BOOL_FIELDS)) {

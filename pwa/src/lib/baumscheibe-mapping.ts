@@ -20,20 +20,27 @@ export const TEXT_FIELDS: Partial<Record<keyof PlantData, string[]>> = {
 };
 
 export const BOOL_FIELDS: Partial<Record<keyof PlantData, string[]>> = {
-  // Wachstum — the 2.3 template has only one generic growth-speed icon (the
-  // "growth speed" group's single image, id "speed1"), not three distinct
-  // ones, so it can't distinguish Low/Mid/High individually. Handled by
-  // setGrowthSpeedIcon() in baumscheibe-render.ts instead (shown whenever any
-  // of the three is true), not through this generic per-field alias list.
+  // Wachstum — the template's "growth speed" group actually has three
+  // distinct icons (speed1/speed2/speed3, only one shown as a design
+  // preview in the PSD) — as of the 2026-09-21 reconversion all three are
+  // included and individually selected by setGrowthSpeedIcon() in
+  // baumscheibe-render.ts (via deriveLayer()-style logic, not this generic
+  // alias list — the labels below are legacy/aspirational and don't match
+  // the real speed1/2/3 layer names, kept only so a hand-relabeled future
+  // template revision using these names would work without a code change).
   growSpeedLow:  ['Growth-slow', 'growSpeedLow'],
   growSpeedMid:  ['Growth-mod',  'growSpeedMid'],
   growSpeedHigh: ['Growth-fast', 'growSpeedHigh'],
-  // Sonne — no per-state elements in the 2.3 template either (still just one
-  // generic sun icon); stays unrendered.
+  // Sonne/Wasser — the template's "light"/"water" groups do have multiple
+  // icon variants (fullshade1/2, semishade1/2, wet1/2, humid1/2), but they
+  // don't map 1:1 onto these 3 PlantData states (no distinct "full sun"/
+  // "dry" icon at all, and it's unclear which numbered variant — 1 or 2 —
+  // is the intended one), so the 2026-09-21 reconversion deliberately left
+  // them at their single original preview icon rather than guess a wrong
+  // mapping. Stays unrendered until that's resolved with the designer.
   sunFull:       ['Sun-fullsun',   'sunFull'],
   sunMid:        ['Sun-semishade', 'sunMid'],
   sunShadow:     ['Sun-fullshade', 'sunShadow'],
-  // Wasser — same limitation as Sonne.
   waterDry:      ['Water-dry', 'waterDry'],
   waterMid:      ['Water-Mid', 'waterMid'],
   waterWet:      ['Water-Wet', 'waterWet'],
