@@ -18,6 +18,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] naturadb anrufen (Anfrage: Erlaubnis für gemeinnützige, nicht-kommerzielle Nutzung der Daten?)
 - [ ] Toensmeier: können wir seine Daten dafür nutzen? @Joern
 - [ ] tabelle: button oder andere funktion damit gefilterte alle für druck (anzahl) auf einmal angepasst werden können
+- [ ] englische pflanznamen bei englischer ui anzeigen
 
 - [ ] besuchsstatistiken, wie?
 
