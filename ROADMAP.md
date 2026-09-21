@@ -12,12 +12,13 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
   - [ ] Durchmesser auf Baumscheibe etwas runterschieben
   - [ ] raleway schriftart für höhe, breite und Härtegrad nutzen
 - [ ] Tabelle: Baum/Strauch/Krautebene als Spalte und Filter/sortierfunktion
-- [ ] einführung in webseite für ersten Start: erklärung der funktionen. wie lässt 
+- [ ] Produkt-Tour: einführung in webseite für ersten Start: erklärung der funktionen. wie lässt 
 - [ ] zweite pdf-version maßstabsgetreu. 1:50 
 - [ ] tabelle als pdf druckbar machen
 - [ ] naturadb anrufen (Anfrage: Erlaubnis für gemeinnützige, nicht-kommerzielle Nutzung der Daten?)
 - [ ] Toensmeier: können wir seine Daten dafür nutzen? @Joern
 - [ ] tabelle: button oder andere funktion damit gefilterte alle für druck (anzahl) auf einmal angepasst werden können
+- [ ] kannst du vor dem erstem Start eine kurze Erläuterung einblenden, was das permamente Speichern im Browser bedeutet
 
 ## später / Fragen für Präsentation
 - [ ] Boden-Dreieck mappen und aktiveren
