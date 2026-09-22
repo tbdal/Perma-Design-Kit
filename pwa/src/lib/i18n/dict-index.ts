@@ -228,7 +228,7 @@ export const indexDict: Dict = {
   alertSamplesImported: { de: '{n} Beispielpflanzen importiert{reset}.', en: '{n} sample plants imported{reset}.' },
   alertFiltersReset: { de: ' (Filter zurückgesetzt)', en: ' (filters reset)' },
   alertSampleImportFailed: { de: 'Beispieldaten-Import fehlgeschlagen: {error}', en: 'Sample data import failed: {error}' },
-  alertCrawfordImported: { de: '{n} Pflanzen (Crawford) importiert{reset}. Nur lateinische Namen sind gesetzt — mit „↻" pro Pflanze anreichern.', en: '{n} plants (Crawford) imported{reset}. Only Latin names are set — enrich each plant with "↻".' },
+  alertCrawfordImported: { de: '{n} Pflanzen (Crawford) importiert{reset}. Nur lateinische Namen sind gesetzt — mit „↻" pro Pflanze anreichern oder alle Daten laden mit „Lade alle fehlenden Daten".', en: '{n} plants (Crawford) imported{reset}. Only Latin names are set — enrich each plant with "↻" or fetch everything at once with "Fetch all missing data".' },
   alertNoLatinNamePlants: { de: 'Keine Pflanzen mit lateinischem Namen vorhanden.', en: 'No plants with a Latin name found.' },
   alertEnrichAllSummary: { de: '{updated} von {total} Pflanzen aktualisiert, {fields} Felder ergänzt.', en: '{updated} of {total} plants updated, {fields} fields filled.' },
   alertEnrichAllSkipped: { de: ' {skipped} bereits vollständige Pflanzen übersprungen.', en: ' {skipped} already-complete plants skipped.' },
