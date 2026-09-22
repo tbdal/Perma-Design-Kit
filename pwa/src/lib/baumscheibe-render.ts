@@ -166,6 +166,35 @@ function setGrowthSpeedIcon(svg: SVGSVGElement, plant: PlantData) {
   }
 }
 
+// Sonne/Wasser — the PSD's "light" and "water" groups each hold two
+// icon states as hidden siblings of the one visible design preview: a
+// half-filled shape (semishade2 / humid1, already in the template) and a
+// fully-filled one (fullshade1/2, wet1/2 — several near-duplicate copies
+// at different canvas positions, all switched off in Photoshop). Verified
+// with psd-tools that fullshade2/wet1 do have real pixel content, not
+// empty placeholders (force-composited them to check), then pulled them
+// out and spliced into baumscheibe-template.svg at the same position as
+// their already-visible sibling (fullshade2 sits at semishade2's spot,
+// wet1 at humid1's), the same way rating2's stripes were added — see
+// CHANGELOG.md. Neither group has a "full sun" / "dry" icon in the PSD at
+// all (any state), so sunFull/waterDry just mean "hide the whole group".
+const SUN_LABELS = { sunShadow: 'fullshade2', sunMid: 'semishade2' } as const;
+const WATER_LABELS = { waterWet: 'wet1', waterMid: 'humid1' } as const;
+
+function setSunIcon(svg: SVGSVGElement, plant: PlantData) {
+  const active = plant.sunShadow ? 'sunShadow' : plant.sunMid ? 'sunMid' : null;
+  for (const [field, label] of Object.entries(SUN_LABELS)) {
+    for (const el of findByLabel(svg, [label])) setVisible(el, field === active);
+  }
+}
+
+function setWaterIcon(svg: SVGSVGElement, plant: PlantData) {
+  const active = plant.waterWet ? 'waterWet' : plant.waterMid ? 'waterMid' : null;
+  for (const [field, label] of Object.entries(WATER_LABELS)) {
+    for (const el of findByLabel(svg, [label])) setVisible(el, field === active);
+  }
+}
+
 // Same story for "layer" (Baum/Strauch/Kraut/Rhizom/Kletterpflanze), all
 // five stacked at the same position with only l_tree previously visible.
 // There's no PlantData field for layer type, but deriveLayer() (the same
@@ -221,6 +250,8 @@ export async function renderBaumscheibeSvg(plant: PlantData): Promise<string> {
   await injectNameText(svg, 'latinName',  plant.latinName  || '');
   injectMonthCalendar(svg, plant.fruitMonths, plant.flowerMonths);
   setGrowthSpeedIcon(svg, plant);
+  setSunIcon(svg, plant);
+  setWaterIcon(svg, plant);
   setLayerIcon(svg, plant);
   setRatingStripe(svg, plant);
   // The plantlist badge ("A=Agroforestry" …) has no data behind it — always hidden.
