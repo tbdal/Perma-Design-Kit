@@ -1774,7 +1774,10 @@ import Layout from '../layouts/Layout.astro';
               const filled: Partial<PlantData> = {};
               for (const [key, value] of Object.entries(proxyData)) {
                 const cur = (plant as any)[key];
+                // See the SCORE_FIELDS comment on isFillable() above — same
+                // 0-vs-"empty" gap applies to this search-add's own merge.
                 const empty = cur === null || cur === undefined || cur === '' || cur === false ||
+                  (SCORE_FIELDS.has(key) && cur === 0) ||
                   (Array.isArray(cur) && cur.every((v: boolean) => !v));
                 if (empty && value !== null && value !== undefined && value !== '' && value !== false) {
                   (plant as any)[key] = value; (filled as any)[key] = value;
