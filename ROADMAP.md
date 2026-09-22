@@ -22,7 +22,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [o] besuchsstatistiken, wie? — Antwort: Plausible (schon eingebaut) ist die Lösung, braucht nur ein Konto + Domain-Eintrag auf plausible.io; Alternative Skript entfernen. Entscheidung offen → Punkt „plausible“ unter kurzfristig bleibt
 
 ## kurzfristig
-- [ ] Durchmesser auf Baumscheibe etwas runterschieben
+- [x] Durchmesser auf Baumscheibe etwas runterschieben
 - [ ] prüfen: Wasser und Sonne sind im SVG nicht vollständig -> psd erneut in svg konvertieren @Andi
 - [ ] naturadb anrufen (Anfrage: Erlaubnis für gemeinnützige, nicht-kommerzielle Nutzung der Daten?)
 - [ ] Toensmeier: können wir seine Daten dafür nutzen? @Joern
