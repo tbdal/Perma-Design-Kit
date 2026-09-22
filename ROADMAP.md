@@ -14,7 +14,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
   - [x] Maßstab angeben (klein & unscheinbar)
 - [x] Produkt-Tour: einführung in webseite für ersten Start: erklärung der funktionen. wie lässt 
   - [x] kannst du vor dem erstem Start eine kurze Erläuterung einblenden, was das permamente Speichern im Browser bedeutet
-- [o] eine zweite pdf-version der Baumscheibe, welche maßstabsgetreu in 1:50 die Baumscheibe auf druckbar macht. Der Maßstab soll änderbar sind. Dabei soll die maximale Fläche des Papiers genutzt werden, d.h. die Anordnung der Baumscheiben auf dem Druck so gewählt werden, dass möglichst wenig weiße Fläche übrig bleibt. Ränder wie bisher. Auswahl als A4, A3 und A2 ermöglichen. 
+- [x] eine zweite pdf-version der Baumscheibe, welche maßstabsgetreu in 1:50 die Baumscheibe auf druckbar macht. Der Maßstab soll änderbar sind. Dabei soll die maximale Fläche des Papiers genutzt werden, d.h. die Anordnung der Baumscheiben auf dem Druck so gewählt werden, dass möglichst wenig weiße Fläche übrig bleibt. Ränder wie bisher. Auswahl als A4, A3 und A2 ermöglichen. 
 - [o] tabelle als pdf druckbar machen. Auch als zweite Graustufenversion die verschiedenen Kriterien gut unterscheidbar macht
 - [o] tabelle: button oder andere funktion damit gefilterte alle für druck (anzahl) auf einmal angepasst werden können
 - [o] englische pflanznamen bei englischer ui anzeigen
