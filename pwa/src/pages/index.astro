@@ -1712,22 +1712,31 @@ import Layout from '../layouts/Layout.astro';
     try {
       const results = await searchPlants(q);
       if (results.length === 0) { searchResults.innerHTML = `<p class="px-4 py-3 text-sm text-stone-400 dark:text-stone-500">${escapeHtml(t('searchNoResults'))}</p>`; return; }
-      searchResults.innerHTML = results.map((r, i) => `
+      // Same Latin name already in the collection (case-insensitive) — shown
+      // as a hint, not a hard block, since a second entry can be legitimate
+      // (e.g. a different cultivar tracked separately via varietyName).
+      const existingLatin = new Set(cachedPlants.map(p => p.latinName.trim().toLowerCase()));
+      searchResults.innerHTML = results.map((r, i) => {
+        const dupe = !!r.latinName && existingLatin.has(r.latinName.trim().toLowerCase());
+        return `
         <div class="flex items-center justify-between gap-2 px-4 py-2.5 hover:bg-stone-50 dark:hover:bg-stone-800 transition" data-idx="${i}">
           <div class="min-w-0">
             <p class="truncate text-sm font-medium text-stone-800 dark:text-stone-100">${escapeHtml(r.commonName || r.latinName)}</p>
             ${r.latinName ? `<p class="truncate text-xs italic text-stone-500 dark:text-stone-400">${escapeHtml(r.latinName)}</p>` : ''}
             ${r.description ? `<p class="truncate text-xs text-stone-400 dark:text-stone-500">${escapeHtml(r.description)}</p>` : ''}
+            ${dupe ? `<p class="text-xs font-medium text-amber-600 dark:text-amber-400">${escapeHtml(t('searchAlreadyAdded'))}</p>` : ''}
             <p class="import-status text-xs text-green-600"></p>
           </div>
-          <button class="btn-add-result shrink-0 rounded-lg bg-green-700 px-3 py-1.5 text-xs font-medium text-white shadow transition hover:bg-green-800 active:scale-95">${escapeHtml(t('searchAddResult'))}</button>
+          <button data-dupe="${dupe ? '1' : ''}" class="btn-add-result shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium shadow transition active:scale-95 ${dupe ? 'bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-600' : 'bg-green-700 text-white hover:bg-green-800'}">${escapeHtml(dupe ? t('searchAddAnyway') : t('searchAddResult'))}</button>
         </div>
-      `).join('');
+      `;
+      }).join('');
 
       searchResults.querySelectorAll('.btn-add-result').forEach((btn, idx) => {
         btn.addEventListener('click', async () => {
           const b = btn as HTMLButtonElement;
           const statusEl = b.closest('[data-idx]')?.querySelector('.import-status') as HTMLElement | null;
+          if (b.dataset.dupe && !confirm(t('searchAddAnywayConfirm', { name: results[idx].commonName || results[idx].latinName }))) return;
           b.disabled = true;
           const sourceLabels: string[] = [];
           try {
