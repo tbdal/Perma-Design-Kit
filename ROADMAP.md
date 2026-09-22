@@ -3,7 +3,8 @@
 Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELOG.md).
 
 ## jetzt: hier mit [o] abhaken, damit ich sehe, was passiert ist
-- [ ] contributor erwähnen
+- [ ] contributor erwähnen: Jörn, Andi, Jens, Sebastian, pfaf
+- [ ] newsletter
 - [ ] lizenz auf github
 - [x] link zu github neben Impressum mit icon
 - [x] Baumscheibe
@@ -27,7 +28,6 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] naturadb anrufen (Anfrage: Erlaubnis für gemeinnützige, nicht-kommerzielle Nutzung der Daten?)
 - [ ] Toensmeier: können wir seine Daten dafür nutzen? @Joern
 - [ ] spendenbutton: vorschlag machen
-- [ ] plausible
 
 
 ## später / Fragen für Präsentation
