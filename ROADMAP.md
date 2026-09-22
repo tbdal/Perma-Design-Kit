@@ -3,6 +3,7 @@
 Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELOG.md).
 
 ## jetzt: hier mit [o] abhaken, damit ich sehe, was passiert ist
+- [ ] contributor erwähnen
 - [o] link zu github neben Impressum mit icon
 - [o] Baumscheibe
   - [o] Bewertung edibility, medicinal & material --> jetzt nur edibility nutzen. dafür die 5 streifen oben, gruppe "rating" befüllen
