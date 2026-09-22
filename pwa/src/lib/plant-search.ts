@@ -399,10 +399,14 @@ export async function importPlantFromSearch(result: SearchResult): Promise<Plant
   if (plant.latinName && (isSourceEnabled('pfaf') || isSourceEnabled('naturadb'))) {
     const proxyData = await fetchProxyData(plant.latinName);
     // Only fill empty fields — don't overwrite Wikidata data
+    // See the SCORE_FIELDS comment in index.astro's isFillable() — same
+    // 0-vs-"empty" gap applies here for a fresh import.
+    const SCORE_FIELDS = new Set(['eatableScore', 'medsScore', 'materialScore']);
     const filled: Partial<PlantData> = {};
     for (const [key, value] of Object.entries(proxyData)) {
       const current = (plant as any)[key];
       const isEmpty = current === null || current === undefined || current === '' || current === false ||
+        (SCORE_FIELDS.has(key) && current === 0) ||
         (Array.isArray(current) && current.every((v: boolean) => !v));
       if (isEmpty) {
         (plant as any)[key] = value;

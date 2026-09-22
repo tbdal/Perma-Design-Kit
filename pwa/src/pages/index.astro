@@ -994,8 +994,15 @@ import Layout from '../layouts/Layout.astro';
   // try a better value. Re-checking against the Latin name here lets a
   // later source (e.g. PFAF's "Silver-Bell Tree" for Halesia carolina)
   // supersede that stale mirrored value without a one-off migration.
+  // eatableScore/medsScore/materialScore default to 0 (unrated), which isn't
+  // caught by the null/undefined/''/false checks below — without this, a
+  // freshly-imported plant's 0 looks "already set" and PFAF's real score
+  // (fetched separately from the eatable/meds/material booleans) can never
+  // fill it in, silently keeping every rating stripe empty.
+  const SCORE_FIELDS = new Set(['eatableScore', 'medsScore', 'materialScore']);
   function isFillable(key: string, cur: unknown, plant: PlantData): boolean {
     if (cur === null || cur === undefined || cur === '' || cur === false) return true;
+    if (SCORE_FIELDS.has(key) && cur === 0) return true;
     if (Array.isArray(cur) && cur.every(v => !v)) return true;
     // Never override a value the user typed themselves, even if it happens
     // to equal the Latin name.
