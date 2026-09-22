@@ -20,15 +20,21 @@ from psd_tools import PSDImage
 #   - "pH 2": also multi-state, but every state was ALREADY visible in the
 #     PSD (no forcing needed) — already-working code (BOOL_FIELDS'
 #     ph1_v_acid..ph6_v_alk aliases) toggles these individually.
-#   - "water"/"light"/"rating2": same multi-state pattern, but deliberately
-#     NOT forced — their icon variants (wet1/wet2/humid1/humid2,
-#     fullshade1/2/semishade1/2) don't map cleanly 1:1 onto the app's 3
-#     sun/water states, and PFAF score-star rendering isn't implemented at
-#     all (see ROADMAP). Forcing them visible with no code to select a
-#     single state made every variant render simultaneously, overlapping —
-#     left at their original single-preview-icon visibility instead
-#     (matches the pre-existing template's behavior exactly). Revisit if
-#     that mapping/feature gets built.
+#   - "water"/"light"/"rating2": same multi-state pattern, but NOT forced
+#     by this script — each had exactly one extra state pulled out
+#     individually with psd-tools (force-composited to confirm it has real
+#     pixel content, not an empty placeholder) and spliced by hand into the
+#     existing baumscheibe-template.svg, instead of via this whole-script
+#     regeneration, to avoid disturbing unrelated hand-tuned positions
+#     elsewhere in the template. Done for "rating2" (all 5 stripes,
+#     2026-09-21, see setRatingStripe() and CHANGELOG.md) and for
+#     "water"/"light" (fullshade2 + wet1 only — one extra state each,
+#     spliced at their already-visible sibling's position, 2026-09-22, see
+#     setSunIcon()/setWaterIcon() in baumscheibe-render.ts). sunFull/
+#     waterDry still have no icon at all in the PSD (any state); the other
+#     near-duplicate hidden copies (wet2/humid2, fullshade1/semishade1) are
+#     unused. Running this script as-is will NOT reproduce any of these
+#     splices — redo them by hand against a newer PSD if needed.
 #   - "symbols_functions"/"symbols_uses" (under "symbols") looked like the
 #     same pattern but ISN'T: their hidden children (u_edible2, u_tea,
 #     u_fodder2/3, u_dye2, u_crafts, f_wind2, f_dynacc2, "Ebene 13",

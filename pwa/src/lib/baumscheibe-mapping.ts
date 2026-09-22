@@ -31,17 +31,15 @@ export const BOOL_FIELDS: Partial<Record<keyof PlantData, string[]>> = {
   growSpeedLow:  ['Growth-slow', 'growSpeedLow'],
   growSpeedMid:  ['Growth-mod',  'growSpeedMid'],
   growSpeedHigh: ['Growth-fast', 'growSpeedHigh'],
-  // Sonne/Wasser — checked directly against baumscheibe-template.svg: the
-  // "light" and "water" groups each contain exactly one <image>, labeled
-  // "semishade2" and "humid1" respectively — no fullsun/fullshade/dry/wet
-  // variants exist in this artwork (unlike growth speed's speed1/2/3, these
-  // were never split out). That single icon does depict a specific,
-  // identifiable state though — semi-shade and medium/humid moisture — so
-  // it's mapped to sunMid/waterMid and shown only for that state.
-  // sunFull/sunShadow/waterDry/waterWet have no corresponding icon in the
-  // template and stay unrenderable until the designer adds them.
-  sunMid:    ['semishade2', 'Sun-semishade', 'sunMid'],
-  waterMid:  ['humid1',     'Water-Mid',     'waterMid'],
+  // Sonne/Wasser are handled by setSunIcon()/setWaterIcon() in
+  // baumscheibe-render.ts, not this generic list — see the comment there
+  // for why: the template only had one live icon each (semishade2, humid1)
+  // until fullshade2/wet1 — real artwork, just switched off in Photoshop,
+  // confirmed by force-compositing them with psd-tools — were pulled from
+  // the PSD and spliced into baumscheibe-template.svg on 2026-09-22 (same
+  // process as the rating2 stripes — see CHANGELOG.md). sunFull/waterDry
+  // still have no icon in the PSD at all (any state), so a single generic
+  // on/off mapping can't express the resulting 3-way choice.
   // pH — 2.3 template numbers all 5 states (ph1_v_acid..ph6_v_alk, skipping 4),
   // newly enabling phVeryAcid/phVeryAlkaline which had no element before.
   phVeryAcid:     ['PH-Veryacid',    'phVeryAcid',   'ph1_v_acid'],
