@@ -8,6 +8,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
   - [o] Bewertung edibility, medicinal & material --> jetzt nur edibility nutzen. dafür die 5 streifen oben, gruppe "rating" befüllen
   - [o] plantlist-icon ausblenden
   - [o] raleway schriftart für höhe, breite und Härtegrad nutzen
+  -   1x einschub + "m"
   - [o] Maßstab angeben (klein & unscheinbar)
 - [o] Produkt-Tour: einführung in webseite für ersten Start: erklärung der funktionen. wie lässt 
   - [o] kannst du vor dem erstem Start eine kurze Erläuterung einblenden, was das permamente Speichern im Browser bedeutet
@@ -31,6 +32,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] unfarbige Felder in Baumscheibe
 - [ ] medicinal & material sinnvoll auf Baumscheibe?
 - [ ] plantlist-icon nutzen?
+- [ ] erweiterung: essbarkeit: Pflanzenteile (aus PFAF) angeben
 
 
 
