@@ -4,9 +4,9 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 
 ## jetzt: hier mit [o] abhaken, damit ich sehe, was passiert ist
 - [ ] contributor erwähnen: Jörn, Andi, Jens, Sebastian, pfaf
-- [ ] newsletter: anmeldung und brevo nutzen mit api?
+- [ ] newsletter: Jetzt Jörn's Newsletter auf brevo nutzen mit api?
 - [ ] lizenz auf github: fair-use
-  - [ ] 
+  - [ ] Jens & Sebastian um Lizenzänderung bitten?
 - [x] link zu github neben Impressum mit icon
 - [x] Baumscheibe
   - [x] Bewertung edibility, medicinal & material --> jetzt nur edibility nutzen. dafür die 5 streifen oben, gruppe "rating" befüllen
