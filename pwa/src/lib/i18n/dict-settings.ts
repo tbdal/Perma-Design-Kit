@@ -31,8 +31,8 @@ export const settingsDict: Dict = {
   themeDark: { de: 'Dunkel', en: 'Dark' },
 
   sectionPrivacy: { de: 'Privatsphäre', en: 'Privacy' },
-  privacyOptOutLabel: { de: 'Plausible-Reichweitenmessung deaktivieren', en: 'Disable Plausible analytics' },
-  privacyOptOutDescPre: { de: 'Plausible erfasst keine personenbezogenen Daten — falls du trotzdem nicht gezählt werden möchtest, hier den Haken setzen. Details in der', en: 'Plausible does not collect personal data — if you’d still rather not be counted, check this box. Details in the' },
+  privacyOptOutLabel: { de: 'Reichweitenmessung deaktivieren', en: 'Disable analytics' },
+  privacyOptOutDescPre: { de: 'Die selbst gehostete Reichweitenmessung (Umami) erfasst keine personenbezogenen Daten — falls du trotzdem nicht gezählt werden möchtest, hier den Haken setzen. Details in der', en: 'Our self-hosted analytics (Umami) does not collect personal data — if you’d still rather not be counted, check this box. Details in the' },
   privacyOptOutDescLink: { de: 'Datenschutzerklärung', en: 'privacy policy' },
 
   btnSaveSettings: { de: 'Einstellungen speichern', en: 'Save settings' },
