@@ -4,6 +4,8 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 
 ## jetzt: hier mit [o] abhaken, damit ich sehe, was passiert ist
 - [ ] contributor erwähnen: Jörn, Andi, Jens, Sebastian, pfaf
+  - [ ] lizenz
+  - [ ] bild
 - [ ] newsletter: Jetzt Jörn's Newsletter auf brevo nutzen mit api?
 - [ ] lizenz auf github: fair-use
   - [ ] Jens & Sebastian um Lizenzänderung bitten?
