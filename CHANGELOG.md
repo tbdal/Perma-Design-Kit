@@ -2,6 +2,20 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## prüfen
+  1. Salin + Wasserpflanze gelöscht — phSaline/waterPlant komplett aus Typen, Formularen, Karten-Rendering, CSV-Import/Export und Suchlogik
+     entfernt (waren laut Status-Doku ohnehin nur Platzhalter ohne echte Funktion).
+  2. "Basics" → "Basic data" — war uneinheitlich zwischen den beiden Bearbeiten-Dialogen, jetzt vereinheitlicht.
+  3. "Ecosystem" → "Functions" — passt jetzt zur Terminologie, die Tabelle/Filter längst für dieselben Felder nutzen.
+  4. Common-Name-Schriftgröße — wächst jetzt bei kurzen Namen über die bisherige feste Größe hinaus, statt nur bei langen zu schrumpfen.
+  5. Raleway für Höhe/Breite/Härtegrad — geprüft: ist bereits so im Code, keine Änderung nötig (alter Punkt, der schon mal erledigt war).
+  6. Soil-Icon ausgeblendet — das ungebundene Boden-Dreieck-Icon auf der Baumscheibe ist jetzt dauerhaft versteckt.
+  7. 3D-Stamm-Bug (Kulturapfel) — echter Bug gefunden: der Mindest-Wert für die Stammhöhe lag über dem tatsächlich erreichbaren Wert bei
+     unbekannter Kronenbreite, wodurch der Stamm nie wuchs. Rechnerisch verifiziert und gefixt.
+  8. Sticky Tabellenkopf — Ursache war eine CSS-Falle (horizontales Scrollen erzwingt heimlich vertikales overflow: auto, was Sticky bricht).
+     Mit Playwright verifiziert: Kopfzeile bleibt jetzt beim Scrollen stehen.
+
+     
 ## Kurzfristig
 - [x] **sanduhr fehlt bei erstellung von baumscheiben und pdf** — zwei Lücken gefunden: (1) das Kartenraster selbst zeigte während des Renderns (SVG-Fetch + Pro-Pflanze-DOM-Arbeit, spürbar bei Baumscheibe) keinerlei Ladezustand — neue `loadingPlaceholderHtml()` in `html.ts`, in `index.astro` und `cards.astro` vor dem `Promise.all` eingeblendet (nur für Baumscheibe, Poly/Streifen sind quasi instant, kein unnötiges Flackern). (2) der Bulk-PDF-Button (`btn-bulk-pdf`, Mehrfachauswahl in der Listenansicht) hatte überhaupt keinen `withButtonSpinner()` und ignorierte zudem `cardViewMode` — exportierte immer als Pflanzenkarte, auch wenn Baumscheibe gewählt war. Beides behoben, per Playwright verifiziert (Spinner synchron vor dem Await sichtbar, bestätigt an einem kalten Erst-Rendering).
 - [x] **Breite in Tabelle als Spalte** — neue sortierbare Spalte „B" direkt neben „H" (Höhe) in der Desktop-Tabelle, analog implementiert (`sortField` um `'widthM'` erweitert, gleiches Sortier-/Spalten-Muster).
