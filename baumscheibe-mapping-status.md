@@ -39,26 +39,26 @@ Quelle für Soll-Zustand: `baumscheibe3-data-fields.ods`, Sheet „baumscheibe3-
 
 **Update (2026-09-09):** Das 2.3-Template hat nur ein einziges generisches Icon in der Gruppe „growth speed" statt drei getrennter Icons für Low/Mid/High — kann die drei Stufen also nicht optisch unterscheiden. `setGrowthSpeedIcon()` (in `baumscheibe-render.ts`, außerhalb des regulären `BOOL_FIELDS`-Loops, da eine 1:1-Feld-Zuordnung hier nicht möglich ist) zeigt das Icon, sobald *irgendeines* der drei Felder gesetzt ist — „ein Wert ist bekannt" statt „welcher Wert". Damit ist das Feld nicht mehr tot, aber auch nicht vollständig informativ. Echte Mid/High-Icons nachzurüsten bleibt offen (s. Priorisierte Lücken).
 
-## Sonne — komplett tot
+## Sonne — ✅ NEU (2026-09-22): teilweise verdrahtet
 
-| data-field | Gesuchte Labels | SVG-Element | Status |
-|---|---|---|---|
-| `sunFull` | `Sun-fullsun` / `sunFull` | nur Gruppe `sun` vorhanden, keine Kind-Elemente mit Label | ⚠️ Mapping tot |
-| `sunMid` | `Sun-semishade` / `sunMid` | s.o. | ⚠️ Mapping tot |
-| `sunShadow` | `Sun-fullshade` / `sunShadow` | s.o. | ⚠️ Mapping tot |
+| data-field | SVG-Element | Status |
+|---|---|---|
+| `sunFull` | kein Icon im PSD (auch keine ausgeblendete Ebene) | ❌ Kein Mapping — keine Artwork vorhanden |
+| `sunMid` | `semishade2` (`<image>`, halbgefüllter Kreis) | ✅ OK |
+| `sunShadow` | `fullshade2` (`<image>`, voll gefüllter Kreis) | ✅ OK (NEU) |
 
-Die Gruppe `sun` (`<g id="group6">`) existiert als leerer Container — die einzelnen Sonne-Icons wurden nie mit `inkscape:label` versehen.
+`setSunIcon()` in `baumscheibe-render.ts` wählt zwischen `sunShadow`/`sunMid`; `sunFull` bleibt „kein Icon" (nicht unterscheidbar von „nichts gesetzt"). `fullshade2` war in Photoshop ausgeblendet, hat aber echte Pixel (per `psd-tools` force-komposittiert verifiziert) und wurde gezielt an `semishade2`s Position gespleißt — kein Fehler der ursprünglichen Konvertierung, siehe CHANGELOG. Zwei weitere Duplikate (`fullshade1`/`semishade1`, an einer zweiten Icon-Position im PSD) bleiben ungenutzt.
 
-## Wasser — komplett tot
+## Wasser — ✅ NEU (2026-09-22): teilweise verdrahtet
 
-| data-field | Gesuchte Labels | SVG-Element | Status |
-|---|---|---|---|
-| `waterDry` | `Water-dry` / `waterDry` | nur Gruppe `water` vorhanden | ⚠️ Mapping tot |
-| `waterMid` | `Water-Mid` / `waterMid` | s.o. | ⚠️ Mapping tot |
-| `waterWet` | `Water-Wet` / `waterWet` | s.o. | ⚠️ Mapping tot |
+| data-field | SVG-Element | Status |
+|---|---|---|
+| `waterDry` | kein Icon im PSD (auch keine ausgeblendete Ebene) | ❌ Kein Mapping — keine Artwork vorhanden |
+| `waterMid` | `humid1` (`<image>`, halber Tropfen) | ✅ OK |
+| `waterWet` | `wet1` (`<image>`, voller Tropfen) | ✅ OK (NEU) |
 | `waterPlant` | — | kein Element | ❌ Kein Mapping (ODS: „NA, für spätere Version") |
 
-Gleiches Bild wie bei Sonne: Gruppe `water` (`<g id="group5">`) ist ein leerer Container.
+Gleiches Bild wie bei Sonne: `setWaterIcon()` wählt zwischen `waterWet`/`waterMid`, `wet1` wurde aus einer ausgeblendeten PSD-Ebene an `humid1`s Position gespleißt, `waterDry` bleibt ohne Icon. `wet2`/`humid2` (zweite Icon-Position im PSD) bleiben ungenutzt.
 
 ## Boden-pH — ✅ NEU: jetzt vollständig (alle 5 Stufen)
 
@@ -125,7 +125,7 @@ Frühere Einschränkung (hart codierte Geometrie, nur bei Template-Neuexport neu
 
 ## Priorisierte Lücken (Vorschlag)
 
-1. **Sonne/Wasser komplett tot** (6 Felder) — größte verbleibende Lücke, da diese Angaben bei jeder Pflanze vorhanden sind. Auch im 2.3-Template nur je ein generisches Icon (`semishade2`, `humid1`) statt drei einzeln ansteuerbarer Zustände — braucht in Inkscape/Photoshop noch 3 getrennte Icons pro Gruppe mit den erwarteten Labels (`Sun-fullsun`/`sunFull` etc.).
+1. ~~**Sonne/Wasser komplett tot**~~ — teilweise erledigt seit 2026-09-22: `sunMid`/`sunShadow` und `waterMid`/`waterWet` zeigen jetzt je ein eigenes Icon (s.o.). Verbleibende Lücke: `sunFull`/`waterDry` haben im PSD überhaupt keine Zeichnung — braucht neue Artwork vom Designer (kein Mapping-Problem mehr).
 2. **Immer sichtbare Geister-Icons** (`layer`, `duftverwirrer`, `fibre` + mind. 2 weitere unklare, s.o.) — zeigen aktuell bei *jeder* Pflanze an, auch wenn die Eigenschaft nicht zutrifft. Im 2.3-Template zusätzlich: die komplette Farbfläche hinter dem Nutzen-/Funktionen-Ring ist ebenfalls immer sichtbar (neues Gestaltungselement „color", unabhängig von den Daten) — vermutlich gewollt (Karte wirkt auch ohne Daten bunt/vollständig), aber falls nicht: gleiche Lösung wie bei den anderen Geister-Icons.
 3. ~~**pH-Extremstufen**~~ — erledigt seit 2.3-Template: alle 5 Stufen vorhanden (s.o.).
 4. **Score-Sterne** (`eatableScore`/`medsScore`/`materialScore`) — Gruppe `rating` existiert als Platzhalter, aber ohne Struktur für 3×5 Sterne.

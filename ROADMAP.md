@@ -5,25 +5,18 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 ## jetzt: hier mit [o] abhaken, damit ich sehe, was passiert ist
 - [ ] contributor erwähnen
 - [ ] lizenz auf github
-- [o] link zu github neben Impressum mit icon
-- [o] Baumscheibe
-  - [o] Bewertung edibility, medicinal & material --> jetzt nur edibility nutzen. dafür die 5 streifen oben, gruppe "rating" befüllen
-  - [x] plantlist-icon ausblenden
-  - [o] raleway schriftart für höhe, breite und Härtegrad nutzen
-  -   1x einschub + "m"
-  - [x] Maßstab angeben (klein & unscheinbar)
-- [x] Produkt-Tour: einführung in webseite für ersten Start: erklärung der funktionen. wie lässt 
-  - [x] kannst du vor dem erstem Start eine kurze Erläuterung einblenden, was das permamente Speichern im Browser bedeutet
-- [x] eine zweite pdf-version der Baumscheibe, welche maßstabsgetreu in 1:50 die Baumscheibe auf druckbar macht. Der Maßstab soll änderbar sind. Dabei soll die maximale Fläche des Papiers genutzt werden, d.h. die Anordnung der Baumscheiben auf dem Druck so gewählt werden, dass möglichst wenig weiße Fläche übrig bleibt. Ränder wie bisher. Auswahl als A4, A3 und A2 ermöglichen. 
-- [o] tabelle als pdf druckbar machen. Auch als zweite Graustufenversion die verschiedenen Kriterien gut unterscheidbar macht
-  - [ ] Abkürzungen abgleichen mit Jörns?  
-- [x] tabelle: button oder andere funktion damit gefilterte alle für druck (anzahl) auf einmal angepasst werden können
-- [x] englische pflanznamen bei englischer ui anzeigen
-- [o] besuchsstatistiken, wie? — Antwort: Plausible (schon eingebaut) ist die Lösung, braucht nur ein Konto + Domain-Eintrag auf plausible.io; Alternative Skript entfernen. Entscheidung offen → Punkt „plausible“ unter kurzfristig bleibt
+- [ ] Tabellen-PDF: Abkürzungen mit Jörns abgleichen
+- [ ] Salin + Wasserpflanze löschen
+- [ ] "basics" in "basic data" umbenennen
+- [ ] Überschrift "ecosystem" in "functions" ändern
+- [ ] Schriftgröße des common names an die Namenslänge anpassen (größere Schrift bei kürzerem Namen)
+- [ ] raleway schriftart für höhe, breite und Härtegrad nutzen
+- [ ] Soil ausblenden Baumscheibe
+- [ ] 3d: Stamm wächst nicht (Kulturapfel)
+- [ ] Tabellenüberschrift beim Scrollen nach unten einrasten lassen
 
 ## kurzfristig
 - [ ] Durchmesser auf Baumscheibe etwas runterschieben
-- [ ] prüfen: Wasser und Sonne sind im SVG nicht vollständig -> psd erneut in svg konvertieren @Andi
 - [ ] naturadb anrufen (Anfrage: Erlaubnis für gemeinnützige, nicht-kommerzielle Nutzung der Daten?)
 - [ ] Toensmeier: können wir seine Daten dafür nutzen? @Joern
 - [ ] spendenbutton: vorschlag machen
@@ -50,7 +43,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] limits für abruf bei pfaf
 
 ### Baumscheibe Karte Feinschliff
-- [ ] Sonne/Wasser-Icons (je 3 Zustände) ergänzen — einzige verbleibende „komplett tot"-Gruppe, siehe `baumscheibe-mapping-status.md`
+- [ ] Sonne/Wasser-Icons: sunFull/waterDry ergänzen — sunMid/sunShadow und waterMid/waterWet sind jetzt verdrahtet (semishade2/fullshade2, humid1/wet1, aus der PSD gespleißt), aber für „volle Sonne"/„trocken" existiert im PSD überhaupt kein Icon — braucht neue Artwork vom Designer, siehe `baumscheibe-mapping-status.md`
 - [ ] sprache der karten auf ui-sprache einstellen
 
 ### sonst
