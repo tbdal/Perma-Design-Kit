@@ -182,14 +182,12 @@ export interface PlantData {
   waterDry: boolean;
   waterMid: boolean;
   waterWet: boolean;
-  waterPlant: boolean;
   // Soil pH
   phVeryAcid: boolean;
   phAcid: boolean;
   phNeutral: boolean;
   phAlkaline: boolean;
   phVeryAlkaline: boolean;
-  phSaline: boolean;
   // Growth speed
   growSpeedLow: boolean;
   growSpeedMid: boolean;
@@ -242,13 +240,11 @@ export function createEmptyPlant(): PlantData {
     waterDry: false,
     waterMid: false,
     waterWet: false,
-    waterPlant: false,
     phVeryAcid: false,
     phAcid: false,
     phNeutral: false,
     phAlkaline: false,
     phVeryAlkaline: false,
-    phSaline: false,
     growSpeedLow: false,
     growSpeedMid: false,
     growSpeedHigh: false,

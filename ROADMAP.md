@@ -6,14 +6,14 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] contributor erwähnen
 - [ ] lizenz auf github
 - [ ] Tabellen-PDF: Abkürzungen mit Jörns abgleichen
-- [ ] Salin + Wasserpflanze löschen
-- [ ] "basics" in "basic data" umbenennen
-- [ ] Überschrift "ecosystem" in "functions" ändern
-- [ ] Schriftgröße des common names an die Namenslänge anpassen (größere Schrift bei kürzerem Namen)
-- [ ] raleway schriftart für höhe, breite und Härtegrad nutzen
-- [ ] Soil ausblenden Baumscheibe
-- [ ] 3d: Stamm wächst nicht (Kulturapfel)
-- [ ] Tabellenüberschrift beim Scrollen nach unten einrasten lassen
+- [o] Salin + Wasserpflanze löschen
+- [o] "basics" in "basic data" umbenennen
+- [o] Überschrift "ecosystem" in "functions" ändern
+- [o] Schriftgröße des common names an die Namenslänge anpassen (größere Schrift bei kürzerem Namen)
+- [o] raleway schriftart für höhe, breite und Härtegrad nutzen
+- [o] Soil ausblenden Baumscheibe
+- [o] 3d: Stamm wächst nicht (Kulturapfel)
+- [o] Tabellenüberschrift beim Scrollen nach unten einrasten lassen
 
 ## kurzfristig
 - [ ] Durchmesser auf Baumscheibe etwas runterschieben

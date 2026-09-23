@@ -31,7 +31,7 @@ export const FUNCTION_BADGE_DEFS: [keyof PlantData, string, string, string][] = 
 /** Rough data-completeness score 0–100 used by the tiles' progress bar. */
 export function completenessPercent(p: PlantData): number {
   const key = [p.latinName, p.commonName, p.heightM != null, p.widthM != null, p.imageUrl,
-    p.sunFull || p.sunMid || p.sunShadow, p.waterDry || p.waterMid || p.waterWet || p.waterPlant,
+    p.sunFull || p.sunMid || p.sunShadow, p.waterDry || p.waterMid || p.waterWet,
     p.eatable || p.meds || p.nitrogenFix || p.material || p.fodder,
     p.fruitMonths.some(Boolean), p.flowerMonths.some(Boolean)];
   return Math.round(key.filter(Boolean).length / key.length * 100);

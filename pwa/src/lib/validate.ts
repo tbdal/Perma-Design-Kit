@@ -18,11 +18,11 @@ export function validatePlant(plant: PlantData): ValidationResult {
   if (!plant.sunFull && !plant.sunMid && !plant.sunShadow) missing.push('Sonne');
 
   // At least one water preference
-  if (!plant.waterDry && !plant.waterMid && !plant.waterWet && !plant.waterPlant) missing.push('Wasser');
+  if (!plant.waterDry && !plant.waterMid && !plant.waterWet) missing.push('Wasser');
 
   // At least one pH
   if (!plant.phVeryAcid && !plant.phAcid && !plant.phNeutral &&
-      !plant.phAlkaline && !plant.phVeryAlkaline && !plant.phSaline) missing.push('pH');
+      !plant.phAlkaline && !plant.phVeryAlkaline) missing.push('pH');
 
   // Growth speed
   if (!plant.growSpeedLow && !plant.growSpeedMid && !plant.growSpeedHigh) missing.push('Wachstum');

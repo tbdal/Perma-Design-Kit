@@ -260,9 +260,9 @@ import Layout from '../layouts/Layout.astro';
           </div>
         </fieldset>
 
-        <!-- Ökosystem -->
+        <!-- Funktionen -->
         <fieldset class="rounded-lg border border-stone-200 dark:border-stone-700 p-4">
-          <legend class="px-2 text-sm font-semibold text-green-800 dark:text-green-300" data-i18n="fieldsetEcosystem">Ökosystem</legend>
+          <legend class="px-2 text-sm font-semibold text-green-800 dark:text-green-300" data-i18n="fieldsetEcosystem">Funktionen</legend>
           <div class="flex flex-wrap gap-x-5 gap-y-1.5 text-sm">
             <label class="inline-flex items-center gap-1.5" data-field="nitrogenFix"><input type="checkbox" id="f-nitrogenFix" class="accent-green-600" /> <span data-i18n="lblNitrogenFix">Stickstoff</span></label>
             <label class="inline-flex items-center gap-1.5" data-field="mineralFix"><input type="checkbox" id="f-mineralFix" class="accent-green-600" /> <span data-i18n="lblMineralFix">Mineralien</span></label>
@@ -291,7 +291,6 @@ import Layout from '../layouts/Layout.astro';
               <label class="inline-flex items-center gap-1.5" data-field="waterDry"><input type="checkbox" id="f-waterDry" class="accent-blue-500" /> <span data-i18n="lblWaterDry">Trocken</span></label>
               <label class="inline-flex items-center gap-1.5" data-field="waterMid"><input type="checkbox" id="f-waterMid" class="accent-blue-500" /> <span data-i18n="lblWaterMid">Mittel</span></label>
               <label class="inline-flex items-center gap-1.5" data-field="waterWet"><input type="checkbox" id="f-waterWet" class="accent-blue-500" /> <span data-i18n="lblWaterWet">Nass</span></label>
-              <label class="inline-flex items-center gap-1.5" data-field="waterPlant"><input type="checkbox" id="f-waterPlant" class="accent-blue-500" /> <span data-i18n="lblWaterPlant">Wasserpflanze</span></label>
             </div>
           </fieldset>
           <fieldset class="rounded-lg border border-stone-200 dark:border-stone-700 p-3">
@@ -313,7 +312,6 @@ import Layout from '../layouts/Layout.astro';
             <label class="inline-flex items-center gap-1.5" data-field="phNeutral"><input type="checkbox" id="f-phNeutral" class="accent-green-500" /> <span data-i18n="lblPhNeutral">Neutral</span></label>
             <label class="inline-flex items-center gap-1.5" data-field="phAlkaline"><input type="checkbox" id="f-phAlkaline" class="accent-teal-500" /> <span data-i18n="lblPhAlkaline">Alkalisch</span></label>
             <label class="inline-flex items-center gap-1.5" data-field="phVeryAlkaline"><input type="checkbox" id="f-phVeryAlkaline" class="accent-blue-500" /> <span data-i18n="lblPhVeryAlkaline">Sehr alk.</span></label>
-            <label class="inline-flex items-center gap-1.5" data-field="phSaline"><input type="checkbox" id="f-phSaline" class="accent-purple-500" /> <span data-i18n="lblPhSaline">Salin</span></label>
           </div>
         </fieldset>
 
@@ -536,8 +534,8 @@ import Layout from '../layouts/Layout.astro';
     'nitrogenFix', 'mineralFix', 'groundCover', 'insects', 'pest',
     'animalProtection', 'windBreaking', 'windBreakingOnSea',
     'sunFull', 'sunMid', 'sunShadow',
-    'waterDry', 'waterMid', 'waterWet', 'waterPlant',
-    'phVeryAcid', 'phAcid', 'phNeutral', 'phAlkaline', 'phVeryAlkaline', 'phSaline',
+    'waterDry', 'waterMid', 'waterWet',
+    'phVeryAcid', 'phAcid', 'phNeutral', 'phAlkaline', 'phVeryAlkaline',
     'growSpeedLow', 'growSpeedMid', 'growSpeedHigh',
   ] as const;
 
@@ -839,7 +837,7 @@ import Layout from '../layouts/Layout.astro';
   /** Completeness bar 0–100 */
   function completenessPercent(p: PlantData): number {
     const key = [p.latinName, p.commonName, p.heightM != null, p.widthM != null, p.imageUrl,
-      p.sunFull || p.sunMid || p.sunShadow, p.waterDry || p.waterMid || p.waterWet || p.waterPlant,
+      p.sunFull || p.sunMid || p.sunShadow, p.waterDry || p.waterMid || p.waterWet,
       p.eatable || p.meds || p.nitrogenFix || p.material || p.fodder,
       p.fruitMonths.some(Boolean), p.flowerMonths.some(Boolean)];
     return Math.round(key.filter(Boolean).length / key.length * 100);
@@ -931,8 +929,8 @@ import Layout from '../layouts/Layout.astro';
       'N_Fixierung', 'Mineralien', 'Bodendecker', 'Insekten', 'Schädling',
       'Tierschutz', 'Windschutz', 'Wind_See',
       'Sonne_voll', 'Halbschatten', 'Schatten',
-      'Wasser_trocken', 'Wasser_mittel', 'Wasser_nass', 'Wasserpflanze',
-      'pH_sehr_sauer', 'pH_sauer', 'pH_neutral', 'pH_alkalisch', 'pH_sehr_alk', 'pH_salin',
+      'Wasser_trocken', 'Wasser_mittel', 'Wasser_nass',
+      'pH_sehr_sauer', 'pH_sauer', 'pH_neutral', 'pH_alkalisch', 'pH_sehr_alk',
       'Wachstum_langsam', 'Wachstum_mittel', 'Wachstum_schnell', 'Bild_URL',
     ];
     const b = (v: boolean) => v ? '1' : '0';
@@ -943,8 +941,8 @@ import Layout from '../layouts/Layout.astro';
       b(p.nitrogenFix), b(p.mineralFix), b(p.groundCover), b(p.insects), b(p.pest),
       b(p.animalProtection), b(p.windBreaking), b(p.windBreakingOnSea),
       b(p.sunFull), b(p.sunMid), b(p.sunShadow),
-      b(p.waterDry), b(p.waterMid), b(p.waterWet), b(p.waterPlant),
-      b(p.phVeryAcid), b(p.phAcid), b(p.phNeutral), b(p.phAlkaline), b(p.phVeryAlkaline), b(p.phSaline),
+      b(p.waterDry), b(p.waterMid), b(p.waterWet),
+      b(p.phVeryAcid), b(p.phAcid), b(p.phNeutral), b(p.phAlkaline), b(p.phVeryAlkaline),
       b(p.growSpeedLow), b(p.growSpeedMid), b(p.growSpeedHigh), q(p.imageUrl),
     ].join(','));
     return [headers.join(','), ...rows].join('\r\n');
@@ -957,8 +955,8 @@ import Layout from '../layouts/Layout.astro';
       'N_Fixierung', 'Mineralien', 'Bodendecker', 'Insekten', 'Schädling',
       'Tierschutz', 'Windschutz', 'Wind_See',
       'Sonne_voll', 'Halbschatten', 'Schatten',
-      'Wasser_trocken', 'Wasser_mittel', 'Wasser_nass', 'Wasserpflanze',
-      'pH_sehr_sauer', 'pH_sauer', 'pH_neutral', 'pH_alkalisch', 'pH_sehr_alk', 'pH_salin',
+      'Wasser_trocken', 'Wasser_mittel', 'Wasser_nass',
+      'pH_sehr_sauer', 'pH_sauer', 'pH_neutral', 'pH_alkalisch', 'pH_sehr_alk',
       'Wachstum_langsam', 'Wachstum_mittel', 'Wachstum_schnell', 'Bild_URL',
     ];
     const example = [
@@ -967,8 +965,8 @@ import Layout from '../layouts/Layout.astro';
       '0','1','0','1','0',
       '0','0','0',
       '1','1','1',
-      '0','1','1','0',
-      '0','0','1','0','0','0',
+      '0','1','1',
+      '0','0','1','0','0',
       '0','1','0', '""',
     ];
     return [headers.join(','), example.join(',')].join('\r\n');
@@ -1293,10 +1291,19 @@ import Layout from '../layouts/Layout.astro';
           </div>`).join('')}
         </div>
 
-        <!-- Desktop table (≥ sm) -->
-        <div class="hidden sm:block overflow-x-auto">
+        <!-- Desktop table (≥ sm). max-h + overflow-y-auto is deliberate, not
+             just for the vertical scrollbar: overflow-x-auto alone makes the
+             browser compute overflow-y as auto too (a standard CSS quirk —
+             "if one axis is scrollable and the other is visible, the other
+             becomes auto"), which silently breaks position:sticky on the
+             thead below (verified with Playwright: the header tracked the
+             page scroll 1:1, never stuck, because this div had quietly
+             become its own zero-height-overflow scroll container). Giving
+             it an explicit bounded height embraces that instead of fighting
+             it, so the sticky thead has a real, working scrollport. -->
+        <div class="hidden sm:block max-h-[75vh] overflow-y-auto overflow-x-auto">
           <table class="w-full text-sm">
-            <thead>
+            <thead class="sticky top-0 z-10 bg-white dark:bg-stone-900">
               <tr class="border-b border-stone-200 dark:border-stone-700 text-left text-xs font-medium text-stone-500 dark:text-stone-400">
                 <th class="w-8 px-3 py-2.5"><input type="checkbox" id="select-all-check" class="accent-green-600" ${allSelected ? 'checked' : ''} /></th>
                 ${thSort('commonName', t('thName'))}

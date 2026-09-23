@@ -32,13 +32,11 @@ const C = {
   waterDry:         '#e8d5b7',
   waterMid:         '#81d4fa',
   waterWet:         '#1565c0',
-  waterPlant:       '#006064',
   phVeryAcid:       '#ff5555',
   phAcid:           '#ffd42a',
   phNeutral:        '#00d400',
   phAlkaline:       '#2ca089',
   phVeryAlkaline:   '#0066ff',
-  phSaline:         '#7f2aff',
   inactive:         '#e8e8e8',
   border:           '#cccccc',
   text:             '#1a1a1a',
@@ -266,7 +264,6 @@ export async function renderPolyCardToCanvas(
   px += pill(ctx, px, y, 'Tro', plant.waterDry,   C.waterDry);
   px += pill(ctx, px, y, 'Mit', plant.waterMid,   C.waterMid);
   px += pill(ctx, px, y, 'Nas', plant.waterWet,   C.waterWet,   true);
-  px += pill(ctx, px, y, 'Tei', plant.waterPlant, C.waterPlant, true);
   y += 18;
 
   // ── pH ────────────────────────────────────────────────────────────────────────
@@ -277,7 +274,6 @@ export async function renderPolyCardToCanvas(
   px += pill(ctx, px, y, 'N',   plant.phNeutral,       C.phNeutral);
   px += pill(ctx, px, y, 'A',   plant.phAlkaline,      C.phAlkaline);
   px += pill(ctx, px, y, 'vA',  plant.phVeryAlkaline,  C.phVeryAlkaline, true);
-  px += pill(ctx, px, y, 'Sal', plant.phSaline,        C.phSaline,        true);
   y += 18;
 
   // ── Fruit months ─────────────────────────────────────────────────────────────
@@ -395,7 +391,6 @@ export async function renderStripeCardToCanvas(
     [plant.waterDry,   C.waterDry,   'Tro', false],
     [plant.waterMid,   C.waterMid,   'Mit', false],
     [plant.waterWet,   C.waterWet,   'Nas', true],
-    [plant.waterPlant, C.waterPlant, 'Tei', true],
   ] as [boolean, string, string, boolean][]).filter(([a]) => a).forEach(([a, c, l, lt]) => {
     pill(ctx, x, py, l, a, c, lt);
     x += ctx.measureText(l).width + 12;

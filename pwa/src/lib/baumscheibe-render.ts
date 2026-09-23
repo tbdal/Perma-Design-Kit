@@ -51,8 +51,8 @@ function setText(el: Element, value: string) {
 // license from the designer, so it's requested but not loaded, falling back
 // to a serif italic that's at least in the spirit of a handwritten label.
 const NAME_BOXES = {
-  commonName: { x: 661, w: 975, yBaseline: 680.25, fontSize: 125, italic: false, uppercase: true,  fontFamily: "'Raleway', sans-serif" },
-  latinName:  { x: 819, w: 619, yBaseline: 522.75, fontSize: 125, italic: true,  uppercase: false, fontFamily: "'Voice-of-the-Highlander', Georgia, serif" },
+  commonName: { x: 661, w: 975, yBaseline: 680.25, fontSize: 125, growCap: 165, italic: false, uppercase: true,  fontFamily: "'Raleway', sans-serif" },
+  latinName:  { x: 819, w: 619, yBaseline: 522.75, fontSize: 125, growCap: 125, italic: true,  uppercase: false, fontFamily: "'Voice-of-the-Highlander', Georgia, serif" },
 } as const;
 
 // The template's own placeholder text ("COMMON NAME" / "Botanical name") is
@@ -63,17 +63,22 @@ const NAME_BOXES = {
 // a long name is never worse off than before, using canvas measureText
 // rather than SVG layout APIs since this <text> lives in a detached,
 // never-attached SVG (getComputedTextLength requires live layout).
+// commonName additionally grows past the base 125 (up to growCap) for short
+// names, so e.g. "Efeu" fills the box instead of sitting small in a frame
+// sized for long names — latinName's growCap equals its base size, so it
+// keeps the old shrink-only behavior (script/serif names read oddly if
+// blown up, and this wasn't asked for).
 const NAME_MIN_FONT_SIZE = { commonName: 65, latinName: 55 } as const;
 let measureCtx: CanvasRenderingContext2D | null = null;
-function fitFontSize(text: string, fontFamily: string, italic: boolean, maxFontSize: number, minFontSize: number, maxWidth: number): number {
+function fitFontSize(text: string, fontFamily: string, italic: boolean, baseFontSize: number, minFontSize: number, maxWidth: number, growCap: number): number {
   if (!measureCtx) measureCtx = document.createElement('canvas').getContext('2d');
-  if (!measureCtx) return maxFontSize;
+  if (!measureCtx) return baseFontSize;
   const style = italic ? 'italic ' : '';
-  measureCtx.font = `${style}${maxFontSize}px ${fontFamily}`;
-  const widthAtMax = measureCtx.measureText(text).width;
-  if (widthAtMax <= maxWidth) return maxFontSize;
-  const scaled = Math.floor(maxFontSize * (maxWidth / widthAtMax));
-  return Math.max(minFontSize, scaled);
+  measureCtx.font = `${style}${baseFontSize}px ${fontFamily}`;
+  const widthAtBase = measureCtx.measureText(text).width;
+  if (widthAtBase === 0) return baseFontSize;
+  const scaled = Math.floor(baseFontSize * (maxWidth / widthAtBase));
+  return Math.min(growCap, Math.max(minFontSize, scaled));
 }
 
 async function injectNameText(svg: SVGSVGElement, field: keyof typeof NAME_BOXES, value: string) {
@@ -90,7 +95,7 @@ async function injectNameText(svg: SVGSVGElement, field: keyof typeof NAME_BOXES
   // measures it below, so the measurement uses the real font, not a fallback.
   try { await document.fonts.load(`500 ${cfg.fontSize}px Raleway`); } catch { /* offline first load, falls back gracefully */ }
   const fontSize = fitFontSize(
-    displayValue, cfg.fontFamily, cfg.italic, cfg.fontSize, NAME_MIN_FONT_SIZE[field], cfg.w * 0.92,
+    displayValue, cfg.fontFamily, cfg.italic, cfg.fontSize, NAME_MIN_FONT_SIZE[field], cfg.w * 0.92, cfg.growCap,
   );
   const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
   text.setAttribute('x', String(cfg.x + cfg.w / 2));
@@ -256,6 +261,10 @@ export async function renderBaumscheibeSvg(plant: PlantData): Promise<string> {
   setRatingStripe(svg, plant);
   // The plantlist badge ("A=Agroforestry" …) has no data behind it — always hidden.
   for (const el of findByLabel(svg, ['plantlist'])) setVisible(el, false);
+  // The soil-triangle group (clay/silt/sand composition) has no PlantData field
+  // behind it either (see ROADMAP.md "Boden-Dreieck mappen und aktivieren") —
+  // hidden until that gets built, instead of showing an untethered icon.
+  for (const el of findByLabel(svg, ['soil'])) setVisible(el, false);
   if (hasSource(plant, 'pfaf')) injectPfafAttribution(svg);
 
   for (const [field, labels] of Object.entries(BOOL_FIELDS)) {

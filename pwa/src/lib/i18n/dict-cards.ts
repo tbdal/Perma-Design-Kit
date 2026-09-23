@@ -38,7 +38,7 @@ export const cardsDict: Dict = {
   labelFodder: { de: 'Futter', en: 'Fodder' },
   labelFuel: { de: 'Brennstoff', en: 'Fuel' },
 
-  fieldsetEcosystem: { de: 'Ökosystem', en: 'Ecosystem' },
+  fieldsetEcosystem: { de: 'Funktionen', en: 'Functions' },
   labelNitrogen: { de: 'Stickstoff', en: 'Nitrogen' },
   labelMinerals: { de: 'Mineralien', en: 'Minerals' },
   labelGroundCover: { de: 'Bodendecker', en: 'Ground cover' },
@@ -57,7 +57,6 @@ export const cardsDict: Dict = {
   labelWaterDry: { de: 'Trocken', en: 'Dry' },
   labelMedium: { de: 'Mittel', en: 'Medium' },
   labelWaterWet: { de: 'Nass', en: 'Wet' },
-  labelWaterPlant: { de: 'Wasserpflanze', en: 'Aquatic plant' },
 
   fieldsetGrowth: { de: 'Wachstum', en: 'Growth' },
   labelGrowSlow: { de: 'Langsam', en: 'Slow' },
@@ -69,7 +68,6 @@ export const cardsDict: Dict = {
   labelPhNeutral: { de: 'Neutral', en: 'Neutral' },
   labelPhAlkaline: { de: 'Alkalisch', en: 'Alkaline' },
   labelPhVeryAlkaline: { de: 'Sehr alk.', en: 'Very alk.' },
-  labelPhSaline: { de: 'Salin', en: 'Saline' },
 
   fieldsetFruitMonths: { de: 'Fruchtmonate', en: 'Fruit months' },
   fieldsetFlowerMonths: { de: 'Blütemonate', en: 'Flower months' },

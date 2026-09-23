@@ -149,7 +149,7 @@ export const indexDict: Dict = {
   // ── Edit dialog: title, fieldsets, field labels ─────────────────────
   dialogTitleEdit: { de: 'Pflanze bearbeiten', en: 'Edit plant' },
   dialogTitleNew: { de: 'Neue Pflanze', en: 'New plant' },
-  fieldsetBasics: { de: 'Grunddaten', en: 'Basics' },
+  fieldsetBasics: { de: 'Grunddaten', en: 'Basic data' },
   fieldLatinName: { de: 'Lateinischer Name', en: 'Latin name' },
   fieldCommonName: { de: 'Deutscher Name', en: 'Common name' },
   fieldCommonNameEn: { de: 'Englischer Name', en: 'English name' },
@@ -171,7 +171,7 @@ export const indexDict: Dict = {
   lblFodder: { de: 'Futter', en: 'Fodder' },
   lblFuel: { de: 'Brennstoff', en: 'Fuel' },
 
-  fieldsetEcosystem: { de: 'Ökosystem', en: 'Ecosystem' },
+  fieldsetEcosystem: { de: 'Funktionen', en: 'Functions' },
   lblNitrogenFix: { de: 'Stickstoff', en: 'Nitrogen' },
   lblMineralFix: { de: 'Mineralien', en: 'Minerals' },
   lblGroundCover: { de: 'Bodendecker', en: 'Ground cover' },
@@ -190,7 +190,6 @@ export const indexDict: Dict = {
   lblWaterDry: { de: 'Trocken', en: 'Dry' },
   lblWaterMid: { de: 'Mittel', en: 'Medium' },
   lblWaterWet: { de: 'Nass', en: 'Wet' },
-  lblWaterPlant: { de: 'Wasserpflanze', en: 'Aquatic plant' },
 
   fieldsetGrowth: { de: 'Wachstum', en: 'Growth' },
   lblGrowSpeedLow: { de: 'Langsam', en: 'Slow' },
@@ -203,7 +202,6 @@ export const indexDict: Dict = {
   lblPhNeutral: { de: 'Neutral', en: 'Neutral' },
   lblPhAlkaline: { de: 'Alkalisch', en: 'Alkaline' },
   lblPhVeryAlkaline: { de: 'Sehr alk.', en: 'Very alk.' },
-  lblPhSaline: { de: 'Salin', en: 'Saline' },
 
   fieldFruitMonths: { de: 'Fruchtmonate', en: 'Fruiting months' },
   fieldFlowerMonths: { de: 'Blütemonate', en: 'Flowering months' },

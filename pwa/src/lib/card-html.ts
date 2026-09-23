@@ -32,13 +32,11 @@ const C = {
   waterDry: '#e8d5b7',
   waterMid: '#81d4fa',
   waterWet: '#1565c0',
-  waterPlant: '#006064',
   phVeryAcid: '#ff5555',
   phAcid: '#ffd42a',
   phNeutral: '#00d400',
   phAlkaline: '#2ca089',
   phVeryAlkaline: '#0066ff',
-  phSaline: '#7f2aff',
   inactive: '#e8e8e8',
   border: '#cccccc',
   header: '#004754',
@@ -197,7 +195,6 @@ export function renderPolyCardHtml(plant: PlantData, imgSrc?: string): string {
       pill('Tro', plant.waterDry,   C.waterDry) +
       pill('Mit', plant.waterMid,   C.waterMid) +
       pill('Nas', plant.waterWet,   C.waterWet,   true) +
-      pill('Tei', plant.waterPlant, C.waterPlant, true) +
     `</div>` +
 
     // ── pH ────────────────────────────────────────────────────────────────────
@@ -208,7 +205,6 @@ export function renderPolyCardHtml(plant: PlantData, imgSrc?: string): string {
       pill('N',   plant.phNeutral,     C.phNeutral) +
       pill('A',   plant.phAlkaline,    C.phAlkaline) +
       pill('vA',  plant.phVeryAlkaline, C.phVeryAlkaline, true) +
-      pill('Sal', plant.phSaline,      C.phSaline, true) +
     `</div>` +
 
     // ── Fruit months ──────────────────────────────────────────────────────────
@@ -305,7 +301,6 @@ export function renderStripeCardHtml(plant: PlantData, imgSrc?: string): string 
         (plant.waterDry   ? `<span style="background:${C.waterDry};padding:1px 2px;border-radius:2px;">Tro</span>` : '') +
         (plant.waterMid   ? `<span style="background:${C.waterMid};padding:1px 2px;border-radius:2px;">Mit</span>` : '') +
         (plant.waterWet   ? `<span style="background:${C.waterWet};color:#fff;padding:1px 2px;border-radius:2px;">Nas</span>` : '') +
-        (plant.waterPlant ? `<span style="background:${C.waterPlant};color:#fff;padding:1px 2px;border-radius:2px;">Tei</span>` : '') +
       `</div>` +
     `</div>` +
 

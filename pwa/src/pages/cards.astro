@@ -78,7 +78,7 @@ import Layout from '../layouts/Layout.astro';
           </div>
         </fieldset>
         <fieldset class="rounded-lg border border-stone-200 dark:border-stone-700 p-4">
-          <legend class="px-2 text-sm font-semibold text-green-800 dark:text-green-300" data-i18n="fieldsetEcosystem">Ökosystem</legend>
+          <legend class="px-2 text-sm font-semibold text-green-800 dark:text-green-300" data-i18n="fieldsetEcosystem">Funktionen</legend>
           <div class="flex flex-wrap gap-x-5 gap-y-1.5 text-sm">
             <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-nitrogenFix" class="accent-green-600" /> <span data-i18n="labelNitrogen">Stickstoff</span></label>
             <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-mineralFix" class="accent-green-600" /> <span data-i18n="labelMinerals">Mineralien</span></label>
@@ -105,7 +105,6 @@ import Layout from '../layouts/Layout.astro';
               <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-waterDry" class="accent-blue-500" /> <span data-i18n="labelWaterDry">Trocken</span></label>
               <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-waterMid" class="accent-blue-500" /> <span data-i18n="labelMedium">Mittel</span></label>
               <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-waterWet" class="accent-blue-500" /> <span data-i18n="labelWaterWet">Nass</span></label>
-              <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-waterPlant" class="accent-blue-500" /> <span data-i18n="labelWaterPlant">Wasserpflanze</span></label>
             </div>
           </fieldset>
           <fieldset class="rounded-lg border border-stone-200 dark:border-stone-700 p-3">
@@ -125,7 +124,6 @@ import Layout from '../layouts/Layout.astro';
             <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-phNeutral" class="accent-green-500" /> <span data-i18n="labelPhNeutral">Neutral</span></label>
             <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-phAlkaline" class="accent-teal-500" /> <span data-i18n="labelPhAlkaline">Alkalisch</span></label>
             <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-phVeryAlkaline" class="accent-blue-500" /> <span data-i18n="labelPhVeryAlkaline">Sehr alk.</span></label>
-            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-phSaline" class="accent-purple-500" /> <span data-i18n="labelPhSaline">Salin</span></label>
           </div>
         </fieldset>
         <div class="grid gap-4 sm:grid-cols-2">
@@ -208,8 +206,8 @@ import Layout from '../layouts/Layout.astro';
     'nitrogenFix', 'mineralFix', 'groundCover', 'insects', 'pest',
     'animalProtection', 'windBreaking', 'windBreakingOnSea',
     'sunFull', 'sunMid', 'sunShadow',
-    'waterDry', 'waterMid', 'waterWet', 'waterPlant',
-    'phVeryAcid', 'phAcid', 'phNeutral', 'phAlkaline', 'phVeryAlkaline', 'phSaline',
+    'waterDry', 'waterMid', 'waterWet',
+    'phVeryAcid', 'phAcid', 'phNeutral', 'phAlkaline', 'phVeryAlkaline',
     'growSpeedLow', 'growSpeedMid', 'growSpeedHigh',
   ] as const;
 

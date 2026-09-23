@@ -61,9 +61,18 @@ function buildPlantMesh(placement: GardenPlanPlacement, plant: PlantData | undef
   const style = LAYER_STYLE[layer];
 
   if (layer === 'tree') {
-    const trunkHeight = Math.max(0.3, radiusM * 1.2);
+    // These floors exist only to avoid a degenerate zero-size mesh — they
+    // must stay below displayRadiusM()'s own MIN_DISPLAY_RADIUS_M (0.08) run
+    // through the same multipliers, or they silently override the age-based
+    // scaling below that floor. The old floors (0.3 / 0.04 / 0.05) sat ABOVE
+    // radiusM's guaranteed minimum scaled by these multipliers (0.08*1.2 =
+    // 0.096 etc.) — for any plant whose widthM defaults to 0.5 (unset, e.g.
+    // not yet PFAF-enriched), the mature trunk height (0.25*1.2 = 0.3) never
+    // exceeded that floor either, so the trunk rendered at a fixed size for
+    // the entire 0-30 year slider range while the canopy still visibly grew.
+    const trunkHeight = Math.max(0.05, radiusM * 1.2);
     const trunkGeom = new THREE.CylinderGeometry(
-      Math.max(0.04, radiusM * 0.06), Math.max(0.05, radiusM * 0.08), trunkHeight, 8,
+      Math.max(0.01, radiusM * 0.06), Math.max(0.012, radiusM * 0.08), trunkHeight, 8,
     );
     const trunk = new THREE.Mesh(trunkGeom, new THREE.MeshStandardMaterial({ color: 0x78350f }));
     trunk.position.y = trunkHeight / 2;

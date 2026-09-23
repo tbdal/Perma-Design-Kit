@@ -355,10 +355,10 @@ export async function fetchProxyData(latinName: string): Promise<Partial<PlantDa
       'nitrogenFix', 'mineralFix', 'groundCover', 'insects', 'pest',
       'animalProtection', 'windBreaking', 'windBreakingOnSea',
       'sunFull', 'sunMid', 'sunShadow',
-      'waterDry', 'waterMid', 'waterWet', 'waterPlant',
+      'waterDry', 'waterMid', 'waterWet',
       'growSpeedLow', 'growSpeedMid', 'growSpeedHigh',
       'phVeryAcid', 'phAcid', 'phNeutral',
-      'phAlkaline', 'phVeryAlkaline', 'phSaline',
+      'phAlkaline', 'phVeryAlkaline',
     ] as const;
 
     for (const f of directFields) {
