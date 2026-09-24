@@ -16,6 +16,11 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] Startseite übersichtlicher gestalten:
   - [ ] Untermenü: kleine Verbesserungen für die Lesbarkeit:
     - [ ] View / Ansicht: export / Ausgabe: project scale / Maßstab
+- [ ] Änderungen "edit mode":
+  - [ ] Feld "basic data": textfeld für Notizen/Bemerkungen: Wurzelunterlage, spez. Anforderungen oder Qualitäten
+  - [ ] Feld "uses": übersichtlichere formatierung in 2-3 spalten;
+  - [ ] Feld "uses": tickboxes für fehlende uses: timber, ornamental, fiber, ...
+  - [ ] Feld "ecosystem": ---minerals > Min. Accum.; ---pest > pest confuser; ---animal shelter > shelter for wildlife/animals; ---wind (coastal) > entfernen
 - [ ] printing out: define min. size to fill the page with!
 - [x] Durchmesser auf Baumscheibe etwas runterschieben
 - [ ] prüfen: Wasser und Sonne sind im SVG nicht vollständig -> psd erneut in svg konvertieren @Andi
