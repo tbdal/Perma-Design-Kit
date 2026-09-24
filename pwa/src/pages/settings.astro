@@ -52,10 +52,10 @@ import Layout from '../layouts/Layout.astro';
   <section class="mb-8 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
     <h2 class="text-lg font-semibold text-stone-800 dark:text-stone-100" data-i18n="sectionPrivacy">Privatsphäre</h2>
     <label class="mt-3 inline-flex items-start gap-2 text-sm">
-      <input type="checkbox" id="plausible-optout" class="mt-0.5 accent-green-600" />
+      <input type="checkbox" id="analytics-optout" class="mt-0.5 accent-green-600" />
       <span>
-        <span class="font-medium text-stone-700 dark:text-stone-200" data-i18n="privacyOptOutLabel">Plausible-Reichweitenmessung deaktivieren</span>
-        <span class="block text-xs text-stone-500 dark:text-stone-400"><span data-i18n="privacyOptOutDescPre">Plausible erfasst keine personenbezogenen Daten — falls du trotzdem nicht gezählt werden möchtest, hier den Haken setzen. Details in der</span> <a href="/datenschutz" data-i18n="privacyOptOutDescLink" class="text-green-700 dark:text-green-400 hover:underline">Datenschutzerklärung</a>.</span>
+        <span class="font-medium text-stone-700 dark:text-stone-200" data-i18n="privacyOptOutLabel">Reichweitenmessung deaktivieren</span>
+        <span class="block text-xs text-stone-500 dark:text-stone-400"><span data-i18n="privacyOptOutDescPre">Die selbst gehostete Reichweitenmessung (Umami) erfasst keine personenbezogenen Daten — falls du trotzdem nicht gezählt werden möchtest, hier den Haken setzen. Details in der</span> <a href="/datenschutz" data-i18n="privacyOptOutDescLink" class="text-green-700 dark:text-green-400 hover:underline">Datenschutzerklärung</a>.</span>
       </span>
     </label>
   </section>
@@ -205,7 +205,7 @@ import Layout from '../layouts/Layout.astro';
   import {
     loadSettings, saveSettings,
     getTheme, setTheme, applyTheme,
-    isPlausibleOptedOut, setPlausibleOptOut,
+    isAnalyticsOptedOut, setAnalyticsOptOut,
     type AppSettings, type ViewMode, type CardVariant, type ThemePref,
   } from '../lib/settings';
   import { getAllPlants, importPlants, clearAllPlants, importPolycultures, importGardenPlans } from '../lib/db';
@@ -230,7 +230,7 @@ import Layout from '../layouts/Layout.astro';
   const toast = document.getElementById('toast')!;
   const defaultView = document.getElementById('default-view') as HTMLSelectElement;
   const defaultCardVariant = document.getElementById('default-card-variant') as HTMLSelectElement;
-  const plausibleOptout = document.getElementById('plausible-optout') as HTMLInputElement;
+  const analyticsOptout = document.getElementById('analytics-optout') as HTMLInputElement;
   const statsPlants = document.getElementById('stats-plants')!;
   const statsStorage = document.getElementById('stats-storage')!;
   const autoSyncToggle = document.getElementById('auto-sync-toggle') as HTMLInputElement;
@@ -288,7 +288,7 @@ import Layout from '../layouts/Layout.astro';
     defaultCardVariant.value = settings.defaultCardVariant;
     const t = getTheme();
     document.querySelectorAll<HTMLInputElement>('.theme-radio').forEach(r => { r.checked = r.value === t; });
-    plausibleOptout.checked = isPlausibleOptedOut();
+    analyticsOptout.checked = isAnalyticsOptedOut();
     autoSyncToggle.checked = isAutoSyncEnabled();
   }
 
@@ -337,7 +337,7 @@ import Layout from '../layouts/Layout.astro';
     setTheme(themeChoice);
     applyTheme(themeChoice);
 
-    setPlausibleOptOut(plausibleOptout.checked);
+    setAnalyticsOptOut(analyticsOptout.checked);
 
     try { localStorage.setItem('auto-sync-enabled', autoSyncToggle.checked ? 'true' : 'false'); } catch {}
 

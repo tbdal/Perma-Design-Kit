@@ -30,14 +30,12 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
         } catch (_) {}
       })();
     </script>
-    <!-- Plausible Analytics (cookieless, no personal data, EU-hosted).
-         Auto-skipped on localhost by Plausible itself.
-         ┌─────────────────────────────────────────────────────────────────┐
-         │  CHANGE data-domain BELOW WHEN SWITCHING TO A CUSTOM DOMAIN.    │
-         │  Then register the new domain in the Plausible dashboard at     │
-         │  https://plausible.io/sites — otherwise events are not counted. │
-         └─────────────────────────────────────────────────────────────────┘ -->
-    <script defer data-domain="permadesignkit.org" src="https://plausible.io/js/script.js"></script>
+    <!-- Umami Analytics — self-hosted (own VPS, Docker), cookieless, no
+         personal data, no IP storage. Replaced Plausible Cloud 2026-09-22
+         (see CHANGELOG.md) to keep all data on our own server instead of a
+         third-party's. data-domains restricts tracking to the real domain,
+         same effect as Plausible's own localhost auto-skip. -->
+    <script defer data-website-id="dd0aef9b-00ce-4126-83f8-3bf21e9830c4" data-domains="permadesignkit.org" data-do-not-track="true" src="https://stats.permadesignkit.org/script.js"></script>
     <script is:inline>
       // Apply theme before paint to avoid a flash of light UI in dark mode.
       (function () {

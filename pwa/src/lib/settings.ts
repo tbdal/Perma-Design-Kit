@@ -115,16 +115,26 @@ export function applyTheme(t: ThemePref): void {
   document.documentElement.classList.toggle('dark', isDark);
 }
 
-// ── Plausible Analytics opt-out: uses Plausible's official localStorage
-// key so the script honors it automatically.
+// ── Analytics opt-out: uses Umami's own localStorage key so the tracking
+// script honors it automatically (self-hosted Umami replaced Plausible
+// Cloud 2026-09-22, see CHANGELOG.md). A prior Plausible opt-out is
+// migrated once so an earlier choice isn't silently lost by the switch.
 
-export function isPlausibleOptedOut(): boolean {
-  try { return localStorage.getItem('plausible_ignore') === 'true'; } catch { return false; }
+export function isAnalyticsOptedOut(): boolean {
+  try {
+    if (localStorage.getItem('plausible_ignore') === 'true' && !localStorage.getItem('umami.disabled')) {
+      localStorage.setItem('umami.disabled', 'true');
+      localStorage.removeItem('plausible_ignore');
+    }
+    return localStorage.getItem('umami.disabled') === 'true';
+  } catch {
+    return false;
+  }
 }
 
-export function setPlausibleOptOut(v: boolean): void {
+export function setAnalyticsOptOut(v: boolean): void {
   try {
-    if (v) localStorage.setItem('plausible_ignore', 'true');
-    else localStorage.removeItem('plausible_ignore');
+    if (v) localStorage.setItem('umami.disabled', 'true');
+    else localStorage.removeItem('umami.disabled');
   } catch {}
 }

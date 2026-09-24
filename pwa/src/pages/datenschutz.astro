@@ -76,37 +76,39 @@ import Layout from '../layouts/Layout.astro';
     </section>
 
     <section class="space-y-2">
-      <h2 class="text-xl font-semibold" data-i18n="dsPlausibleTitle">Reichweiten­messung mit Plausible</h2>
-      <p><span data-i18n="dsPlausibleIntro1">Wir verwenden</span> <strong>Plausible Analytics</strong>
-        <span data-i18n="dsPlausibleAddress">(Plausible Insights OÜ, Västriku tn 2,
-        50403 Tartu, Estland —</span> <a class="text-green-700 dark:text-green-400 hover:underline" href="https://plausible.io/privacy" target="_blank" rel="noopener">plausible.io/privacy</a><span data-i18n="dsPlausibleIntro2">), um Seitenaufrufe und grobe Nutzungsmuster zu zählen. Plausible ist ein
-        datenschutz­freundliches, in der EU gehostetes Analyse-Tool, das ausdrücklich auf personen­bezogene
-        Daten verzichtet:</span></p>
+      <h2 class="text-xl font-semibold" data-i18n="dsAnalyticsTitle">Reichweiten­messung mit Umami (selbst gehostet)</h2>
+      <p><span data-i18n="dsAnalyticsIntro1">Wir verwenden ein selbst betriebenes</span> <strong>Umami Analytics</strong>
+        <span data-i18n="dsAnalyticsAddress">(läuft auf unserem eigenen Server unter</span> <a class="text-green-700 dark:text-green-400 hover:underline" href="https://stats.permadesignkit.org" target="_blank" rel="noopener">stats.permadesignkit.org</a><span data-i18n="dsAnalyticsIntro2">), um Seitenaufrufe und grobe Nutzungsmuster zu zählen. Es fließen dabei keine Daten an ein
+        drittes Unternehmen — anders als bei Cloud-Analyse-Diensten bleibt alles auf unserer eigenen
+        Infrastruktur. Umami verzichtet ausdrücklich auf personen­bezogene Daten:</span></p>
       <ul class="list-disc pl-6">
-        <li data-i18n="dsPlausibleLi1">keine Cookies, kein Local-Storage durch Plausible,</li>
-        <li data-i18n="dsPlausibleLi2">keine dauerhafte Speicherung der IP-Adresse (nur kurzfristig zur Aggregation),</li>
-        <li data-i18n="dsPlausibleLi3">keine geräte- oder personen­übergreifende Wieder­erkennung,</li>
-        <li data-i18n="dsPlausibleLi4">kein Cross-Site-Tracking.</li>
+        <li data-i18n="dsAnalyticsLi1">keine Cookies, kein Local-Storage durch Umami,</li>
+        <li data-i18n="dsAnalyticsLi2">keine Speicherung der IP-Adresse — die Datenbank hat gar keine Spalte dafür; nur ein
+          täglich rotierender, gesalzener Hash aus IP und Browser-Kennung dient zur Sitzungs­zählung
+          und lässt sich nicht auf die IP zurückrechnen,</li>
+        <li data-i18n="dsAnalyticsLi3">keine geräte- oder personen­übergreifende Wieder­erkennung,</li>
+        <li data-i18n="dsAnalyticsLi4">kein Cross-Site-Tracking.</li>
       </ul>
-      <p data-i18n="dsPlausibleBody2">Erfasst werden ausschließlich aggregierte Werte wie Seitenpfad, Verweis-Domain (Referrer),
-        ungefährer Standort auf Länder-/Regionsebene, Browser- und Geräte-Typ. Eine Einwilligung
-        ist nach Auffassung der Aufsichts­behörden für diese cookielose Form der Reichweiten­messung
-        nicht erforderlich.</p>
+      <p data-i18n="dsAnalyticsBody2">Erfasst werden ausschließlich aggregierte Werte wie Seitenpfad, Verweis-Domain (Referrer),
+        Land/Region (aus der IP zum Zeitpunkt des Aufrufs abgeleitet, die IP selbst wird dabei nicht
+        gespeichert), Browser- und Geräte-Typ. Eine Einwilligung ist nach Auffassung der
+        Aufsichts­behörden für diese cookielose Form der Reichweiten­messung nicht erforderlich.
+        Das Skript respektiert außerdem die „Do Not Track"-Einstellung deines Browsers, sofern gesetzt.</p>
 
-      <h3 class="pt-2 text-base font-semibold" data-i18n="dsPlausibleOptOutTitle">Reichweiten­messung deaktivieren</h3>
-      <p data-i18n="dsPlausibleOptOutIntro">Wenn du nicht gezählt werden möchtest, kannst du die Messung direkt in der App deaktivieren:</p>
+      <h3 class="pt-2 text-base font-semibold" data-i18n="dsAnalyticsOptOutTitle">Reichweiten­messung deaktivieren</h3>
+      <p data-i18n="dsAnalyticsOptOutIntro">Wenn du nicht gezählt werden möchtest, kannst du die Messung direkt in der App deaktivieren:</p>
       <ol class="list-decimal pl-6">
         <li><span data-i18n="dsOptOutLi1a">Öffne die</span> <a class="text-green-700 dark:text-green-400 hover:underline" href="/settings" data-i18n="dsSettingsLink">Einstellungen</a>.</li>
         <li><span data-i18n="dsOptOutLi2a">Setze in der Sektion</span> <strong data-i18n="dsPrivacySection">Privatsphäre</strong>
-          <span data-i18n="dsOptOutLi2b">den Haken bei „</span><em data-i18n="dsPlausibleOptOutLabel">Plausible-Reichweitenmessung deaktivieren</em><span data-i18n="dsOptOutLi2c">".</span></li>
+          <span data-i18n="dsOptOutLi2b">den Haken bei „</span><em data-i18n="dsAnalyticsOptOutLabel">Reichweitenmessung deaktivieren</em><span data-i18n="dsOptOutLi2c">".</span></li>
         <li><span data-i18n="dsOptOutLi3a">Klicke auf</span> <strong data-i18n="dsSaveSettingsBtn">Einstellungen speichern</strong>.</li>
       </ol>
       <p><span data-i18n="dsOptOutBody1">Technisch wird dabei in deinem Browser der lokale Schlüssel</span>
-        <code>plausible_ignore</code> <span data-i18n="dsOptOutBody2">auf</span> <code>true</code> <span data-i18n="dsOptOutBody3">gesetzt — ein offizielles Opt-out-Signal,
-        das das Plausible-Skript automatisch respektiert. Es werden ab dem Zeitpunkt keine weiteren
+        <code>umami.disabled</code> <span data-i18n="dsOptOutBody2">auf</span> <code>true</code> <span data-i18n="dsOptOutBody3">gesetzt — ein Opt-out-Signal,
+        das das Umami-Skript automatisch respektiert. Es werden ab dem Zeitpunkt keine weiteren
         Aufrufe gezählt. Die Einstellung wirkt nur in diesem Browser-Profil und nur, solange du den
         lokalen Speicher der Seite nicht löschst.</span></p>
-      <p data-i18n="dsPlausibleAltMethods">Alternativ helfen browser­seitige Maßnahmen wie „Do Not Track", ein Tracking-Blocker oder
+      <p data-i18n="dsAnalyticsAltMethods">Alternativ helfen browser­seitige Maßnahmen wie ein Tracking-Blocker oder
         ein Werbe-Blocker mit aktiven EasyPrivacy-Listen.</p>
     </section>
 

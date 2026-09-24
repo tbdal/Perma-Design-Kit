@@ -2,6 +2,20 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## prüfen
+  1. Salin + Wasserpflanze gelöscht — phSaline/waterPlant komplett aus Typen, Formularen, Karten-Rendering, CSV-Import/Export und Suchlogik
+     entfernt (waren laut Status-Doku ohnehin nur Platzhalter ohne echte Funktion).
+  2. "Basics" → "Basic data" — war uneinheitlich zwischen den beiden Bearbeiten-Dialogen, jetzt vereinheitlicht.
+  3. "Ecosystem" → "Functions" — passt jetzt zur Terminologie, die Tabelle/Filter längst für dieselben Felder nutzen.
+  4. Common-Name-Schriftgröße — wächst jetzt bei kurzen Namen über die bisherige feste Größe hinaus, statt nur bei langen zu schrumpfen.
+  5. Raleway für Höhe/Breite/Härtegrad — geprüft: ist bereits so im Code, keine Änderung nötig (alter Punkt, der schon mal erledigt war).
+  6. Soil-Icon ausgeblendet — das ungebundene Boden-Dreieck-Icon auf der Baumscheibe ist jetzt dauerhaft versteckt.
+  7. 3D-Stamm-Bug (Kulturapfel) — echter Bug gefunden: der Mindest-Wert für die Stammhöhe lag über dem tatsächlich erreichbaren Wert bei
+     unbekannter Kronenbreite, wodurch der Stamm nie wuchs. Rechnerisch verifiziert und gefixt.
+  8. Sticky Tabellenkopf — Ursache war eine CSS-Falle (horizontales Scrollen erzwingt heimlich vertikales overflow: auto, was Sticky bricht).
+     Mit Playwright verifiziert: Kopfzeile bleibt jetzt beim Scrollen stehen.
+
+     
 ## Kurzfristig
 - [x] **sanduhr fehlt bei erstellung von baumscheiben und pdf** — zwei Lücken gefunden: (1) das Kartenraster selbst zeigte während des Renderns (SVG-Fetch + Pro-Pflanze-DOM-Arbeit, spürbar bei Baumscheibe) keinerlei Ladezustand — neue `loadingPlaceholderHtml()` in `html.ts`, in `index.astro` und `cards.astro` vor dem `Promise.all` eingeblendet (nur für Baumscheibe, Poly/Streifen sind quasi instant, kein unnötiges Flackern). (2) der Bulk-PDF-Button (`btn-bulk-pdf`, Mehrfachauswahl in der Listenansicht) hatte überhaupt keinen `withButtonSpinner()` und ignorierte zudem `cardViewMode` — exportierte immer als Pflanzenkarte, auch wenn Baumscheibe gewählt war. Beides behoben, per Playwright verifiziert (Spinner synchron vor dem Await sichtbar, bestätigt an einem kalten Erst-Rendering).
 - [x] **Breite in Tabelle als Spalte** — neue sortierbare Spalte „B" direkt neben „H" (Höhe) in der Desktop-Tabelle, analog implementiert (`sortField` um `'widthM'` erweitert, gleiches Sortier-/Spalten-Muster).
@@ -101,6 +115,19 @@ Abgeschlossene Roadmap-Punkte, chronologisch nach Abarbeitung innerhalb ihres ur
 - [x] **Suche: Hinweis bei bereits vorhandener Pflanze** — Suchergebnisse mit gleichem lateinischen Namen (case-insensitive) wie eine schon vorhandene Pflanze zeigen jetzt „Bereits in deiner Liste" und einen grauen „Trotzdem hinzufügen"-Button statt des grünen „+ Hinzuf."; Klick fragt per Bestätigungsdialog nach, ob wirklich eine zweite Pflanze angelegt werden soll (kein Hard-Block, da ein zweiter Eintrag legitim sein kann, z.B. für eine andere Sorte via `varietyName`). Playwright-verifiziert: Abbrechen lässt die Pflanzenzahl unverändert, Bestätigen legt sie tatsächlich doppelt an.
 - [x] **Baumscheibe: „heightM"-Textbox verschoben** — Höhenangabe in Inkscape ca. 20 Einheiten nach unten versetzt (`y` 873.2 → 893.2), sonst keine Änderung an der Vorlage (per Diff aller `inkscape:label`-Elemente und Bild-Hashes gegen den vorigen Stand geprüft).
 - [x] **Baumscheibe: „widthM"-Textbox verschoben** — Breitenangabe in Inkscape ca. 4 Einheiten nach unten versetzt (`y` 873.2 → 877.2), analog zur heightM-Verschiebung eben; sonst keine weitere Änderung.
+- [x] **Plausible → selbst gehostetes Umami (Docker, eigener VPS)** — Reichweitenmessung läuft jetzt vollständig auf eigener Infrastruktur statt bei einem Cloud-Anbieter. Setup: Docker + Docker Compose installiert, Umami (App + Postgres, jeweils mit `mem_limit`) unter `/opt/umami/docker-compose.yml`, nur an `127.0.0.1:3001` gebunden; nginx-Reverse-Proxy + Let's-Encrypt-Zertifikat für neue Subdomain `stats.permadesignkit.org` (eigener Server-Block mit denselben Security-Headern wie die Hauptdomain); 2 GB Swap als Sicherheitsnetz gegen den ohnehin knappen freien RAM (nur 612 MB frei vor dem Umbau) — die Container-`mem_limit`s sorgen dafür, dass ein Speicherspitzenwert eher den Umami-Container selbst trifft als nginx/den Plant-Proxy. Default-Admin-Passwort sofort geändert (gespeichert in `/root/umami-admin-password.txt` auf dem VPS, nicht im Repo). App: `Layout.astro`s Tracking-Skript zeigt jetzt auf die eigene Instanz (`data-domains` schließt Dev-Hosts aus, `data-do-not-track="true"` respektiert die Browser-Einstellung — Umami bot das an, Plausible nicht). Opt-out-Mechanismus (`settings.ts`) auf Umamis eigenen `localStorage`-Schlüssel `umami.disabled` umgestellt, inkl. einmaliger Migration eines vorherigen Plausible-Opt-outs. Datenschutzerklärung komplett neu formuliert: kein Datenfluss mehr an ein drittes Unternehmen (Plausible Insights OÜ, Estland) entfällt; gegen die laufende Umami-Datenbank verifiziert, dass weder `website_event` noch `session` eine IP-Spalte haben — nur ein täglich rotierender gesalzener Hash dient der Sitzungszählung.
+- [x] link zu github neben Impressum mit icon
+- [x] Baumscheibe
+  - [x] Bewertung edibility, medicinal & material --> jetzt nur edibility nutzen. dafür die 5 streifen oben, gruppe "rating" befüllen
+  - [x] plantlist-icon ausblenden
+  - [x] Maßstab angeben (klein & unscheinbar)
+- [x] Produkt-Tour: einführung in webseite für ersten Start: erklärung der funktionen. wie lässt 
+  - [x] kannst du vor dem erstem Start eine kurze Erläuterung einblenden, was das permamente Speichern im Browser bedeutet
+- [x] eine zweite pdf-version der Baumscheibe, welche maßstabsgetreu in 1:50 die Baumscheibe auf druckbar macht. Der Maßstab soll änderbar sind. Dabei soll die maximale Fläche des Papiers genutzt werden, d.h. die Anordnung der Baumscheiben auf dem Druck so gewählt werden, dass möglichst wenig weiße Fläche übrig bleibt. Ränder wie bisher. Auswahl als A4, A3 und A2 ermöglichen. 
+- [x] tabelle als pdf druckbar machen. Auch als zweite Graustufenversion die verschiedenen Kriterien gut unterscheidbar macht
+- [x] tabelle: button oder andere funktion damit gefilterte alle für druck (anzahl) auf einmal angepasst werden können
+- [x] englische pflanznamen bei englischer ui anzeigen
+- [x] besuchsstatistiken, wie? — Antwort: umami selbst gehostet
 
 ## Langfristig
 

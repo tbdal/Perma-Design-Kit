@@ -2,25 +2,96 @@
 
 Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELOG.md).
 
-## jetzt: hier mit [o] abhaken, damit ich sehe, was passiert ist
-- [ ] contributor erwähnen
-- [ ] lizenz auf github
-- [ ] Tabellen-PDF: Abkürzungen mit Jörns abgleichen
-- [o] Salin + Wasserpflanze löschen
-- [o] "basics" in "basic data" umbenennen
-- [o] Überschrift "ecosystem" in "functions" ändern
-- [o] Schriftgröße des common names an die Namenslänge anpassen (größere Schrift bei kürzerem Namen)
-- [o] raleway schriftart für höhe, breite und Härtegrad nutzen
-- [o] Soil ausblenden Baumscheibe
-- [o] 3d: Stamm wächst nicht (Kulturapfel)
-- [o] Tabellenüberschrift beim Scrollen nach unten einrasten lassen
+## jetzt
+- [ ] in /root/pdk/temp steht eine neue psd, welche auch icons für wasser und licht beinhaltet - und weiter designänderungen beinhaltet. konvertiere dieses zu svg und nutze sie als basis für die baumscheibe. hinter der höhe und breite soll jeweils ein "m" für meter stehen.
+- [ ] Startseite übersichtlicher gestalten:
+  - [ ] Untermenü: kleine Verbesserungen für die Lesbarkeit:
+    - [ ] View / Ansicht vor den 3 Buttons für Pflanzenkacheln/Liste/.. schreiben
+    - [ ] Zwischen dieser Zeile "Ansicht" und Filter etwas mehr Abstand
+    - [ ] "Filter:" : gleiche Schriftgröße wie "Ansicht"
+    - [ ] Pflanzenkarten: Vor Dropdown "Baumscheibe.." schreiben: Ausgabe-Layout. Dann die PDF-Ausgaben gruppieren und auch eher als dropdown organisieren Ausgabeformat davor schreiben? Filter eins nach oben schieben
+    - [ ] export / Ausgabe: Ausgabeproject scale / Maßstab dazuschreiben
+
+- [ ] Sortenname auf Pflanzenkachel in Klammern hinter DE/EN-Namen schreiben
+- [ ] Tabellenansicht: Druck als pdf genauso wie auf anderen Seiten unter Filterzeile anzeigen (und aus Daten-Button entfernen). Genauso diese Tabellendruckfunktion im "Kalender"-Ansicht einfügen
+- [ ] checkbox im Kalender hinzufügen: "Pflanzen ohne Kalenderdaten anzeigen"
+- [ ] implement a sort function for all three views: show dropdown/tickbox to order by date from january to december, do this for flowering and harvesttimes. Also implement sorting method A-Z. (Also include option to show complete list irrespective of data completion.)
+- [ ] kalender: blüte und frucht in zwei spalten, wie im pdf
+- [ ] change title of the calendar view: "flowering & harvest calendars"
+- [ ] filter for all uses and functions
+- [ ] add an optional text field in "basic data" with the following Label: notes - Notizen
+
+
+- [ ] alle Ansichten: Sortierungen, v.a. a-Z (+innerhalb schichten)
+- [ ] Namensgebung Nutzung & Funktionen auf DE&EN korrekt eintragen mit folgender Liste:
+  - [ ] functions: nitrogen fixer - Stickstoff-Fixierer, dynamic accumulator - Mineraliensammler, invertebrates - Insekten, pest control - Schädlingsschutz, ground cover - Bodendecker, wildlife - Kleintiere, windbreak - Windschutz
+  - [ ] uses: edibility - Essbarkeit, medicinal - Gesundheit, culinary - Küche, materials - Materialien, fuel - Brennstoff, fodder - Tierfutter, fiber - Fasern, wood - Nutzholz 
+- [ ] menu order: plants- calendars - polycultures - "garden plan" last & grey out & put info into start page of garden plan "experimental, feature in development";
+- [ ] changes in the popup "edit mode" of a plant:
+  - [ ] field "uses": create three invisible rows, group the tickboxes as follows: edibility, medicinal and culinary in the first row; fuel, wood, materials in the second row; fodder, fiber in the third row
+  - [ ] field "uses": add tickboxes for the following uses: fuel, fodder, fiber, wood, ornamental
+  - [ ] field "functions": show tickboxes and labels for all possible functions
+
+- [ ] include the following new uses to the filtering dropdown menu "uses" and include tickboxes in the edit view of a plant, using the following english and Germen terms: ornamental - Ästhetik, wood - Nutzholz, dyes - Farbstoff, fiber - Fasern,
+- [ ] printing out: define min. size of plant card in cm to include in page by user. only print plant cards which will be bigger. show list of all discarded plants to user.
+
+- [ ] neue funktion: für jede pflanze soll die möglichkeit existieren sie in einer oder mehreren gruppen einzusortieren. implementiere dies, so, dass dies auf der bearbeiten-seite, in der liste und weiteren sichtbar ist in welchen gruppen eine Pflanze ist.
+
+- [ ] in /root/pdk/temp stehen mehrere neue jpgs. erstelle 2-3 designs für die webseite basierend auf diesen jpgs - inkl. neuem logo auf basis dieser desings, welches oben links angezeigt wird. erstelle erstmal nur voransichten und schalte das nicht live. 
+
+## Prios
+- [ ] bug fixing
+  - [ ] s.u.
+  - [ ] Baumscheibe
+  - [ ] prüfen: Wasser und Sonne sind im SVG nicht vollständig -> psd erneut in svg konvertieren @Andi
+- [ ] Lizenz s.u.
+- [ ] Newsletter button: Jetzt Jörn's Newsletter auf brevo nutzen mit api?
+- [ ] spendenbutton
+- [ ] präsentation check auf dropbox (Andi)
+- [ ] impressum: Jörn aufnehmen?
+
+
+
 
 ## kurzfristig
-- [ ] Durchmesser auf Baumscheibe etwas runterschieben
+- [ ] Logo&CI (Jörn)?: muster in dropbox:
+'https://www.dropbox.com/scl/fi/r9p078v5vkvl1f17ol2le/pdk_1920px_v1.jpg?rlkey=2oy8d1d54m6f8hq2ud44213rb&dl=0
+
+### Re: FUNKTIONALITÄT
+
+
+
+
+
+
+
+
+
+
+- [x] Durchmesser auf Baumscheibe etwas runterschieben
+      
+### Re: Calendars
+- [ ] current month: highlight white!
+- [ ] infotextbox: WIP functionality 66%?; explain views
+
+### Re: Polycultures
+- [ ] textbox: poly def. & links
+- [ ] anchor species is not always a central element!
+- [ ] make companion search criteria definable!
+- [ ] add functions that are covered by outside guilds
+
+
+### Re: RECHTLICH/LIZENZ
+- [ ] contributor erwähnen: Jörn, Andi, Jens, Sebastian, pfaf
+  - [ ] lizenz
+  - [ ] bild
+- [ ] lizenz auf github: fair-use
+  - [ ] Jens & Sebastian um Lizenzänderung bitten?
 - [ ] naturadb anrufen (Anfrage: Erlaubnis für gemeinnützige, nicht-kommerzielle Nutzung der Daten?)
-- [ ] Toensmeier: können wir seine Daten dafür nutzen? @Joern
-- [ ] spendenbutton: vorschlag machen
-- [ ] plausible
+- [ ] Toensmeier: können wir seine Daten dafür nutzen? Anfrage ist raus@Joern
+
+
+
 
 
 ## später / Fragen für Präsentation
@@ -29,21 +100,27 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] medicinal & material sinnvoll auf Baumscheibe?
 - [ ] plantlist-icon nutzen?
 - [ ] erweiterung: essbarkeit: Pflanzenteile (aus PFAF) angeben
-
-
+- [ ] PFAF hat noch eine agroforestry/regen.agricult. rubrik für weitere funktionen wie erosion control, carbon seq., etc die wir übernehmen wollen
+- [ ] new functions: barrier
+- [ ] create default/other plant lists: -CAFG (v5? - 41 spp.), CAFG full? (350+ spp.), PFAF - selected book, Grünheck?
+- [ ] Zirkeldreher-Tool
 
 - [x] domain permadesignkit.org gekauft
 - [x] Tabelle: Baum/Strauch/Krautebene als Spalte und Filter/sortierfunktion
 - [x] Zeichen für Baum/Strauch.. ebene -> psd erneut in svg konvertieren
+      
 ### Debugging
 #### Darstellung Scheibe & mapping prüfen
+- [ ] some herbs get the shrub icon
+- [ ] use: materials: s.t. questionable?
+- [ ] uses: wood and fiber are always shown
 - [ ] testen: **warum wird bei Beinwell Material und Brennstoff aktiviert - wo steht das bei pfaf?** — Zwei getrennte Befunde: **Material ist korrekt** — PFAFs eigenes „Other Uses Rating" für Comfrey/Beinwell steht bei 4 von 5, `material = materialScore > 2` bildet das nur ab. **Brennstoff war ein echter Bug**, jetzt behoben in `plant-proxy-server.mjs`: (1) die `fieldSection`-Extraktion (`/boots[^"]*"[^>]*>…<\/div>/gi`) matchte ungewollt auch die Kette „boots**trap**" aus dem Bootstrap-CDN-Link im `<head>`, wodurch der träge Capture bis zum nächsten `</div>` zig KB unbeteiligter Kopfzeilen-/Script-Inhalte mitriss — gefixt durch `class="boots\d*"[^>]*>…` (erfordert das `class="`-Präfix). (2) Der eigentliche Auslöser für den falschen Wert: `fuel`/`fodder`/`groundCover`/etc. wurden per loser Prosa-Suche (`/\bFuel\b/i` etc.) statt anhand von PFAFs echten Tag-Links geprüft — Comfrey ist bei PFAF nur mit Biomass/Compost/Gum/Dynamic accumulator/Food Forest getaggt, aber der Tooltip-Text des (korrekten) Biomass-Tags lautet „…can be converted into **fuel** etc.", und der Fließtext unter „Landscape Uses" erwähnt beiläufig „**Ground cover**" — beides wurde fälschlich als eigenes Tag erkannt. Fix: `hasUseTag()` prüft jetzt den exakten Anker-Text (`>Fuel</a>`) der zugewiesenen Tags, nicht mehr Fließtext-Vorkommen — geprüft gegen reale PFAF-Seiten (Comfrey, Robinia pseudoacacia, Acer campestre), nicht geraten. `windBreaking`/`animalProtection` bleiben Prosa-basiert (bestätigt: PFAF hat für „Windbreak"/„Living Trellis" gar keine eigene Tag-Kategorie, auch bei klassischen Windschutz-Arten wie Elaeagnus x ebbingei nicht), aber jetzt auf den korrekt eingegrenzten `fieldSection`-Ausschnitt statt den überlaufenden Blob angewandt. Live gegen `/api/plant-proxy` verifiziert: Comfrey liefert jetzt `fuel: false, fodder: false, groundCover: false, material: true, mineralFix: true`; Robinia/Acer weiterhin korrekt `fuel: true`.
 
 #### weitere bugs / validierung
 - [ ] limits für abruf bei pfaf
 
 ### Baumscheibe Karte Feinschliff
-- [ ] Sonne/Wasser-Icons: sunFull/waterDry ergänzen — sunMid/sunShadow und waterMid/waterWet sind jetzt verdrahtet (semishade2/fullshade2, humid1/wet1, aus der PSD gespleißt), aber für „volle Sonne"/„trocken" existiert im PSD überhaupt kein Icon — braucht neue Artwork vom Designer, siehe `baumscheibe-mapping-status.md`
+- [ ] Sonne/Wasser-Icons (je 3 Zustände) ergänzen — einzige verbleibende „komplett tot"-Gruppe, siehe `baumscheibe-mapping-status.md`
 - [ ] sprache der karten auf ui-sprache einstellen
 
 ### sonst
@@ -51,8 +128,6 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] führung durch die webseite beim ersten aufruf der webseite
 - [ ] nutzen prüfen, ist alles vorhanden, was in Baumscheibe angezeigt wird?#
 - [ ] polykulturen-tab entwickeln
-
-
 
 ### PDF Generierung
 - [ ] zweite Option: Größen entsprechend Baumdurchmesser
