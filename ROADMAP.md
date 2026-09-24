@@ -2,8 +2,15 @@
 
 Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELOG.md).
 
-## jetzt: hier mit [o] abhaken, damit ich sehe, was passiert ist
-
+## Prios
+- [ ] bug fixing
+  - [ ] s.u.
+  - [ ] Baumscheibe
+  - [ ] prüfen: Wasser und Sonne sind im SVG nicht vollständig -> psd erneut in svg konvertieren @Andi
+- [ ] Lizenz 
+- [ ] Newsletter button: Jetzt Jörn's Newsletter auf brevo nutzen mit api?
+- [ ] spendenbutton
+ 
 
 ## kurzfristig
 
@@ -11,16 +18,25 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] filter for all uses and functions
 - [ ] alle Ansichten: Sortierungen, v.a. a-Z (+innerhalb schichten)
 - [ ] Namensgebung Nutzung & Funktionen auf DE&EN korrekt eintragen mit Liste von Jörn:
+- [ ] menu order: plants- calendars - polycultures - "garden plan" last & grey out & put info into start page of garden plan "experimental, feature in development";
+
+
 
 - [ ] new uses: ornamental, timber/wood, dyes, soap, fiber, ....
 - [ ] new functions: barrier
 
 
-- [ ] menu order: plants- calendars - polycultures - "garden plan" last & grey out;
+
 
 - [ ] Startseite übersichtlicher gestalten:
   - [ ] Untermenü: kleine Verbesserungen für die Lesbarkeit:
-    - [ ] View / Ansicht: export / Ausgabe: project scale / Maßstab
+    - [ ] View / Ansicht vor den 3 Buttons für Pflanzenkacheln/Liste/.. schreiben
+    - [ ] Zwischen dieser Zeile "Ansicht" und Filter etwas mehr Abstand
+    - [ ] "Filter:" : gleiche Schriftgröße wie "Ansicht"
+    - [ ] Pflanzenkarten: Vor Dropdown "Baumscheibe.." schreiben: Ausgabe-Layout. Dann die PDF-Ausgaben gruppieren und auch eher als dropdown organisieren Ausgabeformat davor schreiben? Filter eins nach oben schieben
+    - [ ] export / Ausgabe: Ausgabeproject scale / Maßstab dazuschreiben
+       
+  
 - [ ] Änderungen "edit mode":
   - [ ] Feld "basic data": textfeld für Notizen/Bemerkungen: Wurzelunterlage, spez. Anforderungen oder Qualitäten
   - [ ] Feld "uses": übersichtlichere formatierung in 2-3 spalten;
@@ -28,8 +44,8 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
   - [ ] Feld "ecosystem": ---minerals > Min. Accum.; ---pest > pest confuser; ---animal shelter > shelter for wildlife/animals; ---wind (coastal) > entfernen
 - [ ] printing out: define min. size to fill the page with!
 - [x] Durchmesser auf Baumscheibe etwas runterschieben
-- [ ] prüfen: Wasser und Sonne sind im SVG nicht vollständig -> psd erneut in svg konvertieren @Andi
-- [ ] newsletter: Jetzt Jörn's Newsletter auf brevo nutzen mit api?
+
+
       
 ### Re: Calendars
 - [ ] title: "flowering & harvest calendars"
