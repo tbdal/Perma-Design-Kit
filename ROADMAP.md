@@ -40,8 +40,8 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 
 
 
-- [ ] new uses: ornamental, timber/wood, dyes, soap, fiber, ....
-- [ ] new functions: barrier
+- [ ] include the following new uses to the filtering dropdown menu "uses" and include tickboxes in the edit view of a plant, using the following english and Germen terms: ornamental - Ästhetik, wood - Nutzholz, dyes - Farbstoff, fiber - Fasern,
+
 
 - [ ] Änderungen "edit mode":
   - [ ] Feld "basic data": textfeld für Notizen/Bemerkungen: Wurzelunterlage, spez. Anforderungen oder Qualitäten
@@ -83,6 +83,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] plantlist-icon nutzen?
 - [ ] erweiterung: essbarkeit: Pflanzenteile (aus PFAF) angeben
 - [ ] PFAF hat noch eine agroforestry/regen.agricult. rubrik für weitere funktionen wie erosion control, carbon seq., etc die wir übernehmen wollen
+- [ ] new functions: barrier
 - [ ] create default/other plant lists: -CAFG (v5? - 41 spp.), CAFG full? (350+ spp.), PFAF - selected book, Grünheck?
 - [ ] Zirkeldreher-Tool
 
