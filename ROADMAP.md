@@ -7,12 +7,28 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
   - [ ] s.u.
   - [ ] Baumscheibe
   - [ ] prüfen: Wasser und Sonne sind im SVG nicht vollständig -> psd erneut in svg konvertieren @Andi
-- [ ] Lizenz 
+- [ ] Lizenz s.u.
 - [ ] Newsletter button: Jetzt Jörn's Newsletter auf brevo nutzen mit api?
 - [ ] spendenbutton
- 
+
+- [ ] Startseite übersichtlicher gestalten:
+  - [ ] Untermenü: kleine Verbesserungen für die Lesbarkeit:
+    - [ ] View / Ansicht vor den 3 Buttons für Pflanzenkacheln/Liste/.. schreiben
+    - [ ] Zwischen dieser Zeile "Ansicht" und Filter etwas mehr Abstand
+    - [ ] "Filter:" : gleiche Schriftgröße wie "Ansicht"
+    - [ ] Pflanzenkarten: Vor Dropdown "Baumscheibe.." schreiben: Ausgabe-Layout. Dann die PDF-Ausgaben gruppieren und auch eher als dropdown organisieren Ausgabeformat davor schreiben? Filter eins nach oben schieben
+    - [ ] export / Ausgabe: Ausgabeproject scale / Maßstab dazuschreiben
+
+- [ ] Grunddaten um neues Feld erweitern: Notizen
+- [ ] Sortenname auf Pflanzenkachel in Klammern hinter DE/EN-Namen schreiben
+- [ ] Tabellenansicht: Druck als pdf genauso wie auf anderen Seiten unter Filterzeile anzeigen (und aus Daten-Button entfernen). Genauso diese Tabellendruckfunktion im "Kalender"-Ansicht einfügen
+- [ ] checkbox im Kalender hinzufügen: "Pflanzen ohne Kalenderdaten anzeigen"
+- [ ] sort function: order by date (jeweils blüte und Ernte), A-Z
+- [ ] kalender: blüte und frucht in zwei spalten, wie im pdf
+- [ ] calendar title: "flowering & harvest calendars"
 
 ## kurzfristig
+- [ ] Logo&CI (Jörn)?
 
 ### Re: FUNKTIONALITÄT
 - [ ] filter for all uses and functions
@@ -25,37 +41,20 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] new uses: ornamental, timber/wood, dyes, soap, fiber, ....
 - [ ] new functions: barrier
 
-
-
-
-- [ ] Startseite übersichtlicher gestalten:
-  - [ ] Untermenü: kleine Verbesserungen für die Lesbarkeit:
-    - [ ] View / Ansicht vor den 3 Buttons für Pflanzenkacheln/Liste/.. schreiben
-    - [ ] Zwischen dieser Zeile "Ansicht" und Filter etwas mehr Abstand
-    - [ ] "Filter:" : gleiche Schriftgröße wie "Ansicht"
-    - [ ] Pflanzenkarten: Vor Dropdown "Baumscheibe.." schreiben: Ausgabe-Layout. Dann die PDF-Ausgaben gruppieren und auch eher als dropdown organisieren Ausgabeformat davor schreiben? Filter eins nach oben schieben
-    - [ ] export / Ausgabe: Ausgabeproject scale / Maßstab dazuschreiben
-       
-  
 - [ ] Änderungen "edit mode":
   - [ ] Feld "basic data": textfeld für Notizen/Bemerkungen: Wurzelunterlage, spez. Anforderungen oder Qualitäten
   - [ ] Feld "uses": übersichtlichere formatierung in 2-3 spalten;
   - [ ] Feld "uses": tickboxes für fehlende uses: timber, ornamental, fiber, ...
   - [ ] Feld "ecosystem": ---minerals > Min. Accum.; ---pest > pest confuser; ---animal shelter > shelter for wildlife/animals; ---wind (coastal) > entfernen
-- [ ] printing out: define min. size to fill the page with!
+
+- [ ] printing out: define min. size to fill the page with! #prio2
 - [x] Durchmesser auf Baumscheibe etwas runterschieben
-
-
       
 ### Re: Calendars
-- [ ] title: "flowering & harvest calendars"
-- [ ] sort function: order by date, A-Z
 - [ ] current month: highlight white!
-- [ ] tickbox selection reorders plants: annoying --> halve rows & show both at the same time, not layered over
 - [ ] infotextbox: WIP functionality 66%?; explain views
 
 ### Re: Polycultures
-- [ ] notice: WIP test!
 - [ ] textbox: poly def. & links
 - [ ] anchor species is not always a central element!
 - [ ] make companion search criteria definable!
@@ -70,9 +69,9 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
   - [ ] Jens & Sebastian um Lizenzänderung bitten?
 - [ ] naturadb anrufen (Anfrage: Erlaubnis für gemeinnützige, nicht-kommerzielle Nutzung der Daten?)
 - [ ] Toensmeier: können wir seine Daten dafür nutzen? Anfrage ist raus@Joern
-- [ ] spendenbutton: vorschlag machen
-      
-- [ ] Logo&CI (Jörn)?
+
+
+
 
 
 ## später / Fragen für Präsentation
