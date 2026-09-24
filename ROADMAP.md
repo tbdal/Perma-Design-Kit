@@ -25,12 +25,13 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] Sortenname auf Pflanzenkachel in Klammern hinter DE/EN-Namen schreiben
 - [ ] Tabellenansicht: Druck als pdf genauso wie auf anderen Seiten unter Filterzeile anzeigen (und aus Daten-Button entfernen). Genauso diese Tabellendruckfunktion im "Kalender"-Ansicht einfügen
 - [ ] checkbox im Kalender hinzufügen: "Pflanzen ohne Kalenderdaten anzeigen"
-- [ ] sort function: order by date (jeweils blüte und Ernte), A-Z
+- [ ] implement a sort function for all three views: show dropdown/tickbox to order by date from january to december, do this for flowering and harvesttimes. Also implement sorting method A-Z. (Also include option to show complete list irrespective of data completion.)
 - [ ] kalender: blüte und frucht in zwei spalten, wie im pdf
-- [ ] calendar title: "flowering & harvest calendars"
+- [ ] change title of the calendar view: "flowering & harvest calendars"
 
 ## kurzfristig
-- [ ] Logo&CI (Jörn)?: https://www.dropbox.com/scl/fi/r9p078v5vkvl1f17ol2le/pdk_1920px_v1.jpg?rlkey=2oy8d1d54m6f8hq2ud44213rb&dl=0
+- [ ] Logo&CI (Jörn)?: muster in dropbox:
+'https://www.dropbox.com/scl/fi/r9p078v5vkvl1f17ol2le/pdk_1920px_v1.jpg?rlkey=2oy8d1d54m6f8hq2ud44213rb&dl=0
 
 ### Re: FUNKTIONALITÄT
 - [ ] filter for all uses and functions
