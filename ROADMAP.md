@@ -15,10 +15,10 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] Sortenname auf Pflanzenkachel in Klammern hinter DE/EN-Namen schreiben
 - [ ] Tabellenansicht: Druck als pdf genauso wie auf anderen Seiten unter Filterzeile anzeigen (und aus Daten-Button entfernen). Genauso diese Tabellendruckfunktion im "Kalender"-Ansicht einfügen
 - [ ] checkbox im Kalender hinzufügen: "Pflanzen ohne Kalenderdaten anzeigen"
-- [ ] implement a sort function for all three views: show dropdown/tickbox to order by date from january to december, do this for flowering and harvesttimes. Also implement sorting method A-Z. (Also include option to show complete list irrespective of data completion.)
-- [ ] kalender: blüte und frucht in zwei spalten, wie im pdf
-- [ ] change title of the calendar view: "flowering & harvest calendars"
-- [ ] filter for all uses and functions
+- [ ] implement a sort function for all three views: show dropdown/tickbox to sort by date from january to december, do this for both flowering and harvest times. Also implement sorting method A-Z. (Also include option to show complete list irrespective of data completion.)
+- [ ] kalender: blüte und frucht übereinander in zwei horizontalen Reihen, wie im pdf
+- [ ] change title of the calendar view to "flowering & harvest calendars"
+- [ ] enable filter for all uses and functions
 - [ ] add an optional text field in "basic data" with the following Label: notes - Notizen
 
 
@@ -28,7 +28,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
   - [ ] uses: edibility - Essbarkeit, medicinal - Gesundheit, culinary - Küche, materials - Materialien, fuel - Brennstoff, fodder - Tierfutter, fiber - Fasern, wood - Nutzholz 
 - [ ] menu order: plants- calendars - polycultures - "garden plan" last & grey out & put info into start page of garden plan "experimental, feature in development";
 - [ ] changes in the popup "edit mode" of a plant:
-  - [ ] field "uses": create three invisible rows, group the tickboxes as follows: edibility, medicinal and culinary in the first row; fuel, wood, materials in the second row; fodder, fiber in the third row
+  - [ ] field "uses": create three evenly distributed invisible rows, group the tickboxes as follows: edibility, medicinal and culinary in the first row; fuel, wood, materials in the second row; fodder, fiber in the third row
   - [ ] field "uses": add tickboxes for the following uses: fuel, fodder, fiber, wood, ornamental
   - [ ] field "functions": show tickboxes and labels for all possible functions
 
