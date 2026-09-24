@@ -6,14 +6,27 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 
 
 ## kurzfristig
+
+### Re: FUNKTIONALITÄT
+- [ ] uses and functions: complete list for filtering & editing
+  - [ ] uses: ornamental, timber/wood, dyes, soap, fiber, ....
+  - [ ] functions: barrier
+- [ ] menu order: plants- calendars - polycultures - "garden plan" last & grey out;
+- [ ] alle Ansichten: Sortierungen, v.a. a-Z (+innerhalb schichten)
+- [ ] Startseite übersichtlicher gestalten:
+  - [ ] Untermenü: kleine Verbesserungen für die Lesbarkeit:
+    - [ ] View / Ansicht: export / Ausgabe: project scale / Maßstab
+- [ ] printing out: define min. size to fill the page with!
+- [x] Durchmesser auf Baumscheibe etwas runterschieben
+- [ ] prüfen: Wasser und Sonne sind im SVG nicht vollständig -> psd erneut in svg konvertieren @Andi
+- [ ] newsletter: Jetzt Jörn's Newsletter auf brevo nutzen mit api?
+-
+- ### Re: RECHTLICH/LIZENZ
 - [ ] contributor erwähnen: Jörn, Andi, Jens, Sebastian, pfaf
   - [ ] lizenz
   - [ ] bild
-- [ ] newsletter: Jetzt Jörn's Newsletter auf brevo nutzen mit api?
 - [ ] lizenz auf github: fair-use
   - [ ] Jens & Sebastian um Lizenzänderung bitten?
-- [x] Durchmesser auf Baumscheibe etwas runterschieben
-- [ ] prüfen: Wasser und Sonne sind im SVG nicht vollständig -> psd erneut in svg konvertieren @Andi
 - [ ] naturadb anrufen (Anfrage: Erlaubnis für gemeinnützige, nicht-kommerzielle Nutzung der Daten?)
 - [ ] Toensmeier: können wir seine Daten dafür nutzen? Anfrage ist raus@Joern
 - [ ] spendenbutton: vorschlag machen
@@ -25,12 +38,13 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] medicinal & material sinnvoll auf Baumscheibe?
 - [ ] plantlist-icon nutzen?
 - [ ] erweiterung: essbarkeit: Pflanzenteile (aus PFAF) angeben
-
-
+- [ ] PFAF hat noch eine agroforestry/regen.agricult. rubrik für weitere funktionen wie erosion control, carbon seq., etc die wir übernehmen wollen
+- [ ] create default/other plant lists: -CAFG (v5? - 41 spp.), CAFG full? (350+ spp.), PFAF - selected book, Grünheck?
 
 - [x] domain permadesignkit.org gekauft
 - [x] Tabelle: Baum/Strauch/Krautebene als Spalte und Filter/sortierfunktion
 - [x] Zeichen für Baum/Strauch.. ebene -> psd erneut in svg konvertieren
+      
 ### Debugging
 #### Darstellung Scheibe & mapping prüfen
 - [ ] testen: **warum wird bei Beinwell Material und Brennstoff aktiviert - wo steht das bei pfaf?** — Zwei getrennte Befunde: **Material ist korrekt** — PFAFs eigenes „Other Uses Rating" für Comfrey/Beinwell steht bei 4 von 5, `material = materialScore > 2` bildet das nur ab. **Brennstoff war ein echter Bug**, jetzt behoben in `plant-proxy-server.mjs`: (1) die `fieldSection`-Extraktion (`/boots[^"]*"[^>]*>…<\/div>/gi`) matchte ungewollt auch die Kette „boots**trap**" aus dem Bootstrap-CDN-Link im `<head>`, wodurch der träge Capture bis zum nächsten `</div>` zig KB unbeteiligter Kopfzeilen-/Script-Inhalte mitriss — gefixt durch `class="boots\d*"[^>]*>…` (erfordert das `class="`-Präfix). (2) Der eigentliche Auslöser für den falschen Wert: `fuel`/`fodder`/`groundCover`/etc. wurden per loser Prosa-Suche (`/\bFuel\b/i` etc.) statt anhand von PFAFs echten Tag-Links geprüft — Comfrey ist bei PFAF nur mit Biomass/Compost/Gum/Dynamic accumulator/Food Forest getaggt, aber der Tooltip-Text des (korrekten) Biomass-Tags lautet „…can be converted into **fuel** etc.", und der Fließtext unter „Landscape Uses" erwähnt beiläufig „**Ground cover**" — beides wurde fälschlich als eigenes Tag erkannt. Fix: `hasUseTag()` prüft jetzt den exakten Anker-Text (`>Fuel</a>`) der zugewiesenen Tags, nicht mehr Fließtext-Vorkommen — geprüft gegen reale PFAF-Seiten (Comfrey, Robinia pseudoacacia, Acer campestre), nicht geraten. `windBreaking`/`animalProtection` bleiben Prosa-basiert (bestätigt: PFAF hat für „Windbreak"/„Living Trellis" gar keine eigene Tag-Kategorie, auch bei klassischen Windschutz-Arten wie Elaeagnus x ebbingei nicht), aber jetzt auf den korrekt eingegrenzten `fieldSection`-Ausschnitt statt den überlaufenden Blob angewandt. Live gegen `/api/plant-proxy` verifiziert: Comfrey liefert jetzt `fuel: false, fodder: false, groundCover: false, material: true, mineralFix: true`; Robinia/Acer weiterhin korrekt `fuel: true`.
@@ -47,8 +61,6 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] führung durch die webseite beim ersten aufruf der webseite
 - [ ] nutzen prüfen, ist alles vorhanden, was in Baumscheibe angezeigt wird?#
 - [ ] polykulturen-tab entwickeln
-
-
 
 ### PDF Generierung
 - [ ] zweite Option: Größen entsprechend Baumdurchmesser
