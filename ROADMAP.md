@@ -10,6 +10,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] Lizenz s.u.
 - [ ] Newsletter button: Jetzt Jörn's Newsletter auf brevo nutzen mit api?
 - [ ] spendenbutton
+- [ ] präsentation check auf dropbox (Andi)
 
 - [ ] Startseite übersichtlicher gestalten:
   - [ ] Untermenü: kleine Verbesserungen für die Lesbarkeit:
