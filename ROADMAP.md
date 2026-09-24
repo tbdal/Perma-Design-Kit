@@ -8,11 +8,16 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 ## kurzfristig
 
 ### Re: FUNKTIONALITÄT
-- [ ] uses and functions: complete list for filtering & editing
-  - [ ] uses: ornamental, timber/wood, dyes, soap, fiber, ....
-  - [ ] functions: barrier
-- [ ] menu order: plants- calendars - polycultures - "garden plan" last & grey out;
+- [ ] filter for all uses and functions
 - [ ] alle Ansichten: Sortierungen, v.a. a-Z (+innerhalb schichten)
+- [ ] Namensgebung Nutzung & Funktionen auf DE&EN korrekt eintragen mit Liste von Jörn:
+
+- [ ] new uses: ornamental, timber/wood, dyes, soap, fiber, ....
+- [ ] new functions: barrier
+
+
+- [ ] menu order: plants- calendars - polycultures - "garden plan" last & grey out;
+
 - [ ] Startseite übersichtlicher gestalten:
   - [ ] Untermenü: kleine Verbesserungen für die Lesbarkeit:
     - [ ] View / Ansicht: export / Ausgabe: project scale / Maßstab
