@@ -34,6 +34,8 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] filter for all uses and functions
 - [ ] alle Ansichten: Sortierungen, v.a. a-Z (+innerhalb schichten)
 - [ ] Namensgebung Nutzung & Funktionen auf DE&EN korrekt eintragen mit Liste von Jörn:
+  - [ ] functions: nitrogen fixer - Stickstoff-Fixierer, dynamic accumulator - Mineraliensammler, invertebrates - Insekten, pest control - Schädlingsschutz, ground cover - Bodendecker, wildlife - Kleintiere, windbreak - Windschutz
+  - [ ] uses: edibility - Essbarkeit, medicinal - Gesundheit, culinary - Küche, materials - Materialien, fuel - Brennstoff, fodder - Tierfutter, fiber - Fasern, wood - Nutzholz 
 - [ ] menu order: plants- calendars - polycultures - "garden plan" last & grey out & put info into start page of garden plan "experimental, feature in development";
 
 
