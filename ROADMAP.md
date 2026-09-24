@@ -19,7 +19,6 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
     - [ ] Pflanzenkarten: Vor Dropdown "Baumscheibe.." schreiben: Ausgabe-Layout. Dann die PDF-Ausgaben gruppieren und auch eher als dropdown organisieren Ausgabeformat davor schreiben? Filter eins nach oben schieben
     - [ ] export / Ausgabe: Ausgabeproject scale / Maßstab dazuschreiben
 
-- [ ] Grunddaten um neues Feld erweitern: Notizen
 - [ ] Sortenname auf Pflanzenkachel in Klammern hinter DE/EN-Namen schreiben
 - [ ] Tabellenansicht: Druck als pdf genauso wie auf anderen Seiten unter Filterzeile anzeigen (und aus Daten-Button entfernen). Genauso diese Tabellendruckfunktion im "Kalender"-Ansicht einfügen
 - [ ] checkbox im Kalender hinzufügen: "Pflanzen ohne Kalenderdaten anzeigen"
@@ -28,7 +27,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] calendar title: "flowering & harvest calendars"
 
 ## kurzfristig
-- [ ] Logo&CI (Jörn)?
+- [ ] Logo&CI (Jörn)?: https://www.dropbox.com/scl/fi/r9p078v5vkvl1f17ol2le/pdk_1920px_v1.jpg?rlkey=2oy8d1d54m6f8hq2ud44213rb&dl=0
 
 ### Re: FUNKTIONALITÄT
 - [ ] filter for all uses and functions
