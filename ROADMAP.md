@@ -25,8 +25,23 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [x] Durchmesser auf Baumscheibe etwas runterschieben
 - [ ] prüfen: Wasser und Sonne sind im SVG nicht vollständig -> psd erneut in svg konvertieren @Andi
 - [ ] newsletter: Jetzt Jörn's Newsletter auf brevo nutzen mit api?
--
-- ### Re: RECHTLICH/LIZENZ
+      
+### Re: Calendars
+- [ ] title: "flowering & harvest calendars"
+- [ ] sort function: order by date, A-Z
+- [ ] current month: highlight white!
+- [ ] tickbox selection reorders plants: annoying --> halve rows & show both at the same time, not layered over
+- [ ] infotextbox: WIP functionality 66%?; explain views
+
+### Re: Polycultures
+- [ ] notice: WIP test!
+- [ ] textbox: poly def. & links
+- [ ] anchor species is not always a central element!
+- [ ] make companion search criteria definable!
+- [ ] add functions that are covered by outside guilds
+
+
+### Re: RECHTLICH/LIZENZ
 - [ ] contributor erwähnen: Jörn, Andi, Jens, Sebastian, pfaf
   - [ ] lizenz
   - [ ] bild
@@ -35,6 +50,8 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] naturadb anrufen (Anfrage: Erlaubnis für gemeinnützige, nicht-kommerzielle Nutzung der Daten?)
 - [ ] Toensmeier: können wir seine Daten dafür nutzen? Anfrage ist raus@Joern
 - [ ] spendenbutton: vorschlag machen
+      
+- [ ] Logo&CI (Jörn)?
 
 
 ## später / Fragen für Präsentation
@@ -52,6 +69,9 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
       
 ### Debugging
 #### Darstellung Scheibe & mapping prüfen
+- [ ] some herbs get the shrub icon
+- [ ] use: materials: s.t. questionable?
+- [ ] uses: wood and fiber are always shown
 - [ ] testen: **warum wird bei Beinwell Material und Brennstoff aktiviert - wo steht das bei pfaf?** — Zwei getrennte Befunde: **Material ist korrekt** — PFAFs eigenes „Other Uses Rating" für Comfrey/Beinwell steht bei 4 von 5, `material = materialScore > 2` bildet das nur ab. **Brennstoff war ein echter Bug**, jetzt behoben in `plant-proxy-server.mjs`: (1) die `fieldSection`-Extraktion (`/boots[^"]*"[^>]*>…<\/div>/gi`) matchte ungewollt auch die Kette „boots**trap**" aus dem Bootstrap-CDN-Link im `<head>`, wodurch der träge Capture bis zum nächsten `</div>` zig KB unbeteiligter Kopfzeilen-/Script-Inhalte mitriss — gefixt durch `class="boots\d*"[^>]*>…` (erfordert das `class="`-Präfix). (2) Der eigentliche Auslöser für den falschen Wert: `fuel`/`fodder`/`groundCover`/etc. wurden per loser Prosa-Suche (`/\bFuel\b/i` etc.) statt anhand von PFAFs echten Tag-Links geprüft — Comfrey ist bei PFAF nur mit Biomass/Compost/Gum/Dynamic accumulator/Food Forest getaggt, aber der Tooltip-Text des (korrekten) Biomass-Tags lautet „…can be converted into **fuel** etc.", und der Fließtext unter „Landscape Uses" erwähnt beiläufig „**Ground cover**" — beides wurde fälschlich als eigenes Tag erkannt. Fix: `hasUseTag()` prüft jetzt den exakten Anker-Text (`>Fuel</a>`) der zugewiesenen Tags, nicht mehr Fließtext-Vorkommen — geprüft gegen reale PFAF-Seiten (Comfrey, Robinia pseudoacacia, Acer campestre), nicht geraten. `windBreaking`/`animalProtection` bleiben Prosa-basiert (bestätigt: PFAF hat für „Windbreak"/„Living Trellis" gar keine eigene Tag-Kategorie, auch bei klassischen Windschutz-Arten wie Elaeagnus x ebbingei nicht), aber jetzt auf den korrekt eingegrenzten `fieldSection`-Ausschnitt statt den überlaufenden Blob angewandt. Live gegen `/api/plant-proxy` verifiziert: Comfrey liefert jetzt `fuel: false, fodder: false, groundCover: false, material: true, mineralFix: true`; Robinia/Acer weiterhin korrekt `fuel: true`.
 
 #### weitere bugs / validierung
