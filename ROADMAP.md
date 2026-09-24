@@ -2,18 +2,8 @@
 
 Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELOG.md).
 
-## Prios
-- [ ] bug fixing
-  - [ ] s.u.
-  - [ ] Baumscheibe
-  - [ ] prüfen: Wasser und Sonne sind im SVG nicht vollständig -> psd erneut in svg konvertieren @Andi
-- [ ] Lizenz s.u.
-- [ ] Newsletter button: Jetzt Jörn's Newsletter auf brevo nutzen mit api?
-- [ ] spendenbutton
-- [ ] präsentation check auf dropbox (Andi)
-- [ ] impressum: Jörn aufnehmen?
-
-
+## jetzt
+- [ ] in /root/pdk/temp steht eine neue psd, welche auch icons für wasser und licht beinhaltet - und weiter designänderungen beinhaltet. konvertiere dieses zu svg und nutze sie als basis für die baumscheibe. hinter der höhe und breite soll jeweils ein "m" für meter stehen.
 - [ ] Startseite übersichtlicher gestalten:
   - [ ] Untermenü: kleine Verbesserungen für die Lesbarkeit:
     - [ ] View / Ansicht vor den 3 Buttons für Pflanzenkacheln/Liste/.. schreiben
@@ -28,31 +18,56 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] implement a sort function for all three views: show dropdown/tickbox to order by date from january to december, do this for flowering and harvesttimes. Also implement sorting method A-Z. (Also include option to show complete list irrespective of data completion.)
 - [ ] kalender: blüte und frucht in zwei spalten, wie im pdf
 - [ ] change title of the calendar view: "flowering & harvest calendars"
+- [ ] filter for all uses and functions
+- [ ] add an optional text field in "basic data" with the following Label: notes - Notizen
+
+
+- [ ] alle Ansichten: Sortierungen, v.a. a-Z (+innerhalb schichten)
+- [ ] Namensgebung Nutzung & Funktionen auf DE&EN korrekt eintragen mit folgender Liste:
+  - [ ] functions: nitrogen fixer - Stickstoff-Fixierer, dynamic accumulator - Mineraliensammler, invertebrates - Insekten, pest control - Schädlingsschutz, ground cover - Bodendecker, wildlife - Kleintiere, windbreak - Windschutz
+  - [ ] uses: edibility - Essbarkeit, medicinal - Gesundheit, culinary - Küche, materials - Materialien, fuel - Brennstoff, fodder - Tierfutter, fiber - Fasern, wood - Nutzholz 
+- [ ] menu order: plants- calendars - polycultures - "garden plan" last & grey out & put info into start page of garden plan "experimental, feature in development";
+- [ ] changes in the popup "edit mode" of a plant:
+  - [ ] field "uses": create three invisible rows, group the tickboxes as follows: edibility, medicinal and culinary in the first row; fuel, wood, materials in the second row; fodder, fiber in the third row
+  - [ ] field "uses": add tickboxes for the following uses: fuel, fodder, fiber, wood, ornamental
+  - [ ] field "functions": show tickboxes and labels for all possible functions
+
+- [ ] include the following new uses to the filtering dropdown menu "uses" and include tickboxes in the edit view of a plant, using the following english and Germen terms: ornamental - Ästhetik, wood - Nutzholz, dyes - Farbstoff, fiber - Fasern,
+- [ ] printing out: define min. size of plant card in cm to include in page by user. only print plant cards which will be bigger. show list of all discarded plants to user.
+
+- [ ] neue funktion: für jede pflanze soll die möglichkeit existieren sie in einer oder mehreren gruppen einzusortieren. implementiere dies, so, dass dies auf der bearbeiten-seite, in der liste und weiteren sichtbar ist in welchen gruppen eine Pflanze ist.
+
+- in /root/pdk/temp stehen mehrere neue jpgs. erstelle 2-3 designs für die webseite basierend auf diesen jpgs - inkl. neuem logo auf basis dieser desings, welches oben links angezeigt wird. erstelle erstmal nur voransichten und schalte das nicht live. 
+
+## Prios
+- [ ] bug fixing
+  - [ ] s.u.
+  - [ ] Baumscheibe
+  - [ ] prüfen: Wasser und Sonne sind im SVG nicht vollständig -> psd erneut in svg konvertieren @Andi
+- [ ] Lizenz s.u.
+- [ ] Newsletter button: Jetzt Jörn's Newsletter auf brevo nutzen mit api?
+- [ ] spendenbutton
+- [ ] präsentation check auf dropbox (Andi)
+- [ ] impressum: Jörn aufnehmen?
+
+
+
 
 ## kurzfristig
 - [ ] Logo&CI (Jörn)?: muster in dropbox:
 'https://www.dropbox.com/scl/fi/r9p078v5vkvl1f17ol2le/pdk_1920px_v1.jpg?rlkey=2oy8d1d54m6f8hq2ud44213rb&dl=0
 
 ### Re: FUNKTIONALITÄT
-- [ ] filter for all uses and functions
-- [ ] alle Ansichten: Sortierungen, v.a. a-Z (+innerhalb schichten)
-- [ ] Namensgebung Nutzung & Funktionen auf DE&EN korrekt eintragen mit Liste von Jörn:
-  - [ ] functions: nitrogen fixer - Stickstoff-Fixierer, dynamic accumulator - Mineraliensammler, invertebrates - Insekten, pest control - Schädlingsschutz, ground cover - Bodendecker, wildlife - Kleintiere, windbreak - Windschutz
-  - [ ] uses: edibility - Essbarkeit, medicinal - Gesundheit, culinary - Küche, materials - Materialien, fuel - Brennstoff, fodder - Tierfutter, fiber - Fasern, wood - Nutzholz 
-- [ ] menu order: plants- calendars - polycultures - "garden plan" last & grey out & put info into start page of garden plan "experimental, feature in development";
 
 
 
-- [ ] include the following new uses to the filtering dropdown menu "uses" and include tickboxes in the edit view of a plant, using the following english and Germen terms: ornamental - Ästhetik, wood - Nutzholz, dyes - Farbstoff, fiber - Fasern,
 
 
-- [ ] changes in the popup "edit mode" of a plant:
-  - [ ] add an optional text field in "basic data" with the following Label: notes - Notizen
-  - [ ] field "uses": create three invisible rows, group the tickboxes as follows: edibility, medicinal and culinary in the first row; fuel, wood, materials in the second row; fodder, fiber in the third row
-  - [ ] field "uses": add tickboxes for the following uses: fuel, fodder, fiber, wood, ornamental
-  - [ ] field "functions": show tickboxes and labels for all possible functions
 
-- [ ] printing out: define min. size to fill the page with! #prio2
+
+
+
+
 - [x] Durchmesser auf Baumscheibe etwas runterschieben
       
 ### Re: Calendars
