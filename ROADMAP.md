@@ -43,11 +43,11 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] include the following new uses to the filtering dropdown menu "uses" and include tickboxes in the edit view of a plant, using the following english and Germen terms: ornamental - Ästhetik, wood - Nutzholz, dyes - Farbstoff, fiber - Fasern,
 
 
-- [ ] Änderungen "edit mode":
-  - [ ] Feld "basic data": textfeld für Notizen/Bemerkungen: Wurzelunterlage, spez. Anforderungen oder Qualitäten
-  - [ ] Feld "uses": übersichtlichere formatierung in 2-3 spalten;
-  - [ ] Feld "uses": tickboxes für fehlende uses: timber, ornamental, fiber, ...
-  - [ ] Feld "ecosystem": ---minerals > Min. Accum.; ---pest > pest confuser; ---animal shelter > shelter for wildlife/animals; ---wind (coastal) > entfernen
+- [ ] changes in the popup "edit mode" of a plant:
+  - [ ] add an optional text field in "basic data" with the following Label: notes - Notizen
+  - [ ] field "uses": create three invisible rows, group the tickboxes as follows: edibility, medicinal and culinary in the first row; fuel, wood, materials in the second row; fodder, fiber in the third row
+  - [ ] field "uses": add tickboxes for the following uses: fuel, fodder, fiber, wood, ornamental
+  - [ ] field "functions": show tickboxes and labels for all possible functions
 
 - [ ] printing out: define min. size to fill the page with! #prio2
 - [x] Durchmesser auf Baumscheibe etwas runterschieben
