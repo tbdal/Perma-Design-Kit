@@ -15,7 +15,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [x] Durchmesser auf Baumscheibe etwas runterschieben
 - [ ] prüfen: Wasser und Sonne sind im SVG nicht vollständig -> psd erneut in svg konvertieren @Andi
 - [ ] naturadb anrufen (Anfrage: Erlaubnis für gemeinnützige, nicht-kommerzielle Nutzung der Daten?)
-- [ ] Toensmeier: können wir seine Daten dafür nutzen? @Joern
+- [ ] Toensmeier: können wir seine Daten dafür nutzen? Anfrage ist raus@Joern
 - [ ] spendenbutton: vorschlag machen
 
 
