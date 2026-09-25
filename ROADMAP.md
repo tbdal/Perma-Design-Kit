@@ -56,6 +56,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 ## kurzfristig
 - [ ] Logo&CI (Jörn)?: muster in dropbox:
 'https://www.dropbox.com/scl/fi/r9p078v5vkvl1f17ol2le/pdk_1920px_v1.jpg?rlkey=2oy8d1d54m6f8hq2ud44213rb&dl=0
+- [ ] zulip wieder starten: cd /opt/zulip && docker compose start
 
 ### Re: FUNKTIONALITÄT
 
