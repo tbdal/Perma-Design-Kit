@@ -18,6 +18,7 @@ export const indexDict: Dict = {
   searchAddFailed: { de: 'Fehler', en: 'Error' },
 
   // ── View toggle + heading ────────────────────────────────────────────
+  viewLabel: { de: 'Ansicht', en: 'View' },
   viewGridTitle: { de: 'Kachelansicht', en: 'Tile view' },
   viewListTitle: { de: 'Listenansicht', en: 'List view' },
   viewCardsTitle: { de: 'Kartenansicht', en: 'Card view' },
@@ -38,6 +39,10 @@ export const indexDict: Dict = {
   menuEnrichAll: { de: 'Lade alle fehlenden Daten', en: 'Fetch all missing data' },
 
   // ── Cards toolbar ────────────────────────────────────────────────────
+  cardOutputLayoutLabel: { de: 'Ausgabe-Layout', en: 'Output layout' },
+  cardOutputFormatLabel: { de: 'Ausgabeformat', en: 'Output format' },
+  cardOutputMenuLabel: { de: 'PDF ⋮', en: 'PDF ⋮' },
+  scaleLabel: { de: 'Maßstab', en: 'Scale' },
   cardTypePoly: { de: 'Pflanzenkarten', en: 'Plant cards' },
   cardTypeStripe: { de: 'Streifenkarten', en: 'Strip cards' },
   cardTypeBaumscheibe: { de: 'Baumscheibe', en: 'Tree disc' },
