@@ -15,10 +15,10 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [x] Sortenname auf Pflanzenkachel in Klammern hinter DE/EN-Namen schreiben
 - [x] Tabellenansicht: Druck als pdf genauso wie auf anderen Seiten unter Filterzeile anzeigen (und aus Daten-Button entfernen). Genauso diese Tabellendruckfunktion im "Kalender"-Ansicht einfügen
 - [x] checkbox im Kalender hinzufügen: "Pflanzen ohne Kalenderdaten anzeigen"
-- [x] implement a sort function for all three views: show dropdown/tickbox to order by date from january to december, do this for flowering and harvesttimes. Also implement sorting method A-Z. (Also include option to show complete list irrespective of data completion.)
-- [x] kalender: blüte und frucht in zwei spalten, wie im pdf
-- [x] change title of the calendar view: "flowering & harvest calendars"
-- [x] filter for all uses and functions
+- [x] implement a sort function for all three views: show dropdown/tickbox to sort by date from january to december, do this for both flowering and harvest times. Also implement sorting method A-Z. (Also include option to show complete list irrespective of data completion.)
+- [x] kalender: blüte und frucht übereinander in zwei horizontalen Reihen, wie im pdf
+- [x] change title of the calendar view to "flowering & harvest calendars"
+- [x] enable filter for all uses and functions
 - [x] add an optional text field in "basic data" with the following Label: notes - Notizen
 
 
@@ -28,7 +28,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
   - [x] uses: edibility - Essbarkeit, medicinal - Gesundheit, culinary - Küche, materials - Materialien, fuel - Brennstoff, fodder - Tierfutter, fiber - Fasern, wood - Nutzholz 
 - [x] menu order: plants- calendars - polycultures - "garden plan" last & grey out & put info into start page of garden plan "experimental, feature in development";
 - [x] changes in the popup "edit mode" of a plant:
-  - [x] field "uses": create three invisible rows, group the tickboxes as follows: edibility, medicinal and culinary in the first row; fuel, wood, materials in the second row; fodder, fiber in the third row
+  - [x] field "uses": create three evenly distributed invisible rows, group the tickboxes as follows: edibility, medicinal and culinary in the first row; fuel, wood, materials in the second row; fodder, fiber in the third row
   - [x] field "uses": add tickboxes for the following uses: fuel, fodder, fiber, wood, ornamental
   - [x] field "functions": show tickboxes and labels for all possible functions
 
@@ -56,6 +56,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 ## kurzfristig
 - [ ] Logo&CI (Jörn)?: muster in dropbox:
 'https://www.dropbox.com/scl/fi/r9p078v5vkvl1f17ol2le/pdk_1920px_v1.jpg?rlkey=2oy8d1d54m6f8hq2ud44213rb&dl=0
+- [ ] zulip wieder starten: cd /opt/zulip && docker compose start
 
 ### Re: FUNKTIONALITÄT
 
