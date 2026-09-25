@@ -32,6 +32,10 @@ import Layout from '../layouts/Layout.astro';
       <input type="checkbox" id="filter-fruit" checked class="accent-green-600" />
       <span class="text-stone-700 dark:text-stone-300" data-i18n="filterFruit">Ernte</span>
     </label>
+    <label class="inline-flex items-center gap-1.5 cursor-pointer text-sm">
+      <input type="checkbox" id="filter-no-data" class="accent-stone-500" />
+      <span class="text-stone-700 dark:text-stone-300" data-i18n="filterNoData">Pflanzen ohne Kalenderdaten anzeigen</span>
+    </label>
     <span id="kalender-count" class="text-xs text-stone-400 dark:text-stone-500 ml-auto"></span>
   </div>
 
@@ -78,6 +82,7 @@ import Layout from '../layouts/Layout.astro';
   const searchInput  = document.getElementById('kalender-search') as HTMLInputElement;
   const filterFlower = document.getElementById('filter-flower') as HTMLInputElement;
   const filterFruit  = document.getElementById('filter-fruit') as HTMLInputElement;
+  const filterNoData = document.getElementById('filter-no-data') as HTMLInputElement;
   const overviewEl   = document.getElementById('overview')!;
   const tableEl      = document.getElementById('calendar-table')!;
   const countEl      = document.getElementById('kalender-count')!;
@@ -94,9 +99,10 @@ import Layout from '../layouts/Layout.astro';
     const q = searchInput.value.toLowerCase().trim();
     const showF = filterFlower.checked;
     const showR = filterFruit.checked;
+    const showNoData = filterNoData.checked;
     return allPlants.filter(p => {
-      if (!hasActivity(p)) return false;
       if (q && !p.latinName.toLowerCase().includes(q) && ![p.commonName, p.commonNameEn].some(n => (n || '').toLowerCase().includes(q))) return false;
+      if (!hasActivity(p)) return showNoData;
       if (!showF && !showR) return false;
       const hasFlower = showF && !!(p.flowerMonths?.some(Boolean));
       const hasFruit  = showR && !!(p.fruitMonths?.some(Boolean));
@@ -182,16 +188,21 @@ import Layout from '../layouts/Layout.astro';
   }
 
   function render() {
+    const showNoData = filterNoData.checked;
     const active = allPlants.filter(hasActivity);
+    const eligible = showNoData ? allPlants : active;
     const filtered = getFiltered();
 
-    emptyNoData.hidden  = active.length > 0;
-    emptyNoMatch.hidden = active.length === 0 || filtered.length > 0;
+    // "No data at all" only when there's truly nothing to show even with
+    // the no-data checkbox on — otherwise that checkbox would reveal a
+    // populated (if blank-rowed) table right next to this message.
+    emptyNoData.hidden  = active.length > 0 || (showNoData && allPlants.length > 0);
+    emptyNoMatch.hidden = eligible.length === 0 || filtered.length > 0;
     tableEl.style.display = filtered.length === 0 ? 'none' : '';
 
-    countEl.textContent = filtered.length === active.length
-      ? t('countAll', { count: active.length })
-      : t('countFiltered', { filtered: filtered.length, total: active.length });
+    countEl.textContent = filtered.length === eligible.length
+      ? t('countAll', { count: eligible.length })
+      : t('countFiltered', { filtered: filtered.length, total: eligible.length });
 
     renderOverview(filtered);
     renderTable(filtered);
@@ -200,6 +211,7 @@ import Layout from '../layouts/Layout.astro';
   searchInput.addEventListener('input', render);
   filterFlower.addEventListener('change', render);
   filterFruit.addEventListener('change', render);
+  filterNoData.addEventListener('change', render);
 
   // Table as PDF — same export as the plant-list table view, applied to
   // whatever this page's own filters (search + Blüte/Ernte) currently show.
@@ -216,9 +228,10 @@ import Layout from '../layouts/Layout.astro';
   }
 
   getAllPlants().then(plants => {
-    allPlants = plants
-      .filter(hasActivity)
-      .sort((a, b) => displayName(a).localeCompare(displayName(b), getLang()));
+    // No hasActivity() filter here anymore — kept in full so the
+    // "Pflanzen ohne Kalenderdaten anzeigen" checkbox has something to
+    // reveal; getFiltered()/render() apply hasActivity() as needed instead.
+    allPlants = [...plants].sort((a, b) => displayName(a).localeCompare(displayName(b), getLang()));
     render();
   });
 </script>
