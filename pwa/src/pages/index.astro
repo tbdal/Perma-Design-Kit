@@ -185,6 +185,23 @@ import Layout from '../layouts/Layout.astro';
     <button id="btn-table-pdf-gray" data-i18n="menuTablePdfGray" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700">Tabelle als PDF (Graustufen)</button>
   </div>
 
+  <!-- Sort toolbar (grid/cards only — list view sorts via clickable table headers) -->
+  <div id="sort-toolbar" style="display:none" class="mb-4 flex items-center gap-2">
+    <span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="sortLabel">Sortieren</span>
+    <select id="sort-field-select" class="rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2 py-1.5 text-sm shadow-sm focus:border-green-500 focus:outline-none">
+      <option value="commonName" data-i18n="sortByNameAz">Name (A-Z)</option>
+      <option value="latinName" data-i18n="thLatin">Lateinisch</option>
+      <option value="heightM" data-i18n="thHeightShort">H</option>
+      <option value="widthM" data-i18n="thWidthShort">B</option>
+      <option value="flowerMonth" data-i18n="sortByFlowerMonth">Blühmonat</option>
+      <option value="fruitMonth" data-i18n="sortByFruitMonth">Erntemonat</option>
+      <option value="growSpeed" data-i18n="thGrowthSpeed">Wuchs</option>
+      <option value="layer" data-i18n="thLayer">Ebene</option>
+      <option value="completeness" data-i18n="thCompleteness">Vollst.</option>
+    </select>
+    <button id="btn-sort-dir" type="button" data-i18n-title="sortDirTitle" title="Sortierrichtung umkehren" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-2.5 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700">↑</button>
+  </div>
+
   <!-- Cards toolbar (own row, no layout shift in button bar) -->
   <div id="cards-toolbar" style="display:none" class="mb-4 flex items-center gap-2">
     <span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="cardOutputLayoutLabel">Ausgabe-Layout</span>
@@ -419,7 +436,7 @@ import Layout from '../layouts/Layout.astro';
   let editingPlant: PlantData | null = null;
   let cachedPlants: PlantData[] = [];
   let lastCheckedId: string | null = null;
-  let sortField: 'commonName' | 'latinName' | 'heightM' | 'widthM' | 'completeness' | 'growSpeed' | 'layer' = 'commonName';
+  let sortField: 'commonName' | 'latinName' | 'heightM' | 'widthM' | 'completeness' | 'growSpeed' | 'layer' | 'flowerMonth' | 'fruitMonth' = 'commonName';
   let sortDir: 'asc' | 'desc' = 'asc';
 
   // Free-text filter — separate from the top search bar, which searches
@@ -875,6 +892,7 @@ import Layout from '../layouts/Layout.astro';
     const btnCards = document.getElementById('btn-view-cards')!;
     const cardsToolbar = document.getElementById('cards-toolbar')!;
     const tableToolbar = document.getElementById('table-toolbar')!;
+    const sortToolbar = document.getElementById('sort-toolbar')!;
     const heading = document.querySelector('h1.text-xl') as HTMLElement | null;
     const activeClass = ['bg-green-700', 'text-white'];
     const inactiveClass = ['bg-stone-100', 'dark:bg-stone-800', 'text-stone-700', 'dark:text-stone-200'];
@@ -883,6 +901,9 @@ import Layout from '../layouts/Layout.astro';
     active.classList.remove(...inactiveClass); active.classList.add(...activeClass);
     cardsToolbar.style.display = viewMode === 'cards' ? 'flex' : 'none';
     tableToolbar.style.display = viewMode === 'list' ? 'flex' : 'none';
+    sortToolbar.style.display = viewMode === 'list' ? 'none' : 'flex';
+    (document.getElementById('sort-field-select') as HTMLSelectElement).value = sortField;
+    document.getElementById('btn-sort-dir')!.textContent = sortDir === 'asc' ? '↑' : '↓';
     if (heading) heading.textContent = viewMode === 'cards' ? t('headingCards') : viewMode === 'list' ? t('headingList') : t('headingTiles');
   }
 
@@ -902,6 +923,15 @@ import Layout from '../layouts/Layout.astro';
    *  "unset" case, unlike growth speed), so no Infinity fallback needed. */
   const LAYER_RANK: Record<PlantLayer, number> = { herb: 1, shrub: 2, tree: 3 };
 
+  /** Earliest active month (0=Jan..11=Dec), Infinity if none set — same
+   *  "unset sorts last" convention as heightM/widthM/growSpeed above, so a
+   *  plant missing this data never gets silently dropped from the sort,
+   *  just pushed to the end. */
+  function earliestMonth(months: boolean[] | undefined): number {
+    const i = months?.findIndex(Boolean) ?? -1;
+    return i === -1 ? Infinity : i;
+  }
+
   function sortedPlants(plants: PlantData[]): PlantData[] {
     return [...plants].sort((a, b) => {
       let va: string | number, vb: string | number;
@@ -920,6 +950,12 @@ import Layout from '../layouts/Layout.astro';
       } else if (sortField === 'layer') {
         va = LAYER_RANK[deriveLayer(a)];
         vb = LAYER_RANK[deriveLayer(b)];
+      } else if (sortField === 'flowerMonth') {
+        va = earliestMonth(a.flowerMonths);
+        vb = earliestMonth(b.flowerMonths);
+      } else if (sortField === 'fruitMonth') {
+        va = earliestMonth(a.fruitMonths);
+        vb = earliestMonth(b.fruitMonths);
       } else {
         va = ((a[sortField] as string) || '').toLowerCase();
         vb = ((b[sortField] as string) || '').toLowerCase();
@@ -1138,7 +1174,10 @@ import Layout from '../layouts/Layout.astro';
     }
 
     const filtered = applyFilters(cachedPlants);
-    const displayPlants = viewMode === 'list' ? sortedPlants(filtered) : filtered;
+    // Sorting now applies to all three views — list sorts via clickable
+    // table headers, grid/cards via the sort-toolbar dropdown above —
+    // both drive the same sortField/sortDir state through sortedPlants().
+    const displayPlants = sortedPlants(filtered);
     syncFilterChips(filtered.length, cachedPlants.length);
     const bulkPrintBtn = document.getElementById('btn-bulk-print-count');
     if (bulkPrintBtn) bulkPrintBtn.textContent = t('printCountAllBtn', { n: filtered.length });
@@ -1539,6 +1578,15 @@ import Layout from '../layouts/Layout.astro';
   });
   document.getElementById('card-type-select')!.addEventListener('change', (e) => {
     cardViewMode = (e.target as HTMLSelectElement).value as 'poly' | 'stripe' | 'baumscheibe';
+    renderList();
+  });
+  document.getElementById('sort-field-select')!.addEventListener('change', (e) => {
+    sortField = (e.target as HTMLSelectElement).value as typeof sortField;
+    renderList();
+  });
+  document.getElementById('btn-sort-dir')!.addEventListener('click', () => {
+    sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+    document.getElementById('btn-sort-dir')!.textContent = sortDir === 'asc' ? '↑' : '↓';
     renderList();
   });
   document.getElementById('btn-pdf-all')!.addEventListener('click', async () => {

@@ -62,6 +62,13 @@ export const indexDict: Dict = {
   // ── Table toolbar ────────────────────────────────────────────────────
   tableOutputFormatLabel: { de: 'Ausgabeformat', en: 'Output format' },
 
+  // ── Sort toolbar (grid/cards) ────────────────────────────────────────
+  sortLabel: { de: 'Sortieren', en: 'Sort' },
+  sortByNameAz: { de: 'Name (A-Z)', en: 'Name (A-Z)' },
+  sortByFlowerMonth: { de: 'Blühmonat', en: 'Flowering month' },
+  sortByFruitMonth: { de: 'Erntemonat', en: 'Harvest month' },
+  sortDirTitle: { de: 'Sortierrichtung umkehren', en: 'Reverse sort direction' },
+
   // ── Filters ──────────────────────────────────────────────────────────
   filterLabel: { de: 'Filter:', en: 'Filter:' },
   filterTextPlaceholder: { de: 'Name filtern…', en: 'Filter by name…' },
