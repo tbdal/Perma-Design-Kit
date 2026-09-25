@@ -1,11 +1,10 @@
 import type { Dict } from './core';
 
 export const kalenderDict: Dict = {
-  pageTitle: { de: 'Ernte- & Blütenkalender', en: 'Harvest & Bloom Calendar' },
+  pageTitle: { de: 'Blüh- & Erntekalender', en: 'Flowering & Harvest Calendars' },
   pageSubtitle: { de: 'Wann blüht was, wann ist was erntereif — aus deinen Pflanzendaten.', en: 'What blooms when, what ripens when — from your plant data.' },
   legendFlower: { de: 'Blüte', en: 'Bloom' },
   legendFruit: { de: 'Ernte', en: 'Harvest' },
-  legendBoth: { de: 'Beides', en: 'Both' },
   overviewHeading: { de: 'Überblick', en: 'Overview' },
   searchPlaceholder: { de: 'Pflanze suchen…', en: 'Search plant…' },
   filterFlower: { de: 'Blüte', en: 'Bloom' },

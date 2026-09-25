@@ -10,7 +10,6 @@ import Layout from '../layouts/Layout.astro';
     <div class="flex items-center gap-4 text-xs text-stone-600 dark:text-stone-300">
       <span class="flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-amber-400 dark:bg-amber-500"></span><span data-i18n="legendFlower">Blüte</span></span>
       <span class="flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-green-500 dark:bg-green-400"></span><span data-i18n="legendFruit">Ernte</span></span>
-      <span class="flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-emerald-400 dark:bg-emerald-500"></span><span data-i18n="legendBoth">Beides</span></span>
     </div>
   </div>
 
@@ -141,13 +140,6 @@ import Layout from '../layouts/Layout.astro';
     }).join('');
   }
 
-  function cellBg(flower: boolean, fruit: boolean): string {
-    if (flower && fruit) return 'bg-emerald-400 dark:bg-emerald-500';
-    if (flower) return 'bg-amber-300 dark:bg-amber-500';
-    if (fruit)  return 'bg-green-500 dark:bg-green-400';
-    return '';
-  }
-
   function renderTable(plants: PlantData[]) {
     const showF = filterFlower.checked;
     const showR = filterFruit.checked;
@@ -157,15 +149,23 @@ import Layout from '../layouts/Layout.astro';
       return `<div class="flex h-8 items-center justify-center text-xs font-medium ${isNow ? 'text-green-600 dark:text-green-400 font-bold' : 'text-stone-400 dark:text-stone-500'}">${m}</div>`;
     }).join('');
 
+    // Blüte/Frucht each get their own sub-row per month (top/bottom) instead
+    // of blending into one combined color — matches the table-PDF layout
+    // ("Blüte: obere Reihe, Frucht: untere Reihe"), and avoids a third
+    // "both" color that no longer has anywhere to go once split.
     const rows = plants.map(p => {
       const name = escapeHtml(displayName(p));
       const sub  = displayCommonName(p) ? `<span class="block text-[10px] italic text-stone-400 dark:text-stone-500 truncate">${escapeHtml(p.latinName)}</span>` : '';
       const cells = MONTHS.map((_, i) => {
         const flower = showF && !!(p.flowerMonths?.[i]);
         const fruit  = showR && !!(p.fruitMonths?.[i]);
-        const bg = cellBg(flower, fruit);
         const isNow = i === NOW_MONTH;
-        return `<div class="flex h-9 items-center justify-center ${bg ? bg + ' rounded' : ''} ${isNow ? 'ring-1 ring-inset ring-green-400/30' : ''}"></div>`;
+        return `
+          <div class="flex h-9 flex-col justify-center gap-px ${isNow ? 'ring-1 ring-inset ring-green-400/30' : ''}">
+            <div class="h-4 rounded-t ${flower ? 'bg-amber-300 dark:bg-amber-500' : ''}"></div>
+            <div class="h-4 rounded-b ${fruit ? 'bg-green-500 dark:bg-green-400' : ''}"></div>
+          </div>
+        `;
       }).join('');
       return `
         <div class="grid items-center border-b border-stone-100 dark:border-stone-700/50 last:border-0 hover:bg-stone-50 dark:hover:bg-stone-700/30 transition-colors" style="grid-template-columns:180px repeat(12,1fr)">
