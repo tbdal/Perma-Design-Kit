@@ -964,6 +964,15 @@ import Layout from '../layouts/Layout.astro';
       }
       if (va < vb) return sortDir === 'asc' ? -1 : 1;
       if (va > vb) return sortDir === 'asc' ? 1 : -1;
+      // Tie-breaker: A-Z by name, always ascending regardless of sortDir
+      // (so e.g. sorting by "Ebene" groups Baum/Strauch/Kraut, and within
+      // each group plants read alphabetically top-to-bottom either way,
+      // instead of an arbitrary leftover DB-fetch order).
+      if (sortField !== 'commonName') {
+        const na = displayName(a).toLowerCase(), nb = displayName(b).toLowerCase();
+        if (na < nb) return -1;
+        if (na > nb) return 1;
+      }
       return 0;
     });
   }
