@@ -151,6 +151,8 @@ export interface PlantData {
   // User-chosen cultivar/variety name (e.g. "Black Krim") — never filled by
   // Wikidata/PFAF, purely a manual field for the grower's own record.
   varietyName: string;
+  // Free-form personal notes, manual only, never filled by any import path.
+  notes: string;
   // Dimensions
   heightM: number | null;
   widthM: number | null;
@@ -215,6 +217,7 @@ export function createEmptyPlant(): PlantData {
     commonName: '',
     commonNameEn: '',
     varietyName: '',
+    notes: '',
     heightM: null,
     widthM: null,
     eatableScore: 0,

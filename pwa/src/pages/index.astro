@@ -272,6 +272,8 @@ import Layout from '../layouts/Layout.astro';
               <input type="text" id="f-imageCredit" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
             <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="imageUrl" data-i18n="fieldImageUrl">Bild-URL</span>
               <input type="url" id="f-imageUrl" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
+            <label class="block sm:col-span-2"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="notes" data-i18n="fieldNotes">Notizen</span>
+              <textarea id="f-notes" rows="2" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none"></textarea></label>
           </div>
         </fieldset>
 
@@ -558,7 +560,7 @@ import Layout from '../layouts/Layout.astro';
     return result;
   }
 
-  const textFields = ['latinName', 'commonName', 'commonNameEn', 'varietyName', 'climateZone', 'imageUrl', 'imageCredit'] as const;
+  const textFields = ['latinName', 'commonName', 'commonNameEn', 'varietyName', 'climateZone', 'imageUrl', 'imageCredit', 'notes'] as const;
   const numberFields = ['heightM', 'widthM', 'eatableScore', 'medsScore', 'materialScore'] as const;
   const boolFields = [
     'eatable', 'culinaric', 'meds', 'material', 'fodder', 'fuel',
