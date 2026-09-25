@@ -10,6 +10,8 @@ export const kalenderDict: Dict = {
   filterFlower: { de: 'Blüte', en: 'Bloom' },
   filterFruit: { de: 'Ernte', en: 'Harvest' },
   filterNoData: { de: 'Pflanzen ohne Kalenderdaten anzeigen', en: 'Show plants without calendar data' },
+  filterUsageLabel: { de: 'Nutzung', en: 'Uses' },
+  filterFunctionLabel: { de: 'Funktionen', en: 'Functions' },
   tableOutputFormatLabel: { de: 'Ausgabeformat', en: 'Output format' },
   menuTablePdf: { de: 'Tabelle als PDF (Farbe)', en: 'Table as PDF (color)' },
   menuTablePdfGray: { de: 'Tabelle als PDF (Graustufen)', en: 'Table as PDF (grayscale)' },
