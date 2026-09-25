@@ -3,39 +3,39 @@
 Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELOG.md).
 
 ## jetzt
-- [ ] in /root/pdk/temp steht eine neue psd, welche auch icons für wasser und licht beinhaltet - und weiter designänderungen beinhaltet. konvertiere dieses zu svg und nutze sie als basis für die baumscheibe. hinter der höhe und breite soll jeweils ein "m" für meter stehen.
-- [ ] Startseite übersichtlicher gestalten:
-  - [ ] Untermenü: kleine Verbesserungen für die Lesbarkeit:
-    - [ ] View / Ansicht vor den 3 Buttons für Pflanzenkacheln/Liste/.. schreiben
-    - [ ] Zwischen dieser Zeile "Ansicht" und Filter etwas mehr Abstand
-    - [ ] "Filter:" : gleiche Schriftgröße wie "Ansicht"
-    - [ ] Pflanzenkarten: Vor Dropdown "Baumscheibe.." schreiben: Ausgabe-Layout. Dann die PDF-Ausgaben gruppieren und auch eher als dropdown organisieren Ausgabeformat davor schreiben? Filter eins nach oben schieben
-    - [ ] export / Ausgabe: Ausgabeproject scale / Maßstab dazuschreiben
+- [x] in /root/pdk/temp steht eine neue psd, welche auch icons für wasser und licht beinhaltet - und weiter designänderungen beinhaltet. konvertiere dieses zu svg und nutze sie als basis für die baumscheibe. hinter der höhe und breite soll jeweils ein "m" für meter stehen.
+- [x] Startseite übersichtlicher gestalten:
+  - [x] Untermenü: kleine Verbesserungen für die Lesbarkeit:
+    - [x] View / Ansicht vor den 3 Buttons für Pflanzenkacheln/Liste/.. schreiben
+    - [x] Zwischen dieser Zeile "Ansicht" und Filter etwas mehr Abstand
+    - [x] "Filter:" : gleiche Schriftgröße wie "Ansicht"
+    - [x] Pflanzenkarten: Vor Dropdown "Baumscheibe.." schreiben: Ausgabe-Layout. Dann die PDF-Ausgaben gruppieren und auch eher als dropdown organisieren Ausgabeformat davor schreiben? Filter eins nach oben schieben
+    - [x] export / Ausgabe: Ausgabeproject scale / Maßstab dazuschreiben
 
-- [ ] Sortenname auf Pflanzenkachel in Klammern hinter DE/EN-Namen schreiben
-- [ ] Tabellenansicht: Druck als pdf genauso wie auf anderen Seiten unter Filterzeile anzeigen (und aus Daten-Button entfernen). Genauso diese Tabellendruckfunktion im "Kalender"-Ansicht einfügen
-- [ ] checkbox im Kalender hinzufügen: "Pflanzen ohne Kalenderdaten anzeigen"
-- [ ] implement a sort function for all three views: show dropdown/tickbox to order by date from january to december, do this for flowering and harvesttimes. Also implement sorting method A-Z. (Also include option to show complete list irrespective of data completion.)
-- [ ] kalender: blüte und frucht in zwei spalten, wie im pdf
-- [ ] change title of the calendar view: "flowering & harvest calendars"
-- [ ] filter for all uses and functions
-- [ ] add an optional text field in "basic data" with the following Label: notes - Notizen
+- [x] Sortenname auf Pflanzenkachel in Klammern hinter DE/EN-Namen schreiben
+- [x] Tabellenansicht: Druck als pdf genauso wie auf anderen Seiten unter Filterzeile anzeigen (und aus Daten-Button entfernen). Genauso diese Tabellendruckfunktion im "Kalender"-Ansicht einfügen
+- [x] checkbox im Kalender hinzufügen: "Pflanzen ohne Kalenderdaten anzeigen"
+- [x] implement a sort function for all three views: show dropdown/tickbox to order by date from january to december, do this for flowering and harvesttimes. Also implement sorting method A-Z. (Also include option to show complete list irrespective of data completion.)
+- [x] kalender: blüte und frucht in zwei spalten, wie im pdf
+- [x] change title of the calendar view: "flowering & harvest calendars"
+- [x] filter for all uses and functions
+- [x] add an optional text field in "basic data" with the following Label: notes - Notizen
 
 
-- [ ] alle Ansichten: Sortierungen, v.a. a-Z (+innerhalb schichten)
-- [ ] Namensgebung Nutzung & Funktionen auf DE&EN korrekt eintragen mit folgender Liste:
-  - [ ] functions: nitrogen fixer - Stickstoff-Fixierer, dynamic accumulator - Mineraliensammler, invertebrates - Insekten, pest control - Schädlingsschutz, ground cover - Bodendecker, wildlife - Kleintiere, windbreak - Windschutz
-  - [ ] uses: edibility - Essbarkeit, medicinal - Gesundheit, culinary - Küche, materials - Materialien, fuel - Brennstoff, fodder - Tierfutter, fiber - Fasern, wood - Nutzholz 
-- [ ] menu order: plants- calendars - polycultures - "garden plan" last & grey out & put info into start page of garden plan "experimental, feature in development";
-- [ ] changes in the popup "edit mode" of a plant:
-  - [ ] field "uses": create three invisible rows, group the tickboxes as follows: edibility, medicinal and culinary in the first row; fuel, wood, materials in the second row; fodder, fiber in the third row
-  - [ ] field "uses": add tickboxes for the following uses: fuel, fodder, fiber, wood, ornamental
-  - [ ] field "functions": show tickboxes and labels for all possible functions
+- [x] alle Ansichten: Sortierungen, v.a. a-Z (+innerhalb schichten)
+- [x] Namensgebung Nutzung & Funktionen auf DE&EN korrekt eintragen mit folgender Liste:
+  - [x] functions: nitrogen fixer - Stickstoff-Fixierer, dynamic accumulator - Mineraliensammler, invertebrates - Insekten, pest control - Schädlingsschutz, ground cover - Bodendecker, wildlife - Kleintiere, windbreak - Windschutz
+  - [x] uses: edibility - Essbarkeit, medicinal - Gesundheit, culinary - Küche, materials - Materialien, fuel - Brennstoff, fodder - Tierfutter, fiber - Fasern, wood - Nutzholz 
+- [x] menu order: plants- calendars - polycultures - "garden plan" last & grey out & put info into start page of garden plan "experimental, feature in development";
+- [x] changes in the popup "edit mode" of a plant:
+  - [x] field "uses": create three invisible rows, group the tickboxes as follows: edibility, medicinal and culinary in the first row; fuel, wood, materials in the second row; fodder, fiber in the third row
+  - [x] field "uses": add tickboxes for the following uses: fuel, fodder, fiber, wood, ornamental
+  - [x] field "functions": show tickboxes and labels for all possible functions
 
-- [ ] include the following new uses to the filtering dropdown menu "uses" and include tickboxes in the edit view of a plant, using the following english and Germen terms: ornamental - Ästhetik, wood - Nutzholz, dyes - Farbstoff, fiber - Fasern,
-- [ ] printing out: define min. size of plant card in cm to include in page by user. only print plant cards which will be bigger. show list of all discarded plants to user.
+- [x] include the following new uses to the filtering dropdown menu "uses" and include tickboxes in the edit view of a plant, using the following english and Germen terms: ornamental - Ästhetik, wood - Nutzholz, dyes - Farbstoff, fiber - Fasern,
+- [x] printing out: define min. size of plant card in cm to include in page by user. only print plant cards which will be bigger. show list of all discarded plants to user.
 
-- [ ] neue funktion: für jede pflanze soll die möglichkeit existieren sie in einer oder mehreren gruppen einzusortieren. implementiere dies, so, dass dies auf der bearbeiten-seite, in der liste und weiteren sichtbar ist in welchen gruppen eine Pflanze ist.
+- [x] neue funktion: für jede pflanze soll die möglichkeit existieren sie in einer oder mehreren gruppen einzusortieren. implementiere dies, so, dass dies auf der bearbeiten-seite, in der liste und weiteren sichtbar ist in welchen gruppen eine Pflanze ist.
 
 - [ ] in /root/pdk/temp stehen mehrere neue jpgs. erstelle 2-3 designs für die webseite basierend auf diesen jpgs - inkl. neuem logo auf basis dieser desings, welches oben links angezeigt wird. erstelle erstmal nur voransichten und schalte das nicht live. 
 

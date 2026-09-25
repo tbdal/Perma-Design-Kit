@@ -507,10 +507,15 @@ function pushCircleClip(page: ReturnType<PDFDocument['addPage']>, cx: number, cy
   );
 }
 
-/** Returns how many discs had to be shrunk to fit the paper (bigger than the page). */
-export async function exportBaumscheibeScaledPDF(plants: PlantData[], scale: number, paper: ScaledPaper): Promise<{ pages: number; shrunk: number }> {
+/** Returns how many discs had to be shrunk to fit the paper (bigger than the
+ *  page), plus the plants left out entirely for falling under minSizeMm
+ *  (0 = no minimum, nothing discarded). */
+export async function exportBaumscheibeScaledPDF(plants: PlantData[], scale: number, paper: ScaledPaper, minSizeMm = 0): Promise<{ pages: number; shrunk: number; discarded: PlantData[] }> {
   plants = expandByPrintCount(plants);
-  if (plants.length === 0 || !(scale > 0)) return { pages: 0, shrunk: 0 };
+  if (plants.length === 0 || !(scale > 0)) return { pages: 0, shrunk: 0, discarded: [] };
+  const discarded = minSizeMm > 0 ? plants.filter(p => discDiameterMm(p, scale) < minSizeMm) : [];
+  if (discarded.length > 0) plants = plants.filter(p => discDiameterMm(p, scale) >= minSizeMm);
+  if (plants.length === 0) return { pages: 0, shrunk: 0, discarded };
   const { w: pw, h: ph } = PAPER_MM[paper];
   const packed = packCircles(plants.map(p => discDiameterMm(p, scale)), pw, ph, SCALED_PAGE_MARGIN_MM, SCALED_GAP_MM);
   const pageCount = Math.max(...packed.map(c => c.page)) + 1;
@@ -533,13 +538,13 @@ export async function exportBaumscheibeScaledPDF(plants: PlantData[], scale: num
       return `<div style="position:relative;width:${pw}mm;height:${ph}mm;overflow:hidden;${pg < pageCount - 1 ? 'page-break-after:always;' : ''}">${cells}${caption}</div>`;
     }).join('');
     const w = window.open('', '_blank');
-    if (!w) { alert('Popup-Blocker aktiv? Bitte für diese Seite erlauben und nochmal probieren.'); return { pages: pageCount, shrunk }; }
+    if (!w) { alert('Popup-Blocker aktiv? Bitte für diese Seite erlauben und nochmal probieren.'); return { pages: pageCount, shrunk, discarded }; }
     w.document.open();
     w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Baumscheiben 1:${scale}</title><style>@page{size:${pw}mm ${ph}mm;margin:0}html,body{margin:0;padding:0}</style></head><body>${pages}</body></html>`);
     w.document.close();
     await new Promise(r => setTimeout(r, 300));
     w.focus(); w.print();
-    return { pages: pageCount, shrunk };
+    return { pages: pageCount, shrunk, discarded };
   }
 
   const pdfDoc = await PDFDocument.create();
@@ -560,7 +565,7 @@ export async function exportBaumscheibeScaledPDF(plants: PlantData[], scale: num
     page.pushOperators(popGraphicsState());
   }
   downloadPdf(await pdfDoc.save(), `baumscheiben-1zu${scale}-${paper}.pdf`);
-  return { pages: pageCount, shrunk };
+  return { pages: pageCount, shrunk, discarded };
 }
 
 // ── Gartenplan export ────────────────────────────────────────────────────────

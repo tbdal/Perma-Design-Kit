@@ -153,6 +153,9 @@ export interface PlantData {
   varietyName: string;
   // Free-form personal notes, manual only, never filled by any import path.
   notes: string;
+  // User-defined group names (e.g. "Vorgarten", "Waldgarten Nord") a plant is
+  // sorted into — free-form, manual only, a plant can belong to several.
+  groups: string[];
   // Dimensions
   heightM: number | null;
   widthM: number | null;
@@ -167,6 +170,10 @@ export interface PlantData {
   material: boolean;
   fodder: boolean;
   fuel: boolean;
+  wood: boolean;
+  fiber: boolean;
+  ornamental: boolean;
+  dyes: boolean;
   // Ecosystem functions
   nitrogenFix: boolean;
   mineralFix: boolean;
@@ -218,6 +225,7 @@ export function createEmptyPlant(): PlantData {
     commonNameEn: '',
     varietyName: '',
     notes: '',
+    groups: [],
     heightM: null,
     widthM: null,
     eatableScore: 0,
@@ -229,6 +237,10 @@ export function createEmptyPlant(): PlantData {
     material: false,
     fodder: false,
     fuel: false,
+    wood: false,
+    fiber: false,
+    ornamental: false,
+    dyes: false,
     nitrogenFix: false,
     mineralFix: false,
     groundCover: false,

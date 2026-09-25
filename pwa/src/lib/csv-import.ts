@@ -20,6 +20,10 @@ const GERMAN_BOOL_MAP: Record<string, keyof PlantData> = {
   'Material': 'material',
   'Futter': 'fodder',
   'Brennstoff': 'fuel',
+  'Nutzholz': 'wood',
+  'Fasern': 'fiber',
+  'Ästhetik': 'ornamental',
+  'Farbstoff': 'dyes',
   'N_Fixierung': 'nitrogenFix',
   'Mineralien': 'mineralFix',
   'Bodendecker': 'groundCover',
@@ -164,6 +168,7 @@ export function importFromCSV(text: string): PlantData[] {
       for (const [col, field] of Object.entries(GERMAN_BOOL_MAP)) {
         if (row[col] !== undefined) (plant as any)[field] = parseBool(row[col]);
       }
+      if (row['Gruppen']) plant.groups = row['Gruppen'].split(',').map(s => s.trim()).filter(Boolean);
     } else {
       // PowerShell format
       if (row['t_latin-name_text']) plant.latinName = row['t_latin-name_text'];

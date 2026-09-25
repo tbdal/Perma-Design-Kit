@@ -9,6 +9,7 @@ import Layout from '../layouts/Layout.astro';
       <button id="btn-new-plan" data-i18n="btnNewPlan" class="rounded-lg bg-green-700 px-3.5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">+ Neuer Gartenplan</button>
     </div>
     <p class="mb-4 text-sm text-stone-500 dark:text-stone-400" data-i18n="introText">Zeichne eine Fläche, platziere Pflanzen darauf und sieh mit dem Schieberegler, wie groß sie nach x Jahren ungefähr werden.</p>
+    <p class="mb-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 px-3 py-2 text-sm text-amber-800 dark:text-amber-200 ring-1 ring-amber-200 dark:ring-amber-800" data-i18n="experimentalNotice">Experimentell — diese Funktion befindet sich noch in der Entwicklung.</p>
     <div id="plan-list" class="grid gap-4 sm:grid-cols-2"></div>
     <div id="plan-empty" class="hidden rounded-xl border-2 border-dashed border-stone-300 dark:border-stone-600 py-16 text-center">
       <p class="text-stone-500 dark:text-stone-400" data-i18n="emptyStateText">Noch keine Gartenpläne angelegt.</p>

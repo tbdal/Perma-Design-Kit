@@ -28,10 +28,13 @@ const CHIP_GROUPS = {
     { key: 'eatable', code: 'Es', hex: '#dc330c' }, { key: 'culinaric', code: 'Ku', hex: '#f88a70' },
     { key: 'meds', code: 'Me', hex: '#fa512a' }, { key: 'material', code: 'Ma', hex: '#fb923c' },
     { key: 'fodder', code: 'Fu', hex: '#a3e635' }, { key: 'fuel', code: 'Br', hex: '#f87171' },
+    { key: 'wood', code: 'Nu', hex: '#92400e' }, { key: 'fiber', code: 'Fa', hex: '#78716c' },
+    { key: 'ornamental', code: 'As', hex: '#ec4899' }, { key: 'dyes', code: 'Fb', hex: '#a855f7' },
   ],
   functions: [
     { key: 'nitrogenFix', code: 'N', hex: '#92d051' }, { key: 'mineralFix', code: 'Mi', hex: '#3cbbe4' },
     { key: 'groundCover', code: 'Bo', hex: '#d4a525' }, { key: 'insects', code: 'In', hex: '#fadb07' },
+    { key: 'pest', code: 'Sc', hex: '#ef4444' },
     { key: 'windBreaking', code: 'Wi', hex: '#c6c6c6' }, { key: 'animalProtection', code: 'Ti', hex: '#ba7010' },
   ],
   sun: [

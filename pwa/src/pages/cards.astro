@@ -66,26 +66,36 @@ import Layout from '../layouts/Layout.astro';
         <fieldset class="rounded-lg border border-stone-200 dark:border-stone-700 p-4">
           <legend class="px-2 text-sm font-semibold text-green-800 dark:text-green-300" data-i18n="fieldsetUsage">Nutzung</legend>
           <div class="flex flex-wrap gap-x-5 gap-y-1.5 text-sm">
-            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-eatable" class="accent-green-600" /> <span data-i18n="labelEatable">Essbar</span></label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-eatable" class="accent-green-600" /> <span data-i18n="labelEatable">Essbarkeit</span></label>
             <label class="inline-flex items-center gap-1"><span class="text-stone-400 dark:text-stone-500" data-i18n="labelScore">Score</span><input type="number" id="f-eatableScore" min="0" max="5" class="w-12 rounded border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs" /></label>
-            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-culinaric" class="accent-green-600" /> <span data-i18n="labelCulinaric">Kulinarisch</span></label>
-            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-meds" class="accent-green-600" /> <span data-i18n="labelMeds">Medizinisch</span></label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-meds" class="accent-green-600" /> <span data-i18n="labelMeds">Gesundheit</span></label>
             <label class="inline-flex items-center gap-1"><span class="text-stone-400 dark:text-stone-500" data-i18n="labelScore">Score</span><input type="number" id="f-medsScore" min="0" max="5" class="w-12 rounded border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs" /></label>
-            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-material" class="accent-green-600" /> <span data-i18n="labelMaterial">Material</span></label>
-            <label class="inline-flex items-center gap-1"><span class="text-stone-400 dark:text-stone-500" data-i18n="labelScore">Score</span><input type="number" id="f-materialScore" min="0" max="5" class="w-12 rounded border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs" /></label>
-            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-fodder" class="accent-green-600" /> <span data-i18n="labelFodder">Futter</span></label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-culinaric" class="accent-green-600" /> <span data-i18n="labelCulinaric">Küche</span></label>
+          </div>
+          <div class="mt-1.5 flex flex-wrap gap-x-5 gap-y-1.5 text-sm">
             <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-fuel" class="accent-green-600" /> <span data-i18n="labelFuel">Brennstoff</span></label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-wood" class="accent-green-600" /> <span data-i18n="labelWood">Nutzholz</span></label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-material" class="accent-green-600" /> <span data-i18n="labelMaterial">Materialien</span></label>
+            <label class="inline-flex items-center gap-1"><span class="text-stone-400 dark:text-stone-500" data-i18n="labelScore">Score</span><input type="number" id="f-materialScore" min="0" max="5" class="w-12 rounded border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs" /></label>
+          </div>
+          <div class="mt-1.5 flex flex-wrap gap-x-5 gap-y-1.5 text-sm">
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-fodder" class="accent-green-600" /> <span data-i18n="labelFodder">Tierfutter</span></label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-fiber" class="accent-green-600" /> <span data-i18n="labelFiber">Fasern</span></label>
+          </div>
+          <div class="mt-1.5 flex flex-wrap gap-x-5 gap-y-1.5 text-sm">
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-ornamental" class="accent-green-600" /> <span data-i18n="labelOrnamental">Ästhetik</span></label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-dyes" class="accent-green-600" /> <span data-i18n="labelDyes">Farbstoff</span></label>
           </div>
         </fieldset>
         <fieldset class="rounded-lg border border-stone-200 dark:border-stone-700 p-4">
           <legend class="px-2 text-sm font-semibold text-green-800 dark:text-green-300" data-i18n="fieldsetEcosystem">Funktionen</legend>
           <div class="flex flex-wrap gap-x-5 gap-y-1.5 text-sm">
-            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-nitrogenFix" class="accent-green-600" /> <span data-i18n="labelNitrogen">Stickstoff</span></label>
-            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-mineralFix" class="accent-green-600" /> <span data-i18n="labelMinerals">Mineralien</span></label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-nitrogenFix" class="accent-green-600" /> <span data-i18n="labelNitrogen">Stickstoff-Fixierer</span></label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-mineralFix" class="accent-green-600" /> <span data-i18n="labelMinerals">Mineraliensammler</span></label>
             <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-groundCover" class="accent-green-600" /> <span data-i18n="labelGroundCover">Bodendecker</span></label>
             <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-insects" class="accent-green-600" /> <span data-i18n="labelInsects">Insekten</span></label>
-            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-pest" class="accent-green-600" /> <span data-i18n="labelPest">Schädling</span></label>
-            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-animalProtection" class="accent-green-600" /> <span data-i18n="labelAnimalProtection">Tierschutz</span></label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-pest" class="accent-green-600" /> <span data-i18n="labelPest">Schädlingsschutz</span></label>
+            <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-animalProtection" class="accent-green-600" /> <span data-i18n="labelAnimalProtection">Kleintiere</span></label>
             <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-windBreaking" class="accent-green-600" /> <span data-i18n="labelWindBreaking">Windschutz</span></label>
             <label class="inline-flex items-center gap-1.5"><input type="checkbox" id="f-windBreakingOnSea" class="accent-green-600" /> <span data-i18n="labelWindSea">Wind (See)</span></label>
           </div>
@@ -203,6 +213,7 @@ import Layout from '../layouts/Layout.astro';
   const numberFields = ['heightM', 'widthM', 'eatableScore', 'medsScore', 'materialScore'] as const;
   const boolFields = [
     'eatable', 'culinaric', 'meds', 'material', 'fodder', 'fuel',
+    'wood', 'fiber', 'ornamental', 'dyes',
     'nitrogenFix', 'mineralFix', 'groundCover', 'insects', 'pest',
     'animalProtection', 'windBreaking', 'windBreakingOnSea',
     'sunFull', 'sunMid', 'sunShadow',

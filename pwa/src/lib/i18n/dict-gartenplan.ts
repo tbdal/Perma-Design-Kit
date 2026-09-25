@@ -5,6 +5,7 @@ export const gartenplanDict: Dict = {
   pageTitle: { de: 'Gartenplan', en: 'Garden plan' },
   btnNewPlan: { de: '+ Neuer Gartenplan', en: '+ New garden plan' },
   introText: { de: 'Zeichne eine Fläche, platziere Pflanzen darauf und sieh mit dem Schieberegler, wie groß sie nach x Jahren ungefähr werden.', en: 'Draw an area, place plants on it, and use the slider to see roughly how large they’ll be after x years.' },
+  experimentalNotice: { de: 'Experimentell — diese Funktion befindet sich noch in der Entwicklung.', en: 'Experimental — this feature is still under development.' },
   emptyStateText: { de: 'Noch keine Gartenpläne angelegt.', en: 'No garden plans created yet.' },
   btnEmptyNew: { de: 'Ersten Gartenplan anlegen', en: 'Create your first garden plan' },
   planUnnamed: { de: 'Unbenannter Gartenplan', en: 'Unnamed garden plan' },

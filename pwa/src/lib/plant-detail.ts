@@ -17,6 +17,10 @@ export const USAGE_BADGE_DEFS: [keyof PlantData, string, string, string][] = [
   ['material',  'bg-orange-100 text-orange-800', '#fb923c', 'badgeMaterial'],
   ['fodder',    'bg-lime-100 text-lime-700',     '#a3e635', 'badgeFodder'],
   ['fuel',      'bg-red-100 text-red-700',       '#f87171', 'badgeFuel'],
+  ['wood',      'bg-amber-200 text-amber-900',   '#92400e', 'badgeWood'],
+  ['fiber',     'bg-stone-200 text-stone-700',   '#78716c', 'badgeFiber'],
+  ['ornamental','bg-pink-100 text-pink-700',     '#ec4899', 'badgeOrnamental'],
+  ['dyes',      'bg-purple-100 text-purple-700', '#a855f7', 'badgeDyes'],
 ];
 
 export const FUNCTION_BADGE_DEFS: [keyof PlantData, string, string, string][] = [
@@ -24,6 +28,7 @@ export const FUNCTION_BADGE_DEFS: [keyof PlantData, string, string, string][] = 
   ['mineralFix',       'bg-emerald-100 text-emerald-800', '#3cbbe4', 'badgeMineralFix'],
   ['groundCover',      'bg-teal-100 text-teal-800',       '#d4a525', 'badgeGroundCover'],
   ['insects',          'bg-cyan-100 text-cyan-800',       '#fadb07', 'badgeInsects'],
+  ['pest',             'bg-red-100 text-red-800',         '#ef4444', 'badgePest'],
   ['windBreaking',     'bg-sky-100 text-sky-800',         '#c6c6c6', 'badgeWindBreaking'],
   ['animalProtection', 'bg-violet-100 text-violet-800',   '#ba7010', 'badgeAnimalProtection'],
 ];
@@ -84,6 +89,7 @@ export function plantDetailHtml(p: PlantData, t: Translate): string {
     <p class="mb-1.5 text-xs italic text-stone-500 dark:text-stone-400">${escapeHtml(p.latinName)}</p>
     ${dims ? `<div class="mb-1.5 flex gap-3 text-xs text-stone-500 dark:text-stone-400">${dims}</div>` : ''}
     ${badges ? `<div class="mb-2 flex flex-wrap gap-1">${badges}</div>` : ''}
+    ${(p.groups ?? []).length > 0 ? `<div class="mb-2 flex flex-wrap gap-1">${(p.groups ?? []).map(g => `<span class="inline-block rounded-full bg-stone-100 dark:bg-stone-700 px-2 py-0.5 text-[10px] font-medium text-stone-500 dark:text-stone-400">${escapeHtml(g)}</span>`).join('')}</div>` : ''}
     ${phenology ? `<div class="mb-2"><span class="mb-0.5 block text-[10px] uppercase tracking-wide text-stone-400 dark:text-stone-500">${escapeHtml(t('thPhenology'))}</span>${phenology}</div>` : ''}
     <div class="mb-2 flex items-center gap-2">
       <div class="h-1.5 w-20 overflow-hidden rounded-full bg-stone-100 dark:bg-stone-800">
