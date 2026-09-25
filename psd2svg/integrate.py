@@ -16,10 +16,16 @@ from lxml import etree
 INK_NS = "http://www.inkscape.org/namespaces/inkscape"
 SVG_NS = "http://www.w3.org/2000/svg"
 NSMAP = {"svg": SVG_NS, "inkscape": INK_NS}
+# Without this, lxml serializes freshly-set inkscape:label attributes (below)
+# under an auto-generated "ns0:" prefix instead of reusing the document's own
+# "inkscape:" binding — register_namespace only affects the process that
+# calls it, and add_inkscape_labels.py's registration doesn't carry over
+# since it runs as a separate script invocation.
+etree.register_namespace("inkscape", INK_NS)
 
 parser = etree.XMLParser(huge_tree=True)
 
-new_tree = etree.parse("baumscheibe_labeled.svg", parser)
+new_tree = etree.parse("baumscheibe2.4_labeled.svg", parser)
 new_root = new_tree.getroot()
 
 old_tree = etree.parse("../pwa/public/baumscheibe-template.svg", parser)
@@ -57,9 +63,9 @@ print(f"Labeled: {sorted(labeled)}")
 print(f"Copied from old template: {copied}")
 
 new_tree.write(
-    "baumscheibe_integrated.svg",
+    "baumscheibe2.4_integrated.svg",
     xml_declaration=True,
     encoding="UTF-8",
     standalone=False,
 )
-print("Wrote baumscheibe_integrated.svg")
+print("Wrote baumscheibe2.4_integrated.svg")

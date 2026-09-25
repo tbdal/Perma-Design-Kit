@@ -14,8 +14,14 @@ Abgeschlossene Roadmap-Punkte, chronologisch nach Abarbeitung innerhalb ihres ur
      unbekannter Kronenbreite, wodurch der Stamm nie wuchs. Rechnerisch verifiziert und gefixt.
   8. Sticky Tabellenkopf — Ursache war eine CSS-Falle (horizontales Scrollen erzwingt heimlich vertikales overflow: auto, was Sticky bricht).
      Mit Playwright verifiziert: Kopfzeile bleibt jetzt beim Scrollen stehen.
+  9. Baumscheibe-Template neu aus baumscheibe2.4.psd konvertiert (aus /root/pdk/temp) — anders als beim letzten PSD sind Sonne/Wasser diesmal
+     schon fertig als zwei sichtbare Zustände an einer einzigen, bereinigten Position im PSD selbst angelegt (kein Spleißen mehr nötig), nur
+     die Label-Nummerierung hat sich verschoben (fullshade2→fullshade1, semishade2→semishade1, wet1→wet2, humid1→humid2 — Code angepasst).
+     Vollständigkeits-Check gegen die PSD-Ebenenliste bestätigt: alle bisher gemappten Labels (Nutzung/Funktionen/pH/Wuchs/Ebene/Bewertung)
+     sind unverändert vorhanden, nichts Bestehendes ist kaputtgegangen. Zusätzlich behoben: die Höhe/Breite-Platzhalter im Template enthalten
+     ihr "m"-Einheitszeichen als Teil desselben Text-Elements wie die Zahl ("x m"/"y m") — der Renderer überschrieb das beim Einsetzen des
+     echten Werts bisher komplett, wodurch "m" verschwand; jetzt wird es gezielt wieder angehängt (nur bei heightM/widthM, nicht climateZone).
 
-     
 ## Kurzfristig
 - [x] **sanduhr fehlt bei erstellung von baumscheiben und pdf** — zwei Lücken gefunden: (1) das Kartenraster selbst zeigte während des Renderns (SVG-Fetch + Pro-Pflanze-DOM-Arbeit, spürbar bei Baumscheibe) keinerlei Ladezustand — neue `loadingPlaceholderHtml()` in `html.ts`, in `index.astro` und `cards.astro` vor dem `Promise.all` eingeblendet (nur für Baumscheibe, Poly/Streifen sind quasi instant, kein unnötiges Flackern). (2) der Bulk-PDF-Button (`btn-bulk-pdf`, Mehrfachauswahl in der Listenansicht) hatte überhaupt keinen `withButtonSpinner()` und ignorierte zudem `cardViewMode` — exportierte immer als Pflanzenkarte, auch wenn Baumscheibe gewählt war. Beides behoben, per Playwright verifiziert (Spinner synchron vor dem Await sichtbar, bestätigt an einem kalten Erst-Rendering).
 - [x] **Breite in Tabelle als Spalte** — neue sortierbare Spalte „B" direkt neben „H" (Höhe) in der Desktop-Tabelle, analog implementiert (`sortField` um `'widthM'` erweitert, gleiches Sortier-/Spalten-Muster).

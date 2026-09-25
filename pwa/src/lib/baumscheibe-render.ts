@@ -171,20 +171,19 @@ function setGrowthSpeedIcon(svg: SVGSVGElement, plant: PlantData) {
   }
 }
 
-// Sonne/Wasser — the PSD's "light" and "water" groups each hold two
-// icon states as hidden siblings of the one visible design preview: a
-// half-filled shape (semishade2 / humid1, already in the template) and a
-// fully-filled one (fullshade1/2, wet1/2 — several near-duplicate copies
-// at different canvas positions, all switched off in Photoshop). Verified
-// with psd-tools that fullshade2/wet1 do have real pixel content, not
-// empty placeholders (force-composited them to check), then pulled them
-// out and spliced into baumscheibe-template.svg at the same position as
-// their already-visible sibling (fullshade2 sits at semishade2's spot,
-// wet1 at humid1's), the same way rating2's stripes were added — see
-// CHANGELOG.md. Neither group has a "full sun" / "dry" icon in the PSD at
-// all (any state), so sunFull/waterDry just mean "hide the whole group".
-const SUN_LABELS = { sunShadow: 'fullshade2', sunMid: 'semishade2' } as const;
-const WATER_LABELS = { waterWet: 'wet1', waterMid: 'humid1' } as const;
+// Sonne/Wasser — the "light" and "water" groups each hold two icon states
+// (a half-filled shape for the mid state, a fully-filled one for
+// shadow/wet). baumscheibe2.4.psd (2026-09-24 reconversion) ships both
+// states already visible and at a single, cleaned-up canvas position —
+// unlike the previous PSD, no splicing was needed this time, just a plain
+// conversion (see psd2svg/convert_2.4.py). The chosen label per state
+// flipped position compared to the previous template (fullshade2→
+// fullshade1, semishade2→semishade1, wet1→wet2, humid1→humid2) — purely a
+// PSD-side renumbering, not a meaning change. Neither group has a "full
+// sun" / "dry" icon in the PSD at all (any state), so sunFull/waterDry
+// just mean "hide the whole group".
+const SUN_LABELS = { sunShadow: 'fullshade1', sunMid: 'semishade1' } as const;
+const WATER_LABELS = { waterWet: 'wet2', waterMid: 'humid2' } as const;
 
 function setSunIcon(svg: SVGSVGElement, plant: PlantData) {
   const active = plant.sunShadow ? 'sunShadow' : plant.sunMid ? 'sunMid' : null;
@@ -240,11 +239,17 @@ export async function renderBaumscheibeSvg(plant: PlantData): Promise<string> {
 
   // heightM/widthM/climateZone are pre-existing template <text> elements
   // (copied over from the old template, still styled with the old font:Inter
-  // bold). Override to Raleway (loaded above).
+  // bold). Override to Raleway (loaded above). The template's own
+  // placeholder text for heightM/widthM is literally "x m"/"y m" (a static
+  // unit suffix baked into the same <tspan> as the placeholder digit) —
+  // setText() replaces the whole tspan, which silently dropped that " m"
+  // at render time. Re-added here per field instead of relying on the
+  // template text, since climateZone has no unit and mustn't get one.
+  const TEXT_UNIT_SUFFIX: Partial<Record<keyof PlantData, string>> = { heightM: ' m', widthM: ' m' };
   for (const [field, labels] of Object.entries(TEXT_FIELDS)) {
     if (!labels) continue;
     const v = (plant as any)[field];
-    const text = v == null || v === '' ? '' : String(v);
+    const text = v == null || v === '' ? '' : String(v) + (TEXT_UNIT_SUFFIX[field as keyof PlantData] ?? '');
     for (const el of findByLabel(svg, labels)) {
       setText(el, text);
       (el as SVGElement).style.fontFamily = "'Raleway', sans-serif";
@@ -264,6 +269,9 @@ export async function renderBaumscheibeSvg(plant: PlantData): Promise<string> {
   // The soil-triangle group (clay/silt/sand composition) has no PlantData field
   // behind it either (see ROADMAP.md "Boden-Dreieck mappen und aktivieren") —
   // hidden until that gets built, instead of showing an untethered icon.
+  // (baumscheibe2.4.psd already ships this group hidden, so this is a no-op
+  // against the current template — kept in case a future export brings it
+  // back visible again.)
   for (const el of findByLabel(svg, ['soil'])) setVisible(el, false);
   if (hasSource(plant, 'pfaf')) injectPfafAttribution(svg);
 

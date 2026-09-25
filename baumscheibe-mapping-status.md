@@ -39,26 +39,25 @@ Quelle für Soll-Zustand: `baumscheibe3-data-fields.ods`, Sheet „baumscheibe3-
 
 **Update (2026-09-09):** Das 2.3-Template hat nur ein einziges generisches Icon in der Gruppe „growth speed" statt drei getrennter Icons für Low/Mid/High — kann die drei Stufen also nicht optisch unterscheiden. `setGrowthSpeedIcon()` (in `baumscheibe-render.ts`, außerhalb des regulären `BOOL_FIELDS`-Loops, da eine 1:1-Feld-Zuordnung hier nicht möglich ist) zeigt das Icon, sobald *irgendeines* der drei Felder gesetzt ist — „ein Wert ist bekannt" statt „welcher Wert". Damit ist das Feld nicht mehr tot, aber auch nicht vollständig informativ. Echte Mid/High-Icons nachzurüsten bleibt offen (s. Priorisierte Lücken).
 
-## Sonne — ✅ NEU (2026-09-22): teilweise verdrahtet
+## Sonne — ✅ teilweise verdrahtet
 
 | data-field | SVG-Element | Status |
 |---|---|---|
 | `sunFull` | kein Icon im PSD (auch keine ausgeblendete Ebene) | ❌ Kein Mapping — keine Artwork vorhanden |
-| `sunMid` | `semishade2` (`<image>`, halbgefüllter Kreis) | ✅ OK |
-| `sunShadow` | `fullshade2` (`<image>`, voll gefüllter Kreis) | ✅ OK (NEU) |
+| `sunMid` | `semishade1` (`<image>`, halbgefüllter Kreis) | ✅ OK |
+| `sunShadow` | `fullshade1` (`<image>`, voll gefüllter Kreis) | ✅ OK |
 
-`setSunIcon()` in `baumscheibe-render.ts` wählt zwischen `sunShadow`/`sunMid`; `sunFull` bleibt „kein Icon" (nicht unterscheidbar von „nichts gesetzt"). `fullshade2` war in Photoshop ausgeblendet, hat aber echte Pixel (per `psd-tools` force-komposittiert verifiziert) und wurde gezielt an `semishade2`s Position gespleißt — kein Fehler der ursprünglichen Konvertierung, siehe CHANGELOG. Zwei weitere Duplikate (`fullshade1`/`semishade1`, an einer zweiten Icon-Position im PSD) bleiben ungenutzt.
+`setSunIcon()` in `baumscheibe-render.ts` wählt zwischen `sunShadow`/`sunMid`; `sunFull` bleibt „kein Icon" (nicht unterscheidbar von „nichts gesetzt"). Seit der Neukonvertierung von `baumscheibe2.4.psd` (2026-09-24) liefert der Designer beide Zustände bereits fertig sichtbar an einer einzigen, bereinigten Canvas-Position — kein Spleißen mehr nötig (anders als beim vorherigen PSD, wo nur ein Zustand sichtbar war). Die Label-Nummerierung hat sich dabei verschoben (`fullshade2`/`semishade2`/`wet1`/`humid1` → `fullshade1`/`semishade1`/`wet2`/`humid2`), reine Umbenennung ohne Bedeutungsänderung. Ein zweites Duplikat-Paar (`fullshade2`/`semishade2`, an der jetzt aufgegebenen zweiten Icon-Position) liegt weiterhin ausgeblendet im PSD und bleibt ungenutzt.
 
-## Wasser — ✅ NEU (2026-09-22): teilweise verdrahtet
+## Wasser — ✅ teilweise verdrahtet
 
 | data-field | SVG-Element | Status |
 |---|---|---|
 | `waterDry` | kein Icon im PSD (auch keine ausgeblendete Ebene) | ❌ Kein Mapping — keine Artwork vorhanden |
-| `waterMid` | `humid1` (`<image>`, halber Tropfen) | ✅ OK |
-| `waterWet` | `wet1` (`<image>`, voller Tropfen) | ✅ OK (NEU) |
-| `waterPlant` | — | kein Element | ❌ Kein Mapping (ODS: „NA, für spätere Version") |
+| `waterMid` | `humid2` (`<image>`, halber Tropfen) | ✅ OK |
+| `waterWet` | `wet2` (`<image>`, voller Tropfen) | ✅ OK |
 
-Gleiches Bild wie bei Sonne: `setWaterIcon()` wählt zwischen `waterWet`/`waterMid`, `wet1` wurde aus einer ausgeblendeten PSD-Ebene an `humid1`s Position gespleißt, `waterDry` bleibt ohne Icon. `wet2`/`humid2` (zweite Icon-Position im PSD) bleiben ungenutzt.
+Gleiches Bild wie bei Sonne: `setWaterIcon()` wählt zwischen `waterWet`/`waterMid`, `waterDry` bleibt ohne Icon. (`waterPlant` gab es hier vorher auch als Feld — inzwischen aus `types.ts` entfernt, war nie mehr als ein „NA, für spätere Version"-Platzhalter.)
 
 ## Boden-pH — ✅ NEU: jetzt vollständig (alle 5 Stufen)
 
