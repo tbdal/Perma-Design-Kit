@@ -35,6 +35,13 @@ import Layout from '../layouts/Layout.astro';
     <span id="kalender-count" class="text-xs text-stone-400 dark:text-stone-500 ml-auto"></span>
   </div>
 
+  <!-- Ausgabeformat: Tabelle als PDF — genauso wie auf der Pflanzenliste -->
+  <div class="mb-4 flex items-center gap-2">
+    <span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="tableOutputFormatLabel">Ausgabeformat</span>
+    <button id="btn-table-pdf" data-i18n="menuTablePdf" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700">Tabelle als PDF (Farbe)</button>
+    <button id="btn-table-pdf-gray" data-i18n="menuTablePdfGray" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700">Tabelle als PDF (Graustufen)</button>
+  </div>
+
   <!-- Detailtabelle -->
   <div class="overflow-x-auto rounded-xl bg-white dark:bg-stone-800 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
     <div id="calendar-table" class="min-w-[640px]"></div>
@@ -57,6 +64,7 @@ import Layout from '../layouts/Layout.astro';
   import { escapeHtml } from '../lib/html';
   import { createT, applyStaticI18n, getLang } from '../lib/i18n/core';
   import { kalenderDict } from '../lib/i18n/dict-kalender';
+  import { withButtonSpinner } from '../lib/html';
 
   const t = createT(kalenderDict);
   applyStaticI18n(kalenderDict);
@@ -192,6 +200,20 @@ import Layout from '../layouts/Layout.astro';
   searchInput.addEventListener('input', render);
   filterFlower.addEventListener('change', render);
   filterFruit.addEventListener('change', render);
+
+  // Table as PDF — same export as the plant-list table view, applied to
+  // whatever this page's own filters (search + Blüte/Ernte) currently show.
+  for (const [id, gray] of [['btn-table-pdf', false], ['btn-table-pdf-gray', true]] as const) {
+    document.getElementById(id)!.addEventListener('click', async () => {
+      const rows = getFiltered();
+      if (rows.length === 0) return;
+      const [{ exportPlantTablePDF }, { buildTablePdfLabels }] = await Promise.all([
+        import('../lib/table-pdf'), import('../lib/table-pdf-labels'),
+      ]);
+      await withButtonSpinner(document.getElementById(id) as HTMLButtonElement,
+        () => exportPlantTablePDF(rows, gray, buildTablePdfLabels(getLang())));
+    });
+  }
 
   getAllPlants().then(plants => {
     allPlants = plants

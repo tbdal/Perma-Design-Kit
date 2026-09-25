@@ -59,6 +59,9 @@ export const indexDict: Dict = {
   pdfSheetTitle: { de: '6 Baumscheiben je 9cm Durchmesser auf einer A4-Seite, kompakt zum Ausschneiden', en: '6 tree discs, 9cm diameter each, on one A4 page — compact, ready to cut out' },
   pdfSheetBtn: { de: 'PDF (6/Seite, 9cm)', en: 'PDF (6/page, 9cm)' },
 
+  // ── Table toolbar ────────────────────────────────────────────────────
+  tableOutputFormatLabel: { de: 'Ausgabeformat', en: 'Output format' },
+
   // ── Filters ──────────────────────────────────────────────────────────
   filterLabel: { de: 'Filter:', en: 'Filter:' },
   filterTextPlaceholder: { de: 'Name filtern…', en: 'Filter by name…' },

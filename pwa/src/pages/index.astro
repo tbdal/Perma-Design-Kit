@@ -40,8 +40,6 @@ import Layout from '../layouts/Layout.astro';
           <button id="btn-csv-template" data-i18n="menuCsvTemplate" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">CSV-Vorlage ↓</button>
           <hr class="my-1 border-stone-200 dark:border-stone-700">
           <button id="btn-export" data-i18n="menuExportAll" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Alle exportieren (JSON)</button>
-          <button id="btn-table-pdf" data-i18n="menuTablePdf" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Tabelle als PDF (Farbe)</button>
-          <button id="btn-table-pdf-gray" data-i18n="menuTablePdfGray" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Tabelle als PDF (Graustufen)</button>
           <hr class="my-1 border-stone-200 dark:border-stone-700">
           <button id="btn-load-samples" data-i18n="menuLoadSamples" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Beispieldaten laden</button>
           <button id="btn-load-samples-crawford" data-i18n="menuLoadSamplesCrawford" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Beispieldaten laden (Crawford)</button>
@@ -178,6 +176,13 @@ import Layout from '../layouts/Layout.astro';
       <input type="number" id="bulk-print-count-value" min="0" max="99" value="1" class="w-14 rounded-full border-0 bg-stone-100 dark:bg-stone-800 px-2 py-1 text-xs text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 focus:ring-2 focus:ring-green-500 focus:outline-none" />
       <button id="btn-bulk-print-count" type="button" class="rounded-full bg-stone-200 dark:bg-stone-700 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-300 dark:hover:bg-stone-600"></button>
     </span>
+  </div>
+
+  <!-- Table toolbar (list view only) -->
+  <div id="table-toolbar" style="display:none" class="mb-4 flex items-center gap-2">
+    <span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="tableOutputFormatLabel">Ausgabeformat</span>
+    <button id="btn-table-pdf" data-i18n="menuTablePdf" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700">Tabelle als PDF (Farbe)</button>
+    <button id="btn-table-pdf-gray" data-i18n="menuTablePdfGray" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700">Tabelle als PDF (Graustufen)</button>
   </div>
 
   <!-- Cards toolbar (own row, no layout shift in button bar) -->
@@ -869,6 +874,7 @@ import Layout from '../layouts/Layout.astro';
     const btnList = document.getElementById('btn-view-list')!;
     const btnCards = document.getElementById('btn-view-cards')!;
     const cardsToolbar = document.getElementById('cards-toolbar')!;
+    const tableToolbar = document.getElementById('table-toolbar')!;
     const heading = document.querySelector('h1.text-xl') as HTMLElement | null;
     const activeClass = ['bg-green-700', 'text-white'];
     const inactiveClass = ['bg-stone-100', 'dark:bg-stone-800', 'text-stone-700', 'dark:text-stone-200'];
@@ -876,6 +882,7 @@ import Layout from '../layouts/Layout.astro';
     const active = viewMode === 'grid' ? btnGrid : viewMode === 'list' ? btnList : btnCards;
     active.classList.remove(...inactiveClass); active.classList.add(...activeClass);
     cardsToolbar.style.display = viewMode === 'cards' ? 'flex' : 'none';
+    tableToolbar.style.display = viewMode === 'list' ? 'flex' : 'none';
     if (heading) heading.textContent = viewMode === 'cards' ? t('headingCards') : viewMode === 'list' ? t('headingList') : t('headingTiles');
   }
 
@@ -1544,26 +1551,17 @@ import Layout from '../layouts/Layout.astro';
     });
   });
   // Table as PDF — exports what the table currently shows (filters + sort).
+  // Labels come from the shared buildTablePdfLabels() (also used by
+  // kalender.astro's own table-PDF buttons) rather than this page's own
+  // dict, since they belong to the PDF layout, not either page's UI text.
   for (const [id, gray] of [['btn-table-pdf', false], ['btn-table-pdf-gray', true]] as const) {
     document.getElementById(id)!.addEventListener('click', async () => {
       const { exportPlantTablePDF } = await import('../lib/table-pdf');
+      const { buildTablePdfLabels } = await import('../lib/table-pdf-labels');
       const rows = sortedPlants(applyFilters(cachedPlants));
       if (rows.length === 0) return;
-      const badgeKey: Record<string, string> = {
-        eatable: 'badgeEatable', culinaric: 'badgeCulinaric', meds: 'badgeMeds', material: 'badgeMaterial', fodder: 'badgeFodder', fuel: 'badgeFuel',
-        nitrogenFix: 'badgeNitrogenFix', mineralFix: 'badgeMineralFix', groundCover: 'badgeGroundCover', insects: 'badgeInsects', windBreaking: 'badgeWindBreaking', animalProtection: 'badgeAnimalProtection',
-        sunFull: 'filterSunFull', sunMid: 'filterSunMid', sunShadow: 'filterSunShadow',
-        waterDry: 'filterWaterDry', waterMid: 'filterWaterMid', waterWet: 'filterWaterWet',
-        growSpeedLow: 'lblGrowSpeedLow', growSpeedMid: 'lblGrowSpeedMid', growSpeedHigh: 'lblGrowSpeedHigh',
-      };
-      await withButtonSpinner(document.getElementById(id) as HTMLButtonElement, () => exportPlantTablePDF(rows, gray, {
-        title: t('tablePdfTitle'), page: t('tablePdfPage'), name: t('thName'), latin: t('thLatin'), layer: t('thLayer'),
-        uses: t('legendUsageHeading').replace(/:$/, ''), functions: t('legendFunctionsHeading').replace(/:$/, ''),
-        sun: t('thSun'), water: t('thWater'), growth: t('thGrowthSpeed'),
-        bloom: t('legendFlowering'), fruit: t('legendFruiting'), legend: t('tablePdfLegend'), monthsNote: t('tablePdfMonths'),
-        layerNames: { tree: t('layerTree'), shrub: t('layerShrub'), herb: t('layerHerb') },
-        chip: Object.fromEntries(Object.entries(badgeKey).map(([k, v]) => [k, t(v)])),
-      }));
+      await withButtonSpinner(document.getElementById(id) as HTMLButtonElement,
+        () => exportPlantTablePDF(rows, gray, buildTablePdfLabels(getLang())));
     });
   }
 
