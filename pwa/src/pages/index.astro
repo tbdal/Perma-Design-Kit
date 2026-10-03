@@ -18,16 +18,35 @@ import Layout from '../layouts/Layout.astro';
     <div id="search-results" class="absolute left-0 right-0 top-full z-50 mt-1 hidden max-h-80 overflow-y-auto rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 shadow-xl"></div>
   </section>
 
-  <!-- Actions: View-Switch links, Heading mittig, Primär-CTA + Daten-Overflow rechts -->
+  <!-- Actions: Heading, View-Switch, Sortieren links; Primär-CTA + Daten-Overflow rechts -->
   <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
-    <div class="flex items-center gap-3">
-      <span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="viewLabel">Ansicht</span>
-      <div class="flex overflow-hidden rounded-lg ring-1 ring-stone-200 dark:ring-stone-700">
-        <button id="btn-view-grid" data-i18n-title="viewGridTitle" class="bg-green-700 px-3 py-2 text-sm font-medium text-white transition hover:bg-green-800" title="Kachelansicht">⊞</button>
-        <button id="btn-view-list" data-i18n-title="viewListTitle" class="bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 transition hover:bg-stone-200 dark:hover:bg-stone-700" title="Listenansicht">☰</button>
-        <button id="btn-view-cards" data-i18n-title="viewCardsTitle" class="bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 transition hover:bg-stone-200 dark:hover:bg-stone-700" title="Kartenansicht">▤</button>
-      </div>
+    <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
       <h1 class="text-xl font-bold text-stone-800 dark:text-stone-100" data-i18n="headingTiles">Pflanzenkacheln</h1>
+      <div class="flex items-center gap-3">
+        <span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="viewLabel">Ansicht</span>
+        <div class="flex overflow-hidden rounded-lg ring-1 ring-stone-200 dark:ring-stone-700">
+          <button id="btn-view-grid" data-i18n-title="viewGridTitle" class="bg-green-700 px-3 py-2 text-sm font-medium text-white transition hover:bg-green-800" title="Kachelansicht">⊞</button>
+          <button id="btn-view-list" data-i18n-title="viewListTitle" class="bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 transition hover:bg-stone-200 dark:hover:bg-stone-700" title="Listenansicht">☰</button>
+          <button id="btn-view-cards" data-i18n-title="viewCardsTitle" class="bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 transition hover:bg-stone-200 dark:hover:bg-stone-700" title="Kartenansicht">▤</button>
+        </div>
+      </div>
+      <!-- Sort (grid/cards only — list view sorts via clickable table headers) -->
+      <div id="sort-toolbar" style="display:none" class="flex items-center gap-2">
+        <span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="sortLabel">Sortieren</span>
+        <select id="sort-field-select" class="rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2 py-1.5 text-sm shadow-sm focus:border-green-500 focus:outline-none">
+          <option value="commonName" data-i18n="sortByNameAz">Name (A-Z)</option>
+          <option value="latinName" data-i18n="thLatin">Lateinisch</option>
+          <option value="heightM" data-i18n="thHeightShort">H</option>
+          <option value="widthM" data-i18n="thWidthShort">B</option>
+          <option value="flowerMonth" data-i18n="sortByFlowerMonth">Blühmonat</option>
+          <option value="fruitMonth" data-i18n="sortByFruitMonth">Erntemonat</option>
+          <option value="growSpeed" data-i18n="thGrowthSpeed">Wuchs</option>
+          <option value="layer" data-i18n="thLayer">Ebene</option>
+          <option value="completeness" data-i18n="thCompleteness">Vollst.</option>
+          <option value="groups" data-i18n="thGroups">Gruppen</option>
+        </select>
+        <button id="btn-sort-dir" type="button" data-i18n-title="sortDirTitle" title="Sortierrichtung umkehren" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-2.5 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700">↑</button>
+      </div>
     </div>
     <div class="flex items-center gap-2">
       <button id="btn-add" data-i18n="btnAddPlant" class="rounded-lg bg-green-700 px-3.5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">+ Neue Pflanze</button>
@@ -196,24 +215,6 @@ import Layout from '../layouts/Layout.astro';
     <span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="tableOutputFormatLabel">Ausgabeformat</span>
     <button id="btn-table-pdf" data-i18n="menuTablePdf" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700">Tabelle als PDF (Farbe)</button>
     <button id="btn-table-pdf-gray" data-i18n="menuTablePdfGray" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700">Tabelle als PDF (Graustufen)</button>
-  </div>
-
-  <!-- Sort toolbar (grid/cards only — list view sorts via clickable table headers) -->
-  <div id="sort-toolbar" style="display:none" class="mb-4 flex items-center gap-2">
-    <span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="sortLabel">Sortieren</span>
-    <select id="sort-field-select" class="rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2 py-1.5 text-sm shadow-sm focus:border-green-500 focus:outline-none">
-      <option value="commonName" data-i18n="sortByNameAz">Name (A-Z)</option>
-      <option value="latinName" data-i18n="thLatin">Lateinisch</option>
-      <option value="heightM" data-i18n="thHeightShort">H</option>
-      <option value="widthM" data-i18n="thWidthShort">B</option>
-      <option value="flowerMonth" data-i18n="sortByFlowerMonth">Blühmonat</option>
-      <option value="fruitMonth" data-i18n="sortByFruitMonth">Erntemonat</option>
-      <option value="growSpeed" data-i18n="thGrowthSpeed">Wuchs</option>
-      <option value="layer" data-i18n="thLayer">Ebene</option>
-      <option value="completeness" data-i18n="thCompleteness">Vollst.</option>
-      <option value="groups" data-i18n="thGroups">Gruppen</option>
-    </select>
-    <button id="btn-sort-dir" type="button" data-i18n-title="sortDirTitle" title="Sortierrichtung umkehren" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-2.5 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700">↑</button>
   </div>
 
   <!-- Cards toolbar (own row, no layout shift in button bar) -->
