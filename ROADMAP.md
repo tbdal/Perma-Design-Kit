@@ -72,6 +72,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 ## Arbeitspaket 2
 - [ ] in der Produkttour beispieldaten und nachladen als letztes erwähnen: 
 - [ ] eigenes Projekt einfach als Link teilbar machen?
+- [ ] eingeklappte Farblegende farblich mehr hervorheben
 
 ## Karten
 - [ ] auf Gartenplaner ermöglichen, dass frei verfügbare layer von osm.. und Satellit angezeigten werden können. Mapbox oder was ist die beste Foss Alternative?
