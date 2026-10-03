@@ -491,7 +491,7 @@ import Layout from '../layouts/Layout.astro';
   let editingPlant: PlantData | null = null;
   let cachedPlants: PlantData[] = [];
   let lastCheckedId: string | null = null;
-  let sortField: SortField = 'commonName';
+  let sortField: SortField = 'createdAt';
   let sortDir: 'asc' | 'desc' = 'asc';
 
   // Per-column filters and the free-text filter (matching rules live in
