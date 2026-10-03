@@ -1,11 +1,15 @@
 ---
 import Layout from '../layouts/Layout.astro';
 ---
-<Layout title="Perma Design Kit — Gartenplan">
+<Layout title="Perma Design Kit — Gartenplan" wide>
   <!-- ── Listenansicht ─────────────────────────────────────────────────── -->
   <section id="plan-list-view">
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
       <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-100" data-i18n="pageTitle">Gartenplan</h1>
+      <label class="cursor-pointer rounded-lg bg-stone-100 dark:bg-stone-800 px-3.5 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700" data-i18n-title="importGeojsonTitle" title="GeoJSON aus QGIS & Co. als Gartenplan übernehmen">
+        <span data-i18n="btnImportGeojson">⤒ GeoJSON importieren</span>
+        <input id="geojson-input" type="file" accept=".geojson,.json,application/geo+json,application/json" class="hidden" />
+      </label>
       <button id="btn-new-plan" data-i18n="btnNewPlan" class="rounded-lg bg-green-700 px-3.5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">+ Neuer Gartenplan</button>
     </div>
     <p class="mb-4 text-sm text-stone-500 dark:text-stone-400" data-i18n="introText">Zeichne eine Fläche, platziere Pflanzen darauf und sieh mit dem Schieberegler, wie groß sie nach x Jahren ungefähr werden.</p>
@@ -46,7 +50,7 @@ import Layout from '../layouts/Layout.astro';
 
     <!-- Phase A: Grunddaten + Fläche zeichnen -->
     <div id="phase-a">
-      <div class="grid gap-6 lg:grid-cols-3">
+      <div class="grid gap-6 lg:grid-cols-3 2xl:grid-cols-4">
         <div class="lg:col-span-1 space-y-4">
           <div class="rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 space-y-3">
             <label class="block">
@@ -95,7 +99,7 @@ import Layout from '../layouts/Layout.astro';
           </div>
         </div>
 
-        <div class="lg:col-span-2 space-y-3">
+        <div class="lg:col-span-2 2xl:col-span-3 space-y-3">
           <div id="drawing-hint" class="hidden text-sm text-stone-600 dark:text-stone-300">
             <span id="drawing-hint-text" data-i18n="hintDrawing">Klicke auf die Fläche, um Eckpunkte zu setzen (mind. 3).</span>
             <span id="vertex-count" class="ml-1 font-medium"></span>
@@ -144,6 +148,8 @@ import Layout from '../layouts/Layout.astro';
           </div>
           <button id="btn-edit-boundary" type="button" aria-pressed="false" data-i18n="btnEditBoundary" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700 aria-pressed:bg-amber-100 aria-pressed:ring-amber-400 dark:aria-pressed:bg-amber-900/40">✎ Umriss bearbeiten</button>
           <button id="btn-draw-area" type="button" data-i18n="btnDrawArea" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">▱ Fläche einzeichnen</button>
+          <button id="btn-draw-row" type="button" data-i18n="btnDrawRow" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">⋯ Reihe pflanzen</button>
+          <button id="btn-export-geojson" type="button" data-i18n="btnExportGeojson" data-i18n-title="exportGeojsonTitle" title="Für QGIS & Co.: Umriss, Flächen und Pflanzen als GeoJSON (WGS84)" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">⤓ GeoJSON (QGIS)</button>
           <button id="btn-export-pdf" data-i18n="btnExportPdf" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">PDF exportieren</button>
           <button id="btn-redraw-area" data-i18n="btnRedrawArea" class="text-xs font-medium text-stone-500 dark:text-stone-400 hover:text-red-600 dark:hover:text-red-400">Fläche neu zeichnen</button>
         </div>
@@ -159,8 +165,17 @@ import Layout from '../layouts/Layout.astro';
         </div>
       </details>
 
-      <div class="grid gap-6 lg:grid-cols-3">
-        <div class="lg:col-span-2 space-y-2">
+      <div class="grid gap-6 lg:grid-cols-3 2xl:grid-cols-4">
+        <div class="lg:col-span-2 2xl:col-span-3 space-y-2">
+          <div id="row-draw-bar" class="hidden flex flex-wrap items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-900/30 px-3 py-2 text-xs text-amber-900 dark:text-amber-100 ring-1 ring-amber-200 dark:ring-amber-800">
+            <span id="row-draw-hint" class="mr-auto"></span>
+            <label class="inline-flex items-center gap-1"><span data-i18n="rowSpacing">Abstand</span>
+              <input id="row-spacing" type="number" min="0.1" max="50" step="0.1" value="1" class="w-16 rounded-md border border-amber-300 dark:border-amber-700 bg-white dark:bg-stone-900 px-1.5 py-0.5" /> m</label>
+            <span id="row-count" class="font-medium"></span>
+            <button id="btn-row-undo" type="button" data-i18n="btnUndoPoint" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium ring-1 ring-amber-300 dark:ring-amber-700">Letzten Punkt entfernen</button>
+            <button id="btn-row-cancel" type="button" data-i18n="btnAreaCancel" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium ring-1 ring-amber-300 dark:ring-amber-700">Abbrechen</button>
+            <button id="btn-row-finish" type="button" data-i18n="btnRowFinish" disabled class="rounded-md bg-green-700 px-2.5 py-1 font-medium text-white disabled:opacity-40">Pflanzen</button>
+          </div>
           <div id="area-draw-bar" class="hidden flex flex-wrap items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-900/30 px-3 py-2 text-xs text-amber-900 dark:text-amber-100 ring-1 ring-amber-200 dark:ring-amber-800">
             <span class="mr-auto" data-i18n="areaDrawHint">Eckpunkte anklicken; Klick auf den ersten Punkt oder „Fertig“ schließt die Fläche. Esc bricht ab.</span>
             <button id="btn-area-undo" type="button" data-i18n="btnUndoPoint" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium ring-1 ring-amber-300 dark:ring-amber-700">Letzten Punkt entfernen</button>
@@ -286,13 +301,14 @@ import Layout from '../layouts/Layout.astro';
 </style>
 
 <script>
-  import { getAllPlants, getAllPolycultures, getAllGardenPlans, saveGardenPlan, deleteGardenPlan } from '../lib/db';
+  import { getAllPlants, getAllPolycultures, getAllGardenPlans, saveGardenPlan, deleteGardenPlan, importPlants } from '../lib/db';
+  import { normalizeGardenPlan } from '../lib/plant-normalize';
   import { displayName, displayCommonName } from '../lib/plant-name';
   import { createEmptyGardenPlan, type GardenPlan, type GardenPlanPlacement, type GardenPlanPoint, type GardenPlanArea, type Polyculture, type PlantData } from '../lib/types';
   import { displayRadiusM } from '../lib/growth-model';
   import { deriveLayer, LAYER_STYLE, type PlantLayer } from '../lib/plant-layer';
   import { blobPathD } from '../lib/blob-shape';
-  import { pointInPolygon, formatMeters, polygonAreaM2, polygonPerimeterM } from '../lib/gartenplan-geometry';
+  import { pointInPolygon, formatMeters, polygonAreaM2, polygonPerimeterM, pointsAlongPolyline } from '../lib/gartenplan-geometry';
   import { areasSvg, AREA_PALETTE, uiScale } from '../lib/gartenplan-render';
   import { planFromLatLngPolygon, planToLatLon } from '../lib/gartenplan-geo';
   import type { MapDrawer } from '../lib/gartenplan-mapdraw';
@@ -1244,9 +1260,11 @@ import Layout from '../layouts/Layout.astro';
       <g id="plan-areas-layer">${areasSvg(editing.areas, selectedAreaId, k, true)}</g>
       <g id="plan-markers"></g>
       <g id="area-handles"></g>
-      <g id="area-draft" pointer-events="none"></g>`;
+      <g id="area-draft" pointer-events="none"></g>
+      <g id="row-draft" pointer-events="none"></g>`;
     renderBasemap(planSvg);
     renderAreaDraft();
+    renderRowDraft();
     renderAreaHandles();
     markerMap = new Map();
     const markersGroup = planSvg.querySelector('#plan-markers')!;
@@ -1488,6 +1506,7 @@ import Layout from '../layouts/Layout.astro';
     }
     renderAreasLayer();
     renderAreaDraft();
+    renderRowDraft();
   }
   /** `base` zoomed by `factor` (>1 = in) around the SVG point cx/cy. */
   function zoomedView(base: typeof planView, factor: number, cx: number, cy: number): typeof planView {
@@ -1563,6 +1582,7 @@ import Layout from '../layouts/Layout.astro';
    *  the armed plant, otherwise select the tapped area / clear selection. */
   function onCanvasTap(e: PointerEvent, target: Element | null) {
     if (!editing) return;
+    if (rowDraft) { addRowPoint(e); return; }
     if (areaDraft) { addAreaDraftPoint(e); return; }
     if (armedPlantId) { placeArmedPlant(e); return; }
     const id = target?.closest<SVGElement>('[data-area-id]')?.dataset.areaId ?? null;
@@ -1710,6 +1730,7 @@ import Layout from '../layouts/Layout.astro';
     renderPlantPicker();
     renderUnplacedList();
     setBoundaryEdit(false);
+    endRowDraw();
     areaDraft = [];
     renderAreaHandles();
     areaDrawBar.classList.remove('hidden');
@@ -1722,7 +1743,8 @@ import Layout from '../layouts/Layout.astro';
   btnAreaFinish.addEventListener('click', finishAreaDraw);
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
-    if (areaDraft) endAreaDraw();
+    if (rowDraft) endRowDraw();
+    else if (areaDraft) endAreaDraw();
     else if (editBoundary) setBoundaryEdit(false);
     else if (selectedAreaId && !(e.target as HTMLElement).closest?.('input, textarea, select')) { selectedAreaId = null; markSelectedArea(); }
   });
@@ -1739,6 +1761,133 @@ import Layout from '../layouts/Layout.astro';
     areaDraft.push(snapIfClose(planSvg, raw, editing.gridSpacingM));
     renderAreaDraft();
   }
+
+  // ── Reihe pflanzen (Linien-Werkzeug) ───────────────────────────────────
+  // The armed plant is placed every `spacing` m along a clicked polyline.
+  // Spacing defaults to the plant's mature width. Points snap to the grid;
+  // a row past the edge grows the plan like any other geometry edit.
+  const rowDrawBar = document.getElementById('row-draw-bar')!;
+  const rowSpacingInput = document.getElementById('row-spacing') as HTMLInputElement;
+  const btnRowFinish = document.getElementById('btn-row-finish') as HTMLButtonElement;
+  let rowDraft: GardenPlanPoint[] | null = null;
+  let rowPlantId: string | null = null;
+
+  function rowPositions(): GardenPlanPoint[] {
+    if (!rowDraft || rowDraft.length < 2) return rowDraft ? [...rowDraft] : [];
+    return pointsAlongPolyline(rowDraft, Math.max(0.1, Number(rowSpacingInput.value) || 1));
+  }
+
+  function renderRowDraft() {
+    const g = planSvg.querySelector('#row-draft');
+    if (!g) return;
+    if (!rowDraft || !editing) { g.innerHTML = ''; return; }
+    const u = SVG_UNITS_PER_METER, k = viewK();
+    const p = rowPlantId ? plantsById.get(rowPlantId) : undefined;
+    const fill = p ? LAYER_STYLE[deriveLayer(p)].fill : '#15803d';
+    const line = rowDraft.map(q => `${q.xM * u},${q.yM * u}`).join(' ');
+    const spots = rowPositions();
+    g.innerHTML = `
+      ${rowDraft.length >= 2 ? `<polyline points="${line}" fill="none" stroke="#b45309" stroke-width="${2 * k}" stroke-dasharray="${6 * k} ${4 * k}"/>` : ''}
+      ${spots.map(q => `<circle cx="${q.xM * u}" cy="${q.yM * u}" r="${5 * k}" fill="${fill}" fill-opacity="0.85" stroke="#ffffff" stroke-width="${1.5 * k}"/>`).join('')}`;
+    document.getElementById('row-count')!.textContent = rowDraft.length >= 2 ? t('rowCount', { n: spots.length }) : '';
+    btnRowFinish.disabled = rowDraft.length < 2;
+  }
+
+  function endRowDraw() {
+    if (!rowDraft) return;
+    rowDraft = null;
+    rowPlantId = null;
+    rowDrawBar.classList.add('hidden');
+    planSvg.classList.remove('area-drawing');
+    renderRowDraft();
+  }
+
+  function addRowPoint(e: PointerEvent) {
+    if (!editing || !rowDraft) return;
+    rowDraft.push(snapIfClose(planSvg, clientToMeters(planSvg, e.clientX, e.clientY), editing.gridSpacingM));
+    renderRowDraft();
+  }
+
+  document.getElementById('btn-draw-row')!.addEventListener('click', () => {
+    if (!editing) return;
+    if (!armedPlantId) { alert(t('rowNeedPlant')); return; }
+    if (!plan3dContainer.hidden) btnView2d.click();
+    endAreaDraw();
+    setBoundaryEdit(false);
+    rowPlantId = armedPlantId;
+    const p = plantsById.get(rowPlantId);
+    rowSpacingInput.value = String(Math.max(0.1, Math.round((p?.widthM || 1) * 10) / 10));
+    document.getElementById('row-draw-hint')!.textContent = t('rowHint', { name: p ? displayName(p) : '?' });
+    rowDraft = [];
+    rowDrawBar.classList.remove('hidden');
+    planSvg.classList.add('area-drawing');
+    renderRowDraft();
+  });
+  rowSpacingInput.addEventListener('input', renderRowDraft);
+  document.getElementById('btn-row-undo')!.addEventListener('click', () => { rowDraft?.pop(); renderRowDraft(); });
+  document.getElementById('btn-row-cancel')!.addEventListener('click', endRowDraw);
+  btnRowFinish.addEventListener('click', () => {
+    if (!editing || !rowDraft || rowDraft.length < 2 || !rowPlantId) return;
+    const spots = rowPositions();
+    const plantId = rowPlantId;
+    for (const q of spots) editing.placements.push({ id: newId(), plantId, xM: q.xM, yM: q.yM, notes: '' });
+    unplacedPlantIds = unplacedPlantIds.filter(id => id !== plantId);
+    const p = plantsById.get(plantId);
+    endRowDraw();
+    renderUnplacedList();
+    renderSuggestions();
+    renderPlanSvg();
+    afterGeometryEdit();
+    showToast(t('toastRowPlanted', { n: spots.length, name: p ? displayName(p) : '?' }));
+  });
+
+  // ── GeoJSON für QGIS: Export & Import ──────────────────────────────────
+  document.getElementById('btn-export-geojson')!.addEventListener('click', async () => {
+    if (!editing) return;
+    if (!editing.geo) { alert(t('geojsonNeedsLocation')); return; }
+    syncFormIntoEditing();
+    const { planToGeoJson } = await import('../lib/gartenplan-geojson');
+    const blob = new Blob([JSON.stringify(planToGeoJson(editing, plantsById), null, 1)], { type: 'application/geo+json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${(editing.name || 'gartenplan').replace(/[^\p{L}\p{N}_-]+/gu, '_')}.geojson`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
+
+  (document.getElementById('geojson-input') as HTMLInputElement).addEventListener('change', async (e) => {
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    try {
+      const { planFromGeoJson } = await import('../lib/gartenplan-geojson');
+      const r = planFromGeoJson(JSON.parse(await file.text()), plants);
+      // A file exported from an existing plan can update it in place.
+      const existing = r.sourcePlanId ? plans.find(p => p.id === r.sourcePlanId) : undefined;
+      if (existing && confirm(t('confirmGeojsonUpdate', { name: existing.name || t('planUnnamed') }))) {
+        r.plan.createdAt = existing.createdAt;
+        r.plan.polycultureId = existing.polycultureId;
+      } else {
+        r.plan.id = newId();
+        r.plan.areas.forEach(a => { a.id = newId(); });
+        r.plan.placements.forEach(pl => { pl.id = newId(); });
+      }
+      if (r.newPlants.length) {
+        await importPlants(r.newPlants);
+        plants = await getAllPlants();
+        plantsById = new Map(plants.map(p => [p.id, p]));
+      }
+      const plan = normalizeGardenPlan(r.plan)!;
+      await saveGardenPlan(plan);
+      plans = await getAllGardenPlans();
+      renderList();
+      openEditor(plan.id);
+      showToast(t('toastGeojsonImported', { areas: plan.areas.length, plants: plan.placements.length, created: r.newPlants.length }));
+    } catch (err) {
+      alert(t('alertGeojsonFailed', { msg: err instanceof Error ? err.message : String(err) }));
+    }
+  });
 
   // ── Init + save/delete ──────────────────────────────────────────────────
   async function init() {

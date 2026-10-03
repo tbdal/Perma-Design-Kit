@@ -35,3 +35,24 @@ export function polygonPerimeterM(pts: GardenPlanPoint[]): number {
   for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) s += Math.hypot(pts[i].xM - pts[j].xM, pts[i].yM - pts[j].yM);
   return s;
 }
+
+/** Positions every `spacingM` along a polyline, starting at its first point
+ *  ("Reihe pflanzen"). The end point is included when the length is a whole
+ *  multiple of the spacing (within 1 cm). */
+export function pointsAlongPolyline(pts: GardenPlanPoint[], spacingM: number): GardenPlanPoint[] {
+  if (pts.length === 0 || !(spacingM > 0)) return [];
+  const out: GardenPlanPoint[] = [{ ...pts[0] }];
+  let carry = 0; // distance already walked since the last placed point
+  for (let i = 1; i < pts.length; i++) {
+    const a = pts[i - 1], b = pts[i];
+    const len = Math.hypot(b.xM - a.xM, b.yM - a.yM);
+    let d = spacingM - carry;
+    while (d <= len + 0.01) {
+      const f = Math.min(1, d / len);
+      out.push({ xM: a.xM + (b.xM - a.xM) * f, yM: a.yM + (b.yM - a.yM) * f });
+      d += spacingM;
+    }
+    carry = len - (d - spacingM);
+  }
+  return out;
+}

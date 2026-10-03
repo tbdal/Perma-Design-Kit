@@ -272,7 +272,7 @@ export function createGardenPlan3DView(
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(Math.max(1, container.clientWidth), Math.max(1, container.clientHeight));
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   container.appendChild(renderer.domElement);
@@ -287,6 +287,7 @@ export function createGardenPlan3DView(
   Object.assign(sun.shadow.camera, { left: -shadowR, right: shadowR, top: shadowR, bottom: -shadowR, near: 0.5, far: maxDim * 8 });
   sun.shadow.bias = -0.0005;
   sun.shadow.normalBias = 0.02;
+  sun.shadow.radius = 3; // soft edges (PCF)
   sun.target.position.set(cx, 0, cz);
   scene.add(sun, sun.target);
 
