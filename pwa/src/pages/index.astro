@@ -1527,7 +1527,12 @@ import Layout from '../layouts/Layout.astro';
           }
         });
       });
-    } catch (err) { searchResults.innerHTML = `<p class="px-4 py-3 text-sm text-red-500">${escapeHtml(t('searchError', { error: String(err) }))}</p>`; }
+    } catch (err) {
+      // Typing on cancels the previous search (AbortController in
+      // searchPlants); the newer search renders its own results.
+      if ((err as Error)?.name === 'AbortError') return;
+      searchResults.innerHTML = `<p class="px-4 py-3 text-sm text-red-500">${escapeHtml(t('searchError', { error: String(err) }))}</p>`;
+    }
   }
 
   document.getElementById('btn-search')!.addEventListener('click', doSearch);
