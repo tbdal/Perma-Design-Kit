@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   enuToPlan, planToEnu, planToLatLon, latLonToPlan, metersPerPixel, tilesForPlan,
-  planCornersToLatLon, bearingFromOrigin, lonLatToMerc, mercToLonLat,
+  planCornersToLatLon, bearingFromOrigin, lonLatToMerc, mercToLonLat, planFromLatLngPolygon,
 } from '../src/lib/gartenplan-geo';
 import { formatMeters } from '../src/lib/gartenplan-geometry';
 import type { GardenPlanGeo } from '../src/lib/types';
@@ -76,6 +76,33 @@ describe('tilesForPlan', () => {
 
   it('never returns more than 64 tiles', () => {
     expect(tilesForPlan(500, 500, geo(10), 0.01, 19).length).toBeLessThanOrEqual(64);
+  });
+});
+
+describe('planFromLatLngPolygon', () => {
+  // A 12 m (east) × 8 m (north) rectangle drawn on the map, NE corner first.
+  const anchor = geo(0);
+  const corner = (xM: number, yM: number) => planToLatLon({ xM, yM }, anchor);
+  const drawn = [corner(12, 0), corner(12, 8), corner(0, 8), corner(0, 0)];
+
+  it('anchors 0,0 at the north-west corner minus the margin, north-up', () => {
+    const r = planFromLatLngPolygon(drawn, 1, 1);
+    expect(r.geo.rotationDeg).toBe(0);
+    expect(r.widthM).toBe(14);
+    expect(r.heightM).toBe(10);
+    close(r.boundary[3].xM, 1, 1e-3); close(r.boundary[3].yM, 1, 1e-3);
+    close(r.boundary[1].xM, 13, 1e-3); close(r.boundary[1].yM, 9, 1e-3);
+  });
+
+  it('rounds the size up to whole grid cells', () => {
+    const r = planFromLatLngPolygon(drawn, 0.3, 2);
+    expect(r.widthM % 2).toBe(0);
+    expect(r.heightM % 2).toBe(0);
+    expect(r.widthM).toBeGreaterThanOrEqual(12.6);
+  });
+
+  it('rejects fewer than 3 points', () => {
+    expect(() => planFromLatLngPolygon(drawn.slice(0, 2), 1, 1)).toThrow();
   });
 });
 

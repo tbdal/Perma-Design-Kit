@@ -28,7 +28,7 @@ import Layout from '../layouts/Layout.astro';
 
     <!-- Karte: Standort, Ausrichtung, Hintergrund — gilt für beide Phasen -->
     <div id="map-bar" class="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl bg-stone-50 dark:bg-stone-900 px-3 py-2 text-xs text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700">
-      <button id="btn-locate" type="button" data-i18n="mapBarLocate" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">📍 Standort &amp; Ausrichtung…</button>
+      <button id="btn-locate" type="button" data-i18n="mapBarLocate" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">📍 Standort festlegen…</button>
       <label class="inline-flex items-center gap-1.5">
         <span data-i18n="mapBarBackground">Hintergrund</span>
         <select id="g-basemap" class="rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs disabled:opacity-50">
@@ -60,7 +60,15 @@ import Layout from '../layouts/Layout.astro';
               <span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="labelLinkedPolyculture">Bestehende Polykultur verknüpfen (optional)</span>
               <select id="g-polyculture" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none"></select>
             </label>
-            <div class="grid grid-cols-2 gap-3">
+            <fieldset>
+              <legend class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="labelDrawOn">Fläche zeichnen auf</legend>
+              <div class="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-stone-700 dark:text-stone-200">
+                <label class="inline-flex items-center gap-1.5"><input type="radio" name="draw-mode" value="map" checked class="accent-green-600" /> <span data-i18n="drawOnMap">Karte</span></label>
+                <label class="inline-flex items-center gap-1.5"><input type="radio" name="draw-mode" value="grid" class="accent-green-600" /> <span data-i18n="drawOnGrid">Raster (ohne Standort)</span></label>
+              </div>
+              <p id="size-from-map-hint" class="mt-1 text-[11px] text-stone-500 dark:text-stone-400" data-i18n="sizeFromMapHint">Größe und Ausrichtung ergeben sich aus der gezeichneten Fläche.</p>
+            </fieldset>
+            <div id="size-fields" class="hidden grid grid-cols-2 gap-3">
               <label class="block">
                 <span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="labelAreaWidth">Breite (m)</span>
                 <input id="g-width" type="number" min="2" max="50" step="0.5" value="10" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none" />
@@ -88,13 +96,28 @@ import Layout from '../layouts/Layout.astro';
 
         <div class="lg:col-span-2 space-y-3">
           <div id="drawing-hint" class="hidden text-sm text-stone-600 dark:text-stone-300">
-            <span data-i18n="hintDrawing">Klicke auf die Fläche, um Eckpunkte zu setzen (mind. 3).</span>
+            <span id="drawing-hint-text" data-i18n="hintDrawing">Klicke auf die Fläche, um Eckpunkte zu setzen (mind. 3).</span>
             <span id="vertex-count" class="ml-1 font-medium"></span>
           </div>
           <div id="drawing-wrap" class="relative hidden rounded-xl bg-white dark:bg-stone-800 p-3 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <svg id="drawing-svg" class="w-full touch-none" style="touch-action:none"></svg>
             <div aria-hidden="true" class="cursor-readout pointer-events-none absolute hidden rounded bg-stone-900/80 px-1.5 py-0.5 font-mono text-[11px] text-white"></div>
             <div class="basemap-attrib absolute bottom-3 right-3 hidden rounded-tl bg-white/80 px-1 text-[10px] text-stone-600"></div>
+          </div>
+          <div id="mapdraw-wrap" class="hidden space-y-2 rounded-xl bg-white dark:bg-stone-800 p-3 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+            <div class="flex flex-wrap items-center gap-2">
+              <form id="mapdraw-search-form" class="flex min-w-0 flex-1 gap-2">
+                <input id="mapdraw-query" type="search" data-i18n-placeholder="locateSearchPlaceholder" data-i18n-aria-label="locateSearchPlaceholder" aria-label="Adresse oder Ort suchen…" placeholder="Adresse oder Ort suchen…" class="min-w-0 flex-1 rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none" />
+                <button id="mapdraw-search-btn" type="submit" data-i18n="locateSearchBtn" class="rounded-md bg-green-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-800 disabled:opacity-50">Suchen</button>
+              </form>
+              <button id="mapdraw-mypos" type="button" data-i18n="locateMyPosition" class="rounded-md bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Mein Standort</button>
+            </div>
+            <p id="mapdraw-status" class="min-h-[1rem] truncate text-xs text-stone-500 dark:text-stone-400"></p>
+            <div id="mapdraw-map" class="h-[60vh] w-full rounded-lg ring-1 ring-stone-200 dark:ring-stone-700"></div>
+            <div class="flex flex-wrap items-center gap-3 text-xs">
+              <label class="inline-flex items-center gap-1"><input type="radio" name="mapdraw-layer" value="osm" checked /> <span data-i18n="locateLayerOsm">Karte</span></label>
+              <label class="inline-flex items-center gap-1" data-i18n-title="locateSatNote" title="Satellitenbild nur zur groben Orientierung (10 m pro Pixel)."><input type="radio" name="mapdraw-layer" value="sat" /> <span data-i18n="locateLayerSat">Satellit (grob, 10 m)</span></label>
+            </div>
           </div>
           <div id="drawing-controls" class="hidden flex flex-wrap gap-2">
             <button id="btn-undo-point" data-i18n="btnUndoPoint" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-700">Letzten Punkt entfernen</button>
@@ -118,6 +141,7 @@ import Layout from '../layouts/Layout.astro';
             <button id="btn-view-2d" data-i18n="btnView2d" class="rounded-md bg-white dark:bg-stone-700 px-2.5 py-1 font-medium text-stone-800 dark:text-stone-100 shadow-sm">2D</button>
             <button id="btn-view-3d" data-i18n="btnView3d" class="rounded-md px-2.5 py-1 font-medium text-stone-500 dark:text-stone-400">3D</button>
           </div>
+          <button id="btn-draw-area" type="button" data-i18n="btnDrawArea" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">▱ Fläche einzeichnen</button>
           <button id="btn-export-pdf" data-i18n="btnExportPdf" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">PDF exportieren</button>
           <button id="btn-redraw-area" data-i18n="btnRedrawArea" class="text-xs font-medium text-stone-500 dark:text-stone-400 hover:text-red-600 dark:hover:text-red-400">Fläche neu zeichnen</button>
         </div>
@@ -135,6 +159,12 @@ import Layout from '../layouts/Layout.astro';
 
       <div class="grid gap-6 lg:grid-cols-3">
         <div class="lg:col-span-2 space-y-2">
+          <div id="area-draw-bar" class="hidden flex flex-wrap items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-900/30 px-3 py-2 text-xs text-amber-900 dark:text-amber-100 ring-1 ring-amber-200 dark:ring-amber-800">
+            <span class="mr-auto" data-i18n="areaDrawHint">Eckpunkte anklicken; Klick auf den ersten Punkt oder „Fertig“ schließt die Fläche. Esc bricht ab.</span>
+            <button id="btn-area-undo" type="button" data-i18n="btnUndoPoint" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium ring-1 ring-amber-300 dark:ring-amber-700">Letzten Punkt entfernen</button>
+            <button id="btn-area-cancel" type="button" data-i18n="btnAreaCancel" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium ring-1 ring-amber-300 dark:ring-amber-700">Abbrechen</button>
+            <button id="btn-area-finish" type="button" data-i18n="btnAreaFinish" disabled class="rounded-md bg-green-700 px-2.5 py-1 font-medium text-white disabled:opacity-40">Fertig</button>
+          </div>
           <div id="plan-wrap" class="relative rounded-xl bg-white dark:bg-stone-800 p-3 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <svg id="plan-svg" class="w-full touch-none" style="touch-action:none"></svg>
             <div id="plan-3d-container" hidden class="h-[480px] w-full touch-none" style="touch-action:none"></div>
@@ -156,6 +186,12 @@ import Layout from '../layouts/Layout.astro';
             <input id="picker-filter" type="search" data-i18n-placeholder="pickerFilterPlaceholder" placeholder="Pflanze filtern…" class="mb-2 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-xs shadow-inner focus:border-green-500 focus:outline-none" />
             <div id="plant-picker" class="max-h-56 space-y-0.5 overflow-y-auto"></div>
             <p id="armed-hint" class="mt-2 hidden text-xs font-medium text-green-700 dark:text-green-400" data-i18n="hintArmed">Auf die Fläche tippen zum Platzieren.</p>
+          </div>
+
+          <div class="rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+            <h2 class="mb-2 text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="areasHeading">Flächen</h2>
+            <p id="areas-empty" class="text-xs text-stone-400 dark:text-stone-500" data-i18n="areasEmpty">Noch keine Flächen. Mit „Fläche einzeichnen“ Beete, Teich, Wege … einzeichnen.</p>
+            <ul id="areas-list" class="space-y-1.5"></ul>
           </div>
 
           <div id="suggestions-section" class="hidden rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
@@ -221,6 +257,8 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <style is:global>
+  #plan-svg.area-drawing { cursor: crosshair; }
+  #plan-svg.area-drawing #plan-markers { pointer-events: none; }
   .locate-handle { border-radius: 9999px; border: 3px solid #fff; box-shadow: 0 0 0 1px #1c1917, 0 1px 4px rgb(0 0 0 / 0.4); }
   .locate-handle-origin { background: #15803d; cursor: move; }
   .locate-handle-rot { background: #facc15; cursor: grab; }
@@ -229,11 +267,14 @@ import Layout from '../layouts/Layout.astro';
 <script>
   import { getAllPlants, getAllPolycultures, getAllGardenPlans, saveGardenPlan, deleteGardenPlan } from '../lib/db';
   import { displayName, displayCommonName } from '../lib/plant-name';
-  import { createEmptyGardenPlan, type GardenPlan, type GardenPlanPlacement, type GardenPlanPoint, type Polyculture, type PlantData } from '../lib/types';
+  import { createEmptyGardenPlan, type GardenPlan, type GardenPlanPlacement, type GardenPlanPoint, type GardenPlanArea, type Polyculture, type PlantData } from '../lib/types';
   import { displayRadiusM } from '../lib/growth-model';
   import { deriveLayer, LAYER_STYLE, type PlantLayer } from '../lib/plant-layer';
   import { blobPathD } from '../lib/blob-shape';
   import { pointInPolygon, formatMeters } from '../lib/gartenplan-geometry';
+  import { areasSvg, AREA_PALETTE, uiScale } from '../lib/gartenplan-render';
+  import { planFromLatLngPolygon, planToLatLon } from '../lib/gartenplan-geo';
+  import type { MapDrawer } from '../lib/gartenplan-mapdraw';
   import { basemapSvg, northArrowSvg, hasBasemap, OSM_TILES } from '../lib/gartenplan-background';
   import { plantDetailHtml } from '../lib/plant-detail';
   import { compatScore } from '../lib/compat';
@@ -295,6 +336,18 @@ import Layout from '../layouts/Layout.astro';
   const fBasemap = document.getElementById('g-basemap') as HTMLSelectElement;
   const fBasemapOpacity = document.getElementById('g-basemap-opacity') as HTMLInputElement;
   const mapStatus = document.getElementById('map-status')!;
+  const mapBar = document.getElementById('map-bar')!;
+  const drawModeRadios = document.querySelectorAll<HTMLInputElement>('input[name="draw-mode"]');
+  const sizeFields = document.getElementById('size-fields')!;
+  const sizeFromMapHint = document.getElementById('size-from-map-hint')!;
+  const drawingHintText = document.getElementById('drawing-hint-text')!;
+  const mapdrawWrap = document.getElementById('mapdraw-wrap')!;
+  const mapdrawMapEl = document.getElementById('mapdraw-map')!;
+  const btnDrawArea = document.getElementById('btn-draw-area') as HTMLButtonElement;
+  const areaDrawBar = document.getElementById('area-draw-bar')!;
+  const btnAreaFinish = document.getElementById('btn-area-finish') as HTMLButtonElement;
+  const areasList = document.getElementById('areas-list')!;
+  const areasEmpty = document.getElementById('areas-empty')!;
   const lang = getLang();
 
   // ── State ───────────────────────────────────────────────────────────────
@@ -368,7 +421,7 @@ import Layout from '../layouts/Layout.astro';
    *  glance instead of having to count squares. `pointer-events="none"` on
    *  the whole label group keeps them from intercepting clicks/drags meant
    *  for the grid rect beneath (placing plants, drawing the boundary). */
-  function gridTickLabels(widthM: number, heightM: number, spacingM: number): string {
+  function gridTickLabels(widthM: number, heightM: number, spacingM: number, k = 1): string {
     const round2 = (n: number) => Math.round(n * 100) / 100;
     const xSteps = Math.floor(widthM / spacingM);
     const ySteps = Math.floor(heightM / spacingM);
@@ -376,26 +429,26 @@ import Layout from '../layouts/Layout.astro';
     for (let i = 1; i <= xSteps; i++) {
       const m = round2(i * spacingM);
       const x = m * SVG_UNITS_PER_METER;
-      labels.push(`<text x="${x}" y="11" font-size="9" fill="#a8a29e" text-anchor="middle">${m}</text>`);
+      labels.push(`<text x="${x}" y="${11 * k}" font-size="${9 * k}" fill="#a8a29e" text-anchor="middle">${m}</text>`);
     }
     for (let i = 1; i <= ySteps; i++) {
       const m = round2(i * spacingM);
       const y = m * SVG_UNITS_PER_METER;
-      labels.push(`<text x="3" y="${y + 9}" font-size="9" fill="#a8a29e" text-anchor="start">${m}</text>`);
+      labels.push(`<text x="${3 * k}" y="${y + 9 * k}" font-size="${9 * k}" fill="#a8a29e" text-anchor="start">${m}</text>`);
     }
     return `<g pointer-events="none">${labels.join('')}</g>`;
   }
 
-  function gridDefsAndBackground(widthM: number, heightM: number, spacingM: number, patternId: string): string {
+  function gridDefsAndBackground(widthM: number, heightM: number, spacingM: number, patternId: string, k = 1): string {
     const spacingU = spacingM * SVG_UNITS_PER_METER;
     return `
       <defs>
         <pattern id="${patternId}" width="${spacingU}" height="${spacingU}" patternUnits="userSpaceOnUse">
-          <path d="M ${spacingU} 0 L 0 0 0 ${spacingU}" fill="none" stroke="#d6d3d1" stroke-width="1"/>
+          <path d="M ${spacingU} 0 L 0 0 0 ${spacingU}" fill="none" stroke="#d6d3d1" stroke-width="${k}"/>
         </pattern>
       </defs>
-      <rect width="${widthM * SVG_UNITS_PER_METER}" height="${heightM * SVG_UNITS_PER_METER}" fill="url(#${patternId})" stroke="#a8a29e" stroke-width="2"/>
-      ${gridTickLabels(widthM, heightM, spacingM)}`;
+      <rect width="${widthM * SVG_UNITS_PER_METER}" height="${heightM * SVG_UNITS_PER_METER}" fill="url(#${patternId})" stroke="#a8a29e" stroke-width="${2 * k}"/>
+      ${gridTickLabels(widthM, heightM, spacingM, k)}`;
   }
 
   // ── Listenansicht ──────────────────────────────────────────────────────
@@ -433,7 +486,14 @@ import Layout from '../layouts/Layout.astro';
 
     editing = id ? (plans.find(p => p.id === id) ?? createEmptyGardenPlan()) : createEmptyGardenPlan();
     editing.geo ??= null; // plans saved before the map feature have no geo field
+    editing.areas ??= [];
     drawingPoints = [];
+    destroyMapDrawer();
+    endAreaDraw();
+    selectedAreaId = null;
+    // Unlocated plans that were already drawn on the grid keep the grid when
+    // redrawn; everything else starts on the map.
+    setDrawMode(editing.geo || editing.boundary.length === 0 ? 'map' : 'grid');
     armedPlantId = null;
     unplacedPlantIds = [];
     selectedPlacementId = null;
@@ -451,11 +511,13 @@ import Layout from '../layouts/Layout.astro';
       .join('');
 
     const lockInputs = editing.boundary.length > 0;
-    [fWidth, fHeight, fGridSpacing].forEach(el => { el.disabled = lockInputs; });
+    [fWidth, fHeight, fGridSpacing, ...drawModeRadios].forEach(el => { el.disabled = lockInputs; });
     btnStartDrawing.classList.toggle('hidden', lockInputs);
     drawingHint.classList.add('hidden');
     drawingWrap.classList.add('hidden');
+    mapdrawWrap.classList.add('hidden');
     drawingControls.classList.add('hidden');
+    mapBar.classList.add('hidden');
 
     if (editing.boundary.length > 0) {
       enterPhaseB();
@@ -470,6 +532,8 @@ import Layout from '../layouts/Layout.astro';
   }
 
   function closeEditor() {
+    destroyMapDrawer();
+    endAreaDraw();
     view3d?.dispose();
     view3d = null;
     editing = null;
@@ -512,7 +576,12 @@ import Layout from '../layouts/Layout.astro';
     fBasemapOpacity.disabled = !geo;
     fBasemap.value = geo?.basemap ?? 'none';
     fBasemapOpacity.value = String(geo?.opacity ?? 0.6);
-    mapStatus.textContent = geo ? t('mapStatusSet', { deg: Math.round(geo.rotationDeg) }) : t('mapStatusNone');
+    mapStatus.textContent = !geo ? t('mapStatusNone')
+      : geo.rotationDeg === 0 ? t('mapStatusDrawn')
+      : t('mapStatusSet', { deg: Math.round(geo.rotationDeg) });
+    // Locating afterwards (incl. rotating) is only needed for plans drawn on
+    // the plain grid; map-drawn plans are north-up and anchored already.
+    btnLocate.hidden = !!geo && geo.rotationDeg === 0;
   }
 
   btnLocate.addEventListener('click', async () => {
@@ -595,7 +664,7 @@ import Layout from '../layouts/Layout.astro';
     ).join('');
     drawingSvg.innerHTML = `
       <g class="basemap-layer"></g>
-      ${gridDefsAndBackground(w, h, spacing, 'drawing-grid')}
+      ${gridDefsAndBackground(w, h, spacing, 'drawing-grid', uiScale(w))}
       ${drawingPoints.length >= 2 ? `<polyline points="${pointsAttr}" fill="none" stroke="#15803d" stroke-width="3"/>` : ''}
       ${drawingPoints.length >= 3 ? `<polygon points="${pointsAttr}" fill="#15803d" fill-opacity="0.12" stroke="none"/>` : ''}
       ${markers}
@@ -605,15 +674,56 @@ import Layout from '../layouts/Layout.astro';
     btnFinishBoundary.disabled = drawingPoints.length < 3;
   }
 
-  btnStartDrawing.addEventListener('click', () => {
+  // ── Zeichnen auf der Karte vs. auf dem Raster ──────────────────────────
+  // Map mode: the boundary is clicked onto a Leaflet map (gartenplan-mapdraw.ts);
+  // size, anchor and north-up orientation follow from the drawn corners, so
+  // the width/depth fields are hidden. Grid mode keeps the old unlocated flow.
+  const MAP_MARGIN_M = 1;
+  let mapDrawer: MapDrawer | null = null;
+
+  function drawMode(): 'map' | 'grid' {
+    return [...drawModeRadios].find(r => r.checked)?.value === 'grid' ? 'grid' : 'map';
+  }
+  function setDrawMode(m: 'map' | 'grid') {
+    drawModeRadios.forEach(r => { r.checked = r.value === m; });
+    sizeFields.classList.toggle('hidden', m === 'map');
+    sizeFromMapHint.classList.toggle('hidden', m === 'grid');
+  }
+  drawModeRadios.forEach(r => r.addEventListener('change', () => setDrawMode(drawMode())));
+
+  function destroyMapDrawer() {
+    mapDrawer?.destroy();
+    mapDrawer = null;
+  }
+
+  function setVertexCount(n: number) {
+    vertexCountEl.textContent = t('vertexCount', { count: n });
+    btnFinishBoundary.disabled = n < 3;
+  }
+
+  btnStartDrawing.addEventListener('click', async () => {
+    if (!editing) return;
     if (!fName.value.trim()) { alert(t('alertEnterName')); fName.focus(); return; }
-    [fWidth, fHeight, fGridSpacing].forEach(el => { el.disabled = true; });
+    [fWidth, fHeight, fGridSpacing, ...drawModeRadios].forEach(el => { el.disabled = true; });
     btnStartDrawing.classList.add('hidden');
     drawingHint.classList.remove('hidden');
-    drawingWrap.classList.remove('hidden');
     drawingControls.classList.remove('hidden');
     drawingPoints = [];
-    renderDrawingSvg();
+    if (drawMode() === 'map') {
+      drawingHintText.textContent = t('hintDrawingMap');
+      mapdrawWrap.classList.remove('hidden');
+      setVertexCount(0);
+      const geo = editing.geo;
+      const center = geo ? planToLatLon({ xM: editing.areaWidthM / 2, yM: editing.areaHeightM / 2 }, geo) : null;
+      const { createMapDrawer } = await import('../lib/gartenplan-mapdraw');
+      destroyMapDrawer();
+      mapDrawer = createMapDrawer(mapdrawMapEl, { center, lang, t, onChange: setVertexCount, onClose: finishBoundary });
+      requestAnimationFrame(() => mapDrawer?.refresh());
+    } else {
+      drawingHintText.textContent = t('hintDrawing');
+      drawingWrap.classList.remove('hidden');
+      renderDrawingSvg();
+    }
   });
 
   drawingSvg.addEventListener('pointerdown', (e: PointerEvent) => {
@@ -628,21 +738,43 @@ import Layout from '../layouts/Layout.astro';
   });
 
   document.getElementById('btn-undo-point')!.addEventListener('click', () => {
+    if (mapDrawer) { mapDrawer.undo(); return; }
     drawingPoints.pop();
     renderDrawingSvg();
   });
   document.getElementById('btn-clear-points')!.addEventListener('click', () => {
+    if (mapDrawer) { mapDrawer.clear(); return; }
     drawingPoints = [];
     renderDrawingSvg();
   });
-  btnFinishBoundary.addEventListener('click', () => {
-    if (!editing || drawingPoints.length < 3) return;
-    editing.areaWidthM = areaWidthM();
-    editing.areaHeightM = areaHeightM();
+
+  function finishBoundary() {
+    if (!editing) return;
     editing.gridSpacingM = gridSpacingM();
-    editing.boundary = drawingPoints.slice();
+    if (mapDrawer) {
+      const pts = mapDrawer.points();
+      if (pts.length < 3) return;
+      const r = planFromLatLngPolygon(pts, MAP_MARGIN_M, editing.gridSpacingM);
+      if (r.widthM > 500 || r.heightM > 500) { alert(t('alertAreaTooLarge')); return; }
+      editing.areaWidthM = r.widthM;
+      editing.areaHeightM = r.heightM;
+      editing.boundary = r.boundary;
+      editing.geo = { ...r.geo, basemap: 'osm', opacity: editing.geo?.opacity ?? 0.7 };
+      fWidth.value = String(r.widthM);
+      fHeight.value = String(r.heightM);
+      destroyMapDrawer();
+      mapdrawWrap.classList.add('hidden');
+    } else {
+      if (drawingPoints.length < 3) return;
+      editing.areaWidthM = areaWidthM();
+      editing.areaHeightM = areaHeightM();
+      editing.boundary = drawingPoints.slice();
+      editing.geo = null; // drawn without a location
+    }
+    syncMapBar();
     enterPhaseB();
-  });
+  }
+  btnFinishBoundary.addEventListener('click', finishBoundary);
 
   const VIEW_TOGGLE_ACTIVE_CLS = ['bg-white', 'dark:bg-stone-700', 'text-stone-800', 'dark:text-stone-100', 'shadow-sm'];
   const VIEW_TOGGLE_INACTIVE_CLS = ['text-stone-500', 'dark:text-stone-400'];
@@ -709,14 +841,20 @@ import Layout from '../layouts/Layout.astro';
     view3d = null;
     plan3dContainer.hidden = true;
     planSvg.classList.remove('hidden');
+    endAreaDraw();
     editing.boundary = [];
     editing.placements = [];
+    editing.areas = [];
+    selectedAreaId = null;
     drawingPoints = [];
-    [fWidth, fHeight, fGridSpacing].forEach(el => { el.disabled = false; });
+    [fWidth, fHeight, fGridSpacing, ...drawModeRadios].forEach(el => { el.disabled = false; });
+    setDrawMode(editing.geo ? 'map' : 'grid');
     btnStartDrawing.classList.remove('hidden');
     drawingHint.classList.add('hidden');
     drawingWrap.classList.add('hidden');
+    mapdrawWrap.classList.add('hidden');
     drawingControls.classList.add('hidden');
+    mapBar.classList.add('hidden');
     phaseA.classList.remove('hidden');
     phaseB.classList.add('hidden');
     window.scrollTo({ top: 0 });
@@ -728,6 +866,9 @@ import Layout from '../layouts/Layout.astro';
     if (!editing) return;
     phaseA.classList.add('hidden');
     phaseB.classList.remove('hidden');
+    mapBar.classList.remove('hidden');
+    syncMapBar();
+    renderAreasList();
     yearsInput.value = String(editing.yearsSincePlanting);
     yearsLabel.textContent = t('yearsSuffix', { years: editing.yearsSincePlanting });
     renderPlantPicker();
@@ -894,25 +1035,29 @@ import Layout from '../layouts/Layout.astro';
     blob.setAttribute('d', blobPathD(radiusU, placement.id, style.lobes, style.wobble));
     blob.setAttribute('fill', style.fill);
     blob.setAttribute('stroke', selected ? '#facc15' : style.stroke);
-    blob.setAttribute('stroke-width', selected ? '3' : '2');
+    const k = uiScale(editing!.areaWidthM);
+    blob.setAttribute('stroke-width', String((selected ? 3 : 2) * k));
     const label = group.querySelector('.marker-label') as SVGTextElement;
-    label.setAttribute('y', String(radiusU + 14));
+    label.setAttribute('y', String(radiusU + 14 * k));
     label.textContent = p ? (displayName(p)) : '?';
   }
 
   function renderPlanSvg() {
     if (!editing) return;
     scheduleAutosave();
-    const w = editing.areaWidthM, h = editing.areaHeightM;
+    const w = editing.areaWidthM, h = editing.areaHeightM, k = uiScale(w);
     const pointsAttr = editing.boundary.map(p => `${p.xM * SVG_UNITS_PER_METER},${p.yM * SVG_UNITS_PER_METER}`).join(' ');
     planSvg.setAttribute('viewBox', `0 0 ${w * SVG_UNITS_PER_METER} ${h * SVG_UNITS_PER_METER}`);
     planSvg.innerHTML = `
       <g class="basemap-layer"></g>
-      ${gridDefsAndBackground(w, h, editing.gridSpacingM, 'plan-grid')}
-      <polygon points="${pointsAttr}" fill="#15803d" fill-opacity="0.08" stroke="#15803d" stroke-width="2"/>
+      ${gridDefsAndBackground(w, h, editing.gridSpacingM, 'plan-grid', k)}
+      <polygon points="${pointsAttr}" fill="#15803d" fill-opacity="0.08" stroke="#15803d" stroke-width="${2 * k}"/>
+      <g id="plan-areas-layer">${areasSvg(editing.areas, selectedAreaId, k)}</g>
       <g class="north-arrow-layer"></g>
-      <g id="plan-markers"></g>`;
+      <g id="plan-markers"></g>
+      <g id="area-draft" pointer-events="none"></g>`;
     renderBasemap(planSvg);
+    renderAreaDraft();
     markerMap = new Map();
     const markersGroup = planSvg.querySelector('#plan-markers')!;
     for (const placement of editing.placements) {
@@ -926,17 +1071,17 @@ import Layout from '../layouts/Layout.astro';
       blob.setAttribute('fill-opacity', '0.6');
       group.appendChild(blob);
       const dot = document.createElementNS(SVG_NS, 'circle');
-      dot.setAttribute('r', '3');
+      dot.setAttribute('r', String(3 * k));
       dot.setAttribute('fill', '#1c1917');
       dot.style.pointerEvents = 'none';
       group.appendChild(dot);
       const label = document.createElementNS(SVG_NS, 'text');
       label.setAttribute('class', 'marker-label');
       label.setAttribute('text-anchor', 'middle');
-      label.setAttribute('font-size', '13');
+      label.setAttribute('font-size', String(13 * k));
       label.setAttribute('fill', '#1c1917');
       label.setAttribute('stroke', '#ffffff');
-      label.setAttribute('stroke-width', '3');
+      label.setAttribute('stroke-width', String(3 * k));
       label.setAttribute('paint-order', 'stroke');
       label.style.pointerEvents = 'none';
       group.appendChild(label);
@@ -982,7 +1127,7 @@ import Layout from '../layouts/Layout.astro';
   }
 
   planSvg.addEventListener('pointerdown', (e: PointerEvent) => {
-    if (!editing || !armedPlantId) return;
+    if (!editing || !armedPlantId || areaDraft) return;
     if ((e.target as Element).closest('g[data-placement-id]')) return; // handled by the marker's own listener
     const pt = clientToMeters(planSvg, e.clientX, e.clientY);
     if (!pointInPolygon(pt, editing.boundary)) return;
@@ -1005,6 +1150,140 @@ import Layout from '../layouts/Layout.astro';
     }
     view3d?.updateYears(editing.yearsSincePlanting);
     scheduleAutosave();
+  });
+
+  // ── Flächen (benannte, farbige Polygone) ───────────────────────────────
+  // Drawn in phase B on the plan itself (plan meters, snapped to the grid like
+  // the boundary). Rendering is shared with the PDF export (areasSvg in
+  // gartenplan-render.ts); name and color are edited in the "Flächen" list.
+  let areaDraft: GardenPlanPoint[] | null = null;
+  let selectedAreaId: string | null = null;
+
+  function renderAreasLayer() {
+    const layer = planSvg.querySelector('#plan-areas-layer');
+    if (layer && editing) layer.innerHTML = areasSvg(editing.areas, selectedAreaId, uiScale(editing.areaWidthM));
+  }
+
+  function renderAreaDraft() {
+    const g = planSvg.querySelector('#area-draft');
+    if (!g) return;
+    if (!areaDraft || !editing) { g.innerHTML = ''; return; }
+    const u = SVG_UNITS_PER_METER, k = uiScale(editing.areaWidthM);
+    const color = AREA_PALETTE[editing.areas.length % AREA_PALETTE.length];
+    const pts = areaDraft.map(p => `${p.xM * u},${p.yM * u}`).join(' ');
+    g.innerHTML = `
+      ${areaDraft.length >= 3 ? `<polygon points="${pts}" fill="${color}" fill-opacity="0.2" stroke="none"/>` : ''}
+      ${areaDraft.length >= 2 ? `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="${3 * k}" stroke-dasharray="${8 * k} ${5 * k}"/>` : ''}
+      ${areaDraft.map((p, i) => `<circle cx="${p.xM * u}" cy="${p.yM * u}" r="${(i === 0 ? 9 : 6) * k}" fill="${i === 0 ? '#ffffff' : color}" stroke="${color}" stroke-width="${3 * k}"/>`).join('')}`;
+    btnAreaFinish.disabled = areaDraft.length < 3;
+  }
+
+  function markSelectedArea() {
+    areasList.querySelectorAll<HTMLElement>('[data-area-id]').forEach(li => {
+      const on = li.dataset.areaId === selectedAreaId;
+      ['bg-white', 'dark:bg-stone-800', 'ring-1', 'ring-green-500'].forEach(c => li.classList.toggle(c, on));
+    });
+    renderAreasLayer();
+  }
+
+  function renderAreasList() {
+    if (!editing) return;
+    areasEmpty.classList.toggle('hidden', editing.areas.length > 0);
+    areasList.innerHTML = editing.areas.map(a => `
+      <li data-area-id="${a.id}" class="flex items-center gap-1.5 rounded-md p-1">
+        <input type="color" value="${a.color}" class="area-color h-7 w-8 shrink-0 cursor-pointer rounded border border-stone-300 dark:border-stone-600 bg-transparent p-0" aria-label="${escapeHtml(t('areaColor'))}" title="${escapeHtml(t('areaColor'))}" />
+        <input type="text" value="${escapeHtml(a.name)}" maxlength="80" class="area-name min-w-0 flex-1 rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2 py-1 text-xs" aria-label="${escapeHtml(t('areaName'))}" />
+        <button type="button" class="area-delete shrink-0 rounded px-1.5 py-1 text-stone-400 hover:text-red-600 dark:hover:text-red-400" aria-label="${escapeHtml(t('areaDelete'))}" title="${escapeHtml(t('areaDelete'))}">✕</button>
+      </li>`).join('');
+    markSelectedArea();
+  }
+
+  function areaOf(el: EventTarget | null): GardenPlanArea | undefined {
+    const id = (el as HTMLElement | null)?.closest<HTMLElement>('[data-area-id]')?.dataset.areaId;
+    return id ? editing?.areas.find(a => a.id === id) : undefined;
+  }
+  areasList.addEventListener('focusin', e => {
+    const a = areaOf(e.target);
+    if (a && a.id !== selectedAreaId) { selectedAreaId = a.id; markSelectedArea(); }
+  });
+  areasList.addEventListener('input', e => {
+    const a = areaOf(e.target);
+    const el = e.target as HTMLInputElement;
+    if (!a) return;
+    if (el.classList.contains('area-name')) a.name = el.value.slice(0, 80);
+    if (el.classList.contains('area-color')) a.color = el.value;
+    renderAreasLayer();
+    scheduleAutosave();
+  });
+  areasList.addEventListener('click', e => {
+    if (!(e.target as HTMLElement).closest('.area-delete') || !editing) return;
+    const a = areaOf(e.target);
+    if (!a || !confirm(t('confirmDeleteArea', { name: a.name || '—' }))) return;
+    editing.areas = editing.areas.filter(x => x.id !== a.id);
+    if (selectedAreaId === a.id) selectedAreaId = null;
+    renderAreasList();
+    scheduleAutosave();
+  });
+
+  function endAreaDraw() {
+    areaDraft = null;
+    areaDrawBar.classList.add('hidden');
+    planSvg.classList.remove('area-drawing');
+    btnDrawArea.disabled = false;
+    renderAreaDraft();
+  }
+
+  function finishAreaDraw() {
+    if (!editing || !areaDraft || areaDraft.length < 3) return;
+    const area: GardenPlanArea = {
+      id: newId(),
+      name: t('areaDefaultName', { n: editing.areas.length + 1 }),
+      color: AREA_PALETTE[editing.areas.length % AREA_PALETTE.length],
+      points: areaDraft.slice(),
+    };
+    editing.areas.push(area);
+    selectedAreaId = area.id;
+    endAreaDraw();
+    renderAreasList();
+    scheduleAutosave();
+    const input = areasList.querySelector<HTMLInputElement>(`[data-area-id="${area.id}"] .area-name`);
+    input?.focus();
+    input?.select();
+  }
+
+  btnDrawArea.addEventListener('click', () => {
+    if (!editing) return;
+    if (!plan3dContainer.hidden) btnView2d.click();
+    armedPlantId = null;
+    armedHint.classList.add('hidden');
+    renderPlantPicker();
+    renderUnplacedList();
+    areaDraft = [];
+    areaDrawBar.classList.remove('hidden');
+    planSvg.classList.add('area-drawing');
+    btnDrawArea.disabled = true;
+    renderAreaDraft();
+  });
+  document.getElementById('btn-area-undo')!.addEventListener('click', () => { areaDraft?.pop(); renderAreaDraft(); });
+  document.getElementById('btn-area-cancel')!.addEventListener('click', endAreaDraw);
+  btnAreaFinish.addEventListener('click', finishAreaDraw);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && areaDraft) endAreaDraw(); });
+
+  planSvg.addEventListener('pointerdown', (e: PointerEvent) => {
+    if (!editing || !areaDraft) return;
+    const raw = clientToMeters(planSvg, e.clientX, e.clientY);
+    const first = areaDraft[0];
+    const ctm = planSvg.getScreenCTM();
+    if (first && areaDraft.length >= 3 && ctm) {
+      const pxPerM = Math.hypot(ctm.a, ctm.b) * SVG_UNITS_PER_METER;
+      if (Math.hypot(raw.xM - first.xM, raw.yM - first.yM) * pxPerM <= SNAP_TOLERANCE_PX) { finishAreaDraw(); return; }
+    }
+    const s = snapIfClose(planSvg, raw, editing.gridSpacingM);
+    areaDraft.push({
+      xM: Math.max(0, Math.min(editing.areaWidthM, s.xM)),
+      yM: Math.max(0, Math.min(editing.areaHeightM, s.yM)),
+    });
+    renderAreaDraft();
   });
 
   // ── Init + save/delete ──────────────────────────────────────────────────

@@ -90,6 +90,14 @@ export interface GardenPlanGeo {
   opacity: number;           // 0..1
 }
 
+/** A named, colored polygon drawn onto the plan (bed, pond, path, house…). */
+export interface GardenPlanArea {
+  id: string;
+  name: string;
+  color: string;             // #rrggbb
+  points: GardenPlanPoint[]; // ≥ 3, plan meters
+}
+
 export interface GardenPlan {
   id: string;
   name: string;
@@ -103,6 +111,7 @@ export interface GardenPlan {
   yearsSincePlanting: number;    // last slider position — persisted so reopening restores the view
   notes: string;
   geo: GardenPlanGeo | null;     // null = not located, no map background
+  areas: GardenPlanArea[];
   createdAt: string;
   updatedAt: string;
 }
@@ -122,6 +131,7 @@ export function createEmptyGardenPlan(): GardenPlan {
     yearsSincePlanting: 0,
     notes: '',
     geo: null,
+    areas: [],
     createdAt: now,
     updatedAt: now,
   };

@@ -1,6 +1,6 @@
 import {
   createEmptyPlant, createEmptyPolyculture, createEmptyGardenPlan, parseHabit,
-  type PlantData, type Polyculture, type GardenPlan, type GardenPlanGeo, type DataSource, type PolycultureRole,
+  type PlantData, type Polyculture, type GardenPlan, type GardenPlanGeo, type GardenPlanArea, type DataSource, type PolycultureRole,
 } from './types';
 import { newId } from './id';
 
@@ -126,8 +126,23 @@ export function normalizeGardenPlan(raw: unknown): GardenPlan | null {
     yearsSincePlanting: clamp(finite(raw.yearsSincePlanting) ?? 0, 0, 100),
     notes: str(raw.notes, ''),
     geo: normalizeGardenPlanGeo(raw.geo),
+    areas: Array.isArray(raw.areas)
+      ? raw.areas.map(a => normalizeGardenPlanArea(a, point)).filter((a): a is GardenPlanArea => a !== null)
+      : [],
     createdAt: str(raw.createdAt, d.createdAt),
     updatedAt: str(raw.updatedAt, d.updatedAt),
+  };
+}
+
+function normalizeGardenPlanArea(raw: unknown, point: (v: unknown) => { xM: number; yM: number } | null): GardenPlanArea | null {
+  if (!isObject(raw) || !Array.isArray(raw.points)) return null;
+  const points = raw.points.map(point).filter((q): q is { xM: number; yM: number } => q !== null);
+  if (points.length < 3) return null;
+  return {
+    id: nonEmptyStr(raw.id, newId()),
+    name: str(raw.name, '').slice(0, 80),
+    color: typeof raw.color === 'string' && /^#[0-9a-f]{6}$/i.test(raw.color) ? raw.color.toLowerCase() : '#22c55e',
+    points,
   };
 }
 

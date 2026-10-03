@@ -1,14 +1,13 @@
 import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 import type { GardenPlanGeo, GardenPlanPoint } from './types';
 import { bearingFromOrigin, planToLatLon } from './gartenplan-geo';
-import { OSM_TILES, S2_TILES } from './gartenplan-background';
+import { createBaseMap, wireToolbar, handleIcon, DEFAULT_CENTER, type BaseMap } from './gartenplan-leaflet';
 import type { Lang } from './i18n/core';
 
-// "Standort & Ausrichtung" dialog: a Leaflet map where the user drops plan
-// point 0,0 onto their garden and turns the plan rectangle by dragging its
-// top-right corner (or with the slider). Loaded via import() only when the
-// dialog is first opened, so Leaflet never weighs on the normal page load.
+// "Standort festlegen" dialog — only for plans drawn on the plain grid (no
+// map): the user drops plan point 0,0 onto their garden and turns the plan
+// rectangle by dragging its top-right corner (or with the slider). Plans
+// drawn directly on the map (gartenplan-mapdraw.ts) never need this.
 // Markup lives in gartenplan.astro (#locate-dialog); this module only wires it.
 
 export type LocateResult = { action: 'apply'; geo: GardenPlanGeo } | { action: 'remove' } | null;
@@ -22,44 +21,30 @@ export interface LocateOptions {
   t: (key: string) => string;
 }
 
-const DEFAULT_CENTER: L.LatLngTuple = [51.2, 10.4];  // Germany, zoomed out
-const NOMINATIM_MIN_INTERVAL_MS = 1100;              // Nominatim policy: max 1 request/s
-
-let map: L.Map | null = null;
-let layers: { osm: L.TileLayer; sat: L.TileLayer } | null = null;
+let base: BaseMap | null = null;
 let shapes: L.LayerGroup | null = null;
-let lastSearchAt = 0;
 
 function $(id: string) { return document.getElementById(id)!; }
 
 export function openLocateDialog(opts: LocateOptions): Promise<LocateResult> {
   const dialog = $('locate-dialog') as HTMLDialogElement;
-  const mapEl = $('locate-map');
   const rotRange = $('locate-rot') as HTMLInputElement;
   const rotNum = $('locate-rot-num') as HTMLInputElement;
-  const status = $('locate-status');
-  const form = $('locate-search-form') as HTMLFormElement;
-  const query = $('locate-query') as HTMLInputElement;
-  const searchBtn = $('locate-search-btn') as HTMLButtonElement;
   const btnApply = $('locate-apply') as HTMLButtonElement;
   const btnRemove = $('locate-remove') as HTMLButtonElement;
+  const status = $('locate-status');
+  const query = $('locate-query') as HTMLInputElement;
 
   // Working copy — only written back on "Übernehmen".
   let origin: { lat: number; lon: number } | null = opts.geo ? { lat: opts.geo.lat, lon: opts.geo.lon } : null;
   let rotation = opts.geo?.rotationDeg ?? 0;
 
   dialog.showModal();
-
-  if (!map) {
-    map = L.map(mapEl, { zoomControl: true });
-    layers = {
-      osm: L.tileLayer(OSM_TILES.url, { maxZoom: 20, maxNativeZoom: OSM_TILES.maxZoom, attribution: OSM_TILES.attributionHtml }),
-      sat: L.tileLayer(S2_TILES.url, { maxZoom: 20, maxNativeZoom: S2_TILES.maxZoom, attribution: S2_TILES.attributionHtml }),
-    };
-    layers.osm.addTo(map);
-    shapes = L.layerGroup().addTo(map);
+  if (!base) {
+    base = createBaseMap($('locate-map'));
+    shapes = L.layerGroup().addTo(base.map);
   }
-  const m = map, ly = layers!, sh = shapes!;
+  const m = base.map, sh = shapes!;
   // Set a view right away (Leaflet refuses to add layers without one), then
   // again after the next layout pass, when the dialog has its final size.
   const initialCenter: L.LatLngTuple = origin ? [origin.lat, origin.lon] : DEFAULT_CENTER;
@@ -68,7 +53,14 @@ export function openLocateDialog(opts: LocateOptions): Promise<LocateResult> {
   requestAnimationFrame(() => { m.invalidateSize(); m.setView(initialCenter, initialZoom); });
 
   const layerRadios = dialog.querySelectorAll<HTMLInputElement>('input[name="locate-layer"]');
-  layerRadios.forEach(r => { r.checked = r.value === (m.hasLayer(ly.sat) ? 'sat' : 'osm'); });
+  const unwireToolbar = wireToolbar(base, {
+    form: $('locate-search-form') as HTMLFormElement,
+    query,
+    searchBtn: $('locate-search-btn') as HTMLButtonElement,
+    myPosBtn: $('locate-mypos'),
+    status,
+    layerRadios,
+  }, opts.lang, opts.t);
 
   function currentGeo(): GardenPlanGeo | null {
     if (!origin) return null;
@@ -76,10 +68,6 @@ export function openLocateDialog(opts: LocateOptions): Promise<LocateResult> {
       lat: origin.lat, lon: origin.lon, rotationDeg: rotation,
       basemap: opts.geo?.basemap ?? 'osm', opacity: opts.geo?.opacity ?? 0.6,
     };
-  }
-
-  function divIcon(cls: string) {
-    return L.divIcon({ className: cls, iconSize: [18, 18], iconAnchor: [9, 9] });
   }
 
   function redraw() {
@@ -99,13 +87,13 @@ export function openLocateDialog(opts: LocateOptions): Promise<LocateResult> {
     if (opts.boundary.length >= 3) {
       L.polygon(opts.boundary.map(ll), { color: '#facc15', weight: 2, fillOpacity: 0.15, interactive: false }).addTo(sh);
     }
-    const originMarker = L.marker(ll({ xM: 0, yM: 0 }), { draggable: true, icon: divIcon('locate-handle locate-handle-origin'), title: '0,0' }).addTo(sh);
+    const originMarker = L.marker(ll({ xM: 0, yM: 0 }), { draggable: true, icon: handleIcon('locate-handle-origin'), title: '0,0' }).addTo(sh);
     originMarker.on('dragend', () => {
       const p = originMarker.getLatLng();
       origin = { lat: p.lat, lon: p.lng };
       redraw();
     });
-    const rotHandle = L.marker(ll({ xM: w, yM: 0 }), { draggable: true, icon: divIcon('locate-handle locate-handle-rot'), title: opts.t('locateRotation') }).addTo(sh);
+    const rotHandle = L.marker(ll({ xM: w, yM: 0 }), { draggable: true, icon: handleIcon('locate-handle-rot'), title: opts.t('locateRotation') }).addTo(sh);
     // The top-right corner lies on the plan's +x axis, whose bearing is θ + 90°.
     rotHandle.on('drag', () => {
       const p = rotHandle.getLatLng();
@@ -128,57 +116,13 @@ export function openLocateDialog(opts: LocateOptions): Promise<LocateResult> {
   };
   const onRotRange = () => setRotation(Number(rotRange.value));
   const onRotNum = () => setRotation(Number(rotNum.value));
-  const onRotStep = (e: Event) => {
-    const step = Number((e.currentTarget as HTMLElement).dataset.rotStep);
-    setRotation(rotation + step);
-  };
-  const onLayer = (e: Event) => {
-    const v = (e.currentTarget as HTMLInputElement).value;
-    if (v === 'sat') { m.removeLayer(ly.osm); ly.sat.addTo(m); }
-    else { m.removeLayer(ly.sat); ly.osm.addTo(m); }
-  };
-  const onSearch = async (e: SubmitEvent) => {
-    e.preventDefault();
-    const q = query.value.trim();
-    if (!q) return;
-    const wait = lastSearchAt + NOMINATIM_MIN_INTERVAL_MS - Date.now();
-    if (wait > 0) await new Promise(r => setTimeout(r, wait));
-    lastSearchAt = Date.now();
-    searchBtn.disabled = true;
-    status.textContent = '…';
-    try {
-      const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=${opts.lang}&q=${encodeURIComponent(q)}`;
-      const res = await fetch(url, { headers: { Accept: 'application/json' } });
-      if (!res.ok) throw new Error(String(res.status));
-      const hits = await res.json() as { lat: string; lon: string; display_name: string }[];
-      if (!hits.length) { status.textContent = opts.t('locateNotFound'); return; }
-      status.textContent = hits[0].display_name;
-      m.setView([Number(hits[0].lat), Number(hits[0].lon)], 18);
-    } catch {
-      status.textContent = opts.t('locateSearchError');
-    } finally {
-      searchBtn.disabled = false;
-    }
-  };
-  const onMyPosition = () => {
-    if (!navigator.geolocation) { status.textContent = opts.t('locateGeoError'); return; }
-    status.textContent = '…';
-    navigator.geolocation.getCurrentPosition(
-      pos => { status.textContent = ''; m.setView([pos.coords.latitude, pos.coords.longitude], 19); },
-      () => { status.textContent = opts.t('locateGeoError'); },
-      { enableHighAccuracy: true, timeout: 10000 },
-    );
-  };
+  const onRotStep = (e: Event) => setRotation(rotation + Number((e.currentTarget as HTMLElement).dataset.rotStep));
 
   m.on('click', onMapClick);
   rotRange.addEventListener('input', onRotRange);
   rotNum.addEventListener('change', onRotNum);
   const stepBtns = dialog.querySelectorAll<HTMLElement>('[data-rot-step]');
   stepBtns.forEach(b => b.addEventListener('click', onRotStep));
-  layerRadios.forEach(r => r.addEventListener('change', onLayer));
-  form.addEventListener('submit', onSearch);
-  const btnMyPos = $('locate-mypos');
-  btnMyPos.addEventListener('click', onMyPosition);
 
   status.textContent = '';
   query.value = '';
@@ -198,9 +142,7 @@ export function openLocateDialog(opts: LocateOptions): Promise<LocateResult> {
       rotRange.removeEventListener('input', onRotRange);
       rotNum.removeEventListener('change', onRotNum);
       stepBtns.forEach(b => b.removeEventListener('click', onRotStep));
-      layerRadios.forEach(r => r.removeEventListener('change', onLayer));
-      form.removeEventListener('submit', onSearch);
-      btnMyPos.removeEventListener('click', onMyPosition);
+      unwireToolbar();
       btnApply.removeEventListener('click', onApply);
       btnRemove.removeEventListener('click', onRemove);
       cancelBtn.removeEventListener('click', onCancel);

@@ -127,3 +127,34 @@ export function tilesForPlan(widthM: number, heightM: number, geo: GardenPlanGeo
   }
   return [];
 }
+
+export interface PlanFromMap {
+  geo: Pick<GardenPlanGeo, 'lat' | 'lon' | 'rotationDeg'>;
+  widthM: number;
+  heightM: number;
+  boundary: PlanXY[];
+}
+
+/** Turns a polygon clicked on the map into a north-up plan: the plan's 0,0 is
+ *  the north-west corner of the polygon's bounding box minus `marginM`, the
+ *  size is rounded up to whole grid cells, and every vertex is expressed in
+ *  plan meters of that anchor — so nothing ever needs rotating. */
+export function planFromLatLngPolygon(pts: { lat: number; lon: number }[], marginM: number, spacingM: number): PlanFromMap {
+  if (pts.length < 3) throw new Error('need at least 3 points');
+  const ref = { lat: pts[0].lat, lon: pts[0].lon };
+  const enu = pts.map(p => latLonToEnu(p.lat, p.lon, ref));
+  const minE = Math.min(...enu.map(p => p.e)), maxE = Math.max(...enu.map(p => p.e));
+  const minN = Math.min(...enu.map(p => p.n)), maxN = Math.max(...enu.map(p => p.n));
+  const o = enuToLatLon({ e: minE - marginM, n: maxN + marginM }, ref);
+  // The epsilon keeps float noise (14.0000001 m) from adding a whole extra cell.
+  const cells = (len: number) => Math.max(2, Math.ceil((len + 2 * marginM) / spacingM - 1e-6) * spacingM);
+  const widthM = cells(maxE - minE), heightM = cells(maxN - minN);
+  const geo = { lat: o.lat, lon: o.lon, rotationDeg: 0 };
+  const full: GardenPlanGeo = { ...geo, basemap: 'osm', opacity: 1 };
+  const clampTo = (v: number, hi: number) => Math.min(hi, Math.max(0, v));
+  const boundary = pts.map(p => {
+    const q = latLonToPlan(p.lat, p.lon, full);
+    return { xM: clampTo(q.xM, widthM), yM: clampTo(q.yM, heightM) };
+  });
+  return { geo, widthM, heightM, boundary };
+}

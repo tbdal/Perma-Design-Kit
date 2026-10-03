@@ -69,4 +69,18 @@ describe('normalizeGardenPlan', () => {
     expect(normalizeGardenPlan({ id: 'g', geo: { lat: 89, lon: 8 } })!.geo).toBeNull();
     expect(normalizeGardenPlan({ id: 'g' })!.geo).toBeNull();
   });
+
+  it('keeps valid areas, fixes bad colors and drops degenerate polygons', () => {
+    const pts = [{ xM: 0, yM: 0 }, { xM: 2, yM: 0 }, { xM: 2, yM: 2 }];
+    const g = normalizeGardenPlan({ id: 'g', areas: [
+      { id: 'a', name: 'Beet', color: '#AABBCC', points: pts },
+      { name: 'x', color: 'red', points: pts },
+      { name: 'zu klein', points: pts.slice(0, 2) },
+      'kaputt',
+    ] })!;
+    expect(g.areas).toHaveLength(2);
+    expect(g.areas[0]).toEqual({ id: 'a', name: 'Beet', color: '#aabbcc', points: pts });
+    expect(g.areas[1].color).toBe('#22c55e');
+    expect(normalizeGardenPlan({ id: 'g' })!.areas).toEqual([]);
+  });
 });
