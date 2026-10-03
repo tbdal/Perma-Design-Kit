@@ -79,7 +79,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] beim Bewegen der Maus auf der Karte am Mauszeiger die Position relativ zu 0,0 in x m, y m anzeigen
 
 ## kurzfristig
-- [ ] Design festlegen. icon integrieren?
+- [ ] Dokumentation in Hilfe verlinken
 - [ ] zulip wieder starten: cd /opt/zulip && docker compose start
 - [ ] barrierefreiheit - inklusivität mitdenken: Farbenblindheit..
 - [ ] Button: Gruppen als Polykultur einrichten
@@ -89,7 +89,10 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 	Jostabeere	Ribes x nidigrolaria
 	Rubus pentalobus	Rubus pentalobus
 	--> bot. Name nicht korrekt --> über PFAF-Suche finden & eintragen, dann Daten nachladen
+
+## erledigt
 - [x] code-review ultra
+- [x] Design festlegen. icon integrieren?
 - [x] layer: option das zu verändern in Bearbeiten-Dialog einfügen
   - vorhandene Layer: tree, shrub, herb, climber, rhizo
 
