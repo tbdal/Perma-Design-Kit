@@ -62,15 +62,20 @@
    Opt-in via Settings → Design (boot.js sets html[data-design="horizont"]).
    Pure restyling of the Standard markup: the Tailwind color variables are
    remapped to an olive palette, so every page keeps working unchanged.
-   Sky + tree line on top (public/horizont-sky.jpg, a mirrored tile so it
-   repeats seamlessly), dark olive ground below, in light mode the content
+   Sky + tree line on top (public/horizont-sky.jpg, shown once and unmirrored:
+   tall forest on the left, thinning out to the right), dark olive ground
+   below, in light mode the content
    sits on a cream sheet. These rules are deliberately unlayered so they win
    over Tailwind's utility layer. */
 
 .hz-anchor, .hz-wordmark, .hz-only { display: none; }
 
 html[data-design="horizont"] {
-  --hz-trees: 96px;
+  /* Tree-line height. The sky image (1678×860, trees = bottom 35 %) is drawn
+     once, so it has to span the full width: width = trees / 0.35 × 1.951
+     ≈ 5.575 × trees, hence trees ≈ 17.94vw. Narrow screens keep 96px and
+     show the image's tall left part. */
+  --hz-trees: max(96px, 17.94vw);
   --hz-sky-top: #a5ba6b;
   --hz-ground-color: #33401a;
   --hz-ink: #1f2710;
@@ -101,10 +106,6 @@ html[data-design="horizont"] {
   --color-stone-900: #222b0f;
   --color-stone-950: #161c09;
 }
-@media (min-width: 640px) {
-  html[data-design="horizont"] { --hz-trees: 150px; }
-}
-
 html[data-design="horizont"] body { background: var(--hz-ground-color); }
 
 /* Headings in the display face, as in the design. */
@@ -122,7 +123,7 @@ html[data-design="horizont"] .hz-sky {
   height: var(--hz-band-h, calc(72px + var(--hz-trees)));
   background:
     linear-gradient(180deg, rgb(199 215 143 / 0.55) 0%, rgb(199 215 143 / 0) 55%),
-    url('/horizont-sky.jpg') center bottom / auto calc(var(--hz-trees) / 0.35) repeat-x,
+    url('/horizont-sky.jpg') left bottom / auto calc(var(--hz-trees) / 0.35) no-repeat,
     var(--hz-sky-top);
 }
 

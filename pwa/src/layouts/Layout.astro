@@ -321,7 +321,12 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
       const pageY = (el: Element) => el.getBoundingClientRect().top + scrollY;
       function layoutHorizon() {
         if (root.dataset.design !== 'horizont' || !anchor || !main) return;
-        const trees = parseFloat(getComputedStyle(root).getPropertyValue('--hz-trees')) || 0;
+        // --hz-trees scales with the viewport (vw), so read its rendered size.
+        const probe = document.createElement('div');
+        probe.style.cssText = 'position:absolute;visibility:hidden;height:var(--hz-trees)';
+        anchor.appendChild(probe);
+        const trees = probe.getBoundingClientRect().height;
+        probe.remove();
         const ground = (sky ? sky.getBoundingClientRect().bottom + scrollY : pageY(main)) + trees;
         root.style.setProperty('--hz-band-h', `${Math.round(ground - pageY(anchor))}px`);
         root.style.setProperty('--hz-ground', `${Math.round(ground - pageY(main))}px`);
