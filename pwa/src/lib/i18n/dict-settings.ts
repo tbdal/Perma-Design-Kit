@@ -33,7 +33,7 @@ export const settingsDict: Dict = {
   sectionDesign: { de: 'Design', en: 'Design' },
   designSubtitle: { de: 'Aussehen der Website. Alle Funktionen sind in beiden Designs gleich.', en: 'How the website looks. All features are the same in both designs.' },
   designStandard: { de: 'Standard', en: 'Standard' },
-  designHorizont: { de: 'Horizont', en: 'Horizont' },
+  designHorizont: { de: 'Horizont', en: 'Horizon' },
   sectionTheme: { de: 'Theme', en: 'Theme' },
   themeSubtitle: { de: '"Auto" folgt der Systemeinstellung deines Geräts.', en: '"Auto" follows your device’s system setting.' },
   themeAuto: { de: 'Auto', en: 'Auto' },
