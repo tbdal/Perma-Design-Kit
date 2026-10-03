@@ -15,8 +15,6 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 
 
 ## Arbeitspaket 2
-- [ ] in der Produkttour beispieldaten und nachladen als letztes erwähnen: "Wenn du mit einem Beispiel starten möchtest kannst du die 
-- [ ] eigenes Projekt einfach als Link teilbar machen?
 - [ ] eingeklappte Farblegende farblich mehr hervorheben
 - [ ] in der Produkttour beispieldaten und nachladen als letztes erwähnen: "Du kannst auch mit einem Beispiel starten und dafür die "Pflanzen für kleine Gärten" aus Martin Crawford's Buch "Einen Waldgarten erschaffen" (https://www.olv-verlag.eu/Einen-Waldgarten-erschaffen/) nutzen. Klicke dafür zuerst auf "Beispieldaten laden (Crawford)" und lade dann die Detailinformationen der Pflanzen mit "Lade alle fehlenden Daten"
 	- auf englisch:  "Plants for small gardens" & Link zum Buch: https://www.agroforestry.co.uk/product/creating-a-forest-garden-2/
@@ -26,6 +24,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] beim Bewegen der Maus auf der Karte am Mauszeiger die Position relativ zu 0,0 in x m, y m anzeigen
 
 ## kurzfristig
+- [ ] eigenes Projekt einfach als Link teilbar machen?
 - [ ] Dokumentation in Hilfe verlinken
 - [ ] zulip wieder starten: cd /opt/zulip && docker compose start
 - [x] barrierefreiheit - inklusivität mitdenken: Farbenblindheit..
