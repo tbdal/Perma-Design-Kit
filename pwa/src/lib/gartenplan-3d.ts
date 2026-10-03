@@ -126,6 +126,8 @@ export interface View3DOptions {
   rotationDeg: number;
   /** Elevation grid (terrain.ts); null = flat ground. */
   terrain?: ElevationGrid | null;
+  /** Building footprints (plan meters) with heights, e.g. from OSM. */
+  buildings?: { pts: { xM: number; yM: number }[]; heightM: number }[];
 }
 
 const DRAG_THRESHOLD_PX = 4;
@@ -437,6 +439,29 @@ export function createGardenPlan3DView(
   }
   const drapeCell = terrain ? Math.max(0.5, terrain.cellM / 2) : 1e9;
   scene.add(buildBoundaryMesh(plan, ground, drapeCell));
+
+  // Buildings: footprint extruded upwards, standing on the lowest ground point
+  // of the footprint (so slopes don't leave them floating).
+  if (opts.buildings?.length) {
+    const mat = new THREE.MeshStandardMaterial({ color: 0xe7e5e4, roughness: 0.9 });
+    const roofMat = new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.8 });
+    const bGroup = new THREE.Group();
+    for (const b of opts.buildings) {
+      const zs = b.pts.map(p => ground(p.xM, p.yM));
+      const base = Math.min(...zs), top = Math.max(...zs) + b.heightM;
+      // Shape in the XY plane with y = −plan y; rotateX(−90°) maps the
+      // extrusion (+z) to world up and shape y to world z = plan y.
+      const shape = new THREE.Shape(b.pts.map(p => new THREE.Vector2(p.xM, -p.yM)));
+      const geom = new THREE.ExtrudeGeometry(shape, { depth: Math.max(1, top - base), bevelEnabled: false });
+      geom.rotateX(-Math.PI / 2);
+      const mesh = new THREE.Mesh(geom, [roofMat, mat]); // groups: 0 = caps (roof/floor), 1 = walls
+      mesh.position.y = base;
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      bGroup.add(mesh);
+    }
+    scene.add(bGroup);
+  }
 
   const plantsGroup = new THREE.Group();
   scene.add(plantsGroup);

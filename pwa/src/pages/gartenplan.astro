@@ -51,6 +51,7 @@ import Layout from '../layouts/Layout.astro';
         <select id="g-coverage" class="rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs"></select>
       </label>
       <label class="inline-flex items-center gap-1.5" data-i18n-title="mapGridTitle" title="Meterlinien ein-/ausblenden (G)"><input id="g-grid" type="checkbox" checked class="accent-green-700" /> <span data-i18n="mapGrid">Meterlinien</span></label>
+      <label id="buildings-toggle" hidden class="inline-flex items-center gap-1.5" data-i18n-title="mapBuildingsTitle" title="Gebäude aus OpenStreetMap: in 3D und als Schattenwerfer für Besonnung und Hinweise"><input id="g-buildings" type="checkbox" checked class="accent-stone-600" /> <span data-i18n="mapBuildings">Gebäude</span></label>
       <label id="contours-toggle" hidden class="inline-flex items-center gap-1.5"><input id="g-contours" type="checkbox" checked class="accent-amber-700" /> <span data-i18n="mapContours">Höhenlinien</span></label>
       <span id="map-status" class="text-stone-500 dark:text-stone-400"></span>
       <span id="terrain-info" class="text-stone-600 dark:text-stone-300"></span>
@@ -365,6 +366,7 @@ import Layout from '../layouts/Layout.astro';
   import { COVER_FUNCS, coverageGrid, coverageSummary, findGaps, suggestPlants, hasFunc, funcCount, influenceRadius, type CoverFunc } from '../lib/function-coverage';
   import { layoutPolyculture } from '../lib/polyculture-layout';
   import { crowdingWarnings, shadeWarnings, grownOccluders } from '../lib/plan-warnings';
+  import { fetchBuildings, BUILDINGS_ATTRIBUTION, type Building } from '../lib/osm-buildings';
   import { sunSamples, sunHoursAt, sunClass, planOccluders, planCells, SEASON_DATES, type SunScene, type SunSample, type SunClass, type Occluder } from '../lib/sun-hours';
   import { BOOL_FIELDS } from '../lib/plant-fields';
   import { orthoFor } from '../lib/ortho-sources';
@@ -552,7 +554,7 @@ import Layout from '../layouts/Layout.astro';
     renderSelectedPanel();
     renderPlanSvg();
     if (!plan3dContainer.hidden) btnView3d.click(); // rebuild 3D, camera kept
-    if (before.geo !== JSON.stringify(prev.geo) || before.w !== prev.areaWidthM || before.h !== prev.areaHeightM) void loadTerrain();
+    if (before.geo !== JSON.stringify(prev.geo) || before.w !== prev.areaWidthM || before.h !== prev.areaHeightM) { void loadTerrain(); void loadBuildings(); }
     restoringHistory = true;
     scheduleAutosave();
     restoringHistory = false;
@@ -772,7 +774,8 @@ import Layout from '../layouts/Layout.astro';
     const isPlan = svg === planSvg;
     const attrib = svg.parentElement!.querySelector<HTMLElement>('.basemap-attrib')!;
     const terrainAttr = isPlan && terrain ? `${TERRAIN_ATTRIBUTION}${terrain.sources.length ? ` (${escapeHtml(terrain.sources.join(', '))})` : ''}` : '';
-    attrib.innerHTML = [basemapAttribution(editing), terrainAttr].filter(Boolean).join(' · ');
+    const bAttr = isPlan && showBuildings() && !basemapAttribution(editing).includes('OpenStreetMap') ? BUILDINGS_ATTRIBUTION : '';
+    attrib.innerHTML = [basemapAttribution(editing), bAttr, terrainAttr].filter(Boolean).join(' · ');
     attrib.classList.toggle('hidden', !attrib.innerHTML);
   }
 
@@ -817,6 +820,7 @@ import Layout from '../layouts/Layout.astro';
     syncMapBar();
     refreshBasemaps();
     void loadTerrain();
+    void loadBuildings();
     scheduleAutosave();
   });
 
@@ -1112,6 +1116,7 @@ import Layout from '../layouts/Layout.astro';
       latLon: geo ? { lat: geo.lat, lon: geo.lon } : DEFAULT_SUN_LATLON,
       rotationDeg: geo?.rotationDeg ?? 0,
       terrain: geo ? terrain : null,
+      buildings: showBuildings() ? buildings : [],
     });
     view3d.setArmedPlant(armedPlantId);
     view3d.refreshAreas(selectedAreaId);
@@ -1234,6 +1239,7 @@ import Layout from '../layouts/Layout.astro';
     renderPlanSvg();
     if (savedView?.mode === '3d' && plan3dContainer.hidden) btnView3d.click();
     void loadTerrain();
+    void loadBuildings();
     resetHistory();
     scheduleWarnings();
   }
@@ -2336,9 +2342,11 @@ import Layout from '../layouts/Layout.astro';
     terrainKey = key;
     terrainInfo.textContent = t('terrainLoading');
     const maxDim = Math.max(plan.areaWidthM, plan.areaHeightM);
-    const m = Math.max(20, maxDim);
+    // Margin covers the OSM buildings (150 m) so they stand on the same
+    // ground as the 3D terrain around them.
+    const m = Math.max(160, maxDim);
     try {
-      const grid = await fetchElevationGrid(geo, { minX: -m, minY: -m, maxX: plan.areaWidthM + m, maxY: plan.areaHeightM + m }, Math.min(4, Math.max(1, maxDim / 50)));
+      const grid = await fetchElevationGrid(geo, { minX: -m, minY: -m, maxX: plan.areaWidthM + m, maxY: plan.areaHeightM + m }, Math.min(4, Math.max(1, (maxDim + 2 * m) / 100)));
       if (terrainKey !== key || editing !== plan) return; // plan changed meanwhile
       terrain = grid;
     } catch {
@@ -2539,8 +2547,52 @@ import Layout from '../layouts/Layout.astro';
   const fmtH = (h: number) => new Intl.NumberFormat(lang, { maximumFractionDigits: 1, minimumFractionDigits: 1 }).format(h);
   let sunMapToken = 0;
   let seasonCache: { key: string; samples: SunSample[] } | null = null;
-  /** Building footprints as prisms (filled by the OSM building layer). */
-  let buildingOccluders: Occluder[] = [];
+  // ── Gebäude (OSM) ──
+  const buildingsToggle = document.getElementById('buildings-toggle')!;
+  const buildingsInput = document.getElementById('g-buildings') as HTMLInputElement;
+  try { buildingsInput.checked = localStorage.getItem('pgd-buildings') !== '0'; } catch {}
+  let buildings: Building[] = [];
+  let buildingsKey = '';
+  const showBuildings = () => !!editing?.geo && buildingsInput.checked && buildings.length > 0;
+  buildingsInput.addEventListener('change', () => {
+    try { localStorage.setItem('pgd-buildings', buildingsInput.checked ? '1' : '0'); } catch {}
+    void loadBuildings();
+    afterBuildingsChanged();
+  });
+  async function loadBuildings() {
+    const plan = editing;
+    const geo = plan?.geo;
+    buildingsToggle.hidden = !geo;
+    if (!plan || !geo || !buildingsInput.checked) return;
+    const m = 150;
+    const key = `${geo.lat}|${geo.lon}|${geo.rotationDeg}|${plan.areaWidthM}|${plan.areaHeightM}`;
+    if (key === buildingsKey) return;
+    buildingsKey = key;
+    try {
+      const list = await fetchBuildings(geo, { minX: -m, minY: -m, maxX: plan.areaWidthM + m, maxY: plan.areaHeightM + m });
+      if (buildingsKey !== key || editing !== plan) return;
+      buildings = list;
+    } catch {
+      if (buildingsKey === key) { buildingsKey = ''; buildings = []; showToast(t('buildingsUnavailable')); }
+      return;
+    }
+    afterBuildingsChanged();
+  }
+  function afterBuildingsChanged() {
+    updateAttribution(planSvg);
+    scheduleWarnings();
+    if (coverageSelect.value.startsWith('sun')) scheduleCoverage();
+    if (!plan3dContainer.hidden) btnView3d.click(); // rebuild 3D with/without buildings
+  }
+  /** Building footprints as sun occluders (prisms), heights on the terrain. */
+  function buildingOccluders(groundZ: (x: number, y: number) => number): Occluder[] {
+    if (!showBuildings()) return [];
+    return buildings.map(b => {
+      const xs = b.pts.map(p => p.xM), ys = b.pts.map(p => p.yM);
+      const base = Math.min(...b.pts.map(p => groundZ(p.xM, p.yM)));
+      return { kind: 'prism' as const, pts: b.pts, z1: base + b.heightM, minX: Math.min(...xs), minY: Math.min(...ys), maxX: Math.max(...xs), maxY: Math.max(...ys) };
+    });
+  }
 
   function sunLatLon() {
     const geo = editing?.geo;
@@ -2569,7 +2621,7 @@ import Layout from '../layouts/Layout.astro';
       z: groundZ, minX: tg.minX, minY: tg.minY, maxX: tg.minX + (tg.nx - 1) * tg.cellM, maxY: tg.minY + (tg.ny - 1) * tg.cellM,
       maxZ: terrainMaxZ!.z, stepM: Math.max(1, tg.cellM),
     } : null;
-    const occluders = [...planOccluders(editing!, plantsById, editing!.yearsSincePlanting, groundZ), ...buildingOccluders];
+    const occluders = [...planOccluders(editing!, plantsById, editing!.yearsSincePlanting, groundZ), ...buildingOccluders(groundZ)];
     return { scene: { occluders, groundZ, terrain: tr } };
   }
 
@@ -2625,7 +2677,7 @@ import Layout from '../layouts/Layout.astro';
       <span class="mt-0.5 block h-1.5 rounded bg-stone-200 dark:bg-stone-700"><span class="block h-1.5 rounded" style="width:${Math.round(share(cls) * 100)}%;background:${color}"></span></span></div>`;
     const considered = [t('sunMapConsidered', { years: plan.yearsSincePlanting })];
     if (terrain) considered.push(t('sunMapTerrain'));
-    if (buildingOccluders.length) considered.push(t('sunMapBuildings'));
+    if (showBuildings()) considered.push(t('sunMapBuildings'));
     coverageBody.innerHTML = `
       <p class="text-stone-600 dark:text-stone-300">${escapeHtml(t('sunMapMean', { h: fmtH(mean), when }))}</p>
       ${bar('full', 'sunFull', sunColor(Math.max(6, maxH * 0.9), maxH))}${bar('mid', 'sunMid', sunColor(4.5, maxH))}${bar('shadow', 'sunShadow', sunColor(1.5, maxH))}
@@ -2658,7 +2710,7 @@ import Layout from '../layouts/Layout.astro';
     };
     const crowd = crowdingWarnings(plan, plantsById);
     const { scene } = sunContext();
-    const grown = { ...scene, occluders: [...grownOccluders(plan, plantsById, scene.groundZ), ...buildingOccluders] };
+    const grown = { ...scene, occluders: [...grownOccluders(plan, plantsById, scene.groundZ), ...buildingOccluders(scene.groundZ)] };
     const shade = shadeWarnings(plan, plantsById, grown, seasonSamples());
     const fmt1 = (v: number) => new Intl.NumberFormat(lang, { maximumFractionDigits: 1 }).format(v);
     const items = [

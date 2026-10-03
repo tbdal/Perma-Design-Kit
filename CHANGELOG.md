@@ -2,6 +2,10 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Gartenplan: Gebäude aus OpenStreetMap (2026-10-04)
+- [x] **Gebäude** im Umkreis von ~150 m aus OpenStreetMap (Overpass API): in 3D als Baukörper auf dem Gelände mit Schattenwurf, und als Schattenwerfer in Besonnungskarte und Licht-Hinweisen. Höhe aus `height`/Geschosszahl, sonst nach Gebäudetyp geschätzt. Schalter „Gebäude“ in der Kartenleiste (bei Plänen mit Standort); Quellenvermerk „Gebäude: © OpenStreetMap“, Datenschutz ergänzt.
+- [x] Höhenraster reicht jetzt ≥ 160 m um den Garten, damit Gebäude und Umfeld auf demselben Gelände stehen.
+
 ## Gartenplan: Hinweise zu Abstand und Licht, Messwerkzeug; Navigation per Tastatur (2026-10-04)
 - [x] **Hinweise** in der Seitenleiste, mit Blick auf die ausgewachsenen Pflanzen (30 Jahre): zu eng stehende Pflanzen derselben Schicht (Baum/Baum, Strauch/Strauch … — Unterpflanzung in Gilden ist gewollt und wird nicht gemeldet) und Pflanzen, deren Lichtbedarf nicht gedeckt wird (Sonne < 6 h, Halbschatten < 3 h; Schatten durch Kronen, Gelände, später Gebäude). Betroffene Pflanzen rot gestrichelt umrandet; Klick auf einen Hinweis markiert sie.
 - [x] **Messwerkzeug** (📏 bzw. Taste **M**): Punkte setzen zeigt die Länge jedes Abschnitts und gesamt; Klick auf den ersten Punkt oder Enter schließt die Fläche (Fläche + Umfang). ⌫ entfernt den letzten Punkt, Esc löscht.
