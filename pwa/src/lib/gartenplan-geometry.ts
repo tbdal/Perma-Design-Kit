@@ -21,3 +21,17 @@ export function pointInPolygon(pt: GardenPlanPoint, poly: GardenPlanPoint[]): bo
   }
   return inside;
 }
+
+/** Polygon area in m² (shoelace formula; vertex order doesn't matter). */
+export function polygonAreaM2(pts: GardenPlanPoint[]): number {
+  let a = 0;
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) a += pts[j].xM * pts[i].yM - pts[i].xM * pts[j].yM;
+  return Math.abs(a) / 2;
+}
+
+/** Closed polygon perimeter in m. */
+export function polygonPerimeterM(pts: GardenPlanPoint[]): number {
+  let s = 0;
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) s += Math.hypot(pts[i].xM - pts[j].xM, pts[i].yM - pts[j].yM);
+  return s;
+}

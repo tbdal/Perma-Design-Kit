@@ -283,7 +283,7 @@ import Layout from '../layouts/Layout.astro';
   import { displayRadiusM } from '../lib/growth-model';
   import { deriveLayer, LAYER_STYLE, type PlantLayer } from '../lib/plant-layer';
   import { blobPathD } from '../lib/blob-shape';
-  import { pointInPolygon, formatMeters } from '../lib/gartenplan-geometry';
+  import { pointInPolygon, formatMeters, polygonAreaM2, polygonPerimeterM } from '../lib/gartenplan-geometry';
   import { areasSvg, AREA_PALETTE, uiScale } from '../lib/gartenplan-render';
   import { planFromLatLngPolygon, planToLatLon } from '../lib/gartenplan-geo';
   import type { MapDrawer } from '../lib/gartenplan-mapdraw';
@@ -876,6 +876,7 @@ import Layout from '../layouts/Layout.astro';
         afterGeometryEdit();
       },
       onPlacementSelected(placementId) {
+        if (selectedAreaId) { selectedAreaId = null; markSelectedArea(); }
         selectedPlacementId = placementId;
         view3d?.setSelectedPlacement(placementId);
         renderSelectedPanel();
@@ -1046,6 +1047,7 @@ import Layout from '../layouts/Layout.astro';
   }
 
   function renderSelectedPanel() {
+    if (editing && (selectedAreaId || editBoundary)) { renderSelectedShapePanel(); return; }
     if (!editing || !selectedPlacementId) {
       selectedPanel.innerHTML = `<p class="text-xs text-stone-500 dark:text-stone-400">${t('selectedPanelEmpty')}</p>`;
       return;
@@ -1078,6 +1080,35 @@ import Layout from '../layouts/Layout.astro';
     });
   }
 
+  /** "Ausgewählt" for a selected area or the garden outline being edited:
+   *  name/color, size, perimeter, corners. */
+  function renderSelectedShapePanel() {
+    if (!editing) return;
+    const area = editing.areas.find(a => a.id === selectedAreaId);
+    const pts = area ? area.points : editing.boundary;
+    const fmt = (v: number, d = 1) => new Intl.NumberFormat(lang, { maximumFractionDigits: d }).format(v);
+    const title = area
+      ? `<span class="inline-block h-3.5 w-3.5 shrink-0 rounded-sm ring-1 ring-black/10" style="background:${area.color}"></span><span class="truncate">${escapeHtml(area.name || '—')}</span>`
+      : `<span class="inline-block h-3.5 w-3.5 shrink-0 rounded-sm ring-1 ring-black/10" style="background:#15803d"></span><span>${t('selBoundaryTitle')}</span>`;
+    selectedPanel.innerHTML = `
+      <p class="mb-2 flex items-center gap-2 text-sm font-medium text-stone-800 dark:text-stone-100">${title}</p>
+      <dl class="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+        <dt class="text-stone-500 dark:text-stone-400">${t('selArea')}</dt><dd class="font-mono text-stone-800 dark:text-stone-100">${fmt(polygonAreaM2(pts))} m²</dd>
+        <dt class="text-stone-500 dark:text-stone-400">${t('selPerimeter')}</dt><dd class="font-mono text-stone-800 dark:text-stone-100">${fmt(polygonPerimeterM(pts))} m</dd>
+        <dt class="text-stone-500 dark:text-stone-400">${t('selCorners')}</dt><dd class="font-mono text-stone-800 dark:text-stone-100">${pts.length}</dd>
+        ${area ? '' : `<dt class="text-stone-500 dark:text-stone-400">${t('selPlanSize')}</dt><dd class="font-mono text-stone-800 dark:text-stone-100">${fmt(editing.areaWidthM)} × ${fmt(editing.areaHeightM)} m</dd>`}
+      </dl>
+      <p class="mt-2 text-[11px] text-stone-500 dark:text-stone-400">${t(area ? 'areaEditHint' : 'boundaryEditHint')}</p>
+      ${area ? `<button id="btn-remove-area" class="mt-2 rounded-md bg-red-100 dark:bg-red-900/40 px-2.5 py-1 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/60">${t('areaDelete')}</button>` : ''}`;
+    document.getElementById('btn-remove-area')?.addEventListener('click', () => {
+      if (!editing || !area || !confirm(t('confirmDeleteArea', { name: area.name || '—' }))) return;
+      editing.areas = editing.areas.filter(x => x.id !== area.id);
+      selectedAreaId = null;
+      renderAreasList();
+      scheduleAutosave();
+    });
+  }
+
   // ── Plan SVG: grid + boundary + plant markers ───────────────────────────
   // Each placement renders as a <g transform="translate(x,y)"> containing a
   // wobbly "blob" outline (blob-shape.ts — deterministic per placement id,
@@ -1095,23 +1126,27 @@ import Layout from '../layouts/Layout.astro';
     blob.setAttribute('d', blobPathD(radiusU, placement.id, style.lobes, style.wobble));
     blob.setAttribute('fill', style.fill);
     blob.setAttribute('stroke', selected ? '#facc15' : style.stroke);
-    const k = uiScale(editing!.areaWidthM);
+    const k = viewK();
     blob.setAttribute('stroke-width', String((selected ? 3 : 2) * k));
+    group.querySelector('.marker-dot')?.setAttribute('r', String(3 * k));
     const label = group.querySelector('.marker-label') as SVGTextElement;
     label.setAttribute('y', String(radiusU + 14 * k));
+    label.setAttribute('font-size', String(13 * k));
+    label.setAttribute('stroke-width', String(3 * k));
     label.textContent = p ? (displayName(p)) : '?';
   }
 
   function renderPlanSvg() {
     if (!editing) return;
     scheduleAutosave();
-    const w = editing.areaWidthM, h = editing.areaHeightM, k = uiScale(w);
+    if (!planView.w) resetPlanViewState();
+    const w = editing.areaWidthM, h = editing.areaHeightM, k = viewK();
     const pointsAttr = editing.boundary.map(p => `${p.xM * SVG_UNITS_PER_METER},${p.yM * SVG_UNITS_PER_METER}`).join(' ');
     if (!planView.w) resetPlanViewState();
     planSvg.setAttribute('viewBox', `${planView.x} ${planView.y} ${planView.w} ${planView.h}`);
     planSvg.innerHTML = `
       <g class="basemap-layer"></g>
-      ${gridDefsAndBackground(w, h, editing.gridSpacingM, 'plan-grid', k)}
+      <g id="plan-grid-layer">${gridDefsAndBackground(w, h, editing.gridSpacingM, 'plan-grid', k)}</g>
       <polygon id="plan-boundary" points="${pointsAttr}" fill="#15803d" fill-opacity="0.08" stroke="#15803d" stroke-width="${2 * k}"/>
       <g id="plan-areas-layer">${areasSvg(editing.areas, selectedAreaId, k, true)}</g>
       <g id="plan-markers"></g>
@@ -1133,6 +1168,7 @@ import Layout from '../layouts/Layout.astro';
       blob.setAttribute('fill-opacity', '0.6');
       group.appendChild(blob);
       const dot = document.createElementNS(SVG_NS, 'circle');
+      dot.setAttribute('class', 'marker-dot');
       dot.setAttribute('r', String(3 * k));
       dot.setAttribute('fill', '#1c1917');
       dot.style.pointerEvents = 'none';
@@ -1182,6 +1218,8 @@ import Layout from '../layouts/Layout.astro';
         afterGeometryEdit();
       } else {
         selectedPlacementId = placement.id;
+        setBoundaryEdit(false);
+        if (selectedAreaId) { selectedAreaId = null; markSelectedArea(); }
         renderPlanSvg();
         renderSelectedPanel();
       }
@@ -1222,7 +1260,7 @@ import Layout from '../layouts/Layout.astro';
 
   function renderAreasLayer() {
     const layer = planSvg.querySelector('#plan-areas-layer');
-    if (layer && editing) layer.innerHTML = areasSvg(editing.areas, selectedAreaId, uiScale(editing.areaWidthM), true);
+    if (layer && editing) layer.innerHTML = areasSvg(editing.areas, selectedAreaId, viewK(), true);
     const boundaryEl = planSvg.querySelector('#plan-boundary');
     if (boundaryEl && editing) boundaryEl.setAttribute('points', editing.boundary.map(p => `${p.xM * SVG_UNITS_PER_METER},${p.yM * SVG_UNITS_PER_METER}`).join(' '));
     renderAreaHandles();
@@ -1246,14 +1284,15 @@ import Layout from '../layouts/Layout.astro';
     if (!g) return;
     const area = editTarget();
     if (!editing || !area || areaDraft) { g.innerHTML = ''; return; }
-    const u = SVG_UNITS_PER_METER, k = uiScale(editing.areaWidthM);
+    const u = SVG_UNITS_PER_METER, k = viewK();
     const n = area.points.length;
     const mids = area.points.map((p, i) => {
       const q = area.points[(i + 1) % n];
-      return `<g class="area-mid" data-i="${i}" style="cursor:copy"><circle cx="${(p.xM + q.xM) / 2 * u}" cy="${(p.yM + q.yM) / 2 * u}" r="${5 * k}" fill="#ffffff" fill-opacity="0.85" stroke="${area.color}" stroke-width="${1.5 * k}"/><text x="${(p.xM + q.xM) / 2 * u}" y="${(p.yM + q.yM) / 2 * u}" text-anchor="middle" dominant-baseline="central" font-size="${8 * k}" fill="${area.color}" pointer-events="none">+</text></g>`;
+      const mx = (p.xM + q.xM) / 2 * u, my = (p.yM + q.yM) / 2 * u;
+      return `<g class="area-mid" data-i="${i}" style="cursor:copy"><circle cx="${mx}" cy="${my}" r="${7 * k}" fill="transparent"/><circle cx="${mx}" cy="${my}" r="${2.5 * k}" fill="${area.color}" fill-opacity="0.55" stroke="#ffffff" stroke-width="${0.8 * k}"/></g>`;
     }).join('');
     const verts = area.points.map((p, i) =>
-      `<circle class="area-vertex" data-i="${i}" cx="${p.xM * u}" cy="${p.yM * u}" r="${7 * k}" fill="#ffffff" stroke="${area.color}" stroke-width="${3 * k}" style="cursor:move"/>`).join('');
+      `<g class="area-vertex" data-i="${i}" style="cursor:move"><circle cx="${p.xM * u}" cy="${p.yM * u}" r="${9 * k}" fill="transparent"/><circle cx="${p.xM * u}" cy="${p.yM * u}" r="${3.5 * k}" fill="#ffffff" stroke="${area.color}" stroke-width="${1.5 * k}"/></g>`).join('');
     g.innerHTML = mids + verts;
   }
 
@@ -1300,6 +1339,7 @@ import Layout from '../layouts/Layout.astro';
     // Not clamped: dragging past the edge grows the plan on release.
     vertexDrag.area.points[vertexDrag.index] = snapIfClose(planSvg, clientToMeters(planSvg, e.clientX, e.clientY), editing.gridSpacingM);
     renderAreasLayer();
+    renderSelectedPanel();
   });
 
   function endVertexDrag(e: PointerEvent) {
@@ -1331,6 +1371,30 @@ import Layout from '../layouts/Layout.astro';
     planSvg.setAttribute('viewBox', `${planView.x} ${planView.y} ${planView.w} ${planView.h}`);
     if (basemapViewTimer) clearTimeout(basemapViewTimer);
     basemapViewTimer = setTimeout(() => renderBasemap(planSvg), 120);
+    if (!rescaleQueued) { rescaleQueued = true; requestAnimationFrame(rescaleUi); }
+  }
+
+  /** Scale for labels, strokes and handles: tied to the *visible* width, so
+   *  text stays ~13 px on screen at any zoom (PDF export uses uiScale()). */
+  function viewK(): number {
+    if (planView.w) return planView.w / U / 7;
+    return editing ? uiScale(editing.areaWidthM) : 1;
+  }
+
+  let rescaleQueued = false;
+  function rescaleUi() {
+    rescaleQueued = false;
+    if (!editing) return;
+    const k = viewK();
+    const grid = planSvg.querySelector('#plan-grid-layer');
+    if (grid) grid.innerHTML = gridDefsAndBackground(editing.areaWidthM, editing.areaHeightM, editing.gridSpacingM, 'plan-grid', k);
+    planSvg.querySelector('#plan-boundary')?.setAttribute('stroke-width', String(2 * k));
+    for (const pl of editing.placements) {
+      const g = markerMap.get(pl.id);
+      if (g) updateMarkerShape(g, pl, plantsById.get(pl.plantId));
+    }
+    renderAreasLayer();
+    renderAreaDraft();
   }
   /** `base` zoomed by `factor` (>1 = in) around the SVG point cx/cy. */
   function zoomedView(base: typeof planView, factor: number, cx: number, cy: number): typeof planView {
@@ -1422,6 +1486,7 @@ import Layout from '../layouts/Layout.astro';
     boundaryEditBar.classList.toggle('hidden', !on);
     if (on && selectedAreaId) { selectedAreaId = null; markSelectedArea(); }
     renderAreaHandles();
+    renderSelectedPanel();
   }
   btnEditBoundary.addEventListener('click', () => {
     if (!plan3dContainer.hidden) btnView2d.click();
@@ -1454,7 +1519,7 @@ import Layout from '../layouts/Layout.astro';
     const g = planSvg.querySelector('#area-draft');
     if (!g) return;
     if (!areaDraft || !editing) { g.innerHTML = ''; return; }
-    const u = SVG_UNITS_PER_METER, k = uiScale(editing.areaWidthM);
+    const u = SVG_UNITS_PER_METER, k = viewK();
     const color = AREA_PALETTE[editing.areas.length % AREA_PALETTE.length];
     const pts = areaDraft.map(p => `${p.xM * u},${p.yM * u}`).join(' ');
     g.innerHTML = `
@@ -1470,7 +1535,13 @@ import Layout from '../layouts/Layout.astro';
       ['bg-white', 'dark:bg-stone-800', 'ring-1', 'ring-green-500'].forEach(c => li.classList.toggle(c, on));
     });
     areaEditHint.hidden = !editing?.areas.some(a => a.id === selectedAreaId);
+    if (selectedAreaId && selectedPlacementId) {
+      selectedPlacementId = null;
+      for (const pl of editing?.placements ?? []) { const g = markerMap.get(pl.id); if (g) updateMarkerShape(g, pl, plantsById.get(pl.plantId)); }
+      view3d?.setSelectedPlacement(null);
+    }
     renderAreasLayer();
+    renderSelectedPanel();
   }
 
   function renderAreasList() {
