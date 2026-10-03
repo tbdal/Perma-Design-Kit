@@ -1,0 +1,96 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="Perma Design Kit — Geteiltes Projekt">
+  <article class="mx-auto max-w-3xl space-y-4 text-stone-800 dark:text-stone-100">
+    <h1 class="text-2xl font-bold" data-i18n="shTitle">Geteiltes Projekt</h1>
+    <p id="sh-status" class="text-sm text-stone-600 dark:text-stone-300" data-i18n="shLoading">Link wird gelesen…</p>
+
+    <section id="sh-content" hidden class="space-y-4 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+      <p id="sh-summary" class="text-base font-semibold"></p>
+      <div id="sh-lists" class="grid gap-4 text-sm sm:grid-cols-3"></div>
+      <p class="text-xs text-stone-500 dark:text-stone-400" data-i18n="shPrivacy">Die Daten werden nur in deinem Browser gespeichert, wie alles in dieser App.</p>
+      <div class="flex flex-wrap gap-2">
+        <button id="sh-import" type="button" data-i18n="shImport" class="rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white shadow hover:bg-green-800">In meine App übernehmen</button>
+        <a href="/" data-i18n="shCancel" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-4 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Abbrechen</a>
+      </div>
+    </section>
+
+    <section id="sh-done" hidden class="space-y-3 rounded-xl bg-green-50 dark:bg-green-900/30 p-5 ring-1 ring-green-200 dark:ring-green-800">
+      <p id="sh-done-text" role="status" class="text-sm"></p>
+      <div class="flex flex-wrap gap-2">
+        <a href="/" data-i18n="shToPlants" class="rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white shadow hover:bg-green-800">Zu den Pflanzen</a>
+        <a id="sh-to-plans" href="/gartenplan" data-i18n="shToPlans" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-4 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Zu den Gartenplänen</a>
+      </div>
+    </section>
+  </article>
+
+  <script>
+    // Receiving end of "Projekt als Link teilen" (src/lib/share.ts): decode the
+    // #fragment, show what's inside, import on request. The fragment is
+    // removed after importing so a reload can't import twice.
+    import { applyStaticI18n, createT } from '../lib/i18n/core';
+    import { teilenDict } from '../lib/i18n/dict-teilen';
+    import { decodeShare, mergeShared, shareDataFromHash } from '../lib/share';
+    import { getAllPlants, importPlants, importPolycultures, importGardenPlans } from '../lib/db';
+    import { escapeHtml, withButtonSpinner } from '../lib/html';
+    import { displayName } from '../lib/plant-name';
+    import type { ParsedBackup } from '../lib/sync';
+
+    applyStaticI18n(teilenDict);
+    const t = createT(teilenDict);
+    const status = document.getElementById('sh-status')!;
+    const content = document.getElementById('sh-content')!;
+    const LIST_MAX = 25;
+
+    function listHtml(title: string, names: string[]): string {
+      if (names.length === 0) return '';
+      const shown = names.slice(0, LIST_MAX).map(n => `<li class="truncate">${escapeHtml(n)}</li>`).join('');
+      const more = names.length > LIST_MAX ? `<li class="text-stone-500 dark:text-stone-400">${t('shMore', { n: names.length - LIST_MAX })}</li>` : '';
+      return `<div><h2 class="mb-1 font-semibold">${title}</h2><ul class="space-y-0.5 text-stone-700 dark:text-stone-200">${shown}${more}</ul></div>`;
+    }
+
+    async function main() {
+      const data = shareDataFromHash(location.hash);
+      if (!data) { status.textContent = t('shNoLink'); return; }
+      let shared: ParsedBackup;
+      try {
+        shared = await decodeShare(data);
+      } catch {
+        status.textContent = t('shBroken');
+        return;
+      }
+      status.hidden = true;
+      content.hidden = false;
+      document.getElementById('sh-summary')!.textContent = t('shSummary', {
+        plants: shared.plants.length, polycultures: shared.polycultures.length, plans: shared.gardenPlans.length,
+      });
+      document.getElementById('sh-lists')!.innerHTML =
+        listHtml(t('shPlants'), shared.plants.map(p => displayName(p) || p.latinName)) +
+        listHtml(t('shPolycultures'), shared.polycultures.map(p => p.name || '—')) +
+        listHtml(t('shGardenPlans'), shared.gardenPlans.map(g => g.name || '—'));
+
+      document.getElementById('sh-import')!.addEventListener('click', async (e) => {
+        await withButtonSpinner(e.currentTarget as HTMLButtonElement, async () => {
+          try {
+            const merged = mergeShared(shared, await getAllPlants());
+            await importPlants(merged.plants);
+            if (merged.polycultures.length) await importPolycultures(merged.polycultures);
+            if (merged.gardenPlans.length) await importGardenPlans(merged.gardenPlans);
+            history.replaceState(null, '', location.pathname);
+            content.hidden = true;
+            document.getElementById('sh-done')!.hidden = false;
+            document.getElementById('sh-to-plans')!.hidden = merged.gardenPlans.length === 0;
+            document.getElementById('sh-done-text')!.textContent = t('shDone', {
+              plants: merged.plants.length, reused: merged.reusedPlants,
+              polycultures: merged.polycultures.length, plans: merged.gardenPlans.length,
+            });
+          } catch (err) {
+            alert(t('shFailed', { msg: err instanceof Error ? err.message : String(err) }));
+          }
+        });
+      });
+    }
+    main();
+  </script>
+</Layout>

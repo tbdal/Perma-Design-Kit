@@ -6,7 +6,10 @@ import Layout from '../layouts/Layout.astro';
   <section id="polyculture-list-view">
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
       <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-100" data-i18n="pageTitle">Polykulturen</h1>
-      <button id="btn-new-polyculture" data-i18n="btnNewGuild" class="rounded-lg bg-green-700 px-3.5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">+ Neue Polykultur</button>
+      <div class="flex flex-wrap items-center gap-2">
+        <select id="from-group" hidden data-i18n-aria-label="fromGroupLabel" aria-label="Polykultur aus einer Pflanzengruppe anlegen" class="rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-2 text-sm text-stone-700 dark:text-stone-200"></select>
+        <button id="btn-new-polyculture" data-i18n="btnNewGuild" class="rounded-lg bg-green-700 px-3.5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">+ Neue Polykultur</button>
+      </div>
     </div>
     <p class="mb-4 text-sm text-stone-500 dark:text-stone-400">
       <span data-i18n="introText">Eine Polykultur ist eine benannte Gruppe von Pflanzen rund um eine Ankerart, die sich
@@ -84,6 +87,7 @@ import Layout from '../layouts/Layout.astro';
   } from '../lib/types';
   import { escapeHtml } from '../lib/html';
   import { compatScore } from '../lib/compat';
+  import { polycultureFromGroup, allGroups } from '../lib/polyculture-from-group';
   import { createT, applyStaticI18n } from '../lib/i18n/core';
   import { polyculturesDict } from '../lib/i18n/dict-polykulturen';
 
@@ -359,7 +363,30 @@ import Layout from '../layouts/Layout.astro';
     plantsById = new Map(plants.map(p => [p.id, p]));
     polycultures = await getAllPolycultures();
     renderList();
+    renderGroupSelect();
   }
+
+  // ── Gruppe als Polykultur ──────────────────────────────────────────────
+  // Plant groups (set on the plant page) can be turned into a polyculture
+  // draft in one step; see polyculture-from-group.ts for anchor/role rules.
+  const fromGroup = document.getElementById('from-group') as HTMLSelectElement;
+  function renderGroupSelect() {
+    const groups = allGroups(plants);
+    fromGroup.hidden = groups.length === 0;
+    fromGroup.innerHTML = `<option value="">${escapeHtml(t('fromGroupPlaceholder'))}</option>`
+      + groups.map(g => `<option value="${escapeHtml(g)}">${escapeHtml(g)}</option>`).join('');
+  }
+  fromGroup.addEventListener('change', async () => {
+    const group = fromGroup.value;
+    fromGroup.value = '';
+    if (!group) return;
+    const pc = polycultureFromGroup(group, plants);
+    await savePolyculture(pc);
+    polycultures = await getAllPolycultures();
+    renderList();
+    openEditor(pc.id);
+    showToast(t('toastFromGroup', { name: group, count: pc.members.length + (pc.anchorPlantId ? 1 : 0) }));
+  });
 
   // Latin-name → existing plant, case-insensitive (used to skip curated items
   // already in bestand).

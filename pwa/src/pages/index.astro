@@ -569,6 +569,13 @@ import Layout from '../layouts/Layout.astro';
     });
   }
 
+  // Live source chips: as soon as a field differs from what was loaded, its
+  // chip switches to "M" (manual) — and back if the change is undone. Uses the
+  // same rule readForm() applies on save, so what you see is what gets stored.
+  document.getElementById('plant-form')!.addEventListener('input', () => {
+    updateFormBadges({ ...(editingPlant ?? createEmptyPlant()), _sources: readForm()._sources });
+  });
+
   // Outline-only source badge (hollow = provenance, not usage)
   const SOURCE_OUTLINE: Record<DataSource, string> = {
     wikidata: 'border-blue-300 text-blue-500',

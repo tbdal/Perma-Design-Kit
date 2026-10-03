@@ -125,6 +125,7 @@ import Layout from '../layouts/Layout.astro';
 
     <div class="mt-4 flex flex-wrap gap-2">
       <button id="btn-backup" data-i18n="btnBackupDownload" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Backup herunterladen (JSON)</button>
+      <button id="btn-share-link" type="button" data-i18n="btnShareLink" class="rounded-lg bg-green-700 px-3 py-1.5 text-sm font-medium text-white shadow hover:bg-green-800">🔗 Projekt als Link teilen…</button>
       <button id="btn-share-backup" hidden data-i18n="btnShareBackup" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Backup teilen…</button>
       <label class="cursor-pointer rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">
         <span data-i18n="btnRestoreLabel">Backup einlesen…</span>
@@ -238,6 +239,32 @@ import Layout from '../layouts/Layout.astro';
   </section>
 
   <div id="toast" class="fixed bottom-6 right-6 hidden rounded-lg bg-green-700 px-4 py-2.5 text-sm font-medium text-white shadow-lg transition"></div>
+
+  <!-- Projekt als Link teilen (src/lib/share.ts) -->
+  <dialog id="share-dialog" aria-labelledby="share-title" class="m-auto w-[min(36rem,calc(100vw-2rem))] rounded-xl bg-white dark:bg-stone-800 p-0 text-stone-800 dark:text-stone-100 shadow-2xl backdrop:bg-black/50">
+    <div class="space-y-3 p-5">
+      <h2 id="share-title" class="text-base font-semibold" data-i18n="shareTitle">Projekt als Link teilen</h2>
+      <p class="text-xs text-stone-600 dark:text-stone-300" data-i18n="shareIntro">Pflanzen, Polykulturen und Gartenpläne werden komprimiert in den Link gepackt. Es wird nichts auf einem Server gespeichert. Wer den Link hat, kann das Projekt in die eigene App übernehmen.</p>
+      <fieldset class="space-y-1.5 text-sm">
+        <label class="flex items-center gap-2"><input id="share-polycultures" type="checkbox" checked class="accent-green-600" /> <span data-i18n="shareIncludePolycultures">Polykulturen mitteilen</span></label>
+        <label class="flex items-center gap-2"><input id="share-gardenplans" type="checkbox" checked class="accent-green-600" /> <span data-i18n="shareIncludeGardenPlans">Gartenpläne mitteilen</span></label>
+        <label class="flex items-center gap-2"><input id="share-notes" type="checkbox" checked class="accent-green-600" /> <span data-i18n="shareIncludeNotes">Notizen mitteilen</span></label>
+        <label class="flex items-start gap-2"><input id="share-location" type="checkbox" class="mt-1 accent-green-600" /> <span><span data-i18n="shareIncludeLocation">Standort der Gartenpläne mitteilen</span><br /><span class="text-xs text-stone-500 dark:text-stone-400" data-i18n="shareLocationHint">Zeigt, wo dein Garten liegt – oft deine Adresse. Ohne Standort kommen die Pläne ohne Kartenhintergrund an.</span></span></label>
+      </fieldset>
+      <div id="share-result" hidden class="space-y-2">
+        <textarea id="share-url" readonly rows="3" data-i18n-aria-label="shareTitle" aria-label="Projekt als Link teilen" class="block w-full resize-none break-all rounded-md border border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-900 px-2.5 py-1.5 font-mono text-[11px]"></textarea>
+        <p id="share-size" class="text-xs text-stone-500 dark:text-stone-400"></p>
+        <div class="flex flex-wrap gap-2">
+          <button id="share-copy" type="button" data-i18n="shareCopy" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Link kopieren</button>
+          <button id="share-native" type="button" hidden data-i18n="shareNative" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Teilen…</button>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 pt-1">
+        <button id="share-close" type="button" data-i18n="shareClose" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Schließen</button>
+        <button id="share-create" type="button" data-i18n="shareCreate" class="rounded-lg bg-green-700 px-4 py-1.5 text-sm font-medium text-white shadow hover:bg-green-800">Link erstellen</button>
+      </div>
+    </div>
+  </dialog>
 </Layout>
 
 <script>
@@ -250,7 +277,7 @@ import Layout from '../layouts/Layout.astro';
   } from '../lib/settings';
   import { getAllPlants, importPlants, clearAllPlants, importPolycultures, importGardenPlans } from '../lib/db';
   import { buildBackupJson, parseBackup, rememberSyncAt, isAutoSyncEnabled, GIST_FILENAME, GIST_FILENAME_LEGACY } from '../lib/sync';
-  import { escapeHtml } from '../lib/html';
+  import { escapeHtml, withButtonSpinner } from '../lib/html';
   import { createT, applyStaticI18n, getLang } from '../lib/i18n/core';
   import { settingsDict } from '../lib/i18n/dict-settings';
 
@@ -476,6 +503,50 @@ import Layout from '../layouts/Layout.astro';
     downloadBackupBlob(blob, filename);
     rememberSyncAt('manual');
     renderLastBackup();
+  });
+
+  // ── Projekt als Link teilen ─────────────────────────────────────────────
+  // Data goes into the link's #fragment (src/lib/share.ts), never to a server.
+  // Very long links may be cut off by messengers, hence the size hint.
+  const SHARE_LONG_LINK = 8000;
+  const shareDialog = document.getElementById('share-dialog') as HTMLDialogElement;
+  const shareUrlEl = document.getElementById('share-url') as HTMLTextAreaElement;
+  const shareResult = document.getElementById('share-result')!;
+  const shareNative = document.getElementById('share-native') as HTMLButtonElement;
+  const shareOpts = ['share-polycultures', 'share-gardenplans', 'share-notes', 'share-location']
+    .map(id => document.getElementById(id) as HTMLInputElement);
+  document.getElementById('btn-share-link')!.addEventListener('click', () => {
+    shareResult.hidden = true;
+    shareDialog.showModal();
+  });
+  shareOpts.forEach(o => o.addEventListener('change', () => { shareResult.hidden = true; }));
+  document.getElementById('share-close')!.addEventListener('click', () => shareDialog.close());
+  document.getElementById('share-create')!.addEventListener('click', async (e) => {
+    await withButtonSpinner(e.currentTarget as HTMLButtonElement, async () => {
+      const [incPoly, incPlans, incNotes, incLoc] = shareOpts.map(o => o.checked);
+      const [{ encodeShare, shareUrl }, { getAllPolycultures, getAllGardenPlans }] = await Promise.all([import('../lib/share'), import('../lib/db')]);
+      const [plants, polycultures, gardenPlans] = await Promise.all([
+        getAllPlants(), incPoly ? getAllPolycultures() : Promise.resolve([]), incPlans ? getAllGardenPlans() : Promise.resolve([]),
+      ]);
+      const data = await encodeShare({ plants, polycultures, gardenPlans }, { includeNotes: incNotes, includeLocation: incLoc });
+      const url = shareUrl(location.origin, data);
+      shareUrlEl.value = url;
+      const kb = new Intl.NumberFormat(getLang(), { maximumFractionDigits: 1 }).format(url.length / 1024);
+      document.getElementById('share-size')!.textContent = url.length > SHARE_LONG_LINK
+        ? t('shareSizeLong', { kb, plants: plants.length })
+        : t('shareSize', { kb, plants: plants.length });
+      shareNative.hidden = !('share' in navigator);
+      shareResult.hidden = false;
+      shareUrlEl.select();
+    });
+  });
+  document.getElementById('share-copy')!.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(shareUrlEl.value); showToast(t('shareCopied')); }
+    catch { shareUrlEl.focus(); shareUrlEl.select(); } // clipboard blocked: leave it selected for Ctrl+C
+  });
+  shareNative.addEventListener('click', async () => {
+    try { await navigator.share({ title: 'Perma Design Kit', url: shareUrlEl.value }); }
+    catch (err) { if ((err as Error).name !== 'AbortError') alert(t('shareFailed', { err: String(err) })); }
   });
 
   const shareBtn = document.getElementById('btn-share-backup') as HTMLButtonElement | null;

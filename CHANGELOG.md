@@ -63,6 +63,14 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
  
 
 
+## Karten — Runde 1b & AP 3 (2026-10-03)
+- [x] **Fläche direkt auf der Karte zeichnen** — beim Anlegen eines Gartenplans wird der Umriss auf einer Karte (Adresssuche, „Mein Standort“, grobe Satellitenebene) angeklickt; Punkte lassen sich verschieben, Klick auf den ersten Punkt schließt die Fläche. Größe, Ursprung und Nord-Ausrichtung ergeben sich daraus (`planFromLatLngPolygon`), Breite/Tiefe muss man nicht mehr eingeben und nichts muss gedreht werden. „Raster (ohne Standort)“ bleibt als Option; der Standort-Dialog mit Drehung bleibt nur für solche Pläne.
+- [x] **Benannte, farbige Flächen** — neues Werkzeug „Fläche einzeichnen“ für Beete, Teich, Wege …; Name und Farbe in der Liste „Flächen“, Löschen per ✕. Erscheinen auch im PDF-Export; Pflanzen lassen sich weiterhin darauf platzieren.
+- [x] **Lesbarkeit großer Pläne** — Beschriftungen, Linien, Punkte und Raster skalieren mit der Planbreite (`uiScale`), sonst wären Namen auf einem 40-m-Plan nur ~2 px groß.
+- [x] **Projekt als Link teilen** (AP 3) — Einstellungen → „Projekt als Link teilen…“: Pflanzen, Polykulturen und Gartenpläne komprimiert im `#`-Teil des Links (nichts auf dem Server). Notizen und Standort der Gartenpläne optional (Standort standardmäßig aus). Die Empfangsseite `/teilen` zeigt den Inhalt und übernimmt ihn auf Klick; vorhandene Pflanzen (gleicher lateinischer Name + Sorte) werden nicht doppelt angelegt, Verweise werden umgebogen (`src/lib/share.ts`).
+- [x] **„M“ für manuell** (AP 3) — im Bearbeiten-Dialog springt das Quellen-Kürzel eines Feldes sofort auf „M“, sobald man es ändert (und zurück, wenn man die Änderung rückgängig macht).
+- [x] **Gruppe als Polykultur** (AP 3) — Polykulturen → „Aus Gruppe anlegen…“: die höchste Pflanze der Gruppe wird Anker, die übrigen bekommen ihre Rolle aus den Pflanzenfunktionen (Stickstoff-Fixierer, Mineraliensammler, Bodendecker …), sonst „Begleiter“.
+
 ## Karten — Runde 1 (2026-10-03)
 - [x] **Mausposition in Metern** — beim Zeichnen und im Plan zeigt ein Label am Mauszeiger `x 3,25 m · y 1,80 m` relativ zu 0,0 (auch beim Ziehen von Pflanzen und per Touch).
 - [x] **Kartenhintergrund unter dem Gartenplan** — „📍 Standort & Ausrichtung…“ öffnet eine Leaflet-Karte (lädt erst beim Öffnen) mit Adresssuche (Nominatim) und „Mein Standort“; Klick setzt die Plan-Ecke 0,0, der gelbe Griff an der Ecke oben rechts bzw. Slider/±1°/±15° drehen den Plan (z. B. entlang eines Zauns). Unter dem Plan liegen OSM-Kacheln, passend gedreht, mit Deckkraft-Regler, Nordpfeil und Attribution. Der Plan selbst bleibt in lokalen Metern — Raster, Zeichnen, Platzieren und 3D unverändert. Neues Feld `GardenPlan.geo` (normalisiert, wandert mit Backup/Sync); Geo-Mathematik in `src/lib/gartenplan-geo.ts` mit Tests.
