@@ -45,7 +45,9 @@ import Layout from '../layouts/Layout.astro';
         <span data-i18n="mapBarOpacity">Deckkraft</span>
         <input id="g-basemap-opacity" type="range" min="0.1" max="1" step="0.05" value="0.6" class="w-24 disabled:opacity-50" />
       </label>
+      <label id="contours-toggle" hidden class="inline-flex items-center gap-1.5"><input id="g-contours" type="checkbox" checked class="accent-amber-700" /> <span data-i18n="mapContours">Höhenlinien</span></label>
       <span id="map-status" class="text-stone-500 dark:text-stone-400"></span>
+      <span id="terrain-info" class="text-stone-600 dark:text-stone-300"></span>
     </div>
 
     <!-- Phase A: Grunddaten + Fläche zeichnen -->
@@ -324,10 +326,11 @@ import Layout from '../layouts/Layout.astro';
   import { areasSvg, AREA_PALETTE, uiScale } from '../lib/gartenplan-render';
   import { planFromLatLngPolygon, planToLatLon } from '../lib/gartenplan-geo';
   import type { MapDrawer } from '../lib/gartenplan-mapdraw';
-  import { basemapSvg, basemapAttribution, hasBasemap } from '../lib/gartenplan-background';
+  import { basemapSvg, basemapAttribution } from '../lib/gartenplan-background';
   import { growPlanToFit } from '../lib/gartenplan-extent';
   import type { PlanRect } from '../lib/gartenplan-geo';
   import { compassLabel, sunPosition } from '../lib/sun-position';
+  import { fetchElevationGrid, slopeInfo, contourSegments, contourInterval, TERRAIN_ATTRIBUTION, type ElevationGrid } from '../lib/terrain';
   import { plantDetailHtml } from '../lib/plant-detail';
   import { compatScore } from '../lib/compat';
   import { newId } from '../lib/id';
@@ -629,8 +632,9 @@ import Layout from '../layouts/Layout.astro';
     const mPerPx = px > 0 ? (view.maxX - view.minX) / px / (window.devicePixelRatio || 1) : 0.02;
     layer.innerHTML = basemapSvg(plan, view, mPerPx);
     const attrib = svg.parentElement!.querySelector<HTMLElement>('.basemap-attrib')!;
-    attrib.innerHTML = basemapAttribution(plan);
-    attrib.classList.toggle('hidden', !hasBasemap(plan));
+    const terrainAttr = isPlan && terrain ? `${TERRAIN_ATTRIBUTION}${terrain.sources.length ? ` (${escapeHtml(terrain.sources.join(', '))})` : ''}` : '';
+    attrib.innerHTML = [basemapAttribution(plan), terrainAttr].filter(Boolean).join(' · ');
+    attrib.classList.toggle('hidden', !attrib.innerHTML);
   }
 
   function refreshBasemaps() {
@@ -668,6 +672,7 @@ import Layout from '../layouts/Layout.astro';
     editing.geo = res.action === 'apply' ? res.geo : null;
     syncMapBar();
     refreshBasemaps();
+    void loadTerrain();
     scheduleAutosave();
   });
 
@@ -958,6 +963,7 @@ import Layout from '../layouts/Layout.astro';
       fit: camera ? null : viewRectM(),
       latLon: geo ? { lat: geo.lat, lon: geo.lon } : DEFAULT_SUN_LATLON,
       rotationDeg: geo?.rotationDeg ?? 0,
+      terrain: geo ? terrain : null,
     });
     view3d.setArmedPlant(armedPlantId);
     view3d.refreshAreas(selectedAreaId);
@@ -1076,6 +1082,7 @@ import Layout from '../layouts/Layout.astro';
     renderSelectedPanel();
     renderPlanSvg();
     if (savedView?.mode === '3d' && plan3dContainer.hidden) btnView3d.click();
+    void loadTerrain();
   }
 
   // ── Kamera merken ───────────────────────────────────────────────────────
@@ -1365,6 +1372,7 @@ import Layout from '../layouts/Layout.astro';
     planSvg.setAttribute('viewBox', `${planView.x} ${planView.y} ${planView.w} ${planView.h}`);
     planSvg.innerHTML = `
       <g class="basemap-layer"></g>
+      <g id="contour-layer" pointer-events="none"></g>
       <g id="plan-grid-layer">${gridDefsAndBackground(w, h, editing.gridSpacingM, 'plan-grid', k, pxPerUnit() * U)}</g>
       <polygon id="plan-boundary" points="${pointsAttr}" fill="#15803d" fill-opacity="0.08" stroke="#15803d" stroke-width="${2 * k}"/>
       <g id="plan-areas-layer">${areasSvg(editing.areas, selectedAreaId, k, true)}</g>
@@ -1374,6 +1382,7 @@ import Layout from '../layouts/Layout.astro';
       <g id="row-draft" pointer-events="none"></g>
       <g id="lasso-layer" pointer-events="none"></g>`;
     renderBasemap(planSvg);
+    renderContours();
     renderAreaDraft();
     renderRowDraft();
     renderAreaHandles();
@@ -1639,6 +1648,7 @@ import Layout from '../layouts/Layout.astro';
     renderAreasLayer();
     renderAreaDraft();
     renderRowDraft();
+    renderContours();
   }
   /** `base` zoomed by `factor` (>1 = in) around the SVG point cx/cy. */
   function zoomedView(base: typeof planView, factor: number, cx: number, cy: number): typeof planView {
@@ -1760,6 +1770,7 @@ import Layout from '../layouts/Layout.astro';
       planView.h = planView.w * editing.areaHeightM / editing.areaWidthM;
       renderPlanSvg();
       if (!plan3dContainer.hidden) btnView3d.click();
+      void loadTerrain();
       showToast(t('toastPlanGrown', { w: editing.areaWidthM, h: editing.areaHeightM, w0, h0 }));
     }
     scheduleAutosave();
@@ -2124,6 +2135,79 @@ import Layout from '../layouts/Layout.astro';
     }
     if (handled) e.preventDefault();
   });
+
+  // ── Gelände (Höhendaten) ───────────────────────────────────────────────
+  // Loaded once per plan location/size from the open Terrain Tiles; drives
+  // the 3D ground, the 2D contour lines and the slope read-out.
+  let terrain: ElevationGrid | null = null;
+  let terrainKey = '';
+  const contoursToggle = document.getElementById('contours-toggle')!;
+  const contoursInput = document.getElementById('g-contours') as HTMLInputElement;
+  const terrainInfo = document.getElementById('terrain-info')!;
+  try { contoursInput.checked = localStorage.getItem('pgd-contours') !== '0'; } catch {}
+  contoursInput.addEventListener('change', () => {
+    try { localStorage.setItem('pgd-contours', contoursInput.checked ? '1' : '0'); } catch {}
+    renderContours();
+  });
+
+  async function loadTerrain() {
+    const plan = editing;
+    const geo = plan?.geo;
+    if (!plan || !geo) { terrain = null; terrainKey = ''; contoursToggle.hidden = true; terrainInfo.textContent = ''; renderContours(); return; }
+    const key = `${plan.id}|${geo.lat}|${geo.lon}|${geo.rotationDeg}|${plan.areaWidthM}|${plan.areaHeightM}`;
+    if (key === terrainKey) return;
+    terrainKey = key;
+    terrainInfo.textContent = t('terrainLoading');
+    const maxDim = Math.max(plan.areaWidthM, plan.areaHeightM);
+    const m = Math.max(20, maxDim);
+    try {
+      const grid = await fetchElevationGrid(geo, { minX: -m, minY: -m, maxX: plan.areaWidthM + m, maxY: plan.areaHeightM + m }, Math.min(4, Math.max(1, maxDim / 50)));
+      if (terrainKey !== key || editing !== plan) return; // plan changed meanwhile
+      terrain = grid;
+    } catch {
+      if (terrainKey !== key) return;
+      terrain = null;
+      terrainInfo.textContent = t('terrainUnavailable');
+      contoursToggle.hidden = true;
+      return;
+    }
+    contoursToggle.hidden = false;
+    updateTerrainInfo();
+    renderContours();
+    renderBasemap(planSvg);
+    if (!plan3dContainer.hidden) btnView3d.click(); // rebuild 3D on the terrain, camera kept
+  }
+
+  function updateTerrainInfo() {
+    if (!editing || !terrain) { terrainInfo.textContent = ''; return; }
+    const boundary = editing.boundary;
+    const s = slopeInfo(terrain, (x, y) => boundary.length >= 3 ? pointInPolygon({ xM: x, yM: y }, boundary) : true, editing.geo?.rotationDeg ?? 0);
+    if (!s) { terrainInfo.textContent = ''; return; }
+    const fmt = (v: number, d = 1) => new Intl.NumberFormat(lang, { maximumFractionDigits: d }).format(v);
+    terrainInfo.textContent = s.aspectDeg === null
+      ? t('terrainFlat', { elev: fmt(s.meanM, 0), range: fmt(s.maxM - s.minM) })
+      : t('terrainInfo', { elev: fmt(s.meanM, 0), slope: fmt(s.slopeDeg), dir: compassLabel(s.aspectDeg, lang), range: fmt(s.maxM - s.minM) });
+  }
+
+  function renderContours() {
+    const layer = planSvg.querySelector('#contour-layer');
+    if (!layer) return;
+    if (!terrain || !contoursInput.checked || !editing?.geo) { layer.innerHTML = ''; return; }
+    let lo = Infinity, hi = -Infinity;
+    for (const h of terrain.heights) { lo = Math.min(lo, h); hi = Math.max(hi, h); }
+    const interval = contourInterval(hi - lo);
+    const byLevel = new Map<number, string[]>();
+    for (const { level, seg } of contourSegments(terrain, interval)) {
+      const arr = byLevel.get(level) ?? [];
+      arr.push(`M${seg[0] * U} ${seg[1] * U}L${seg[2] * U} ${seg[3] * U}`);
+      byLevel.set(level, arr);
+    }
+    const ppu = pxPerUnit();
+    layer.innerHTML = [...byLevel.entries()].map(([level, d]) => {
+      const index = Math.abs(level / (interval * 5) - Math.round(level / (interval * 5))) < 1e-6;
+      return `<path d="${d.join('')}" fill="none" stroke="#92400e" stroke-opacity="${index ? 0.7 : 0.45}" stroke-width="${(index ? 1.8 : 1) / ppu}"/>`;
+    }).join('');
+  }
 
   // ── Init + save/delete ──────────────────────────────────────────────────
   async function init() {

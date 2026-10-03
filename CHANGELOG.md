@@ -2,6 +2,9 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Gartenplan: Gelände und Höhenlinien (2026-10-04)
+- [x] **Höhendaten** für Pläne mit Standort aus den offenen Terrain Tiles (AWS; in Europa meist EU-DEM ≈ 25 m, sonst SRTM ≈ 30 m, teils feinere Landesmodelle): in 3D folgen Boden, Karte, Umriss, Flächen und Pflanzen dem Gelände (Schatten entsprechend), in 2D zuschaltbare **Höhenlinien** (Abstand automatisch, jede fünfte kräftiger), in der Kartenleiste „Gelände: 195 m ü. NN · Neigung 9,6° nach N · Höhenunterschied 5,7 m“ (Ausgleichsebene über die Gartenfläche). Quellenangabe in der Karte, Datenschutz und Impressum ergänzt. Grenzen: grobe Auflösung → Hangneigung/-ausrichtung, keine einzelnen Bodenwellen.
+
 ## Gartenplan: Tastenkürzel, dezentere Flächen-Beschriftung (2026-10-04)
 - [x] **Tastenkürzel** im Gartenplan: 2/3 (2D/3D), H/V/L (Bewegen/Markieren/Lasso), +/−/0 (Zoom), F (Fläche einzeichnen), R (Reihe pflanzen), U (Umriss bearbeiten), T/O (3D Draufsicht/Schräg), Entf (Markiertes entfernen), Esc. Die Übersicht mit **Shift+?** zeigt jetzt die Kürzel der jeweiligen Seite (Gartenplan bzw. Pflanzen).
 - [x] Flächen-Beschriftung kleiner und transparenter (2D und 3D).

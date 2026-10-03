@@ -9,6 +9,48 @@ import { polygonCentroid } from './gartenplan-render';
 import { enuToPlan, tilesForRect } from './gartenplan-geo';
 import { OSM_TILES, S2_TILES, tileUrl } from './gartenplan-background';
 import { sunPosition, sunDirectionEnu } from './sun-position';
+import { sampleGrid, type ElevationGrid } from './terrain';
+
+/** Ground height (m, relative to the plan centre) at plan x/z. */
+type GroundFn = (x: number, z: number) => number;
+const FLAT: GroundFn = () => 0;
+
+/** Flat polygon → triangles subdivided to ≤ maxLen edges, every vertex
+ *  lifted `lift` above the ground. Needed because with the logarithmic depth
+ *  buffer polygonOffset no longer applies: a big triangle lying only on its
+ *  corners would be cut by the curved terrain between them. */
+function drapedPolygon(pts: { xM: number; yM: number }[], ground: GroundFn, lift: number, maxLen: number): THREE.BufferGeometry {
+  const tris = THREE.ShapeUtils.triangulateShape(pts.map(p => new THREE.Vector2(p.xM, p.yM)), []);
+  const out: number[] = [];
+  const emit = (a: number[], b: number[], c: number[], depth: number) => {
+    const d = (p: number[], q: number[]) => Math.hypot(p[0] - q[0], p[1] - q[1]);
+    if (depth < 7 && Math.max(d(a, b), d(b, c), d(c, a)) > maxLen) {
+      const ab = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], bc = [(b[0] + c[0]) / 2, (b[1] + c[1]) / 2], ca = [(c[0] + a[0]) / 2, (c[1] + a[1]) / 2];
+      emit(a, ab, ca, depth + 1); emit(ab, b, bc, depth + 1); emit(ca, bc, c, depth + 1); emit(ab, bc, ca, depth + 1);
+      return;
+    }
+    for (const p of [a, b, c]) out.push(p[0], ground(p[0], p[1]) + lift, p[1]);
+  };
+  for (const [i, j, k] of tris) emit([pts[i].xM, pts[i].yM], [pts[j].xM, pts[j].yM], [pts[k].xM, pts[k].yM], 0);
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(out, 3));
+  g.computeVertexNormals();
+  return g;
+}
+
+/** Closed outline sampled every ≤ step metres and lifted above the ground. */
+function drapedOutline(pts: { xM: number; yM: number }[], ground: GroundFn, lift: number, step: number): THREE.Vector3[] {
+  const out: THREE.Vector3[] = [];
+  for (let i = 0; i < pts.length; i++) {
+    const a = pts[i], b = pts[(i + 1) % pts.length];
+    const n = Math.max(1, Math.ceil(Math.hypot(b.xM - a.xM, b.yM - a.yM) / step));
+    for (let k = 0; k < n; k++) {
+      const x = a.xM + (b.xM - a.xM) * k / n, y = a.yM + (b.yM - a.yM) * k / n;
+      out.push(new THREE.Vector3(x, ground(x, y) + lift, y));
+    }
+  }
+  return out;
+}
 
 /**
  * Full 3D editing view for a garden plan — camera-orbit for viewing,
@@ -61,6 +103,8 @@ export interface View3DOptions {
   fit?: { minX: number; minY: number; maxX: number; maxY: number } | null;
   latLon: { lat: number; lon: number };
   rotationDeg: number;
+  /** Elevation grid (terrain.ts); null = flat ground. */
+  terrain?: ElevationGrid | null;
 }
 
 const DRAG_THRESHOLD_PX = 4;
@@ -94,15 +138,8 @@ function buildPlantMesh(placement: GardenPlanPlacement, plant: PlantData | undef
 }
 
 
-function buildBoundaryMesh(plan: GardenPlan): THREE.Mesh {
-  const contour = plan.boundary.map(p => new THREE.Vector2(p.xM, p.yM));
-  const triangles = THREE.ShapeUtils.triangulateShape(contour, []);
-  const positions = new Float32Array(plan.boundary.flatMap(p => [p.xM, 0.015, p.yM]));
-  const indices = triangles.flat();
-  const geom = new THREE.BufferGeometry();
-  geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  geom.setIndex(indices);
-  geom.computeVertexNormals();
+function buildBoundaryMesh(plan: GardenPlan, ground: GroundFn = FLAT, cellM = 1e9): THREE.Mesh {
+  const geom = drapedPolygon(plan.boundary, ground, 0.04, cellM);
   // Winding depends on the user's click order while drawing (arbitrary) —
   // verified against the real triangulation output, not assumed — so a
   // one-sided material would randomly render the fill invisible from above
@@ -142,16 +179,11 @@ function buildLabelSprite(text: string, heightM: number): THREE.Sprite {
 /** One area as a translucent colored sheet just above the ground (each one a
  *  hair higher than the previous to avoid z-fighting where areas overlap),
  *  with an outline and a name tag. `userData.areaId` marks it for picking. */
-function buildAreaObject(area: GardenPlanArea, index: number, selected: boolean, labelH: number): THREE.Group {
+function buildAreaObject(area: GardenPlanArea, index: number, selected: boolean, labelH: number, ground: GroundFn = FLAT, cellM = 1e9): THREE.Group {
   const group = new THREE.Group();
   group.userData.areaId = area.id;
-  const y = 0.03 + index * 0.01;
-  const contour = area.points.map(p => new THREE.Vector2(p.xM, p.yM));
-  const triangles = THREE.ShapeUtils.triangulateShape(contour, []);
-  const geom = new THREE.BufferGeometry();
-  geom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(area.points.flatMap(p => [p.xM, y, p.yM])), 3));
-  geom.setIndex(triangles.flat());
-  geom.computeVertexNormals();
+  const y = 0.07 + index * 0.02;
+  const geom = drapedPolygon(area.points, ground, y, cellM);
   const fill = new THREE.Mesh(geom, new THREE.MeshStandardMaterial({
     color: area.color, transparent: true, opacity: selected ? 0.65 : 0.5, side: THREE.DoubleSide, depthWrite: false, roughness: 1,
     polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -4 * (index + 2),
@@ -159,24 +191,24 @@ function buildAreaObject(area: GardenPlanArea, index: number, selected: boolean,
   fill.receiveShadow = true;
   fill.userData.areaId = area.id;
   group.add(fill);
-  const outlinePts = area.points.map(p => new THREE.Vector3(p.xM, y + 0.003, p.yM));
+  const outlinePts = drapedOutline(area.points, ground, y + 0.01, cellM);
   group.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(outlinePts), new THREE.LineBasicMaterial({ color: area.color })));
   if (area.name) {
     const c = polygonCentroid(area.points);
     const label = buildLabelSprite(area.name, labelH);
-    label.position.set(c.xM, labelH * 0.8, c.yM);
+    label.position.set(c.xM, labelH * 0.8 + ground(c.xM, c.yM), c.yM);
     group.add(label);
   }
   return group;
 }
 
-function buildGroundMesh(widthM: number, heightM: number): THREE.Mesh {
-  const positions = new Float32Array([
-    0, 0, 0, widthM, 0, 0, widthM, 0, heightM,
-    0, 0, 0, widthM, 0, heightM, 0, 0, heightM,
-  ]);
-  const geom = new THREE.BufferGeometry();
-  geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+function buildGroundMesh(widthM: number, heightM: number, ground: GroundFn = FLAT, cellM = 1e9): THREE.Mesh {
+  const sx = Math.max(1, Math.min(96, Math.round(widthM / cellM))), sy = Math.max(1, Math.min(96, Math.round(heightM / cellM)));
+  const geom = new THREE.PlaneGeometry(widthM, heightM, sx, sy);
+  geom.rotateX(-Math.PI / 2);
+  geom.translate(widthM / 2, 0, heightM / 2);
+  const pos = geom.attributes.position as THREE.BufferAttribute;
+  for (let i = 0; i < pos.count; i++) pos.setY(i, ground(pos.getX(i), pos.getZ(i)));
   geom.computeVertexNormals();
   const mesh = new THREE.Mesh(geom, new THREE.MeshStandardMaterial({ color: 0xc9dba4, roughness: 1, side: THREE.DoubleSide }));
   mesh.receiveShadow = true;
@@ -205,6 +237,12 @@ export function createGardenPlan3DView(
   const camera = new THREE.PerspectiveCamera(VFOV, Math.max(1, container.clientWidth) / Math.max(1, container.clientHeight), 0.1, 400000); // far: unlimited zoom-out (log depth keeps precision)
   const { x: cx, z: cz } = boundaryCentroid(plan);
   camera.position.set(cx + maxDim * 0.6, maxDim * 0.8, cz + maxDim * 0.6);
+  // Terrain: heights relative to the plan centre, so the camera, sun path
+  // and everything else keep working around y = 0.
+  const terrain = opts.terrain ?? null;
+  const baseH = terrain ? sampleGrid(terrain, cx, cz) : 0;
+  const ground: GroundFn = terrain ? (x, z) => sampleGrid(terrain, x, z) - baseH : FLAT;
+  const groundMin = terrain ? Math.min(...terrain.heights) - baseH : 0;
 
   // Logarithmic depth: ground, map, outline and areas lie millimetres apart
   // while the view reaches hundreds of metres — a linear depth buffer can't
@@ -241,11 +279,11 @@ export function createGardenPlan3DView(
     new THREE.MeshStandardMaterial({ color: 0xa8bd84, roughness: 1 }),
   );
   meadow.rotation.x = -Math.PI / 2;
-  meadow.position.set(cx, -0.05, cz);
+  meadow.position.set(cx, groundMin - 0.3, cz); // below the lowest terrain point
   meadow.receiveShadow = true;
   scene.add(meadow);
 
-  const lawn = buildGroundMesh(plan.areaWidthM, plan.areaHeightM);
+  const lawn = buildGroundMesh(plan.areaWidthM, plan.areaHeightM, ground, terrain?.cellM);
   scene.add(lawn);
 
   // ── Map background on the ground (OSM / coarse satellite). Reloaded for
@@ -297,11 +335,23 @@ export function createGardenPlan3DView(
       requestRender();
     };
     for (const q of tiles) {
-      const g = new THREE.PlaneGeometry(q.sizeM * 1.002, q.sizeM * 1.002);
+      const seg = terrain ? Math.max(1, Math.min(48, Math.round(q.sizeM / terrain.cellM))) : 1;
+      const g = new THREE.PlaneGeometry(q.sizeM * 1.002, q.sizeM * 1.002, seg, seg);
       g.rotateX(-Math.PI / 2);
+      const mx = q.eM + q.sizeM / 2, mz = q.sM + q.sizeM / 2;
+      if (terrain) {
+        // Vertex → plan coords through the group's rotation about y.
+        const th = geo.rotationDeg * Math.PI / 180, ct = Math.cos(th), st = Math.sin(th);
+        const pos = g.attributes.position as THREE.BufferAttribute;
+        for (let i = 0; i < pos.count; i++) {
+          const lx = pos.getX(i) + mx, lz = pos.getZ(i) + mz;
+          pos.setY(i, ground(lx * ct + lz * st, -lx * st + lz * ct));
+        }
+        g.computeVertexNormals();
+      }
       const mat = new THREE.MeshStandardMaterial({ roughness: 1, color: 0xffffff });
       const mesh = new THREE.Mesh(g, mat);
-      mesh.position.set(q.eM + q.sizeM / 2, 0, q.sM + q.sizeM / 2);
+      mesh.position.set(mx, 0, mz);
       mesh.receiveShadow = true;
       mesh.visible = false; // until its texture has arrived
       tileLoader.load(tileUrl(tileSrc, q.z, q.x, q.y), tex => {
@@ -318,7 +368,8 @@ export function createGardenPlan3DView(
     }
     scene.add(next);
   }
-  scene.add(buildBoundaryMesh(plan));
+  const drapeCell = terrain ? Math.max(0.5, terrain.cellM / 2) : 1e9;
+  scene.add(buildBoundaryMesh(plan, ground, drapeCell));
 
   const plantsGroup = new THREE.Group();
   scene.add(plantsGroup);
@@ -342,7 +393,7 @@ export function createGardenPlan3DView(
     }
     areasGroup.clear();
     handlesGroup.clear();
-    (plan.areas ?? []).forEach((area, i) => areasGroup.add(buildAreaObject(area, i, area.id === selectedAreaId, labelH)));
+    (plan.areas ?? []).forEach((area, i) => areasGroup.add(buildAreaObject(area, i, area.id === selectedAreaId, labelH, ground, drapeCell)));
     const sel = (plan.areas ?? []).find(a => a.id === selectedAreaId);
     sel?.points.forEach((p, i) => {
       // Invisible, larger pick sphere around a small visible knob.
@@ -354,7 +405,7 @@ export function createGardenPlan3DView(
         new THREE.SphereGeometry(handleR / 2, 16, 12),
         new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: new THREE.Color(sel.color), emissiveIntensity: 0.6 }),
       ));
-      h.position.set(p.xM, handleR / 2, p.yM);
+      h.position.set(p.xM, handleR / 2 + ground(p.xM, p.yM), p.yM);
       h.userData = { areaId: sel.id, vertexIndex: i };
       handlesGroup.add(h);
     });
@@ -373,6 +424,7 @@ export function createGardenPlan3DView(
     for (const placement of plan.placements) {
       const mesh = buildPlantMesh(placement, plantsById.get(placement.plantId), years);
       mesh.traverse(o => { if (o.name !== 'selection-ring' && (o as THREE.Mesh).isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+      mesh.position.y = ground(placement.xM, placement.yM);
       const ring = mesh.getObjectByName('selection-ring');
       if (ring) ring.visible = placement.id === selectedPlacementId;
       plantsGroup.add(mesh);
@@ -503,7 +555,18 @@ export function createGardenPlan3DView(
   // the canvas, reliably wins the race against OrbitControls' own
   // pointerdown handler). ──
   const raycaster = new THREE.Raycaster();
-  const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+  /** Ray → ground point: intersect a horizontal plane, then re-intersect at
+   *  the terrain height found there (converges fast on gentle slopes). */
+  function intersectGround(target: THREE.Vector3): THREE.Vector3 | null {
+    const pl = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+    let hit: THREE.Vector3 | null = null;
+    for (let k = 0; k < 3; k++) {
+      hit = raycaster.ray.intersectPlane(pl, target);
+      if (!hit) return null;
+      pl.constant = -ground(hit.x, hit.z);
+    }
+    return hit;
+  }
   const ndc = new THREE.Vector2();
 
   function setNdcFromEvent(e: PointerEvent) {
@@ -531,7 +594,7 @@ export function createGardenPlan3DView(
     setNdcFromEvent(e);
     raycaster.setFromCamera(ndc, camera);
     const hit = new THREE.Vector3();
-    if (!raycaster.ray.intersectPlane(groundPlane, hit)) return null;
+    if (!intersectGround(hit)) return null;
     hit.x = Math.max(0, Math.min(plan.areaWidthM, hit.x));
     hit.z = Math.max(0, Math.min(plan.areaHeightM, hit.z));
     return hit;
@@ -555,10 +618,10 @@ export function createGardenPlan3DView(
         mat?.map?.dispose();
         mat?.dispose();
       });
-      areasGroup.add(buildAreaObject({ ...area, points: vertexDrag.points }, idx, true, labelH));
+      areasGroup.add(buildAreaObject({ ...area, points: vertexDrag.points }, idx, true, labelH, ground, drapeCell));
     }
     const handle = handlesGroup.children.find(h => h.userData.vertexIndex === vertexDrag!.index);
-    handle?.position.set(hit.x, handleR / 2, hit.z);
+    handle?.position.set(hit.x, handleR / 2 + ground(hit.x, hit.z), hit.z);
     requestRender();
   }
 
@@ -582,9 +645,9 @@ export function createGardenPlan3DView(
     setNdcFromEvent(e);
     raycaster.setFromCamera(ndc, camera);
     const hit = new THREE.Vector3();
-    if (!raycaster.ray.intersectPlane(groundPlane, hit)) return;
+    if (!intersectGround(hit)) return;
     const mesh = plantsGroup.children.find(c => c.userData.placementId === dragState!.placementId);
-    if (mesh) mesh.position.set(hit.x, 0, hit.z);
+    if (mesh) mesh.position.set(hit.x, ground(hit.x, hit.z), hit.z);
     requestRender();
   }
 
@@ -598,7 +661,7 @@ export function createGardenPlan3DView(
       setNdcFromEvent(e);
       raycaster.setFromCamera(ndc, camera);
       const hit = new THREE.Vector3();
-      if (raycaster.ray.intersectPlane(groundPlane, hit)) {
+      if (intersectGround(hit)) {
         // No boundary re-check here — matches the 2D drag code, which also
         // only validates the boundary on the initial placement tap, not on
         // drag-commit. Deliberate parity, not an oversight.
@@ -642,7 +705,7 @@ export function createGardenPlan3DView(
 
     if (armedPlantId) {
       const groundHit = new THREE.Vector3();
-      if (raycaster.ray.intersectPlane(groundPlane, groundHit)
+      if (intersectGround(groundHit)
         && pointInPolygon({ xM: groundHit.x, yM: groundHit.z }, plan.boundary)) {
         controls.enabled = false;
         callbacks.onGroundTap(groundHit.x, groundHit.z);

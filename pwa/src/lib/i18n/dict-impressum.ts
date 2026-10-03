@@ -38,7 +38,7 @@ export const impressumDict: Dict = {
     en: '. Plant data comes from the respectively named sources under their license terms (Wikidata: CC0, PFAF: CC BY 4.0, Wikimedia Commons: respective image license) and from the species table in Dave Jacke & Eric Toensmeier, "Edible Forest Gardens", vol. 2 (Chelsea Green 2005), compiled by Lally Luck Farm.',
   },
   imMapData: {
-    de: 'Kartenhintergrund im Gartenplan: © OpenStreetMap-Mitwirkende (ODbL), Adresssuche über Nominatim. Satellitenebene: Sentinel-2 cloudless – s2maps.eu by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2016 & 2017), CC BY 4.0.',
-    en: 'Garden plan map background: © OpenStreetMap contributors (ODbL), address search via Nominatim. Satellite layer: Sentinel-2 cloudless – s2maps.eu by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2016 & 2017), CC BY 4.0.',
+    de: 'Kartenhintergrund im Gartenplan: © OpenStreetMap-Mitwirkende (ODbL), Adresssuche über Nominatim. Satellitenebene: Sentinel-2 cloudless – s2maps.eu by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2016 & 2017), CC BY 4.0. Höhendaten: Terrain Tiles (Mapzen/Tilezen, bereitgestellt über AWS Open Data) aus u. a. SRTM (NASA), EU-DEM (produziert mit Copernicus-Daten, gefördert von der EU) und nationalen Geländemodellen.',
+    en: 'Garden plan map background: © OpenStreetMap contributors (ODbL), address search via Nominatim. Satellite layer: Sentinel-2 cloudless – s2maps.eu by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2016 & 2017), CC BY 4.0. Elevation: Terrain Tiles (Mapzen/Tilezen, provided via AWS Open Data) from SRTM (NASA), EU-DEM (produced using Copernicus data, funded by the EU) and national terrain models, among others.',
   },
 };
