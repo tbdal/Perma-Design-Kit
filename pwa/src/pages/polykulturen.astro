@@ -7,7 +7,7 @@ import Layout from '../layouts/Layout.astro';
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
       <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-100" data-i18n="pageTitle">Polykulturen</h1>
       <div class="flex flex-wrap items-center gap-2">
-        <select id="from-group" hidden data-i18n-aria-label="fromGroupLabel" aria-label="Polykultur aus einer Pflanzengruppe anlegen" class="rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-2 text-sm text-stone-700 dark:text-stone-200"></select>
+        <select id="from-group" data-i18n-aria-label="fromGroupLabel" aria-label="Polykultur aus einer Pflanzengruppe anlegen" class="rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-2 text-sm text-stone-700 dark:text-stone-200"></select>
         <button id="btn-new-polyculture" data-i18n="btnNewGuild" class="rounded-lg bg-green-700 px-3.5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">+ Neue Polykultur</button>
       </div>
     </div>
@@ -372,8 +372,11 @@ import Layout from '../layouts/Layout.astro';
   const fromGroup = document.getElementById('from-group') as HTMLSelectElement;
   function renderGroupSelect() {
     const groups = allGroups(plants);
-    fromGroup.hidden = groups.length === 0;
-    fromGroup.innerHTML = `<option value="">${escapeHtml(t('fromGroupPlaceholder'))}</option>`
+    // Stays visible without groups too (disabled, with a hint), so the
+    // feature can be found before the first group exists.
+    fromGroup.disabled = groups.length === 0;
+    fromGroup.title = groups.length ? '' : t('fromGroupNoneHint');
+    fromGroup.innerHTML = `<option value="">${escapeHtml(t(groups.length ? 'fromGroupPlaceholder' : 'fromGroupNone'))}</option>`
       + groups.map(g => `<option value="${escapeHtml(g)}">${escapeHtml(g)}</option>`).join('');
   }
   fromGroup.addEventListener('change', async () => {

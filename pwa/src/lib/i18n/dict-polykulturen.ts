@@ -5,6 +5,8 @@ export const polyculturesDict: Dict = {
   btnNewGuild: { de: '+ Neue Polykultur', en: '+ New polyculture' },
   fromGroupLabel: { de: 'Polykultur aus einer Pflanzengruppe anlegen', en: 'Create a polyculture from a plant group' },
   fromGroupPlaceholder: { de: 'Aus Gruppe anlegen…', en: 'Create from group…' },
+  fromGroupNone: { de: 'Aus Gruppe anlegen… (noch keine Gruppen)', en: 'Create from group… (no groups yet)' },
+  fromGroupNoneHint: { de: 'Gruppen vergibst du auf der Pflanzenseite im Bearbeiten-Dialog einer Pflanze (Feld „Gruppen“).', en: 'Assign groups on the plant page in a plant’s edit dialog (field “Groups”).' },
   toastFromGroup: { de: 'Polykultur „{name}“ mit {count} Pflanzen angelegt', en: 'Polyculture “{name}” created with {count} plants' },
   introText: { de: 'Eine Polykultur ist eine benannte Gruppe von Pflanzen rund um eine Ankerart, die sich gegenseitig fördert. Mehr in der', en: 'A polyculture is a named group of plants around an anchor species that support each other. More in the' },
   introHelpLink: { de: 'Hilfe', en: 'help' },

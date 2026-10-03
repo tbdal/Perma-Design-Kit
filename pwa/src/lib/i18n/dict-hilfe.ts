@@ -74,6 +74,12 @@ export const hilfeDict: Dict = {
   exportCsvTerm: { de: 'CSV / JSON-Export', en: 'CSV / JSON export' },
   exportCsvDesc: { de: 'auf der Hauptseite: einzelne oder ausgewählte Pflanzen.', en: 'on the main page: individual or selected plants.' },
   exportPdfTerm: { de: 'PDF-Export', en: 'PDF export' },
+  exportShareTerm: { de: 'Projekt als Link teilen', en: 'Share project as link' },
+  exportShareDesc: { de: 'im Menü „Daten ⋮“ der Pflanzenseite oder in den Einstellungen: Pflanzen, Polykulturen und Gartenpläne stecken komprimiert im Link, nichts wird auf einem Server gespeichert. Wer den Link öffnet, kann das Projekt übernehmen.', en: 'in the “Data ⋮” menu on the plant page or in Settings: plants, polycultures and garden plans are packed, compressed, into the link; nothing is stored on a server. Whoever opens the link can add the project to their app.' },
+  exportGroupTerm: { de: 'Gruppe als Polykultur', en: 'Group as polyculture' },
+  exportGroupDesc: { de: 'auf der Polykulturen-Seite über „Aus Gruppe anlegen…“ — Gruppen vergibst du im Bearbeiten-Dialog einer Pflanze.', en: 'on the Polycultures page via “Create from group…” — assign groups in a plant’s edit dialog.' },
+  exportManualTerm: { de: '„M“ = manuell', en: '“M” = manual' },
+  exportManualDesc: { de: 'im Bearbeiten-Dialog springt das Quellen-Kürzel eines Feldes (z. B. P für PFAF) auf M, sobald du den Wert änderst.', en: 'in the edit dialog a field’s source tag (e.g. P for PFAF) switches to M as soon as you change the value.' },
   exportPdfDesc: { de: 'aus der Kartenansicht: alle Karten, Streifen oder Baumscheiben.', en: 'from the card view: all cards, strips or Baumscheiben.' },
 
   shortcutsHeading: { de: 'Tastatur-Shortcuts', en: 'Keyboard shortcuts' },

@@ -43,6 +43,7 @@ export const indexDict: Dict = {
   menuImportCsv: { de: 'Import CSV', en: 'Import CSV' },
   menuCsvTemplate: { de: 'CSV-Vorlage ↓', en: 'CSV template ↓' },
   menuExportAll: { de: 'Alle exportieren (JSON)', en: 'Export all (JSON)' },
+  menuShareLink: { de: '🔗 Projekt als Link teilen…', en: '🔗 Share project as link…' },
   menuLoadSamples: { de: 'Beispieldaten laden', en: 'Load sample data' },
   menuLoadSamplesCrawford: { de: 'Beispieldaten laden (Crawford)', en: 'Load sample data (Crawford)' },
   menuEnrichAll: { de: 'Lade alle fehlenden Daten', en: 'Fetch all missing data' },

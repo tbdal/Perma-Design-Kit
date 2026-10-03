@@ -520,6 +520,12 @@ import Layout from '../layouts/Layout.astro';
     shareDialog.showModal();
   });
   shareOpts.forEach(o => o.addEventListener('change', () => { shareResult.hidden = true; }));
+  // Deep link from the plant page's "Daten ⋮" menu.
+  if (location.hash === '#teilen') {
+    history.replaceState(null, '', location.pathname);
+    shareResult.hidden = true;
+    shareDialog.showModal();
+  }
   document.getElementById('share-close')!.addEventListener('click', () => shareDialog.close());
   document.getElementById('share-create')!.addEventListener('click', async (e) => {
     await withButtonSpinner(e.currentTarget as HTMLButtonElement, async () => {
