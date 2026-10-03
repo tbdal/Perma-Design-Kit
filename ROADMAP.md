@@ -33,7 +33,8 @@ Runde 1 (Mauskoordinaten, OSM-Hintergrund mit Standort & Drehung, grobe Satellit
 - [ ] **zur Prüfung (2026-10-03, live):** Layout-Änderungen aus `horizon-en` übernommen — bitte ansehen und ggf. zurücknehmen:
   - Kopf- und Fußzeile immer 1600 px breit (`barMaxW` in `Layout.astro`), damit das Menü beim Seitenwechsel nicht springt. Haken: auf schmalen Seiten (Gartenplan, Hilfe, Impressum, Datenschutz) steht das Logo deutlich links vom Inhalt.
   - `scrollbar-gutter: stable` (`global.css`): Layout springt nicht mehr seitlich zwischen Seiten mit und ohne Scrollbalken.
-  - Horizont-Design: aktiver Menüpunkt nicht mehr fett.
+  - ~~Horizont-Design: aktiver Menüpunkt nicht mehr fett~~ — zurückgenommen, aktiver Punkt wieder fett (2026-10-03).
+  - **Horizont ist jetzt Standard-Design** (2026-10-03); das alte heißt in den Einstellungen „Klassisch“. Wer früher bewusst „Standard“ gewählt hatte, landet einmalig auch bei Horizont (war technisch nicht unterscheidbar).
 - [ ] Dokumentation in Hilfe verlinken
 - [ ] permament storage erklären bevor es vom browser abgrefragt wird?
 - [ ] zulip wieder starten: cd /opt/zulip && docker compose start

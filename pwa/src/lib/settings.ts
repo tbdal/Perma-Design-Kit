@@ -156,18 +156,19 @@ export function applyTheme(t: ThemePref): void {
 }
 
 // ── Site design: separate key for the same reason as the theme (boot.js reads
-// it before first paint). Absent = 'standard'.
+// it before first paint). Horizont is the default (Layout.astro renders
+// data-design="horizont"); only an explicit 'standard' is stored as an opt-out.
 
 export type DesignPref = 'standard' | 'horizont';
 
 export function getDesign(): DesignPref {
-  try { return localStorage.getItem('pdk-design') === 'horizont' ? 'horizont' : 'standard'; }
-  catch { return 'standard'; }
+  try { return localStorage.getItem('pdk-design') === 'standard' ? 'standard' : 'horizont'; }
+  catch { return 'horizont'; }
 }
 
 export function setDesign(d: DesignPref): void {
   try {
-    if (d === 'standard') localStorage.removeItem('pdk-design');
+    if (d === 'horizont') localStorage.removeItem('pdk-design');
     else localStorage.setItem('pdk-design', d);
   } catch {}
 }

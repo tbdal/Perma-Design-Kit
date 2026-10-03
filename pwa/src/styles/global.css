@@ -197,6 +197,7 @@ html[data-design="horizont"] .site-header a[data-nav="/gartenplan"] { color: #4f
 html[data-design="horizont"] .site-header a[data-nav].bg-green-800 {
   background: rgb(255 255 255 / 0.5);
   color: #0f1208;
+  font-weight: 700;
 }
 html[data-design="horizont"] #lang-menu button { color: var(--color-stone-700); }
 html[data-design="horizont"].dark #lang-menu button { color: var(--color-stone-200); }
