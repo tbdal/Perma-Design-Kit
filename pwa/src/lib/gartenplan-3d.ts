@@ -43,6 +43,8 @@ export interface GardenPlan3DView {
   /** Moves the sun (light, shadows, sky, sun path) to the given moment. */
   setSunTime(date: Date): { bearingDeg: number; altitudeDeg: number };
   getCameraState(): Camera3DState;
+  /** Jump to a straight top view or an oblique view from the south. */
+  setViewPreset(preset: 'top' | 'oblique'): void;
   /** Ground rectangle (plan meters) roughly visible around the camera target
    *  — used to keep the same section when switching back to 2D. */
   getViewRect(): { minX: number; minY: number; maxX: number; maxY: number };
@@ -153,7 +155,7 @@ function buildPlantMesh(placement: GardenPlanPlacement, plant: PlantData | undef
 function buildBoundaryMesh(plan: GardenPlan): THREE.Mesh {
   const contour = plan.boundary.map(p => new THREE.Vector2(p.xM, p.yM));
   const triangles = THREE.ShapeUtils.triangulateShape(contour, []);
-  const positions = new Float32Array(plan.boundary.flatMap(p => [p.xM, 0.005, p.yM]));
+  const positions = new Float32Array(plan.boundary.flatMap(p => [p.xM, 0.015, p.yM]));
   const indices = triangles.flat();
   const geom = new THREE.BufferGeometry();
   geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
@@ -163,7 +165,7 @@ function buildBoundaryMesh(plan: GardenPlan): THREE.Mesh {
   // verified against the real triangulation output, not assumed — so a
   // one-sided material would randomly render the fill invisible from above
   // for some plans. DoubleSide is the robust fix, not winding-detection.
-  const mat = new THREE.MeshStandardMaterial({ color: 0x15803d, transparent: true, opacity: 0.15, side: THREE.DoubleSide });
+  const mat = new THREE.MeshStandardMaterial({ color: 0x15803d, transparent: true, opacity: 0.15, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 });
   const mesh = new THREE.Mesh(geom, mat);
   mesh.receiveShadow = true;
   return mesh;
@@ -201,7 +203,7 @@ function buildLabelSprite(text: string, heightM: number): THREE.Sprite {
 function buildAreaObject(area: GardenPlanArea, index: number, selected: boolean, labelH: number): THREE.Group {
   const group = new THREE.Group();
   group.userData.areaId = area.id;
-  const y = 0.012 + index * 0.002;
+  const y = 0.03 + index * 0.01;
   const contour = area.points.map(p => new THREE.Vector2(p.xM, p.yM));
   const triangles = THREE.ShapeUtils.triangulateShape(contour, []);
   const geom = new THREE.BufferGeometry();
@@ -210,6 +212,7 @@ function buildAreaObject(area: GardenPlanArea, index: number, selected: boolean,
   geom.computeVertexNormals();
   const fill = new THREE.Mesh(geom, new THREE.MeshStandardMaterial({
     color: area.color, transparent: true, opacity: selected ? 0.65 : 0.5, side: THREE.DoubleSide, depthWrite: false, roughness: 1,
+    polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -4 * (index + 2),
   }));
   fill.receiveShadow = true;
   fill.userData.areaId = area.id;
@@ -261,7 +264,10 @@ export function createGardenPlan3DView(
   const { x: cx, z: cz } = boundaryCentroid(plan);
   camera.position.set(cx + maxDim * 0.6, maxDim * 0.8, cz + maxDim * 0.6);
 
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+  // Logarithmic depth: ground, map, outline and areas lie millimetres apart
+  // while the view reaches hundreds of metres — a linear depth buffer can't
+  // separate them there and they z-fight into stripes.
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, logarithmicDepthBuffer: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(Math.max(1, container.clientWidth), Math.max(1, container.clientHeight));
   renderer.shadowMap.enabled = true;
@@ -276,11 +282,14 @@ export function createGardenPlan3DView(
   const sun = new THREE.DirectionalLight(0xfff1d6, 2.4);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
-  const shadowR = maxDim * 0.9;
+  // Shadow frustum just covers the plan; biases scale with the shadow-map
+  // texel size so big gardens don't get acne / striped shadow artifacts.
+  const shadowR = maxDim * 0.75;
+  const texel = (2 * shadowR) / 2048;
   Object.assign(sun.shadow.camera, { left: -shadowR, right: shadowR, top: shadowR, bottom: -shadowR, near: 0.5, far: maxDim * 8 });
-  sun.shadow.bias = -0.0005;
-  sun.shadow.normalBias = 0.02;
-  sun.shadow.radius = 3; // soft edges (PCF)
+  sun.shadow.bias = -0.0002;
+  sun.shadow.normalBias = texel * 1.5;
+  sun.shadow.radius = 2; // soft edges (PCF)
   sun.target.position.set(cx, 0, cz);
   scene.add(sun, sun.target);
 
@@ -290,7 +299,7 @@ export function createGardenPlan3DView(
     new THREE.MeshStandardMaterial({ color: 0xa8bd84, roughness: 1 }),
   );
   meadow.rotation.x = -Math.PI / 2;
-  meadow.position.set(cx, -0.004, cz);
+  meadow.position.set(cx, -0.05, cz);
   meadow.receiveShadow = true;
   scene.add(meadow);
 
@@ -314,9 +323,9 @@ export function createGardenPlan3DView(
     for (const t of tiles) {
       const g = new THREE.PlaneGeometry(t.sizeM * 1.002, t.sizeM * 1.002);
       g.rotateX(-Math.PI / 2);
-      const mat = new THREE.MeshStandardMaterial({ roughness: 1, transparent: geo.opacity < 1, opacity: geo.opacity });
+      const mat = new THREE.MeshStandardMaterial({ roughness: 1, color: 0xffffff });
       const mesh = new THREE.Mesh(g, mat);
-      mesh.position.set(t.eM + t.sizeM / 2, -0.002, t.sM + t.sizeM / 2);
+      mesh.position.set(t.eM + t.sizeM / 2, 0, t.sM + t.sizeM / 2);
       mesh.receiveShadow = true;
       mesh.visible = false; // until its texture has arrived
       loader.load(tileUrl(src, t.z, t.x, t.y), tex => {
@@ -699,6 +708,14 @@ export function createGardenPlan3DView(
       armedPlantId = plantId;
     },
     setSunTime,
+    setViewPreset(preset: 'top' | 'oblique') {
+      const t = controls.target;
+      const d = camera.position.distanceTo(t);
+      if (preset === 'top') camera.position.set(t.x, d, t.z + d * 0.001);
+      else camera.position.set(t.x, d * 0.55, t.z + d * 0.83);
+      controls.update();
+      requestRender();
+    },
     getCameraState(): Camera3DState {
       return { position: camera.position.toArray() as [number, number, number], target: controls.target.toArray() as [number, number, number] };
     },

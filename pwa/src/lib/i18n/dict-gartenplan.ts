@@ -67,6 +67,8 @@ export const gartenplanDict: Dict = {
   sunDate: { de: 'Datum', en: 'Date' },
   sunTime: { de: 'Uhrzeit', en: 'Time of day' },
   sunNow: { de: 'Jetzt', en: 'Now' },
+  viewTop: { de: 'Draufsicht', en: 'Top view' },
+  viewOblique: { de: 'Schrägansicht', en: 'Oblique view' },
   sunPlay: { de: '▶ Tagesverlauf', en: '▶ Play day' },
   sunStop: { de: '■ Stopp', en: '■ Stop' },
   sunInfo: { de: 'Sonne {bearing}° ({dir}), {alt}° über dem Horizont', en: 'Sun {bearing}° ({dir}), {alt}° above the horizon' },

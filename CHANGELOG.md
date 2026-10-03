@@ -2,6 +2,13 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Gartenplan: sauberes Rendering in 2D und 3D (2026-10-03)
+- [x] **3D ohne Streifen** — logarithmischer Tiefenpuffer, deckende Kartenkacheln (halbtransparente überlappten sich zu dunklen Streifen), Wiese nur noch als Platzhalter deutlich darunter, Umriss/Flächen mit Polygon-Offset: kein Z-Fighting mehr bei großen Plänen.
+- [x] **3D-Schatten ohne Artefakte** — Schattenausschnitt und Bias passend zur Planbreite, keine strahlenförmigen Keile mehr.
+- [x] **3D „Draufsicht“ / „Schrägansicht“** — zwei Buttons in der Sonnenleiste.
+- [x] **2D-Beschriftung wie auf einer Karte** — Pflanzennamen schrumpfen mit der Pflanze auf dem Bildschirm (max. 13 px) und verschwinden unter ~7 px; die ausgewählte Pflanze bleibt beschriftet.
+- [x] **2D-Raster passt sich dem Zoom an** — Rasterlinien ≥ 12 px und Meter-Zahlen ≥ 40 px auseinander (1/2/5/10/20/50 m …), keine grauen Zahlenbalken am Rand mehr.
+
 ## Reihe pflanzen, QGIS, 3D-Kartenboden, „spp.“-Pflanzen (2026-10-03)
 - [x] **Reihe pflanzen** — neues Werkzeug „⋯ Reihe pflanzen“: Pflanze wählen, Linie (auch mit Knicken) per Klicks zeichnen, Abstand in m (Vorschlag: Pflanzenbreite), Vorschau der Pflanzpunkte, „Pflanzen“ setzt alle auf einmal.
 - [x] **GeoJSON für QGIS** — „⤓ GeoJSON (QGIS)“ exportiert Umriss, Flächen und Pflanzen (mit Attributen wie Schicht, Kronenradius, Notizen) in WGS84; „⤒ GeoJSON importieren“ in der Planliste liest es wieder ein: eigene Exporte können den Plan aktualisieren, fremde GeoJSON (Polygone + Punkte) werden ein neuer Plan, unbekannte Pflanzen werden über den lateinischen Namen zugeordnet oder angelegt. GeoPackage bewusst (noch) nicht — bräuchte eine ~1 MB SQLite-Bibliothek im Browser.

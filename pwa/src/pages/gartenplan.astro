@@ -193,6 +193,10 @@ import Layout from '../layouts/Layout.astro';
             <span id="sun-time-label" class="w-10 font-mono"></span>
             <button id="sun-now" type="button" data-i18n="sunNow" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">Jetzt</button>
             <button id="sun-play" type="button" data-i18n="sunPlay" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">▶ Tagesverlauf</button>
+            <span class="inline-flex gap-1">
+              <button id="view-top" type="button" data-i18n="viewTop" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">Draufsicht</button>
+              <button id="view-oblique" type="button" data-i18n="viewOblique" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">Schrägansicht</button>
+            </span>
             <span id="sun-info" class="basis-full text-sky-800 dark:text-sky-200 sm:basis-auto"></span>
           </div>
           <div id="plan-wrap" class="relative rounded-xl bg-white dark:bg-stone-800 p-3 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
@@ -465,6 +469,13 @@ import Layout from '../layouts/Layout.astro';
    *  glance instead of having to count squares. `pointer-events="none"` on
    *  the whole label group keeps them from intercepting clicks/drags meant
    *  for the grid rect beneath (placing plants, drawing the boundary). */
+  /** Smallest "nice" multiple (1, 2, 5, 10, 20, 50 …) of `base` that is at
+   *  least `minM` — keeps grid lines and meter numbers readable at any zoom. */
+  function niceStep(base: number, minM: number): number {
+    for (const m of [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000]) if (base * m >= minM) return base * m;
+    return base * 1000;
+  }
+
   function gridTickLabels(widthM: number, heightM: number, spacingM: number, k = 1): string {
     const round2 = (n: number) => Math.round(n * 100) / 100;
     const xSteps = Math.floor(widthM / spacingM);
@@ -483,7 +494,11 @@ import Layout from '../layouts/Layout.astro';
     return `<g pointer-events="none">${labels.join('')}</g>`;
   }
 
-  function gridDefsAndBackground(widthM: number, heightM: number, spacingM: number, patternId: string, k = 1): string {
+  function gridDefsAndBackground(widthM: number, heightM: number, spacingM: number, patternId: string, k = 1, pxPerM = 0): string {
+    // Zoomed out, the grid would turn into a carpet of lines and the meter
+    // numbers into solid bars: thin both out to ≥ 12 px / ≥ 40 px apart.
+    const labelStepM = pxPerM ? niceStep(spacingM, 40 / pxPerM) : spacingM;
+    spacingM = pxPerM ? niceStep(spacingM, 12 / pxPerM) : spacingM;
     const spacingU = spacingM * SVG_UNITS_PER_METER;
     return `
       <defs>
@@ -492,7 +507,7 @@ import Layout from '../layouts/Layout.astro';
         </pattern>
       </defs>
       <rect width="${widthM * SVG_UNITS_PER_METER}" height="${heightM * SVG_UNITS_PER_METER}" fill="url(#${patternId})" stroke="#a8a29e" stroke-width="${2 * k}"/>
-      ${gridTickLabels(widthM, heightM, spacingM, k)}`;
+      ${gridTickLabels(widthM, heightM, labelStepM, k)}`;
   }
 
   // ── Listenansicht ──────────────────────────────────────────────────────
@@ -984,6 +999,8 @@ import Layout from '../layouts/Layout.astro';
   }
   sunDateInput.addEventListener('input', applySun);
   sunTimeInput.addEventListener('input', () => { stopSunPlay(); applySun(); });
+  document.getElementById('view-top')!.addEventListener('click', () => view3d?.setViewPreset('top'));
+  document.getElementById('view-oblique')!.addEventListener('click', () => view3d?.setViewPreset('oblique'));
   document.getElementById('sun-now')!.addEventListener('click', () => { stopSunPlay(); setSunNow(); applySun(); });
   sunPlayBtn.addEventListener('click', () => {
     if (sunPlayTimer) { stopSunPlay(); return; }
@@ -1237,13 +1254,20 @@ import Layout from '../layouts/Layout.astro';
     blob.setAttribute('d', blobPathD(radiusU, placement.id, style.lobes, style.wobble));
     blob.setAttribute('fill', style.fill);
     blob.setAttribute('stroke', selected ? '#facc15' : style.stroke);
-    const k = viewK();
-    blob.setAttribute('stroke-width', String((selected ? 3 : 2) * k));
-    group.querySelector('.marker-dot')?.setAttribute('r', String(3 * k));
+    // Like a map: the name shrinks with the plant on screen (max 13 px) and
+    // disappears below ~7 px, so zoomed-out plans don't drown in labels.
+    // The selected plant always keeps its name.
+    const ppu = pxPerUnit();
+    const rPx = radiusU * ppu;
+    blob.setAttribute('stroke-width', String((selected ? 2.5 : 1.2) / ppu));
+    group.querySelector('.marker-dot')?.setAttribute('r', String(Math.min(3, Math.max(1, rPx * 0.25)) / ppu));
+    const fontPx = selected ? 13 : Math.min(13, rPx * 0.7);
     const label = group.querySelector('.marker-label') as SVGTextElement;
-    label.setAttribute('y', String(radiusU + 14 * k));
-    label.setAttribute('font-size', String(13 * k));
-    label.setAttribute('stroke-width', String(3 * k));
+    const f = fontPx / ppu;
+    label.style.display = selected || fontPx >= 7 ? '' : 'none';
+    label.setAttribute('y', String(radiusU + f * 1.05));
+    label.setAttribute('font-size', String(f));
+    label.setAttribute('stroke-width', String(f * 0.25));
     label.textContent = p ? (displayName(p)) : '?';
   }
 
@@ -1257,7 +1281,7 @@ import Layout from '../layouts/Layout.astro';
     planSvg.setAttribute('viewBox', `${planView.x} ${planView.y} ${planView.w} ${planView.h}`);
     planSvg.innerHTML = `
       <g class="basemap-layer"></g>
-      <g id="plan-grid-layer">${gridDefsAndBackground(w, h, editing.gridSpacingM, 'plan-grid', k)}</g>
+      <g id="plan-grid-layer">${gridDefsAndBackground(w, h, editing.gridSpacingM, 'plan-grid', k, pxPerUnit() * U)}</g>
       <polygon id="plan-boundary" points="${pointsAttr}" fill="#15803d" fill-opacity="0.08" stroke="#15803d" stroke-width="${2 * k}"/>
       <g id="plan-areas-layer">${areasSvg(editing.areas, selectedAreaId, k, true)}</g>
       <g id="plan-markers"></g>
@@ -1487,6 +1511,12 @@ import Layout from '../layouts/Layout.astro';
     if (!rescaleQueued) { rescaleQueued = true; requestAnimationFrame(rescaleUi); }
   }
 
+  /** Screen pixels per SVG unit at the current zoom. */
+  function pxPerUnit(): number {
+    const w = planSvg.getBoundingClientRect().width || 700;
+    return planView.w ? w / planView.w : w / ((editing?.areaWidthM ?? 10) * U);
+  }
+
   /** Scale for labels, strokes and handles: tied to the *visible* width, so
    *  text stays ~13 px on screen at any zoom (PDF export uses uiScale()). */
   function viewK(): number {
@@ -1500,7 +1530,7 @@ import Layout from '../layouts/Layout.astro';
     if (!editing) return;
     const k = viewK();
     const grid = planSvg.querySelector('#plan-grid-layer');
-    if (grid) grid.innerHTML = gridDefsAndBackground(editing.areaWidthM, editing.areaHeightM, editing.gridSpacingM, 'plan-grid', k);
+    if (grid) grid.innerHTML = gridDefsAndBackground(editing.areaWidthM, editing.areaHeightM, editing.gridSpacingM, 'plan-grid', k, pxPerUnit() * U);
     planSvg.querySelector('#plan-boundary')?.setAttribute('stroke-width', String(2 * k));
     for (const pl of editing.placements) {
       const g = markerMap.get(pl.id);
