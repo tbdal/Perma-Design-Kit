@@ -6,7 +6,8 @@ import { deriveLayer, LAYER_STYLE, type PlantLayer } from './plant-layer';
 import { seededRandom } from './blob-shape';
 import { pointInPolygon } from './gartenplan-geometry';
 import { polygonCentroid } from './gartenplan-render';
-import { enuToPlan } from './gartenplan-geo';
+import { enuToPlan, tilesForRect } from './gartenplan-geo';
+import { OSM_TILES, S2_TILES, tileUrl } from './gartenplan-background';
 import { sunPosition, sunDirectionEnu } from './sun-position';
 
 /**
@@ -148,14 +149,6 @@ function buildPlantMesh(placement: GardenPlanPlacement, plant: PlantData | undef
   return group;
 }
 
-function buildGridLines(widthM: number, heightM: number, spacingM: number): THREE.LineSegments {
-  const pos: number[] = [];
-  for (let x = 0; x <= widthM + 1e-6; x += spacingM) pos.push(x, 0.01, 0, x, 0.01, heightM);
-  for (let z = 0; z <= heightM + 1e-6; z += spacingM) pos.push(0, 0.01, z, widthM, 0.01, z);
-  const geom = new THREE.BufferGeometry();
-  geom.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-  return new THREE.LineSegments(geom, new THREE.LineBasicMaterial({ color: 0xd6d3d1, transparent: true, opacity: 0.6 }));
-}
 
 function buildBoundaryMesh(plan: GardenPlan): THREE.Mesh {
   const contour = plan.boundary.map(p => new THREE.Vector2(p.xM, p.yM));
@@ -301,8 +294,44 @@ export function createGardenPlan3DView(
   meadow.receiveShadow = true;
   scene.add(meadow);
 
-  scene.add(buildGroundMesh(plan.areaWidthM, plan.areaHeightM));
-  scene.add(buildGridLines(plan.areaWidthM, plan.areaHeightM, plan.gridSpacingM));
+  const lawn = buildGroundMesh(plan.areaWidthM, plan.areaHeightM);
+  scene.add(lawn);
+
+  // ── Map background on the ground (OSM / coarse satellite), reaching well
+  // beyond the plan so the surroundings show. Tiles are laid out in the
+  // local east/south frame and turned with the plan (same mapping as the
+  // rotate(−θ) in 2D, here around the vertical axis). ──
+  const geo = plan.geo;
+  if (geo && geo.basemap !== 'none') {
+    const src = geo.basemap === 'sat' ? S2_TILES : OSM_TILES;
+    const margin = maxDim * 1.5;
+    const rect = { minX: -margin, minY: -margin, maxX: plan.areaWidthM + margin, maxY: plan.areaHeightM + margin };
+    const tiles = tilesForRect(rect, geo, (rect.maxX - rect.minX) / 2048, src.maxZoom);
+    const tileGroup = new THREE.Group();
+    tileGroup.rotation.y = geo.rotationDeg * Math.PI / 180;
+    const loader = new THREE.TextureLoader();
+    loader.setCrossOrigin('anonymous');
+    for (const t of tiles) {
+      const g = new THREE.PlaneGeometry(t.sizeM * 1.002, t.sizeM * 1.002);
+      g.rotateX(-Math.PI / 2);
+      const mat = new THREE.MeshStandardMaterial({ roughness: 1, transparent: geo.opacity < 1, opacity: geo.opacity });
+      const mesh = new THREE.Mesh(g, mat);
+      mesh.position.set(t.eM + t.sizeM / 2, -0.002, t.sM + t.sizeM / 2);
+      mesh.receiveShadow = true;
+      mesh.visible = false; // until its texture has arrived
+      loader.load(tileUrl(src, t.z, t.x, t.y), tex => {
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.anisotropy = 4;
+        mat.map = tex;
+        mat.needsUpdate = true;
+        mesh.visible = true;
+        requestRender();
+      });
+      tileGroup.add(mesh);
+    }
+    scene.add(tileGroup);
+    lawn.visible = false; // the map is the ground inside the plan too
+  }
   scene.add(buildBoundaryMesh(plan));
 
   const plantsGroup = new THREE.Group();

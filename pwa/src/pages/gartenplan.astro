@@ -651,9 +651,11 @@ import Layout from '../layouts/Layout.astro';
     if (!editing?.geo) return;
     editing.geo.basemap = fBasemap.value === 'none' || fBasemap.value === 'sat' ? fBasemap.value : 'osm';
     refreshBasemaps();
+    if (!plan3dContainer.hidden) btnView3d.click(); // rebuild 3D ground, camera kept
     scheduleAutosave();
   });
 
+  fBasemapOpacity.addEventListener('change', () => { if (!plan3dContainer.hidden) btnView3d.click(); });
   fBasemapOpacity.addEventListener('input', () => {
     if (!editing?.geo) return;
     editing.geo.opacity = Number(fBasemapOpacity.value);
