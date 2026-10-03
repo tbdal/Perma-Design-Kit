@@ -6,10 +6,10 @@ import { deriveLayer, LAYER_STYLE, type PlantLayer } from './plant-layer';
 import { buildPlantModel, crownShape } from './plant-mesh-3d';
 import { pointInPolygon } from './gartenplan-geometry';
 import { polygonCentroid } from './gartenplan-render';
-import { enuToPlan, tilesForRect } from './gartenplan-geo';
+import { enuToPlan, tilesForRect, planToLatLon } from './gartenplan-geo';
 import { OSM_TILES, S2_TILES, tileUrl } from './gartenplan-background';
 import { sunPosition, sunDirectionEnu } from './sun-position';
-import { sampleGrid, type ElevationGrid } from './terrain';
+import { sampleGrid, terrainTiles, type ElevationGrid } from './terrain';
 
 /** Ground height (m, relative to the plan centre) at plan x/z. */
 type GroundFn = (x: number, z: number) => number;
@@ -294,12 +294,34 @@ export function createGardenPlan3DView(
   // tile set stays (slightly lowered) until the new one has loaded. ──
   const geo = plan.geo;
   const tileSrc = geo && geo.basemap !== 'none' ? (geo.basemap === 'sat' ? S2_TILES : OSM_TILES) : null;
+  // With terrain the surroundings get relief too, even without a map: the
+  // tiles are then plain meadow-coloured.
+  const layoutSrc = tileSrc ?? (terrain ? OSM_TILES : null);
   const tileLoader = new THREE.TextureLoader();
   tileLoader.setCrossOrigin('anonymous');
   let tileGroup: THREE.Group | null = null;
   let oldTileGroup: THREE.Group | null = null;
   let tileKey = '';
-  if (tileSrc) lawn.visible = false; // the map is the ground inside the plan too
+  if (layoutSrc) lawn.visible = false; // the map/terrain tiles are the ground inside the plan too
+
+  // Ground outside the fine grid: coarser terrain tiles at the map's zoom,
+  // blended into the fine grid over its outer margin so the plan area keeps
+  // exactly the heights the plants stand on.
+  const fine = terrain ? { minX: terrain.minX, minY: terrain.minY, maxX: terrain.minX + (terrain.nx - 1) * terrain.cellM, maxY: terrain.minY + (terrain.ny - 1) * terrain.cellM } : null;
+  const blendM = fine ? Math.max(5, Math.min(20, (fine.maxX - fine.minX) * 0.15)) : 1;
+  function groundWide(x: number, z: number, tz: number): number {
+    if (!geo || !fine) return ground(x, z);
+    const inside = Math.min(x - fine.minX, fine.maxX - x, z - fine.minY, fine.maxY - z);
+    if (inside >= blendM) return ground(x, z);
+    const ll = planToLatLon({ xM: x, yM: z }, geo);
+    const e = terrainTiles.elevation(ll.lat, ll.lon, tz);
+    if (e === null) return ground(x, z);
+    const coarse = e - baseH;
+    if (inside <= 0) return coarse;
+    const w = inside / blendM;
+    return ground(x, z) * w + coarse * (1 - w);
+  }
+  let lowestY = groundMin;
 
   function disposeTiles(g: THREE.Group | null) {
     if (!g) return;
@@ -314,13 +336,24 @@ export function createGardenPlan3DView(
   }
 
   function refreshTiles() {
-    if (!geo || !tileSrc) return;
+    if (!geo || !layoutSrc) return;
     const t = controls.target;
     const R = Math.max(maxDim * 1.5, camera.position.distanceTo(t) * 1.8);
-    const tiles = tilesForRect({ minX: t.x - R, minY: t.z - R, maxX: t.x + R, maxY: t.z + R }, geo, (2 * R) / 2048, tileSrc.maxZoom);
+    const rect = { minX: t.x - R, minY: t.z - R, maxX: t.x + R, maxY: t.z + R };
+    const tiles = tilesForRect(rect, geo, (2 * R) / 2048, layoutSrc.maxZoom);
     const key = tiles.map(q => `${q.z}/${q.x}/${q.y}`).join(',');
     if (!tiles.length || key === tileKey) return;
     tileKey = key;
+    if (!terrain) { buildTiles(tiles, -1); return; }
+    // Terrain ~2 zoom levels coarser than the map: 64 px per map tile is
+    // plenty for ≤ 48 segments, and it keeps the downloads few.
+    terrainTiles.ensureRect(geo, rect, tiles[0].z - 2)
+      .then(tz => { if (tileKey === key) buildTiles(tiles, tz); })
+      .catch(() => { if (tileKey === key) buildTiles(tiles, -1); });
+  }
+
+  function buildTiles(tiles: ReturnType<typeof tilesForRect>, tz: number) {
+    if (!geo || !layoutSrc) return;
     disposeTiles(oldTileGroup);
     oldTileGroup = tileGroup;
     if (oldTileGroup) oldTileGroup.position.y = -0.02;
@@ -345,14 +378,18 @@ export function createGardenPlan3DView(
         const pos = g.attributes.position as THREE.BufferAttribute;
         for (let i = 0; i < pos.count; i++) {
           const lx = pos.getX(i) + mx, lz = pos.getZ(i) + mz;
-          pos.setY(i, ground(lx * ct + lz * st, -lx * st + lz * ct));
+          const px = lx * ct + lz * st, pz = -lx * st + lz * ct;
+          const y = tz >= 0 ? groundWide(px, pz, tz) : ground(px, pz);
+          pos.setY(i, y);
+          if (y < lowestY) lowestY = y;
         }
         g.computeVertexNormals();
       }
-      const mat = new THREE.MeshStandardMaterial({ roughness: 1, color: 0xffffff });
+      const mat = new THREE.MeshStandardMaterial({ roughness: 1, color: tileSrc ? 0xffffff : 0xb5c98f });
       const mesh = new THREE.Mesh(g, mat);
       mesh.position.set(mx, 0, mz);
       mesh.receiveShadow = true;
+      if (!tileSrc) { next.add(mesh); settled(); continue; }
       mesh.visible = false; // until its texture has arrived
       tileLoader.load(tileUrl(tileSrc, q.z, q.x, q.y), tex => {
         if (tileGroup !== next && oldTileGroup !== next) { tex.dispose(); return; }
@@ -367,6 +404,9 @@ export function createGardenPlan3DView(
       next.add(mesh);
     }
     scene.add(next);
+    // Valleys around the plan may lie below the fine grid's lowest point.
+    meadow.position.y = Math.min(meadow.position.y, lowestY - 0.5);
+    requestRender();
   }
   const drapeCell = terrain ? Math.max(0.5, terrain.cellM / 2) : 1e9;
   scene.add(buildBoundaryMesh(plan, ground, drapeCell));

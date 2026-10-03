@@ -120,6 +120,80 @@ function lonLatToTileFloat(lat: number, lon: number, z: number): { x: number; y:
 
 /** Loads terrain tiles covering `rect` (plan meters around the garden) and
  *  samples them on a grid with roughly `cellM` spacing. */
+async function fetchTerrainTile(z: number, x: number, y: number): Promise<{ img: ImageData; sources: string[] }> {
+  const res = await fetch(TERRAIN_URL.replace('{z}', String(z)).replace('{x}', String(x)).replace('{y}', String(y)));
+  if (!res.ok) throw new Error(`terrain tile ${res.status}`);
+  const sources = (res.headers.get('x-amz-meta-x-imagery-sources') ?? '').split(',').map(s => s.split('/')[0].trim()).filter(Boolean);
+  const bmp = await createImageBitmap(await res.blob());
+  const c = document.createElement('canvas');
+  c.width = bmp.width; c.height = bmp.height;
+  const ctx = c.getContext('2d', { willReadFrequently: true })!;
+  ctx.drawImage(bmp, 0, 0);
+  return { img: ctx.getImageData(0, 0, c.width, c.height), sources };
+}
+
+/** Coarser terrain for the surroundings in 3D: terrarium tiles at a zoom
+ *  matching the visible map, cached for the session. */
+export class TerrainTileCache {
+  private tiles = new Map<string, ImageData | null>();
+  private pending = new Map<string, Promise<void>>();
+
+  /** Picks the terrain zoom for a rect (≤ maxZoom, ≤ maxTiles tiles), loads it. */
+  async ensureRect(geo: GardenPlanGeo, rect: PlanRect, maxZoom: number, maxTiles = 36): Promise<number> {
+    const ll = [
+      planToLatLon({ xM: rect.minX, yM: rect.minY }, geo), planToLatLon({ xM: rect.maxX, yM: rect.minY }, geo),
+      planToLatLon({ xM: rect.maxX, yM: rect.maxY }, geo), planToLatLon({ xM: rect.minX, yM: rect.maxY }, geo),
+    ];
+    for (let z = Math.min(TERRAIN_MAX_ZOOM, Math.max(0, Math.round(maxZoom))); z >= 0; z--) {
+      const c = ll.map(p => lonLatToTileFloat(p.lat, p.lon, z));
+      const n = 2 ** z;
+      const x0 = Math.max(0, Math.floor(Math.min(...c.map(q => q.x)))), x1 = Math.min(n - 1, Math.floor(Math.max(...c.map(q => q.x))));
+      const y0 = Math.max(0, Math.floor(Math.min(...c.map(q => q.y)))), y1 = Math.min(n - 1, Math.floor(Math.max(...c.map(q => q.y))));
+      if ((x1 - x0 + 1) * (y1 - y0 + 1) > maxTiles) continue;
+      const jobs: Promise<void>[] = [];
+      for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) jobs.push(this.load(z, x, y));
+      await Promise.all(jobs);
+      return z;
+    }
+    return 0;
+  }
+
+  private load(z: number, x: number, y: number): Promise<void> {
+    const key = `${z}/${x}/${y}`;
+    if (this.tiles.has(key)) return Promise.resolve();
+    let p = this.pending.get(key);
+    if (!p) {
+      p = fetchTerrainTile(z, x, y)
+        .then(t => { this.tiles.set(key, t.img); }, () => { this.tiles.set(key, null); })
+        .finally(() => this.pending.delete(key));
+      this.pending.set(key, p);
+    }
+    return p;
+  }
+
+  /** Bilinear elevation (m) at zoom z; null where no tile is loaded. */
+  elevation(lat: number, lon: number, z: number): number | null {
+    const t = lonLatToTileFloat(lat, lon, z);
+    const gx = t.x * 256 - 0.5, gy = t.y * 256 - 0.5;
+    const px = Math.floor(gx), py = Math.floor(gy);
+    const at = (ix: number, iy: number): number | null => {
+      const tx = Math.floor(ix / 256), ty = Math.floor(iy / 256);
+      const img = this.tiles.get(`${z}/${tx}/${ty}`);
+      if (!img) return null;
+      const i = ((iy - ty * 256) * img.width + (ix - tx * 256)) * 4;
+      return terrariumElevation(img.data[i], img.data[i + 1], img.data[i + 2]);
+    };
+    const a = at(px, py), b = at(px + 1, py), c = at(px, py + 1), d = at(px + 1, py + 1);
+    const any = a ?? b ?? c ?? d;
+    if (any === null) return null;
+    const fx = gx - px, fy = gy - py;
+    const [A, B, C, D] = [a ?? any, b ?? any, c ?? any, d ?? any];
+    return (A * (1 - fx) + B * fx) * (1 - fy) + (C * (1 - fx) + D * fx) * fy;
+  }
+}
+
+export const terrainTiles = new TerrainTileCache();
+
 export async function fetchElevationGrid(geo: GardenPlanGeo, rect: PlanRect, cellM: number): Promise<ElevationGrid> {
   const z = TERRAIN_MAX_ZOOM;
   const corners = [
@@ -134,16 +208,9 @@ export async function fetchElevationGrid(geo: GardenPlanGeo, rect: PlanRect, cel
   const sources = new Set<string>();
   await Promise.all([...Array(tx1 - tx0 + 1)].flatMap((_, i) => [...Array(ty1 - ty0 + 1)].map(async (_, j) => {
     const x = tx0 + i, y = ty0 + j;
-    const res = await fetch(TERRAIN_URL.replace('{z}', String(z)).replace('{x}', String(x)).replace('{y}', String(y)));
-    if (!res.ok) throw new Error(`terrain tile ${res.status}`);
-    const src = res.headers.get('x-amz-meta-x-imagery-sources');
-    src?.split(',').forEach(s => sources.add(s.split('/')[0].trim()));
-    const bmp = await createImageBitmap(await res.blob());
-    const c = document.createElement('canvas');
-    c.width = bmp.width; c.height = bmp.height;
-    const ctx = c.getContext('2d', { willReadFrequently: true })!;
-    ctx.drawImage(bmp, 0, 0);
-    tiles.set(`${x}/${y}`, ctx.getImageData(0, 0, c.width, c.height));
+    const t = await fetchTerrainTile(z, x, y);
+    t.sources.forEach(s => sources.add(s));
+    tiles.set(`${x}/${y}`, t.img);
   })));
 
   const elevAt = (lat: number, lon: number): number => {

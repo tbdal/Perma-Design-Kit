@@ -2,6 +2,9 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Gartenplan: Gelände auch im Umfeld in 3D (2026-10-04)
+- [x] **3D-Gelände rundum:** Nicht mehr nur die Gartenfläche, sondern die ganze sichtbare Umgebung liegt auf dem Gelände (Täler, Hänge, Berge) — beim Rauszoomen mit passend gröberen Höhendaten nachgeladen und weich an das genaue Raster der Gartenfläche angeschlossen. Ohne Hintergrundkarte erscheint das Umfeld als Wiese.
+
 ## Gartenplan: Vorschau der Pflanzvorschläge (2026-10-04)
 - [x] **Funktions-Abdeckung:** Beim Darüberfahren (oder Tastatur-Fokus) über einen Vorschlag zeigt die Karte die Pflanze an ihrer Lücke — Krone in heutiger Größe, Wirkbereich der Funktion und Name. Die Vorschläge nennen außerdem Höhe, Breite und alle Funktionen der Pflanze.
 
