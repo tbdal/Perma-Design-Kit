@@ -2,6 +2,11 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Gartenplan: Zoom-feste Beschriftung, Ausgewählt-Panel für Flächen (2026-10-03)
+- [x] Beschriftungen, Linien, Rasterzahlen und Griffe bleiben beim Zoomen gleich groß auf dem Bildschirm (vorher wuchsen sie beim Hineinzoomen mit).
+- [x] Griffe zum Verändern von Polygonen halb so groß, mit unsichtbar größerer Trefferfläche (auch per Touch gut zu greifen).
+- [x] „Ausgewählt“ zeigt eine ausgewählte Fläche bzw. beim Umriss-Bearbeiten den Garten-Umriss: Name/Farbe, Größe (m²), Umfang, Eckpunkte, ggf. Planfläche; Fläche dort auch löschbar.
+
 ## Arbeitspakete 2026-10-03
 ### AP0 - done
 - [x] in /root/pdk/temp steht eine neue psd, welche auch icons für wasser und licht beinhaltet - und weiter designänderungen beinhaltet. konvertiere dieses zu svg und nutze sie als basis für die baumscheibe. hinter der höhe und breite soll jeweils ein "m" für meter stehen.
