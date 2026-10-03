@@ -26,7 +26,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 ## kurzfristig
 - [ ] Dokumentation in Hilfe verlinken
 - [ ] zulip wieder starten: cd /opt/zulip && docker compose start
-- [ ] barrierefreiheit - inklusivität mitdenken: Farbenblindheit..
+- [x] barrierefreiheit - inklusivität mitdenken: Farbenblindheit..
 - [ ] Button: Gruppen als Polykultur einrichten
 - [ ] warum gibt's für diese Pflanzen keine Daten?
   Gemeiner Rhabarber	Rheum rhabarbarum	—
