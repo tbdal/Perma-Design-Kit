@@ -96,7 +96,17 @@ import Layout from '../layouts/Layout.astro';
       <ul class="list-disc space-y-1 pl-6 text-sm text-stone-600 dark:text-stone-300">
         <li><strong data-i18n="vocabBadgesTerm">Ausgefüllte Badges</strong> <span data-i18n="vocabBadgesDesc">= Nutzung der Pflanze (essbar, medizinisch, Material…).</span></li>
         <li><strong data-i18n="vocabChipsTerm">Outline-Chips</strong> <span data-i18n="vocabChipsDesc">= Datenquelle, aus der ein Wert stammt (z.B. PFAF).</span></li>
-        <li><strong data-i18n="vocabAccentTerm">Akzentstreifen / -punkt</strong> <span data-i18n="vocabAccentDesc">= Primärnutzung in Kacheln und Listenzeile.</span></li>
+        <li><strong data-i18n="vocabAccentTerm">Akzentstreifen / -punkt</strong> <span data-i18n="vocabAccentDesc">= Primärnutzung in Kacheln (linker Rand) und Listenzeile. Bei mehreren Nutzungen gilt die erste passende Farbe dieser Reihenfolge:</span>
+          <ul class="mt-1 space-y-0.5 pl-2">
+            <li><span class="inline-block h-3 w-1.5 rounded-sm align-middle bg-amber-400"></span> <span data-i18n="vocabAccentEdible">essbar / Küche</span></li>
+            <li><span class="inline-block h-3 w-1.5 rounded-sm align-middle bg-rose-400"></span> <span data-i18n="vocabAccentMeds">Heilpflanze</span></li>
+            <li><span class="inline-block h-3 w-1.5 rounded-sm align-middle bg-lime-500"></span> <span data-i18n="vocabAccentNitrogen">Stickstofffixierer</span></li>
+            <li><span class="inline-block h-3 w-1.5 rounded-sm align-middle bg-teal-400"></span> <span data-i18n="vocabAccentGround">Bodendecker</span></li>
+            <li><span class="inline-block h-3 w-1.5 rounded-sm align-middle bg-cyan-400"></span> <span data-i18n="vocabAccentInsects">Insektenpflanze</span></li>
+            <li><span class="inline-block h-3 w-1.5 rounded-sm align-middle bg-stone-200 dark:bg-stone-700"></span> <span data-i18n="vocabAccentNone">keine davon</span></li>
+          </ul>
+          <span data-i18n="vocabAccentImage">Hat die Pflanze ein Bild, ist der Streifen nur unterhalb davon zu sehen.</span>
+        </li>
         <li><strong data-i18n="vocabBarTerm">Vollständigkeits­balken</strong> <span data-i18n="vocabBarDesc">= wieviele Felder gegenüber dem Maximum gefüllt sind
           (grün ≥ 80 %, gelb ≥ 50 %, rot darunter).</span></li>
       </ul>
