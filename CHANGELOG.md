@@ -2,6 +2,9 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Gartenplan: Vorschau der Pflanzvorschläge (2026-10-04)
+- [x] **Funktions-Abdeckung:** Beim Darüberfahren (oder Tastatur-Fokus) über einen Vorschlag zeigt die Karte die Pflanze an ihrer Lücke — Krone in heutiger Größe, Wirkbereich der Funktion und Name. Die Vorschläge nennen außerdem Höhe, Breite und alle Funktionen der Pflanze.
+
 ## Gartenplan: Funktions-Abdeckung mit Vorschlägen, Polykultur als Paket (2026-10-04)
 - [x] **Funktions-Abdeckung** — Kartenleiste „Funktionen“: „Alle“ färbt den Garten nach der Zahl der Funktionen in der Nähe (rot = keine, grün = alle), eine einzelne Funktion (Stickstoff, Mineralien, Insekten, Schädlingsschutz, Bodendecker, Kleintiere, Windschutz) zeigt abgedeckt/fehlend. Wirkradien je Funktion und Pflanzengröße (z. B. Insektenpflanzen weiter als Bodendecker). Seitenleiste mit Anteil je Funktion, den größten Lücken (gestrichelt markiert) und Pflanzvorschlägen aus dem eigenen Bestand (passend zu Sonne/Wasser/pH der Nachbarn); „Hier pflanzen“ setzt die Pflanze direkt in die Lücke.
 - [x] **Polykultur als Paket** — in der Pflanzen-Leiste Polykultur wählen, „Platzieren“, auf die Fläche tippen: Anker in die Mitte, Bodendecker unter die Krone, Stickstoff-/Mineralien-/Insekten-/Schädlings-Pflanzen an den Kronenrand, Obst und Begleiter in einen äußeren Ring; die Gruppe ist danach markiert und lässt sich gemeinsam verschieben.
