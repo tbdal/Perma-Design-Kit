@@ -58,12 +58,14 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
     <!-- Horizont design only: sky + tree line behind the header (and the
          search on the plant page). Height set by the script below. -->
     <div class="hz-anchor" aria-hidden="true"><div class="hz-sky"></div></div>
+    <!-- Screen-reader announcements (search results, filter counts, status); see announce() in html.ts. -->
+    <div id="a11y-status" class="sr-only" role="status" aria-live="polite"></div>
 
     <header class="site-header sticky top-0 z-50 bg-green-900 dark:bg-green-950 shadow-lg">
       <!-- On phones the page links get their own (swipeable) second row, so the
            header never makes the page wider than the screen. -->
       <nav class={`mx-auto flex ${containerMaxW} flex-wrap items-center gap-x-2 gap-y-1 px-4 py-3 sm:flex-nowrap sm:px-6`}>
-        <a href="/" class="flex shrink-0 items-center gap-2 text-lg font-bold tracking-tight text-white">
+        <a href="/" data-i18n-aria-label="homeLink" aria-label="Perma Design Kit – Startseite" class="flex shrink-0 items-center gap-2 text-lg font-bold tracking-tight text-white">
           <span class="hz-wordmark" aria-hidden="true">PERMA<br />DESIGN<br />KIT</span>
           <svg class="hz-std h-7 w-7" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
             <polyline points="16,11 20.1,14 16,19.2 9.7,14 16,6.6 24.5,14 16,23.6 16,27"

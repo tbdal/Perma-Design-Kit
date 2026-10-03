@@ -1,7 +1,7 @@
 import type { PlantData } from './types';
 import { dataCredits } from './types';
 import { escapeHtml, imageCreditOverlayHtml } from './html';
-import { displayCommonName } from './plant-name';
+import { displayCommonName, displayName } from './plant-name';
 
 // Source credits (PFAF's CC BY 4.0 requires attribution wherever its data is
 // republished, printed cards included) — only for sources the plant uses.
@@ -95,9 +95,9 @@ export function printStepperHtml(plant: PlantData, t: Translate): string {
   const off = count === 0;
   return `
     <div class="print-stepper inline-flex items-center gap-1" title="${escapeHtml(t('printStepperTitle'))}">
-      <button type="button" class="btn-print-dec inline-flex h-5 w-5 items-center justify-center rounded bg-stone-100 dark:bg-stone-800 text-xs font-medium leading-none text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700" title="${escapeHtml(t('printStepperLess'))}">−</button>
+      <button type="button" class="btn-print-dec inline-flex h-5 w-5 items-center justify-center rounded bg-stone-100 dark:bg-stone-800 text-xs font-medium leading-none text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700" title="${escapeHtml(t('printStepperLess'))}" aria-label="${escapeHtml(t('printStepperLess'))}">−</button>
       <span class="print-count-toggle w-4 cursor-pointer text-center text-xs tabular-nums ${off ? 'font-semibold text-red-500' : 'text-stone-600 dark:text-stone-300'}" title="${escapeHtml(off ? t('printStepperToggleOff') : t('printStepperToggleOn'))}">${count}</span>
-      <button type="button" class="btn-print-inc inline-flex h-5 w-5 items-center justify-center rounded bg-stone-100 dark:bg-stone-800 text-xs font-medium leading-none text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700" title="${escapeHtml(t('printStepperMore'))}">+</button>
+      <button type="button" class="btn-print-inc inline-flex h-5 w-5 items-center justify-center rounded bg-stone-100 dark:bg-stone-800 text-xs font-medium leading-none text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700" title="${escapeHtml(t('printStepperMore'))}" aria-label="${escapeHtml(t('printStepperMore'))}">+</button>
     </div>`;
 }
 
@@ -150,7 +150,7 @@ export function renderPolyCardHtml(plant: PlantData, imgSrc?: string): string {
     // ── Photo ─────────────────────────────────────────────────────────────────
     `<div style="height:128px;background:#e8e8e8;flex-shrink:0;overflow:hidden;position:relative;">` +
       (img
-        ? `<img src="${escapeHtml(img)}" style="width:100%;height:100%;object-fit:cover;" />` +
+        ? `<img src="${escapeHtml(img)}" alt="${escapeHtml(displayName(plant))}" style="width:100%;height:100%;object-fit:cover;" />` +
           imageCreditOverlayHtml(plant.imageCredit)
         : `<div style="height:100%;display:flex;align-items:center;justify-content:center;` +
                `color:#aaa;font-size:11px;">Kein Bild</div>`) +
@@ -261,7 +261,7 @@ export function renderStripeCardHtml(plant: PlantData, imgSrc?: string): string 
 
     // Photo
     `<div title="${escapeHtml(plant.imageCredit || '')}" style="width:50px;height:50px;flex-shrink:0;background:#e8e8e8;overflow:hidden;">` +
-      (img ? `<img src="${escapeHtml(img)}" style="width:100%;height:100%;object-fit:cover;" />` : '') +
+      (img ? `<img src="${escapeHtml(img)}" alt="${escapeHtml(displayName(plant))}" style="width:100%;height:100%;object-fit:cover;" />` : '') +
     `</div>` +
 
     // Name

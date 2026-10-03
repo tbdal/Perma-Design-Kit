@@ -61,3 +61,12 @@ export function imageCreditOverlayHtml(credit: string | undefined): string {
   const c = escapeHtml(credit);
   return `<div title="${c}" style="position:absolute;left:0;right:0;bottom:0;padding:1px 4px;background:rgba(0,0,0,.55);color:#fff;font-size:8px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:Arial,sans-serif;">${c}</div>`;
 }
+
+/** Speaks `text` to screen readers via the polite live region in
+ *  Layout.astro (#a11y-status). Repeating the same text re-announces it. */
+export function announce(text: string): void {
+  const region = document.getElementById('a11y-status');
+  if (!region) return;
+  region.textContent = '';
+  setTimeout(() => { region.textContent = text; }, 60);
+}

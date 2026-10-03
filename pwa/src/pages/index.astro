@@ -34,14 +34,14 @@ import Layout from '../layouts/Layout.astro';
            against the buttons on the right. -->
       <div role="group" aria-labelledby="view-label" class="flex overflow-hidden rounded-lg ring-1 ring-stone-200 dark:ring-stone-700">
         <span id="view-label" class="flex items-center bg-stone-200 dark:bg-stone-700 pl-3.5 pr-3 text-sm font-medium text-stone-600 dark:text-stone-300" data-i18n="viewLabel">Ansicht</span>
-        <button id="btn-view-grid" data-i18n-title="viewGridTitle" class="bg-green-700 px-3 py-2 text-sm font-medium text-white transition hover:bg-green-800" title="Kachelansicht">⊞</button>
-        <button id="btn-view-list" data-i18n-title="viewListTitle" class="bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 transition hover:bg-stone-200 dark:hover:bg-stone-700" title="Listenansicht">☰</button>
-        <button id="btn-view-cards" data-i18n-title="viewCardsTitle" class="bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 transition hover:bg-stone-200 dark:hover:bg-stone-700" title="Kartenansicht">▤</button>
+        <button id="btn-view-grid" data-i18n-title="viewGridTitle" data-i18n-aria-label="viewGridTitle" aria-label="Kachelansicht" aria-pressed="true" class="bg-green-700 px-3 py-2 text-sm font-medium text-white transition hover:bg-green-800" title="Kachelansicht">⊞</button>
+        <button id="btn-view-list" data-i18n-title="viewListTitle" data-i18n-aria-label="viewListTitle" aria-label="Listenansicht" aria-pressed="false" class="bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 transition hover:bg-stone-200 dark:hover:bg-stone-700" title="Listenansicht">☰</button>
+        <button id="btn-view-cards" data-i18n-title="viewCardsTitle" data-i18n-aria-label="viewCardsTitle" aria-label="Kartenansicht" aria-pressed="false" class="bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 transition hover:bg-stone-200 dark:hover:bg-stone-700" title="Kartenansicht">▤</button>
       </div>
       <!-- Sort (grid/cards only — list view sorts via clickable table headers) -->
       <div id="sort-toolbar" style="display:none" class="flex items-center gap-2">
-        <span class="text-sm font-medium text-stone-500 dark:text-stone-400" data-i18n="sortLabel">Sortieren</span>
-        <select id="sort-field-select" class="rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2 py-1.5 text-sm shadow-sm focus:border-green-500 focus:outline-none">
+        <span id="sort-label" class="text-sm font-medium text-stone-500 dark:text-stone-400" data-i18n="sortLabel">Sortieren</span>
+        <select id="sort-field-select" aria-labelledby="sort-label" class="rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2 py-1.5 text-sm shadow-sm focus:border-green-500 focus:outline-none">
           <option value="createdAt" data-i18n="sortByAdded">Zuletzt hinzugefügt</option>
           <option value="commonName" data-i18n="sortByNameAz">Name (A-Z)</option>
           <option value="latinName" data-i18n="thLatin">Lateinisch</option>
@@ -54,7 +54,7 @@ import Layout from '../layouts/Layout.astro';
           <option value="completeness" data-i18n="thCompleteness">Vollst.</option>
           <option value="groups" data-i18n="thGroups">Gruppen</option>
         </select>
-        <button id="btn-sort-dir" type="button" data-i18n-title="sortDirTitle" title="Sortierrichtung umkehren" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-2.5 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700">↑</button>
+        <button id="btn-sort-dir" type="button" data-i18n-title="sortDirTitle" data-i18n-aria-label="sortDirTitle" aria-label="Sortierrichtung umkehren" title="Sortierrichtung umkehren" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-2.5 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700">↑</button>
       </div>
     </div>
     <div class="flex items-center gap-2">
@@ -154,7 +154,7 @@ import Layout from '../layouts/Layout.astro';
         <label class="flex items-center gap-1.5"><input type="checkbox" class="filter-fruiting-opt accent-green-600" value="11" /> <span data-i18n="month11">Dezember</span></label>
       </div>
     </details>
-    <select id="filter-height" class="rounded-full border-0 bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700 focus:ring-2 focus:ring-green-400 focus:outline-none">
+    <select id="filter-height" data-i18n-aria-label="a11yFilterHeight" aria-label="Filter Höhe" class="rounded-full border-0 bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700 focus:ring-2 focus:ring-green-400 focus:outline-none">
       <option value="0" data-i18n="filterHeightAll">H: Alle</option>
       <option value="1">≥ 1m</option>
       <option value="3">≥ 3m</option>
@@ -162,7 +162,7 @@ import Layout from '../layouts/Layout.astro';
       <option value="10">≥ 10m</option>
       <option value="20">≥ 20m</option>
     </select>
-    <select id="filter-completeness" class="rounded-full border-0 bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700 focus:ring-2 focus:ring-green-400 focus:outline-none">
+    <select id="filter-completeness" data-i18n-aria-label="a11yFilterCompleteness" aria-label="Filter Vollständigkeit" class="rounded-full border-0 bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700 focus:ring-2 focus:ring-green-400 focus:outline-none">
       <option value="0" data-i18n="filterCompletenessAll">Vollst.: Alle</option>
       <option value="25">≥ 25%</option>
       <option value="50">≥ 50%</option>
@@ -214,7 +214,7 @@ import Layout from '../layouts/Layout.astro';
     <span id="filter-count" class="hidden text-stone-500 dark:text-stone-400"></span>
     <!-- Moved into #cards-toolbar in the cards view (see the view switch). -->
     <span class="ml-auto flex items-center gap-1.5 text-xs" id="bulk-print-count">
-      <span class="text-sm font-medium text-stone-500 dark:text-stone-400" data-i18n="printCountAllLabel">Druckanzahl:</span>
+      <label for="bulk-print-count-value" class="text-sm font-medium text-stone-500 dark:text-stone-400" data-i18n="printCountAllLabel">Druckanzahl:</label>
       <input type="number" id="bulk-print-count-value" min="0" max="99" value="1" class="w-14 rounded-full border-0 bg-stone-100 dark:bg-stone-800 px-2 py-1 text-xs text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 focus:ring-2 focus:ring-green-500 focus:outline-none" />
       <button id="btn-bulk-print-count" type="button" class="rounded-full bg-stone-200 dark:bg-stone-700 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-300 dark:hover:bg-stone-600"></button>
     </span>
@@ -229,8 +229,8 @@ import Layout from '../layouts/Layout.astro';
 
   <!-- Cards toolbar (own row, no layout shift in button bar) -->
   <div id="cards-toolbar" style="display:none" class="mb-4 flex flex-wrap items-center gap-2">
-    <span class="text-sm font-medium text-stone-500 dark:text-stone-400" data-i18n="cardOutputLayoutLabel">Ausgabe-Layout</span>
-    <select id="card-type-select" class="rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2 py-1.5 text-sm shadow-sm focus:border-green-500 focus:outline-none">
+    <span id="card-layout-label" class="text-sm font-medium text-stone-500 dark:text-stone-400" data-i18n="cardOutputLayoutLabel">Ausgabe-Layout</span>
+    <select id="card-type-select" aria-labelledby="card-layout-label" class="rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2 py-1.5 text-sm shadow-sm focus:border-green-500 focus:outline-none">
       <option value="poly" data-i18n="cardTypePoly">Pflanzenkarten</option>
       <option value="stripe" data-i18n="cardTypeStripe">Streifenkarten</option>
       <option value="baumscheibe" data-i18n="cardTypeBaumscheibe">Baumscheibe</option>
@@ -464,7 +464,7 @@ import Layout from '../layouts/Layout.astro';
   import { searchPlants, needsImageCredit } from '../lib/plant-search';
   import { newId } from '../lib/id';
   import { enrichPlant, trackSources, createPlantFromSearch } from '../lib/enrich';
-  import { escapeHtml, withButtonSpinner, loadingPlaceholderHtml, imageCreditOverlayHtml } from '../lib/html';
+  import { announce, escapeHtml, withButtonSpinner, loadingPlaceholderHtml, imageCreditOverlayHtml } from '../lib/html';
   import { isSourceEnabled, loadSettings } from '../lib/settings';
   import { deriveLayer, LAYER_STYLE, LAYER_I18N, PLANT_LAYERS } from '../lib/plant-layer';
   import { exportPolyCardsPDF, exportStripeCardsPDF, exportSingleCardPDF, exportSingleStripeCardPDF, exportBaumscheibePDF, exportBaumscheibesPDF, exportBaumscheibeSheetPDF, exportBaumscheibeScaledPDF, type ScaledPaper } from '../lib/pdf-export';
@@ -816,6 +816,7 @@ import Layout from '../layouts/Layout.astro';
     [btnGrid, btnList, btnCards].forEach(b => { b.classList.remove(...activeClass); b.classList.add(...inactiveClass); });
     const active = viewMode === 'grid' ? btnGrid : viewMode === 'list' ? btnList : btnCards;
     active.classList.remove(...inactiveClass); active.classList.add(...activeClass);
+    [btnGrid, btnList, btnCards].forEach(b => b.setAttribute('aria-pressed', String(b === active)));
     cardsToolbar.style.display = viewMode === 'cards' ? 'flex' : 'none';
     // Cards view: "Druckanzahl" sits in the output row (layout + format);
     // elsewhere it stays at the end of the filter bar.
@@ -946,9 +947,9 @@ import Layout from '../layouts/Layout.astro';
                 <p class="truncate text-xs italic text-stone-500 dark:text-stone-400">${escapeHtml(p.latinName)}</p>
               </div>
               <div class="flex shrink-0 gap-1 sm:opacity-0 sm:transition sm:group-hover:opacity-100">
-                <button class="btn-enrich rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60" title="${escapeHtml(t('btnEnrichTitle'))}">↻</button>
-                <button class="btn-edit rounded-md bg-stone-100 dark:bg-stone-800 px-2 py-1 text-xs font-medium text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700">✎</button>
-                <button class="btn-del rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-100 dark:hover:bg-red-900/60">✕</button>
+                <button class="btn-enrich rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60" title="${escapeHtml(t('btnEnrichTitle'))}" aria-label="${escapeHtml(t('a11yEnrich', { name: displayName(p) }))}">↻</button>
+                <button class="btn-edit rounded-md bg-stone-100 dark:bg-stone-800 px-2 py-1 text-xs font-medium text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700" aria-label="${escapeHtml(t('a11yEdit', { name: displayName(p) }))}" title="${escapeHtml(t('a11yEdit', { name: displayName(p) }))}">✎</button>
+                <button class="btn-del rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-100 dark:hover:bg-red-900/60" aria-label="${escapeHtml(t('a11yDelete', { name: displayName(p) }))}" title="${escapeHtml(t('a11yDelete', { name: displayName(p) }))}">✕</button>
               </div>
             </div>
             <div class="mb-1.5 flex gap-3 text-xs text-stone-500 dark:text-stone-400">
@@ -995,10 +996,10 @@ import Layout from '../layouts/Layout.astro';
         return { p, srcHtml, sel, pct, barColor, usageDots, functionDots, sunDots, waterDots, growthDots, layerDotHtml, phenologyHtml, printHtml, off };
       });
 
-      const actionBtns = `
-        <button class="btn-enrich rounded bg-blue-50 px-1.5 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60" title="${escapeHtml(t('btnEnrichShort'))}">↻</button>
-        <button class="btn-edit rounded bg-stone-100 dark:bg-stone-800 px-1.5 py-0.5 text-xs font-medium text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700">✎</button>
-        <button class="btn-del rounded bg-red-50 px-1.5 py-0.5 text-xs font-medium text-red-600 hover:bg-red-100 dark:hover:bg-red-900/60">✕</button>`;
+      const actionBtns = (p: PlantData) => `
+        <button class="btn-enrich rounded bg-blue-50 px-1.5 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60" title="${escapeHtml(t('btnEnrichShort'))}" aria-label="${escapeHtml(t('a11yEnrich', { name: displayName(p) }))}">↻</button>
+        <button class="btn-edit rounded bg-stone-100 dark:bg-stone-800 px-1.5 py-0.5 text-xs font-medium text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700" aria-label="${escapeHtml(t('a11yEdit', { name: displayName(p) }))}" title="${escapeHtml(t('a11yEdit', { name: displayName(p) }))}">✎</button>
+        <button class="btn-del rounded bg-red-50 px-1.5 py-0.5 text-xs font-medium text-red-600 hover:bg-red-100 dark:hover:bg-red-900/60" aria-label="${escapeHtml(t('a11yDelete', { name: displayName(p) }))}" title="${escapeHtml(t('a11yDelete', { name: displayName(p) }))}">✕</button>`;
 
       listEl.innerHTML = `
         ${legendHtml()}
@@ -1007,7 +1008,7 @@ import Layout from '../layouts/Layout.astro';
         <div class="sm:hidden divide-y divide-stone-100">
           ${rowData.map(({ p, srcHtml, sel, pct, barColor, usageDots, functionDots, sunDots, waterDots, growthDots, layerDotHtml, phenologyHtml, printHtml, off }) => `
           <div data-id="${p.id}" class="flex items-start gap-2.5 px-3 py-3 ${sel ? 'bg-green-50 dark:bg-green-900/30' : ''}${off ? ' opacity-60' : ''}">
-            <input type="checkbox" class="row-check mt-1 shrink-0 accent-green-600" ${sel ? 'checked' : ''} />
+            <input type="checkbox" aria-label="${escapeHtml(t('a11ySelect', { name: displayName(p) }))}" class="row-check mt-1 shrink-0 accent-green-600" ${sel ? 'checked' : ''} />
             <div class="w-0.5 self-stretch rounded-full ${accentColor(p)} shrink-0"></div>
             <div class="min-w-0 flex-1">
               <div class="flex items-start justify-between gap-2">
@@ -1016,7 +1017,7 @@ import Layout from '../layouts/Layout.astro';
                   <p class="truncate text-xs italic text-stone-500 dark:text-stone-400">${escapeHtml(p.latinName)}</p>
                   ${groupPillsHtml(p, 'mt-0.5')}
                 </div>
-                <div class="flex shrink-0 gap-1">${actionBtns}</div>
+                <div class="flex shrink-0 gap-1">${actionBtns(p)}</div>
               </div>
               <div class="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-stone-500 dark:text-stone-400">
                 ${p.heightM != null ? `<span>↕ ${p.heightM}m</span>` : ''}
@@ -1057,7 +1058,7 @@ import Layout from '../layouts/Layout.astro';
           <table class="w-full text-sm">
             <thead class="sticky top-0 z-10 bg-white dark:bg-stone-900">
               <tr class="border-b border-stone-200 dark:border-stone-700 text-left text-xs font-medium text-stone-500 dark:text-stone-400">
-                <th class="w-8 px-3 py-2.5"><input type="checkbox" id="select-all-check" class="accent-green-600" ${allSelected ? 'checked' : ''} /></th>
+                <th class="w-8 px-3 py-2.5"><input type="checkbox" id="select-all-check" aria-label="${escapeHtml(t('a11ySelectAll'))}" class="accent-green-600" ${allSelected ? 'checked' : ''} /></th>
                 ${thSort('commonName', t('thName'))}
                 ${thSort('latinName', t('thLatin'))}
                 ${thSort('heightM', t('thHeightShort'))}
@@ -1079,7 +1080,7 @@ import Layout from '../layouts/Layout.astro';
             <tbody class="divide-y divide-stone-100">
               ${rowData.map(({ p, srcHtml, sel, pct, barColor, usageDots, functionDots, sunDots, waterDots, growthDots, layerDotHtml, phenologyHtml, printHtml, off }) => `
               <tr data-id="${p.id}" class="hover:bg-stone-50 dark:hover:bg-stone-800 ${sel ? 'bg-green-50 dark:bg-green-900/30' : ''}${off ? ' opacity-60' : ''}">
-                <td class="px-3 py-2"><input type="checkbox" class="row-check accent-green-600" ${sel ? 'checked' : ''} /></td>
+                <td class="px-3 py-2"><input type="checkbox" aria-label="${escapeHtml(t('a11ySelect', { name: displayName(p) }))}" class="row-check accent-green-600" ${sel ? 'checked' : ''} /></td>
                 <td class="px-3 py-2">
                   <div class="flex items-center gap-1.5">
                     <div class="h-5 w-0.5 rounded-full ${accentColor(p)} shrink-0"></div>
@@ -1107,7 +1108,7 @@ import Layout from '../layouts/Layout.astro';
                 <td class="px-3 py-2">${groupPillsHtml(p) || '<span class="text-stone-300 dark:text-stone-600">—</span>'}</td>
                 <td class="px-3 py-2">${printHtml}</td>
                 <td class="px-3 py-2">${srcHtml}</td>
-                <td class="px-3 py-2"><div class="flex gap-1">${actionBtns}</div></td>
+                <td class="px-3 py-2"><div class="flex gap-1">${actionBtns(p)}</div></td>
               </tr>`).join('')}
             </tbody>
           </table>
@@ -1366,6 +1367,7 @@ import Layout from '../layouts/Layout.astro';
       done++;
     }
     btn.textContent = t('bulkEnrichDone', { done });
+    announce(btn.textContent);
     btn.disabled = false;
     setTimeout(() => renderList(), 800);
   });
@@ -1485,7 +1487,8 @@ import Layout from '../layouts/Layout.astro';
     searchResults.innerHTML = `<p class="px-4 py-3 text-sm text-stone-400 dark:text-stone-500 animate-pulse">${escapeHtml(t('searchLoading'))}</p>`;
     try {
       const results = await searchPlants(q);
-      if (results.length === 0) { searchResults.innerHTML = `<p class="px-4 py-3 text-sm text-stone-400 dark:text-stone-500">${escapeHtml(t('searchNoResults'))}</p>`; return; }
+      if (results.length === 0) { searchResults.innerHTML = `<p class="px-4 py-3 text-sm text-stone-400 dark:text-stone-500">${escapeHtml(t('searchNoResults'))}</p>`; announce(t('searchNoResults')); return; }
+      announce(t('searchResultsCount', { count: results.length }));
       // Same Latin name already in the collection (case-insensitive) — shown
       // as a hint, not a hard block, since a second entry can be legitimate
       // (e.g. a different cultivar tracked separately via varietyName).
@@ -1598,7 +1601,9 @@ import Layout from '../layouts/Layout.astro';
     if (anyFilterActive()) {
       clearBtn.classList.remove('hidden');
       countEl.classList.remove('hidden');
-      countEl.textContent = t('filterCount', { shown, total });
+      const text = t('filterCount', { shown, total });
+      if (countEl.textContent !== text) announce(text);
+      countEl.textContent = text;
     } else {
       clearBtn.classList.add('hidden');
       countEl.classList.add('hidden');
