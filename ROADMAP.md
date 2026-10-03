@@ -61,20 +61,14 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [x] Faser- und Nutzholz-icons werden immer angezeigt. das stimmt so nicht, bitte prüfen
 
 
-## jetzt 3.0
-- [ ] code-review ultra
-- [ ] layer: option das zu verändern in Bearbeiten-Dialog einfügen
-  - vorhandene Layer: tree, shrub, herb, climber, rhizo
-- [ ] functions and uses: use tables on ca page 9 for functions and uses: Namen und Reihenfolge übernehmen in Editiermodus. nicht vorhandene löschen
+## Arbeitspaket 1
 - [ ] handy-ansicht ist verschoben bzw. nicht richtig skaliert
-- [ ] calendar view: make sortable by date (earliest - latest)
-- [ ] warum gibt's für diese Pflanzen keine Daten?
-  Gemeiner Rhabarber	Rheum rhabarbarum	—
-	Haferschlehe	Prunus domestica insititia
-	Jostabeere	Ribes x nidigrolaria
-	Rubus pentalobus	Rubus pentalobus
-	--> bot. Name nicht korrekt --> über PFAF-Suche finden & eintragen, dann Daten nachladen
-- Ansicht, Filter, Ausgabeformat: Text etwas größer
+- [ ] Farblegende default einklappen.
+- [ ] PDF Druck Baumscheibe: Maßstab 1: x in einer eigenen Zeile. Nächste Zeile: Min. Größe (cm)
+- [ ] Pflanzkalender: neue Option: Sortierung nach früheste / späteste Blüte & Frucht
+- [ ] functions and uses: use tables on ca page 9 (https://www.dropbox.com/scl/fi/qaunmejk6g7o2fvr4gb78/PermaDesignKit-Documentation.docx?rlkey=15noytq7x3t7d605fxqc2t8lj&st=fhmliol6&dl=0) for functions and uses: Namen und Reihenfolge übernehmen in Editiermodus. nicht vorhandene löschen
+
+- [ ] Ansicht, Filter, Ausgabeformat: Text etwas größer
 
 
 ## kurzfristig
@@ -82,7 +76,15 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] zulip wieder starten: cd /opt/zulip && docker compose start
 - [ ] barrierefreiheit - inklusivität mitdenken: Farbenblindheit..
 - [ ] Button: Gruppen als Polykultur einrichten
-
+- [ ] warum gibt's für diese Pflanzen keine Daten?
+  Gemeiner Rhabarber	Rheum rhabarbarum	—
+	Haferschlehe	Prunus domestica insititia
+	Jostabeere	Ribes x nidigrolaria
+	Rubus pentalobus	Rubus pentalobus
+	--> bot. Name nicht korrekt --> über PFAF-Suche finden & eintragen, dann Daten nachladen
+- [x] code-review ultra
+- [x] layer: option das zu verändern in Bearbeiten-Dialog einfügen
+  - vorhandene Layer: tree, shrub, herb, climber, rhizo
 
 ## bis 1.11./Symposium
 - [ ] bug reporting aufsetzen (mit Formular vorstrukturieren)
