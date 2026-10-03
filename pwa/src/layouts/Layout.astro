@@ -31,6 +31,8 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
     <script defer data-website-id="dd0aef9b-00ce-4126-83f8-3bf21e9830c4" data-domains="permadesignkit.org" data-do-not-track="true" src="https://stats.permadesignkit.org/script.js"></script>
   </head>
   <body class="flex min-h-full flex-col bg-stone-50 dark:bg-stone-950 text-stone-800 dark:text-stone-100 antialiased">
+    <!-- First tab stop on every page (WCAG 2.4.1). -->
+    <a href="#main" data-i18n="skipToContent" class="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-green-800 focus:shadow-lg">Zum Inhalt springen</a>
     <!-- Android / Chrome install banner (top of page, non-sticky) -->
     <div id="install-banner" hidden class="flex items-center justify-between gap-3 bg-green-700 px-4 py-2 text-sm text-white sm:px-6">
       <span class="flex items-center gap-2">
@@ -103,7 +105,7 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
         </div>
       </nav>
     </header>
-    <main class={`site-main mx-auto w-full ${containerMaxW} flex-1 px-4 py-6 sm:px-6`}>
+    <main id="main" tabindex="-1" class={`site-main outline-none mx-auto w-full ${containerMaxW} flex-1 px-4 py-6 sm:px-6`}>
       <slot />
     </main>
 

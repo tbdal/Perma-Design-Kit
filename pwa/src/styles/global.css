@@ -1,5 +1,17 @@
 @import "tailwindcss";
 
+/* Keyboard focus is always visible (WCAG 2.4.7). Unlayered, so it also wins
+   over utilities like focus:outline-none (their own rings stay as well). */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid #15803d;
+  outline-offset: 2px;
+}
+.dark :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible { outline-color: #86efac; }
+html[data-design="horizont"] :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible { outline-color: #33401a; }
+html[data-design="horizont"].dark :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible { outline-color: #e6f58a; }
+/* The skip link target only receives focus programmatically. */
+#main:focus-visible { outline: none; }
+
 /* Raleway (OFL) self-hosted — loading it from fonts.googleapis.com would
    transmit every visitor's IP address to Google (GDPR issue, cf. LG München
    3 O 17493/20). */

@@ -10,6 +10,7 @@ export const layoutDict: Dict = {
   backupReminderGoto: { de: 'Zu den Daten', en: 'Go to data' },
   backupReminderDismiss: { de: 'Heute ausblenden', en: 'Hide for today' },
 
+  skipToContent: { de: 'Zum Inhalt springen', en: 'Skip to content' },
   homeLink: { de: 'Perma Design Kit – Startseite', en: 'Perma Design Kit – home' },
   navPlants: { de: 'Pflanzen', en: 'Plants' },
   navGuilds: { de: 'Polykulturen', en: 'Polycultures' },

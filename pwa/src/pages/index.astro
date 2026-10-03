@@ -835,7 +835,10 @@ import Layout from '../layouts/Layout.astro';
   function thSort(field: typeof sortField, label: string, extraClass = ''): string {
     const active = sortField === field;
     const arrow = active ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ' ↕';
-    return `<th class="cursor-pointer select-none px-3 py-2.5 hover:text-stone-800 ${extraClass}" data-sort="${field}">${label}${active ? `<span class="text-green-600">${arrow}</span>` : `<span class="text-stone-300">${arrow}</span>`}</th>`;
+    const ariaSort = active ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none';
+    // A real <button> so the column sorts with Enter/Space too; the click
+    // handler sits on the <th> (data-sort) and still receives the event.
+    return `<th class="select-none px-3 py-2.5 ${extraClass}" data-sort="${field}" aria-sort="${ariaSort}"><button type="button" class="cursor-pointer text-left hover:text-stone-800">${label}${active ? `<span class="text-green-600" aria-hidden="true">${arrow}</span>` : `<span class="text-stone-300" aria-hidden="true">${arrow}</span>`}</button></th>`;
   }
 
   function triggerDownload(content: string, filename: string, type: string) {
@@ -946,7 +949,7 @@ import Layout from '../layouts/Layout.astro';
                 <h3 class="truncate text-sm font-bold text-stone-800 dark:text-stone-100">${escapeHtml(displayName(p))}${p.varietyName ? ` <span class="font-normal text-stone-500 dark:text-stone-400">(${escapeHtml(p.varietyName)})</span>` : ''}</h3>
                 <p class="truncate text-xs italic text-stone-500 dark:text-stone-400">${escapeHtml(p.latinName)}</p>
               </div>
-              <div class="flex shrink-0 gap-1 sm:opacity-0 sm:transition sm:group-hover:opacity-100">
+              <div class="flex shrink-0 gap-1 sm:opacity-0 sm:transition sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
                 <button class="btn-enrich rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60" title="${escapeHtml(t('btnEnrichTitle'))}" aria-label="${escapeHtml(t('a11yEnrich', { name: displayName(p) }))}">↻</button>
                 <button class="btn-edit rounded-md bg-stone-100 dark:bg-stone-800 px-2 py-1 text-xs font-medium text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700" aria-label="${escapeHtml(t('a11yEdit', { name: displayName(p) }))}" title="${escapeHtml(t('a11yEdit', { name: displayName(p) }))}">✎</button>
                 <button class="btn-del rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-100 dark:hover:bg-red-900/60" aria-label="${escapeHtml(t('a11yDelete', { name: displayName(p) }))}" title="${escapeHtml(t('a11yDelete', { name: displayName(p) }))}">✕</button>
@@ -1120,7 +1123,9 @@ import Layout from '../layouts/Layout.astro';
           const f = th.dataset.sort as typeof sortField;
           if (sortField === f) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
           else { sortField = f; sortDir = 'asc'; }
-          renderList();
+          // Re-rendering replaces the header — keep keyboard focus on it.
+          const refocus = th.contains(document.activeElement);
+          renderList().then(() => { if (refocus) listEl.querySelector<HTMLElement>(`[data-sort="${f}"] button`)?.focus(); });
         });
       });
 
