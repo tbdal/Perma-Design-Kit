@@ -78,6 +78,7 @@ export const layoutDict: Dict = {
   scGpArea: { de: 'Fläche einzeichnen', en: 'Draw area' },
   scGpRow: { de: 'Reihe pflanzen (gewählte Pflanze)', en: 'Plant a row (chosen plant)' },
   scGpBoundary: { de: 'Umriss bearbeiten', en: 'Edit outline' },
+  scGpGrid: { de: 'Meterlinien ein-/ausblenden', en: 'Show / hide grid lines' },
   scGp3dViews: { de: '3D: Draufsicht / Schrägansicht', en: '3D: top view / oblique view' },
   scGpDelete: { de: 'Markierte Pflanze(n) bzw. Fläche entfernen', en: 'Remove selected plant(s) or area' },
   scGpEsc: { de: 'Abbrechen / Markierung aufheben', en: 'Cancel / clear selection' },

@@ -50,6 +50,7 @@ import Layout from '../layouts/Layout.astro';
         <span data-i18n="coverageLabel">Funktionen</span>
         <select id="g-coverage" class="rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs"></select>
       </label>
+      <label class="inline-flex items-center gap-1.5" data-i18n-title="mapGridTitle" title="Meterlinien ein-/ausblenden (G)"><input id="g-grid" type="checkbox" checked class="accent-green-700" /> <span data-i18n="mapGrid">Meterlinien</span></label>
       <label id="contours-toggle" hidden class="inline-flex items-center gap-1.5"><input id="g-contours" type="checkbox" checked class="accent-amber-700" /> <span data-i18n="mapContours">Höhenlinien</span></label>
       <span id="map-status" class="text-stone-500 dark:text-stone-400"></span>
       <span id="terrain-info" class="text-stone-600 dark:text-stone-300"></span>
@@ -527,6 +528,17 @@ import Layout from '../layouts/Layout.astro';
     return `<g pointer-events="none">${labels.join('')}</g>`;
   }
 
+  // "Meterlinien" checkbox: hides the grid lines (the meter numbers along
+  // the edges and the outline stay), e.g. to see the aerial photo clearly.
+  const gridInput = document.getElementById('g-grid') as HTMLInputElement;
+  try { gridInput.checked = localStorage.getItem('pgd-grid') !== '0'; } catch {}
+  gridInput.addEventListener('change', () => {
+    try { localStorage.setItem('pgd-grid', gridInput.checked ? '1' : '0'); } catch {}
+    if (editing) rescaleUi();
+    renderDrawingSvg();
+    refreshBasemaps();
+  });
+
   function gridDefsAndBackground(widthM: number, heightM: number, spacingM: number, patternId: string, k = 1, pxPerM = 0): string {
     // Zoomed out, the grid would turn into a carpet of lines and the meter
     // numbers into solid bars: thin both out to ≥ 12 px / ≥ 40 px apart.
@@ -539,7 +551,7 @@ import Layout from '../layouts/Layout.astro';
           <path d="M ${spacingU} 0 L 0 0 0 ${spacingU}" fill="none" stroke="#d6d3d1" stroke-width="${k}"/>
         </pattern>
       </defs>
-      <rect width="${widthM * SVG_UNITS_PER_METER}" height="${heightM * SVG_UNITS_PER_METER}" fill="url(#${patternId})" stroke="#a8a29e" stroke-width="${2 * k}"/>
+      <rect width="${widthM * SVG_UNITS_PER_METER}" height="${heightM * SVG_UNITS_PER_METER}" fill="${gridInput.checked ? `url(#${patternId})` : 'transparent'}" stroke="#a8a29e" stroke-width="${2 * k}"/>
       ${gridTickLabels(widthM, heightM, labelStepM, k)}`;
   }
 
@@ -2159,6 +2171,7 @@ import Layout from '../layouts/Layout.astro';
       case 'f': btnDrawArea.click(); break;
       case 'r': click('btn-draw-row'); break;
       case 'u': btnEditBoundary.click(); break;
+      case 'g': gridInput.click(); break;
       case 't': if (!in2d) view3d?.setViewPreset('top'); break;
       case 'o': if (!in2d) view3d?.setViewPreset('oblique'); break;
       case 'Delete': case 'Backspace':

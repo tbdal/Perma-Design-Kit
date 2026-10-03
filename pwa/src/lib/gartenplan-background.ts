@@ -46,7 +46,9 @@ export function tileUrl(src: TileSource, z: number, x: number, y: number): strin
 export function orthoTiles(o: OrthoSource): TileSource {
   return {
     url: o.url, maxZoom: o.maxZoom, minZoom: o.minZoom, fallback: S2_TILES,
-    attributionHtml: o.attributionHtml.replace('{YEAR}', String(new Date().getFullYear())) + ' · ' + S2_TILES.attributionHtml,
+    // Short credit for the overview fallback; the full one shows with 'sat'.
+    attributionHtml: o.attributionHtml.replace('{YEAR}', String(new Date().getFullYear()))
+      + ' · Übersicht: <a href="https://s2maps.eu" target="_blank" rel="noopener">Sentinel-2 cloudless</a> (EOX, Copernicus)',
   };
 }
 
