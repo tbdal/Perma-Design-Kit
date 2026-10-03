@@ -33,6 +33,7 @@ fi
 npm install --no-audit --no-fund --silent
 npm test
 npm run build
+node scripts/check-csp.mjs dist
 
 rsync -a --delete dist/ /var/www/permadesignkit.org/
 chown -R www-data:www-data /var/www/permadesignkit.org

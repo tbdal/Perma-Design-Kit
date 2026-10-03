@@ -23,6 +23,10 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()],
+    // Astro inlines processed <script>s smaller than this limit into the
+    // HTML, which the production CSP (script-src without 'unsafe-inline')
+    // silently blocks — the dev server sends no CSP, so it only breaks live.
+    build: { assetsInlineLimit: 0 },
     server: {
       https: httpsConfig,
       // Forwards /api/plant-proxy to the standalone proxy process (see
