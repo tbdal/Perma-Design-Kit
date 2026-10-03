@@ -14,7 +14,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] impressum: Jörn aufnehmenn
 
 
-## Arbeitspaket 2
+## AP 2
 - [ ] eingeklappte Farblegende farblich mehr hervorheben
 - [ ] folgende Farbe für den unteren Teil der Webseitenhintergrund im Dunkelmodus nutzen: #101210
 - [ ] in der Produkttour beispieldaten und nachladen als letztes erwähnen: "Du kannst auch mit einem Beispiel starten und dafür die "Pflanzen für kleine Gärten" aus Martin Crawford's Buch "Einen Waldgarten erschaffen" (https://www.olv-verlag.eu/Einen-Waldgarten-erschaffen/) nutzen. Klicke dafür zuerst auf "Beispieldaten laden (Crawford)" und lade dann die Detailinformationen der Pflanzen mit "Lade alle fehlenden Daten"
