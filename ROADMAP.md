@@ -15,6 +15,13 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [x] in der Produkttour beispieldaten und nachladen als letztes erwähnen: "Du kannst auch mit einem Beispiel starten und dafür die "Pflanzen für kleine Gärten" aus Martin Crawford's Buch "Einen Waldgarten erschaffen" (https://www.olv-verlag.eu/Einen-Waldgarten-erschaffen/) nutzen. Klicke dafür zuerst auf "Beispieldaten laden (Crawford)" und lade dann die Detailinformationen der Pflanzen mit "Lade alle fehlenden Daten"
 	- auf englisch:  "Plants for small gardens" & Link zum Buch: https://www.agroforestry.co.uk/product/creating-a-forest-garden-2/
 
+## APs
+### AP3
+- [ ] eigenes Projekt einfach als Link teilbar machen?
+- [ ] wenn information im editiermodus verändert wurden: statt P / WD,.. M anzeigen, für manuell
+- [ ] Überlege wie sich die Gruppen als Polykultur übertragen lassen. Ein neuer Button?
+
+
 ## Karten
 Runde 1 (Mauskoordinaten, OSM-Hintergrund mit Standort & Drehung, grobe Satellitenebene) ist erledigt → CHANGELOG. Offen (Runde 2):
 - [ ] eigenes Luftbild (Drohne, Foto, Screenshot) hochladen und per 2 Punkten kalibrieren (Maßstab + Drehung) — die einzige globale, lizenzfreie Lösung in Garten-Auflösung
@@ -23,13 +30,10 @@ Runde 1 (Mauskoordinaten, OSM-Hintergrund mit Standort & Drehung, grobe Satellit
 - [ ] kommerzieller Satellit mit offiziellem Key (Esri Location Platform / MapTiler / Mapbox Raster) erst bei Bedarf außerhalb der Ortho-Länder — Esri *ohne* Key ist nur nicht-kommerziell nutzbar
 
 ## kurzfristig
-- [ ] eigenes Projekt einfach als Link teilbar machen?
-- [ ] wenn information im editiermodus verändert wurden: statt P / WD,.. M anzeigen, für manuell
 - [ ] Dokumentation in Hilfe verlinken
 - [ ] permament storage erklären bevor es vom browser abgrefragt wird?
 - [ ] zulip wieder starten: cd /opt/zulip && docker compose start
 - [x] barrierefreiheit - inklusivität mitdenken: Farbenblindheit..
-- [ ] Button: Gruppen als Polykultur einrichten
 - [ ] Tabelle kleiner machen für kleinere Bildschirme
 - [ ] warum gibt's für diese Pflanzen keine Daten?
   Gemeiner Rhabarber	Rheum rhabarbarum	—
