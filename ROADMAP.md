@@ -29,6 +29,7 @@ Runde 1 (Mauskoordinaten, OSM-Hintergrund mit Standort & Drehung, grobe Satellit
 
 ## kurzfristig
 - [ ] eigenes Projekt einfach als Link teilbar machen?
+- [ ] wenn information im editiermodus verändert wurden: statt P / WD,.. M anzeigen, für manuell
 - [ ] Dokumentation in Hilfe verlinken
 - [ ] permament storage erklären bevor es vom browser abgrefragt wird?
 - [ ] zulip wieder starten: cd /opt/zulip && docker compose start
