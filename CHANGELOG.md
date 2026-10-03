@@ -2,6 +2,9 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Gartenplan: Kamera wird gemerkt (2026-10-04)
+- [x] Pro Gartenplan werden 2D-Ausschnitt, 3D-Kamera und die zuletzt offene Ansicht gespeichert, wenn die Karte verlassen wird (zurück zur Liste, Neuladen, Tab-Wechsel), und beim nächsten Öffnen wiederhergestellt — war 3D offen, startet der Plan wieder in 3D mit derselben Kamera.
+
 ## Gartenplan: unbegrenzt herauszoomen, Werkzeugleiste mit Lasso (2026-10-03)
 - [x] **Unbegrenzt herauszoomen** — 2D bis ca. 50 km Breite (Kacheln werden automatisch gröber); in 3D lädt die Bodenkarte nach jeder Kamerabewegung den sichtbaren Bereich nach, bis zur Region (z. B. ganz München), die Wiese reicht bis zum Horizont.
 - [x] **Werkzeugleiste in der 2D-Karte** (unter den Zoom-Buttons): ✋ **Bewegen** — Ziehen verschiebt immer die Karte, auch über Pflanzen; ↖ **Markieren – einzeln** — wie bisher, Umschalt/Strg-Klick nimmt weitere Pflanzen dazu; ⬚ **Markieren – mehrere als Fläche** — Pflanzen mit gedrückter Maus umfahren (Lasso).
