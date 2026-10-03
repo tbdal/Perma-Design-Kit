@@ -9,6 +9,9 @@ interface Props {
 }
 const { title, wide = false } = Astro.props;
 const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
+// Header and footer always use the wide container, so the menu doesn't
+// shift sideways when switching between wide and narrow pages.
+const barMaxW = 'max-w-[1600px]';
 ---
 <!doctype html>
 <html lang="de" class="h-full">
@@ -66,7 +69,7 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
     <header class="site-header sticky top-0 z-50 bg-green-900 dark:bg-green-950 shadow-lg">
       <!-- On phones the page links get their own (swipeable) second row, so the
            header never makes the page wider than the screen. -->
-      <nav class={`mx-auto flex ${containerMaxW} flex-wrap items-center gap-x-2 gap-y-1 px-4 py-3 sm:flex-nowrap sm:px-6`}>
+      <nav class={`mx-auto flex ${barMaxW} flex-wrap items-center gap-x-2 gap-y-1 px-4 py-3 sm:flex-nowrap sm:px-6`}>
         <a href="/" data-i18n-aria-label="homeLink" aria-label="Perma Design Kit – Startseite" class="flex shrink-0 items-center gap-2 text-lg font-bold tracking-tight text-white">
           <span class="hz-wordmark" aria-hidden="true">PERMA<br />DESIGN<br />KIT</span>
           <svg class="hz-std h-7 w-7" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
@@ -132,7 +135,7 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
     </main>
 
     <footer class="site-footer border-t border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 py-4 text-sm text-stone-500 dark:text-stone-400">
-      <div class={`mx-auto flex ${containerMaxW} flex-wrap items-center justify-between gap-2 px-4 sm:px-6`}>
+      <div class={`mx-auto flex ${barMaxW} flex-wrap items-center justify-between gap-2 px-4 sm:px-6`}>
         <span>© 2026 Perma Design Kit</span>
         <nav class="flex flex-wrap gap-4">
           <a href="/hilfe" data-i18n="footerHelp" class="hover:text-stone-700 dark:hover:text-stone-200 hover:underline">Hilfe</a>
