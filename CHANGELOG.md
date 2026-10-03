@@ -2,6 +2,10 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Gartenplan: amtliche Luftbilder in hoher Auflösung (2026-10-04)
+- [x] **Hintergrund „Luftbild (amtlich)“** — Orthophotos der Landesvermessungen (8–40 cm statt 10 m Sentinel-2): Bayern (40 cm), Baden-Württemberg, Brandenburg/Berlin, Hessen, Mecklenburg-Vorpommern, Niedersachsen, Nordrhein-Westfalen (10 cm), Rheinland-Pfalz, Saarland, Sachsen, Sachsen-Anhalt, Schleswig-Holstein, Thüringen (je 20 cm), dazu Österreich (basemap.at), Schweiz (swisstopo) und Niederlande (PDOK). Der passende Dienst wird über den Standort gewählt und in der Auswahl genannt („Luftbild Bayern (40 cm)“); gilt in 2D, 3D (auch im Umfeld auf dem Gelände) und als dritte Ebene beim Einzeichnen bzw. im Standort-Dialog. Neu auf der Karte gezeichnete Gärten bekommen es automatisch, wo vorhanden. In der Übersicht und außerhalb der Gebiete springt Sentinel-2 ein.
+- [x] Nur Dienste mit offener Lizenz (dl-de/by-2.0, dl-de/zero, CC BY 4.0, swisstopo/PDOK frei) — jeweils in den Capabilities geprüft, Quellenvermerk in der Karte, Datenschutz und Impressum ergänzt. Hamburg fehlt (dort mischt der Dienst Satellitenbilder unter geschlossener Lizenz bei), Bremen hat keinen offenen Dienst.
+
 ## Gartenplan: Gelände auch im Umfeld in 3D (2026-10-04)
 - [x] **3D-Gelände rundum:** Nicht mehr nur die Gartenfläche, sondern die ganze sichtbare Umgebung liegt auf dem Gelände (Täler, Hänge, Berge) — beim Rauszoomen mit passend gröberen Höhendaten nachgeladen und weich an das genaue Raster der Gartenfläche angeschlossen. Ohne Hintergrundkarte erscheint das Umfeld als Wiese.
 

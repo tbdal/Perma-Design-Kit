@@ -1,6 +1,7 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { OSM_TILES, S2_TILES } from './gartenplan-background';
+import { OSM_TILES, S2_TILES, orthoTiles, tileUrl, type TileSource } from './gartenplan-background';
+import { orthoFor } from './ortho-sources';
 import type { Lang } from './i18n/core';
 
 // Shared Leaflet plumbing for the garden plan: base map with the OSM / coarse
@@ -13,22 +14,51 @@ export const DEFAULT_CENTER: L.LatLngTuple = [51.2, 10.4];  // Germany, zoomed o
 const NOMINATIM_MIN_INTERVAL_MS = 1100;                     // Nominatim policy: max 1 request/s
 let lastSearchAt = 0;
 
+export type BaseLayer = 'osm' | 'sat' | 'ortho';
+
 export interface BaseMap {
   map: L.Map;
-  setLayer(v: 'osm' | 'sat'): void;
+  setLayer(v: BaseLayer): void;
+}
+
+/** Tile layer for any TileSource — also WMS sources with a {bbox} template. */
+function sourceLayer(src: TileSource): L.TileLayer {
+  const layer = L.tileLayer('', { maxZoom: 21, maxNativeZoom: src.maxZoom, attribution: src.attributionHtml });
+  layer.getTileUrl = (c: L.Coords) => tileUrl(src, c.z, c.x, c.y);
+  return layer;
 }
 
 export function createBaseMap(el: HTMLElement): BaseMap {
   const map = L.map(el, { zoomControl: true });
-  const osm = L.tileLayer(OSM_TILES.url, { maxZoom: 21, maxNativeZoom: OSM_TILES.maxZoom, attribution: OSM_TILES.attributionHtml });
-  const sat = L.tileLayer(S2_TILES.url, { maxZoom: 21, maxNativeZoom: S2_TILES.maxZoom, attribution: S2_TILES.attributionHtml });
+  const osm = sourceLayer(OSM_TILES);
+  const sat = sourceLayer(S2_TILES);
   osm.addTo(map);
+  let current: L.TileLayer = osm;
+  let mode: BaseLayer = 'osm';
+  // Aerial photo: the service covering the map centre (state survey office,
+  // basemap.at, swisstopo, PDOK); coarse satellite elsewhere.
+  const orthoLayers = new Map<string, L.TileLayer>();
+  const pick = (): L.TileLayer => {
+    if (mode === 'osm') return osm;
+    if (mode === 'sat') return sat;
+    const c = map.getCenter();
+    const o = orthoFor(c.lat, c.lng);
+    if (!o) return sat;
+    let l = orthoLayers.get(o.id);
+    if (!l) { l = sourceLayer(orthoTiles(o)); orthoLayers.set(o.id, l); }
+    return l;
+  };
+  const apply = () => {
+    const next = pick();
+    if (next === current) return;
+    map.removeLayer(current);
+    next.addTo(map);
+    current = next;
+  };
+  map.on('moveend', () => { if (mode === 'ortho') apply(); });
   return {
     map,
-    setLayer(v) {
-      if (v === 'sat') { map.removeLayer(osm); sat.addTo(map); }
-      else { map.removeLayer(sat); osm.addTo(map); }
-    },
+    setLayer(v) { mode = v; apply(); },
   };
 }
 
@@ -81,7 +111,10 @@ export function wireToolbar(base: BaseMap, els: ToolbarEls, lang: Lang, t: (k: s
       { enableHighAccuracy: true, timeout: 10000 },
     );
   };
-  const onLayer = (e: Event) => base.setLayer((e.currentTarget as HTMLInputElement).value === 'sat' ? 'sat' : 'osm');
+  const onLayer = (e: Event) => {
+    const v = (e.currentTarget as HTMLInputElement).value;
+    base.setLayer(v === 'sat' || v === 'ortho' ? v : 'osm');
+  };
 
   els.form.addEventListener('submit', onSearch);
   els.myPosBtn.addEventListener('click', onMyPosition);

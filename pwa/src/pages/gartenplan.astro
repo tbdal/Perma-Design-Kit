@@ -38,6 +38,7 @@ import Layout from '../layouts/Layout.astro';
         <select id="g-basemap" class="rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs disabled:opacity-50">
           <option value="none" data-i18n="mapBgNone">Kein</option>
           <option value="osm" data-i18n="mapBgOsm">Karte (OpenStreetMap)</option>
+          <option value="ortho" id="g-basemap-ortho">Luftbild (amtlich)</option>
           <option value="sat" data-i18n="mapBgSat">Satellit (grob, 10 m)</option>
         </select>
       </label>
@@ -128,6 +129,7 @@ import Layout from '../layouts/Layout.astro';
             <div class="flex flex-wrap items-center gap-3 text-xs">
               <label class="inline-flex items-center gap-1"><input type="radio" name="mapdraw-layer" value="osm" checked /> <span data-i18n="locateLayerOsm">Karte</span></label>
               <label class="inline-flex items-center gap-1" data-i18n-title="locateSatNote" title="Satellitenbild nur zur groben Orientierung (10 m pro Pixel)."><input type="radio" name="mapdraw-layer" value="sat" /> <span data-i18n="locateLayerSat">Satellit (grob, 10 m)</span></label>
+              <label class="inline-flex items-center gap-1" data-i18n-title="locateOrthoNote" title="Amtliche Luftbilder (8–40 cm) der Länder bzw. von basemap.at, swisstopo, PDOK — wo vorhanden, sonst Satellit grob."><input type="radio" name="mapdraw-layer" value="ortho" /> <span data-i18n="locateLayerOrtho">Luftbild (amtlich)</span></label>
             </div>
           </div>
           <div id="drawing-controls" class="hidden flex flex-wrap gap-2">
@@ -296,6 +298,7 @@ import Layout from '../layouts/Layout.astro';
         <span class="inline-flex items-center gap-2">
           <label class="inline-flex items-center gap-1"><input type="radio" name="locate-layer" value="osm" checked /> <span data-i18n="locateLayerOsm">Karte</span></label>
           <label class="inline-flex items-center gap-1" data-i18n-title="locateSatNote" title="Satellitenbild nur zur groben Orientierung (10 m pro Pixel)."><input type="radio" name="locate-layer" value="sat" /> <span data-i18n="locateLayerSat">Satellit (grob, 10 m)</span></label>
+          <label class="inline-flex items-center gap-1" data-i18n-title="locateOrthoNote" title="Amtliche Luftbilder (8–40 cm) der Länder bzw. von basemap.at, swisstopo, PDOK — wo vorhanden, sonst Satellit grob."><input type="radio" name="locate-layer" value="ortho" /> <span data-i18n="locateLayerOrtho">Luftbild (amtlich)</span></label>
         </span>
         <span class="inline-flex items-center gap-1.5">
           <span data-i18n="locateRotation">Drehung</span>
@@ -347,6 +350,7 @@ import Layout from '../layouts/Layout.astro';
   import { COVER_FUNCS, coverageGrid, coverageSummary, findGaps, suggestPlants, hasFunc, funcCount, influenceRadius, type CoverFunc } from '../lib/function-coverage';
   import { layoutPolyculture } from '../lib/polyculture-layout';
   import { BOOL_FIELDS } from '../lib/plant-fields';
+  import { orthoFor } from '../lib/ortho-sources';
   import { fetchElevationGrid, slopeInfo, contourSegments, contourInterval, TERRAIN_ATTRIBUTION, type ElevationGrid } from '../lib/terrain';
   import { plantDetailHtml } from '../lib/plant-detail';
   import { compatScore } from '../lib/compat';
@@ -407,6 +411,7 @@ import Layout from '../layouts/Layout.astro';
   const btnLocate = document.getElementById('btn-locate') as HTMLButtonElement;
   const fBasemap = document.getElementById('g-basemap') as HTMLSelectElement;
   const fBasemapOpacity = document.getElementById('g-basemap-opacity') as HTMLInputElement;
+  const fBasemapOrtho = document.getElementById('g-basemap-ortho') as HTMLOptionElement;
   const mapStatus = document.getElementById('map-status')!;
   const mapBar = document.getElementById('map-bar')!;
   const drawModeRadios = document.querySelectorAll<HTMLInputElement>('input[name="draw-mode"]');
@@ -664,6 +669,11 @@ import Layout from '../layouts/Layout.astro';
     fBasemap.disabled = !geo;
     fBasemapOpacity.disabled = !geo;
     fBasemap.value = geo?.basemap ?? 'none';
+    // Name the service the aerial photo comes from (or that there is none).
+    const ortho = geo ? orthoFor(geo.lat, geo.lon) : null;
+    fBasemapOrtho.textContent = ortho
+      ? t('mapBgOrtho', { region: ortho.region[lang], cm: ortho.resolutionCm })
+      : t(geo ? 'mapBgOrthoNone' : 'mapBgOrthoGeneric');
     fBasemapOpacity.value = String(geo?.opacity ?? 0.6);
     mapStatus.textContent = !geo ? t('mapStatusNone')
       : geo.rotationDeg === 0 ? t('mapStatusDrawn')
@@ -695,7 +705,8 @@ import Layout from '../layouts/Layout.astro';
 
   fBasemap.addEventListener('change', () => {
     if (!editing?.geo) return;
-    editing.geo.basemap = fBasemap.value === 'none' || fBasemap.value === 'sat' ? fBasemap.value : 'osm';
+    const v = fBasemap.value;
+    editing.geo.basemap = v === 'none' || v === 'sat' || v === 'ortho' ? v : 'osm';
     refreshBasemaps();
     if (!plan3dContainer.hidden) btnView3d.click(); // rebuild 3D ground, camera kept
     scheduleAutosave();
@@ -875,7 +886,8 @@ import Layout from '../layouts/Layout.astro';
       editing.areaWidthM = r.widthM;
       editing.areaHeightM = r.heightM;
       editing.boundary = r.boundary;
-      editing.geo = { ...r.geo, basemap: 'osm', opacity: editing.geo?.opacity ?? 0.7 };
+      // Official aerial photo as background where one covers the garden.
+      editing.geo = { ...r.geo, basemap: orthoFor(r.geo.lat, r.geo.lon) ? 'ortho' : 'osm', opacity: editing.geo?.opacity ?? 0.7 };
       fWidth.value = String(r.widthM);
       fHeight.value = String(r.heightM);
       destroyMapDrawer();

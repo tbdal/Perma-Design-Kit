@@ -155,7 +155,7 @@ function normalizeGardenPlanGeo(raw: unknown): GardenPlanGeo | null {
     lat,
     lon,
     rotationDeg: ((rot % 360) + 360) % 360,
-    basemap: raw.basemap === 'none' || raw.basemap === 'sat' ? raw.basemap : 'osm',
+    basemap: raw.basemap === 'none' || raw.basemap === 'sat' || raw.basemap === 'ortho' ? raw.basemap : 'osm',
     opacity: clamp(finite(raw.opacity) ?? 0.6, 0, 1),
   };
 }

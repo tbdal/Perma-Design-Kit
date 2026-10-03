@@ -86,7 +86,7 @@ export interface GardenPlanGeo {
   lat: number;               // position of plan point 0,0
   lon: number;
   rotationDeg: number;
-  basemap: 'none' | 'osm' | 'sat';
+  basemap: 'none' | 'osm' | 'sat' | 'ortho'; // ortho = official aerial photo where covered (ortho-sources.ts), else 'sat'
   opacity: number;           // 0..1
 }
 

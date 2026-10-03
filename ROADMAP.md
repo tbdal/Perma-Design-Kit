@@ -22,9 +22,9 @@ Erledigt (2026-10-03) → CHANGELOG: Projekt als Link teilen, „M“ für manue
 
 ## Karten
 Runde 1 und 1b (Fläche direkt auf der Karte zeichnen, benannte farbige Flächen) sind erledigt → CHANGELOG. Offen (Runde 2):
-- [ ] OSM-Kacheln gehen nur bis Zoom 19 (≈ 20 cm/px) und wirken auf kleinen Plänen unscharf → Orthophotos (s. u.) würden das lösen
+- [x] OSM-Kacheln gehen nur bis Zoom 19 (≈ 20 cm/px) und wirken auf kleinen Plänen unscharf → Orthophotos (s. u.) würden das lösen — erledigt in den Ortho-Ländern
 - [ ] eigenes Luftbild (Drohne, Foto, Screenshot) hochladen und per 2 Punkten kalibrieren (Maßstab + Drehung) — die einzige globale, lizenzfreie Lösung in Garten-Auflösung
-- [ ] offene amtliche Orthophotos (10–40 cm) unter dem Plan: kuratierte Whitelist aus dem OSM Editor Layer Index, nur Einträge mit echter offener Lizenz (nicht „nur für OSM-Editing“); zuerst DE-Länder, AT (basemap.at), CH (SWISSIMAGE), NL (PDOK), FR (IGN)
+- [x] offene amtliche Orthophotos (8–40 cm) unter dem Plan (2026-10-04): 13 Bundesländer, AT (basemap.at), CH (SWISSIMAGE), NL (PDOK), Lizenz je Dienst aus den Capabilities geprüft (`src/lib/ortho-sources.ts`). Offen: Hamburg (WMS mischt Maxar/Pléiades unter geschlossener Lizenz), Bremen (kein offener Dienst gefunden), FR (IGN), Bayern nur DOP40 (DOP20 kostenpflichtig)
 - [ ] Kartenhintergrund im Gartenplan-PDF (Canvas → `embedJpg`, Attribution auf der Seite)
 - [ ] kommerzieller Satellit mit offiziellem Key (Esri Location Platform / MapTiler / Mapbox Raster) erst bei Bedarf außerhalb der Ortho-Länder — Esri *ohne* Key ist nur nicht-kommerziell nutzbar
 

@@ -7,7 +7,7 @@ import { buildPlantModel, crownShape } from './plant-mesh-3d';
 import { pointInPolygon } from './gartenplan-geometry';
 import { polygonCentroid } from './gartenplan-render';
 import { enuToPlan, tilesForRect, planToLatLon } from './gartenplan-geo';
-import { OSM_TILES, S2_TILES, tileUrl } from './gartenplan-background';
+import { OSM_TILES, sourceForGeo, tileUrl } from './gartenplan-background';
 import { sunPosition, sunDirectionEnu } from './sun-position';
 import { sampleGrid, terrainTiles, type ElevationGrid } from './terrain';
 
@@ -293,7 +293,7 @@ export function createGardenPlan3DView(
   // mapping as the rotate(−θ) in 2D, here around the vertical axis). The old
   // tile set stays (slightly lowered) until the new one has loaded. ──
   const geo = plan.geo;
-  const tileSrc = geo && geo.basemap !== 'none' ? (geo.basemap === 'sat' ? S2_TILES : OSM_TILES) : null;
+  const tileSrc = sourceForGeo(geo);
   // With terrain the surroundings get relief too, even without a map: the
   // tiles are then plain meadow-coloured.
   const layoutSrc = tileSrc ?? (terrain ? OSM_TILES : null);

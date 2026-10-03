@@ -1,14 +1,19 @@
-import type { GardenPlan } from './types';
+import type { GardenPlan, GardenPlanGeo } from './types';
 import { tilesForRect, type PlanRect } from './gartenplan-geo';
 import { SVG_UNITS_PER_METER } from './gartenplan-render';
+import { orthoFor, type OrthoSource } from './ortho-sources';
 
 // Map tile sources. Kept in one place so swapping a provider (e.g. the EOX
 // satellite layer once its license for production use is settled, see
 // ROADMAP "Karten") touches only this table.
 export interface TileSource {
-  url: string;           // {z}/{x}/{y} template
+  url: string;           // {z}/{x}/{y} template, or a WMS GetMap URL with {bbox} (EPSG:3857)
   maxZoom: number;       // highest zoom actually served
   attributionHtml: string;
+  /** Below minZoom tiles come from `fallback` (WMS orthophotos render
+   *  nothing at overview scales). */
+  minZoom?: number;
+  fallback?: TileSource;
 }
 
 export const OSM_TILES: TileSource = {
@@ -26,8 +31,34 @@ export const S2_TILES: TileSource = {
   attributionHtml: '<a href="https://s2maps.eu" target="_blank" rel="noopener">Sentinel-2 cloudless – s2maps.eu</a> by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2016 &amp; 2017)',
 };
 
+const HALF_WORLD = 20037508.342789244;
+
 export function tileUrl(src: TileSource, z: number, x: number, y: number): string {
+  if (src.fallback && src.minZoom !== undefined && z < src.minZoom) return tileUrl(src.fallback, z, x, y);
+  if (src.url.includes('{bbox}')) {
+    const s = (2 * HALF_WORLD) / 2 ** z;
+    const bbox = [-HALF_WORLD + x * s, HALF_WORLD - (y + 1) * s, -HALF_WORLD + (x + 1) * s, HALF_WORLD - y * s];
+    return src.url.replace('{bbox}', bbox.map(v => v.toFixed(2)).join(','));
+  }
   return src.url.replace('{z}', String(z)).replace('{x}', String(x)).replace('{y}', String(y));
+}
+
+export function orthoTiles(o: OrthoSource): TileSource {
+  return {
+    url: o.url, maxZoom: o.maxZoom, minZoom: o.minZoom, fallback: S2_TILES,
+    attributionHtml: o.attributionHtml.replace('{YEAR}', String(new Date().getFullYear())) + ' · ' + S2_TILES.attributionHtml,
+  };
+}
+
+/** Tile source for a geo-referenced plan's background; null for 'none'.
+ *  'ortho' falls back to the coarse satellite layer outside all coverages. */
+export function sourceForGeo(geo: GardenPlanGeo | null | undefined): TileSource | null {
+  if (!geo || geo.basemap === 'none') return null;
+  if (geo.basemap === 'ortho') {
+    const o = orthoFor(geo.lat, geo.lon);
+    return o ? orthoTiles(o) : S2_TILES;
+  }
+  return geo.basemap === 'sat' ? S2_TILES : OSM_TILES;
 }
 
 export function hasBasemap(plan: GardenPlan): boolean {
@@ -35,7 +66,7 @@ export function hasBasemap(plan: GardenPlan): boolean {
 }
 
 function sourceFor(plan: GardenPlan): TileSource {
-  return plan.geo?.basemap === 'sat' ? S2_TILES : OSM_TILES;
+  return sourceForGeo(plan.geo) ?? OSM_TILES;
 }
 
 /** Attribution HTML for the plan's current background, '' without one. */
