@@ -95,9 +95,9 @@ export function printStepperHtml(plant: PlantData, t: Translate): string {
   const off = count === 0;
   return `
     <div class="print-stepper inline-flex items-center gap-1" title="${escapeHtml(t('printStepperTitle'))}">
-      <button type="button" class="btn-print-dec inline-flex h-5 w-5 items-center justify-center rounded bg-stone-100 dark:bg-stone-800 text-xs font-medium leading-none text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700" title="${escapeHtml(t('printStepperLess'))}" aria-label="${escapeHtml(t('printStepperLess'))}">−</button>
+      <button type="button" class="btn-print-dec inline-flex h-6 w-6 items-center justify-center rounded bg-stone-100 dark:bg-stone-800 text-xs font-medium leading-none text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700" title="${escapeHtml(t('printStepperLess'))}" aria-label="${escapeHtml(t('printStepperLess'))}">−</button>
       <span class="print-count-toggle w-4 cursor-pointer text-center text-xs tabular-nums ${off ? 'font-semibold text-red-500' : 'text-stone-600 dark:text-stone-300'}" title="${escapeHtml(off ? t('printStepperToggleOff') : t('printStepperToggleOn'))}">${count}</span>
-      <button type="button" class="btn-print-inc inline-flex h-5 w-5 items-center justify-center rounded bg-stone-100 dark:bg-stone-800 text-xs font-medium leading-none text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700" title="${escapeHtml(t('printStepperMore'))}" aria-label="${escapeHtml(t('printStepperMore'))}">+</button>
+      <button type="button" class="btn-print-inc inline-flex h-6 w-6 items-center justify-center rounded bg-stone-100 dark:bg-stone-800 text-xs font-medium leading-none text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700" title="${escapeHtml(t('printStepperMore'))}" aria-label="${escapeHtml(t('printStepperMore'))}">+</button>
     </div>`;
 }
 

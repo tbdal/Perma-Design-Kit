@@ -46,7 +46,7 @@ export async function withButtonSpinner<T>(btn: HTMLButtonElement, task: () => P
  *  rendered, which awaits an SVG fetch + per-plant DOM work and can take a
  *  visible moment for more than a couple of plants). */
 export function loadingPlaceholderHtml(label: string): string {
-  return `<div class="col-span-full flex flex-col items-center justify-center gap-3 py-16 text-stone-400 dark:text-stone-500">
+  return `<div class="col-span-full flex flex-col items-center justify-center gap-3 py-16 text-stone-500 dark:text-stone-400">
     <span class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-current/20 border-t-current"></span>
     <span class="text-sm">${escapeHtml(label)}</span>
   </div>`;

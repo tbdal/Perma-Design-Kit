@@ -345,7 +345,7 @@ import Layout from '../layouts/Layout.astro';
           ${plan.description ? `<p class="mt-0.5 text-xs text-stone-500 dark:text-stone-400">${escapeHtml(plan.description)}</p>` : ''}
           ${poly ? `<p class="mt-2 text-xs text-stone-500 dark:text-stone-400">${t('linkedPolycultureLabel')} ${escapeHtml(poly.name || '—')}</p>` : ''}
           <p class="mt-2 text-sm text-stone-700 dark:text-stone-200">${t('placementCount', { count: plan.placements.length })}</p>
-          <p class="mt-1 text-xs text-stone-400 dark:text-stone-500">${t('areaSizeLabel', { w: plan.areaWidthM, h: plan.areaHeightM })}</p>
+          <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">${t('areaSizeLabel', { w: plan.areaWidthM, h: plan.areaHeightM })}</p>
         </article>`;
     }).join('');
     listEl.querySelectorAll<HTMLElement>('[data-plan-id]').forEach(el => {
@@ -564,7 +564,7 @@ import Layout from '../layouts/Layout.astro';
       ? plants.filter(p => p.latinName.toLowerCase().includes(q) || [p.commonName, p.commonNameEn].some(n => n && n.toLowerCase().includes(q)))
       : plants;
     if (filtered.length === 0) {
-      plantPickerEl.innerHTML = `<p class="text-xs text-stone-400 dark:text-stone-500">${t('noPlantsInCollection')}</p>`;
+      plantPickerEl.innerHTML = `<p class="text-xs text-stone-500 dark:text-stone-400">${t('noPlantsInCollection')}</p>`;
       return;
     }
     plantPickerEl.innerHTML = filtered.map(p => `
@@ -633,7 +633,7 @@ import Layout from '../layouts/Layout.astro';
     suggestionsListEl.innerHTML = candidates.map(({ p, score }) => `
       <div class="flex items-center justify-between gap-2 rounded px-2 py-1 text-xs hover:bg-stone-100 dark:hover:bg-stone-800">
         <span class="min-w-0 flex-1 truncate text-stone-700 dark:text-stone-200" title="${plantLabel(p)}">${plantLabel(p)}</span>
-        <span class="shrink-0 font-mono text-[10px] text-stone-400" title="${t('sunWaterPhTitle')}">${score.toFixed(1)}/3</span>
+        <span class="shrink-0 font-mono text-[10px] text-stone-500 dark:text-stone-400" title="${t('sunWaterPhTitle')}">${score.toFixed(1)}/3</span>
         <button data-suggest-plant="${p.id}" class="shrink-0 rounded bg-green-100 dark:bg-green-900/40 px-2 py-0.5 font-medium text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/60">${t('btnAdd')}</button>
       </div>`).join('');
     suggestionsListEl.querySelectorAll<HTMLButtonElement>('[data-suggest-plant]').forEach(btn => {
@@ -667,12 +667,12 @@ import Layout from '../layouts/Layout.astro';
 
   function renderSelectedPanel() {
     if (!editing || !selectedPlacementId) {
-      selectedPanel.innerHTML = `<p class="text-xs text-stone-400 dark:text-stone-500">${t('selectedPanelEmpty')}</p>`;
+      selectedPanel.innerHTML = `<p class="text-xs text-stone-500 dark:text-stone-400">${t('selectedPanelEmpty')}</p>`;
       return;
     }
     const placement = editing.placements.find(pl => pl.id === selectedPlacementId);
     if (!placement) {
-      selectedPanel.innerHTML = `<p class="text-xs text-stone-400 dark:text-stone-500">${t('selectedPanelEmpty')}</p>`;
+      selectedPanel.innerHTML = `<p class="text-xs text-stone-500 dark:text-stone-400">${t('selectedPanelEmpty')}</p>`;
       return;
     }
     const p = plantsById.get(placement.plantId);
@@ -892,7 +892,7 @@ import Layout from '../layouts/Layout.astro';
     const wrap = document.createElement('div');
     wrap.className = 'mt-1';
     wrap.innerHTML = `<button id="btn-import-members" type="button" class="rounded-md bg-blue-100 dark:bg-blue-900/40 px-2.5 py-1 text-xs font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/60">${t('btnImportMembers')}</button>
-      <p class="mt-1 text-[10px] text-stone-400 dark:text-stone-500">${t('importMembersHint')}</p>`;
+      <p class="mt-1 text-[10px] text-stone-500 dark:text-stone-400">${t('importMembersHint')}</p>`;
     fPolyculture.closest('label')!.after(wrap);
     wrap.querySelector('#btn-import-members')!.addEventListener('click', importPolycultureMembers);
   })();

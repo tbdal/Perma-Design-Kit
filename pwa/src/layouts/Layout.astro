@@ -80,7 +80,7 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
           <a href="/" data-nav="/" data-i18n="navPlants" class="rounded-md px-2.5 py-1 text-green-100 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900">Pflanzen</a>
           <a href="/kalender" data-nav="/kalender" data-i18n="navCalendar" class="rounded-md px-2.5 py-1 text-green-100 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900">Kalender</a>
           <a href="/polykulturen" data-nav="/polykulturen" data-i18n="navGuilds" class="rounded-md px-2.5 py-1 text-green-100 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900">Polykulturen</a>
-          <a href="/gartenplan" data-nav="/gartenplan" data-i18n="navGardenPlan" class="rounded-md px-2.5 py-1 text-green-100/50 transition hover:bg-green-800 hover:text-green-100 dark:hover:bg-green-900">Gartenplan</a>
+          <a href="/gartenplan" data-nav="/gartenplan" data-i18n="navGardenPlan" class="rounded-md px-2.5 py-1 text-green-100/75 transition hover:bg-green-800 hover:text-green-100 dark:hover:bg-green-900">Gartenplan</a>
         </div>
 
         <div class="ml-auto flex items-center gap-1">
@@ -130,7 +130,7 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
       <div class="p-6">
         <div class="mb-3 flex items-center justify-between">
           <h2 class="text-lg font-bold" id="welcome-title" data-i18n="welcomeTitle">Willkommen im Perma Design Kit</h2>
-          <button id="welcome-close" type="button" data-i18n-aria-label="closeBtn" aria-label="Schließen" class="text-2xl leading-none text-stone-400 hover:text-stone-700 dark:hover:text-stone-200">×</button>
+          <button id="welcome-close" type="button" data-i18n-aria-label="closeBtn" aria-label="Schließen" class="text-2xl leading-none text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200">×</button>
         </div>
         <div class="welcome-step space-y-2 text-sm text-stone-600 dark:text-stone-300">
           <p class="font-semibold text-stone-900 dark:text-stone-100" data-i18n="welcomeStorageHead">💾 Deine Daten bleiben in deinem Browser</p>
@@ -154,7 +154,7 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
       <p id="tour-title" class="font-semibold text-stone-900 dark:text-stone-100"></p>
       <p id="tour-text" class="mt-1"></p>
       <div class="mt-3 flex items-center justify-between gap-2">
-        <span id="tour-progress" class="text-xs text-stone-400"></span>
+        <span id="tour-progress" class="text-xs text-stone-500 dark:text-stone-400"></span>
         <div class="flex gap-1.5">
           <button id="tour-skip" type="button" data-i18n="tourSkip" class="rounded-lg px-2.5 py-1 text-xs text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800">Überspringen</button>
           <button id="tour-prev" type="button" data-i18n="welcomePrev" class="rounded-lg px-2.5 py-1 text-xs text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800">Zurück</button>
@@ -168,7 +168,7 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
       <div class="p-6">
         <div class="mb-3 flex items-center justify-between">
           <h2 class="text-lg font-bold" data-i18n="shortcutsTitle">Tastatur-Shortcuts</h2>
-          <button id="shortcuts-close" type="button" data-i18n-aria-label="closeBtn" aria-label="Schließen" class="text-2xl leading-none text-stone-400 hover:text-stone-700 dark:hover:text-stone-200">×</button>
+          <button id="shortcuts-close" type="button" data-i18n-aria-label="closeBtn" aria-label="Schließen" class="text-2xl leading-none text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200">×</button>
         </div>
         <table class="w-full text-sm">
           <tbody class="divide-y divide-stone-200 dark:divide-stone-700">
@@ -193,11 +193,10 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
           <p class="mt-1 text-stone-600 dark:text-stone-300">
             <span data-i18n="iosInstallStep1">Tippe unten in Safari auf</span>
             <svg class="inline h-4 w-4 align-text-bottom" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4m0 0L8 6m4-4v12"/></svg>
-            <strong data-i18n="iosInstallShare">Teilen</strong> <span data-i18n="iosInstallStep2">und dann auf</span>
-            <strong data-i18n="iosInstallAddToHome">„Zum Home-Bildschirm"</strong>.
+            <strong data-i18n="iosInstallShare">Teilen</strong> <span data-i18n="iosInstallStep2">und dann auf</span> <strong data-i18n="iosInstallAddToHome">„Zum Home-Bildschirm"</strong>.
           </p>
         </div>
-        <button id="ios-install-dismiss" type="button" data-i18n-aria-label="closeBtn" aria-label="Schließen" class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200">×</button>
+        <button id="ios-install-dismiss" type="button" data-i18n-aria-label="closeBtn" aria-label="Schließen" class="text-stone-500 dark:text-stone-400 hover:text-stone-600 dark:hover:text-stone-200">×</button>
       </div>
     </div>
 

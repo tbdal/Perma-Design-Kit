@@ -5,9 +5,9 @@ import Layout from '../layouts/Layout.astro';
   <!-- Search hero -->
   <section class="relative mb-8" data-hz-sky>
     <p class="hz-only hz-hero-title" data-i18n="heroTitle">Was wächst in deinem Waldgarten?</p>
-    <p class="mb-3 text-center text-xs font-medium uppercase tracking-widest text-stone-400 dark:text-stone-500" data-i18n="searchSubtitle">Pflanzendatenbank durchsuchen</p>
+    <p class="mb-3 text-center text-xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400" data-i18n="searchSubtitle">Pflanzendatenbank durchsuchen</p>
     <div class="relative flex items-center gap-0 overflow-hidden rounded-2xl bg-white dark:bg-stone-800 shadow-md ring-1 ring-stone-200 dark:ring-stone-700 focus-within:ring-2 focus-within:ring-green-400 transition">
-      <svg class="ml-4 h-5 w-5 shrink-0 text-stone-400 dark:text-stone-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <svg class="ml-4 h-5 w-5 shrink-0 text-stone-500 dark:text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/>
       </svg>
       <input type="text" id="plant-search" data-i18n-placeholder="searchPlaceholder" placeholder="Pflanze suchen — lat. oder dt. Name, z.B. Sambucus nigra"
@@ -325,14 +325,14 @@ import Layout from '../layouts/Layout.astro';
           <legend class="px-2 text-sm font-semibold text-green-800 dark:text-green-300" data-i18n="fieldsetUsage">Nutzung</legend>
           <div class="flex flex-wrap gap-x-5 gap-y-1.5 text-sm">
             <label class="inline-flex items-center gap-1.5" data-field="eatable"><input type="checkbox" id="f-eatable" class="accent-green-600" /> <span data-i18n="fld_eatable">Essbarkeit</span></label>
-            <label class="inline-flex items-center gap-1" data-field="eatableScore"><span class="text-stone-400 dark:text-stone-500" data-i18n="lblScore">Score</span><input type="number" id="f-eatableScore" min="0" max="5" class="w-12 rounded border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs" /></label>
+            <label class="inline-flex items-center gap-1" data-field="eatableScore"><span class="text-stone-500 dark:text-stone-400" data-i18n="lblScore">Score</span><input type="number" id="f-eatableScore" min="0" max="5" class="w-12 rounded border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs" /></label>
             <label class="inline-flex items-center gap-1.5" data-field="meds"><input type="checkbox" id="f-meds" class="accent-green-600" /> <span data-i18n="fld_meds">Gesundheit</span></label>
-            <label class="inline-flex items-center gap-1" data-field="medsScore"><span class="text-stone-400 dark:text-stone-500" data-i18n="lblScore">Score</span><input type="number" id="f-medsScore" min="0" max="5" class="w-12 rounded border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs" /></label>
+            <label class="inline-flex items-center gap-1" data-field="medsScore"><span class="text-stone-500 dark:text-stone-400" data-i18n="lblScore">Score</span><input type="number" id="f-medsScore" min="0" max="5" class="w-12 rounded border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs" /></label>
             <label class="inline-flex items-center gap-1.5" data-field="culinaric"><input type="checkbox" id="f-culinaric" class="accent-green-600" /> <span data-i18n="fld_culinaric">Küche</span></label>
           </div>
           <div class="mt-1.5 flex flex-wrap gap-x-5 gap-y-1.5 text-sm">
             <label class="inline-flex items-center gap-1.5" data-field="material"><input type="checkbox" id="f-material" class="accent-green-600" /> <span data-i18n="fld_material">Materialien</span></label>
-            <label class="inline-flex items-center gap-1" data-field="materialScore"><span class="text-stone-400 dark:text-stone-500" data-i18n="lblScore">Score</span><input type="number" id="f-materialScore" min="0" max="5" class="w-12 rounded border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs" /></label>
+            <label class="inline-flex items-center gap-1" data-field="materialScore"><span class="text-stone-500 dark:text-stone-400" data-i18n="lblScore">Score</span><input type="number" id="f-materialScore" min="0" max="5" class="w-12 rounded border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs" /></label>
             <label class="inline-flex items-center gap-1.5" data-field="fuel"><input type="checkbox" id="f-fuel" class="accent-green-600" /> <span data-i18n="fld_fuel">Brennstoff</span></label>
             <label class="inline-flex items-center gap-1.5" data-field="fodder"><input type="checkbox" id="f-fodder" class="accent-green-600" /> <span data-i18n="fld_fodder">Tierfutter</span></label>
           </div>
@@ -864,7 +864,7 @@ import Layout from '../layouts/Layout.astro';
             <circle cx="16" cy="11" r="1.2" fill="currentColor"/>
           </svg>
           <p class="mb-1 text-base font-semibold text-stone-500 dark:text-stone-400">${escapeHtml(t('emptyStateTitle'))}</p>
-          <p class="mb-4 text-sm text-stone-400 dark:text-stone-500">${escapeHtml(t('emptyStateSubtitle'))}</p>
+          <p class="mb-4 text-sm text-stone-500 dark:text-stone-400">${escapeHtml(t('emptyStateSubtitle'))}</p>
           <button type="button" data-focus-search class="rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">${escapeHtml(t('emptyStateBtn'))}</button>
         </div>`;
       listEl.querySelector('[data-focus-search]')!.addEventListener('click', () => document.getElementById('plant-search')!.focus());
@@ -901,7 +901,7 @@ import Layout from '../layouts/Layout.astro';
         <div class="group relative overflow-hidden rounded-xl shadow-md ring-1 ring-stone-200 dark:ring-stone-700 transition hover:shadow-lg hover:ring-green-300${(p.printCount ?? 1) === 0 ? ' opacity-60' : ''}" data-id="${p.id}" data-idx="${i}">
           <div class="pointer-events-none${isStripe ? ' overflow-x-auto' : ''}">${cardHtml}</div>
           <div class="relative z-10 flex items-center justify-between bg-white/90 dark:bg-stone-800/90 px-3 py-1.5">
-            <span class="text-xs text-stone-400 dark:text-stone-500">${escapeHtml(displayName(p))}</span>
+            <span class="text-xs text-stone-500 dark:text-stone-400">${escapeHtml(displayName(p))}</span>
             <div class="flex items-center gap-1.5">
               ${printStepperHtml(p, t)}
               <button class="btn-edit inline-flex items-center gap-1 rounded-md bg-stone-100 dark:bg-stone-800 px-2.5 py-1 text-xs font-medium text-stone-600 dark:text-stone-300 transition hover:bg-blue-100 dark:hover:bg-blue-900/60 hover:text-blue-800 dark:hover:text-blue-200">${escapeHtml(t('btnEditShort'))}</button>
@@ -968,7 +968,7 @@ import Layout from '../layouts/Layout.astro';
             <div class="h-1.5 w-20 overflow-hidden rounded-full bg-stone-100 dark:bg-stone-800">
               <div class="h-full rounded-full ${barColor}" style="width:${pct}%"></div>
             </div>
-            <span class="text-[10px] tabular-nums text-stone-400 dark:text-stone-500">${pct}%</span>
+            <span class="text-[10px] tabular-nums text-stone-500 dark:text-stone-400">${pct}%</span>
             <span class="flex-1"></span>
             ${printStepperHtml(p, t)}
             ${sourceChipsHtml(p)}
@@ -1000,9 +1000,9 @@ import Layout from '../layouts/Layout.astro';
       });
 
       const actionBtns = (p: PlantData) => `
-        <button class="btn-enrich rounded bg-blue-50 px-1.5 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60" title="${escapeHtml(t('btnEnrichShort'))}" aria-label="${escapeHtml(t('a11yEnrich', { name: displayName(p) }))}">↻</button>
-        <button class="btn-edit rounded bg-stone-100 dark:bg-stone-800 px-1.5 py-0.5 text-xs font-medium text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700" aria-label="${escapeHtml(t('a11yEdit', { name: displayName(p) }))}" title="${escapeHtml(t('a11yEdit', { name: displayName(p) }))}">✎</button>
-        <button class="btn-del rounded bg-red-50 px-1.5 py-0.5 text-xs font-medium text-red-600 hover:bg-red-100 dark:hover:bg-red-900/60" aria-label="${escapeHtml(t('a11yDelete', { name: displayName(p) }))}" title="${escapeHtml(t('a11yDelete', { name: displayName(p) }))}">✕</button>`;
+        <button class="btn-enrich inline-flex min-h-6 min-w-6 items-center justify-center rounded bg-blue-50 px-1.5 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60" title="${escapeHtml(t('btnEnrichShort'))}" aria-label="${escapeHtml(t('a11yEnrich', { name: displayName(p) }))}">↻</button>
+        <button class="btn-edit inline-flex min-h-6 min-w-6 items-center justify-center rounded bg-stone-100 dark:bg-stone-800 px-1.5 py-0.5 text-xs font-medium text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700" aria-label="${escapeHtml(t('a11yEdit', { name: displayName(p) }))}" title="${escapeHtml(t('a11yEdit', { name: displayName(p) }))}">✎</button>
+        <button class="btn-del inline-flex min-h-6 min-w-6 items-center justify-center rounded bg-red-50 px-1.5 py-0.5 text-xs font-medium text-red-600 hover:bg-red-100 dark:hover:bg-red-900/60" aria-label="${escapeHtml(t('a11yDelete', { name: displayName(p) }))}" title="${escapeHtml(t('a11yDelete', { name: displayName(p) }))}">✕</button>`;
 
       listEl.innerHTML = `
         ${legendHtml()}
@@ -1039,7 +1039,7 @@ import Layout from '../layouts/Layout.astro';
                 <div class="h-1 flex-1 overflow-hidden rounded-full bg-stone-100 dark:bg-stone-800">
                   <div class="h-full rounded-full ${barColor}" style="width:${pct}%"></div>
                 </div>
-                <span class="text-[10px] tabular-nums text-stone-400 dark:text-stone-500">${pct}%</span>
+                <span class="text-[10px] tabular-nums text-stone-500 dark:text-stone-400">${pct}%</span>
                 ${printHtml}
                 ${srcHtml ? `<span class="flex gap-1">${srcHtml}</span>` : ''}
               </div>
@@ -1091,8 +1091,8 @@ import Layout from '../layouts/Layout.astro';
                   </div>
                 </td>
                 <td class="px-3 py-2 italic text-stone-500 dark:text-stone-400">${escapeHtml(p.latinName)}</td>
-                <td class="px-3 py-2 text-stone-400 dark:text-stone-500">${p.heightM != null ? p.heightM + 'm' : '—'}</td>
-                <td class="px-3 py-2 text-stone-400 dark:text-stone-500">${p.widthM != null ? p.widthM + 'm' : '—'}</td>
+                <td class="px-3 py-2 text-stone-500 dark:text-stone-400">${p.heightM != null ? p.heightM + 'm' : '—'}</td>
+                <td class="px-3 py-2 text-stone-500 dark:text-stone-400">${p.widthM != null ? p.widthM + 'm' : '—'}</td>
                 <td class="px-3 py-2"><div class="flex gap-0.5">${usageDots}</div></td>
                 <td class="px-3 py-2"><div class="flex gap-0.5">${functionDots}</div></td>
                 <td class="px-3 py-2"><div class="flex gap-0.5">${sunDots}</div></td>
@@ -1105,7 +1105,7 @@ import Layout from '../layouts/Layout.astro';
                     <div class="h-1.5 w-16 overflow-hidden rounded-full bg-stone-100 dark:bg-stone-800">
                       <div class="h-full rounded-full ${barColor}" style="width:${pct}%"></div>
                     </div>
-                    <span class="text-[10px] tabular-nums text-stone-400 dark:text-stone-500">${pct}%</span>
+                    <span class="text-[10px] tabular-nums text-stone-500 dark:text-stone-400">${pct}%</span>
                   </div>
                 </td>
                 <td class="px-3 py-2">${groupPillsHtml(p) || '<span class="text-stone-300 dark:text-stone-600">—</span>'}</td>
@@ -1489,10 +1489,10 @@ import Layout from '../layouts/Layout.astro';
     const q = searchInput.value.trim();
     if (q.length < 2) { searchResults.innerHTML = ''; searchResults.classList.add('hidden'); return; }
     searchResults.classList.remove('hidden');
-    searchResults.innerHTML = `<p class="px-4 py-3 text-sm text-stone-400 dark:text-stone-500 animate-pulse">${escapeHtml(t('searchLoading'))}</p>`;
+    searchResults.innerHTML = `<p class="px-4 py-3 text-sm text-stone-500 dark:text-stone-400 animate-pulse">${escapeHtml(t('searchLoading'))}</p>`;
     try {
       const results = await searchPlants(q);
-      if (results.length === 0) { searchResults.innerHTML = `<p class="px-4 py-3 text-sm text-stone-400 dark:text-stone-500">${escapeHtml(t('searchNoResults'))}</p>`; announce(t('searchNoResults')); return; }
+      if (results.length === 0) { searchResults.innerHTML = `<p class="px-4 py-3 text-sm text-stone-500 dark:text-stone-400">${escapeHtml(t('searchNoResults'))}</p>`; announce(t('searchNoResults')); return; }
       announce(t('searchResultsCount', { count: results.length }));
       // Same Latin name already in the collection (case-insensitive) — shown
       // as a hint, not a hard block, since a second entry can be legitimate
@@ -1505,7 +1505,7 @@ import Layout from '../layouts/Layout.astro';
           <div class="min-w-0">
             <p class="truncate text-sm font-medium text-stone-800 dark:text-stone-100">${escapeHtml(r.commonName || r.latinName)}</p>
             ${r.latinName ? `<p class="truncate text-xs italic text-stone-500 dark:text-stone-400">${escapeHtml(r.latinName)}</p>` : ''}
-            ${r.description ? `<p class="truncate text-xs text-stone-400 dark:text-stone-500">${escapeHtml(r.description)}</p>` : ''}
+            ${r.description ? `<p class="truncate text-xs text-stone-500 dark:text-stone-400">${escapeHtml(r.description)}</p>` : ''}
             ${dupe ? `<p class="text-xs font-medium text-amber-600 dark:text-amber-400">${escapeHtml(t('searchAlreadyAdded'))}</p>` : ''}
             <p class="import-status text-xs text-green-600"></p>
           </div>

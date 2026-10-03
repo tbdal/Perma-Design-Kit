@@ -89,11 +89,11 @@ export function plantDetailHtml(p: PlantData, t: Translate): string {
     ${dims ? `<div class="mb-1.5 flex gap-3 text-xs text-stone-500 dark:text-stone-400">${dims}</div>` : ''}
     ${badges ? `<div class="mb-2 flex flex-wrap gap-1">${badges}</div>` : ''}
     ${groupPillsHtml(p, 'mb-2')}
-    ${phenology ? `<div class="mb-2"><span class="mb-0.5 block text-[10px] uppercase tracking-wide text-stone-400 dark:text-stone-500">${escapeHtml(t('thPhenology'))}</span>${phenology}</div>` : ''}
+    ${phenology ? `<div class="mb-2"><span class="mb-0.5 block text-[10px] uppercase tracking-wide text-stone-500 dark:text-stone-400">${escapeHtml(t('thPhenology'))}</span>${phenology}</div>` : ''}
     <div class="mb-2 flex items-center gap-2">
       <div class="h-1.5 w-20 overflow-hidden rounded-full bg-stone-100 dark:bg-stone-800">
         <div class="h-full rounded-full ${barColor}" style="width:${pct}%"></div>
       </div>
-      <span class="text-[10px] tabular-nums text-stone-400 dark:text-stone-500">${pct}%</span>
+      <span class="text-[10px] tabular-nums text-stone-500 dark:text-stone-400">${pct}%</span>
     </div>`;
 }

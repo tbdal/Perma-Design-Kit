@@ -15,7 +15,7 @@ import Layout from '../layouts/Layout.astro';
 
   <!-- Monatliche Übersicht -->
   <section class="mb-8">
-    <h2 class="mb-3 text-xs font-semibold uppercase tracking-wide text-stone-400 dark:text-stone-500" data-i18n="overviewHeading">Überblick</h2>
+    <h2 class="mb-3 text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400" data-i18n="overviewHeading">Überblick</h2>
     <div id="overview" class="grid grid-cols-6 gap-2 sm:grid-cols-12"></div>
   </section>
 
@@ -76,7 +76,7 @@ import Layout from '../layouts/Layout.astro';
         <option value="fruitLatest" data-i18n="sortFruitLatest">Späteste Frucht</option>
       </select>
     </label>
-    <span id="kalender-count" class="text-xs text-stone-400 dark:text-stone-500 ml-auto"></span>
+    <span id="kalender-count" class="text-xs text-stone-500 dark:text-stone-400 ml-auto"></span>
   </div>
 
   <!-- Ausgabeformat: Tabelle als PDF — genauso wie auf der Pflanzenliste -->
@@ -94,9 +94,9 @@ import Layout from '../layouts/Layout.astro';
   <!-- Empty states -->
   <div id="empty-no-data" hidden class="mt-16 text-center">
     <p class="text-stone-500 dark:text-stone-400" data-i18n="emptyNoData">Noch keine Pflanzen mit Blüte- oder Erntedaten.</p>
-    <a href="/" data-i18n="emptyNoDataLink" class="mt-2 inline-block text-sm text-green-700 dark:text-green-400 hover:underline">Pflanzen anlegen oder importieren →</a>
+    <a href="/" data-i18n="emptyNoDataLink" class="mt-2 inline-block text-sm text-green-700 dark:text-green-400 underline underline-offset-2 hover:no-underline">Pflanzen anlegen oder importieren →</a>
   </div>
-  <div id="empty-no-match" hidden class="mt-8 text-center text-sm text-stone-400 dark:text-stone-500" data-i18n="emptyNoMatch">
+  <div id="empty-no-match" hidden class="mt-8 text-center text-sm text-stone-500 dark:text-stone-400" data-i18n="emptyNoMatch">
     Keine Pflanzen entsprechen dem Filter.
   </div>
 </Layout>
@@ -201,7 +201,7 @@ import Layout from '../layouts/Layout.astro';
             <div class="w-3.5 rounded-t bg-amber-400 dark:bg-amber-500 transition-all" style="height:${fH}px" title="${t('overviewFloweringTitle', { count: fc })}"></div>
             <div class="w-3.5 rounded-t bg-green-500 dark:bg-green-400 transition-all" style="height:${rH}px" title="${t('overviewRipeTitle', { count: rc })}"></div>
           </div>
-          <p class="mt-0.5 text-[10px] ${total > 0 ? 'text-stone-400 dark:text-stone-500' : 'text-transparent'}">${total}</p>
+          <p class="mt-0.5 text-[10px] ${total > 0 ? 'text-stone-500 dark:text-stone-400' : 'text-transparent'}">${total}</p>
         </div>
       `;
     }).join('');
@@ -213,7 +213,7 @@ import Layout from '../layouts/Layout.astro';
 
     const headerCells = MONTHS.map((m, i) => {
       const isNow = i === NOW_MONTH;
-      return `<div class="flex h-8 items-center justify-center text-xs font-medium ${isNow ? 'text-green-600 dark:text-green-400 font-bold' : 'text-stone-400 dark:text-stone-500'}">${m}</div>`;
+      return `<div class="flex h-8 items-center justify-center text-xs font-medium ${isNow ? 'text-green-700 dark:text-green-400 font-bold' : 'text-stone-500 dark:text-stone-400'}">${m}</div>`;
     }).join('');
 
     // Blüte/Frucht each get their own sub-row per month (top/bottom) instead
@@ -222,7 +222,7 @@ import Layout from '../layouts/Layout.astro';
     // "both" color that no longer has anywhere to go once split.
     const rows = plants.map(p => {
       const name = escapeHtml(displayName(p));
-      const sub  = displayCommonName(p) ? `<span class="block text-[10px] italic text-stone-400 dark:text-stone-500 truncate">${escapeHtml(p.latinName)}</span>` : '';
+      const sub  = displayCommonName(p) ? `<span class="block text-[10px] italic text-stone-500 dark:text-stone-400 truncate">${escapeHtml(p.latinName)}</span>` : '';
       const cells = MONTHS.map((_, i) => {
         const flower = showF && !!(p.flowerMonths?.[i]);
         const fruit  = showR && !!(p.fruitMonths?.[i]);
