@@ -212,8 +212,9 @@ import Layout from '../layouts/Layout.astro';
     <span class="h-4 w-px bg-stone-300 dark:bg-stone-700"></span>
     <button id="btn-filter-clear" data-i18n="filterClear" class="hidden rounded-full bg-stone-200 dark:bg-stone-700 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-300 dark:hover:bg-stone-700">Zurücksetzen ×</button>
     <span id="filter-count" class="hidden text-stone-500 dark:text-stone-400"></span>
-    <span class="ml-auto flex items-center gap-1.5" id="bulk-print-count">
-      <span class="text-stone-500 dark:text-stone-400" data-i18n="printCountAllLabel">Druckanzahl:</span>
+    <!-- Moved into #cards-toolbar in the cards view (see the view switch). -->
+    <span class="ml-auto flex items-center gap-1.5 text-xs" id="bulk-print-count">
+      <span class="text-sm font-medium text-stone-500 dark:text-stone-400" data-i18n="printCountAllLabel">Druckanzahl:</span>
       <input type="number" id="bulk-print-count-value" min="0" max="99" value="1" class="w-14 rounded-full border-0 bg-stone-100 dark:bg-stone-800 px-2 py-1 text-xs text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 focus:ring-2 focus:ring-green-500 focus:outline-none" />
       <button id="btn-bulk-print-count" type="button" class="rounded-full bg-stone-200 dark:bg-stone-700 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-300 dark:hover:bg-stone-600"></button>
     </span>
@@ -227,7 +228,7 @@ import Layout from '../layouts/Layout.astro';
   </div>
 
   <!-- Cards toolbar (own row, no layout shift in button bar) -->
-  <div id="cards-toolbar" style="display:none" class="mb-4 flex items-center gap-2">
+  <div id="cards-toolbar" style="display:none" class="mb-4 flex flex-wrap items-center gap-2">
     <span class="text-sm font-medium text-stone-500 dark:text-stone-400" data-i18n="cardOutputLayoutLabel">Ausgabe-Layout</span>
     <select id="card-type-select" class="rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2 py-1.5 text-sm shadow-sm focus:border-green-500 focus:outline-none">
       <option value="poly" data-i18n="cardTypePoly">Pflanzenkarten</option>
@@ -816,6 +817,11 @@ import Layout from '../layouts/Layout.astro';
     const active = viewMode === 'grid' ? btnGrid : viewMode === 'list' ? btnList : btnCards;
     active.classList.remove(...inactiveClass); active.classList.add(...activeClass);
     cardsToolbar.style.display = viewMode === 'cards' ? 'flex' : 'none';
+    // Cards view: "Druckanzahl" sits in the output row (layout + format);
+    // elsewhere it stays at the end of the filter bar.
+    const printCount = document.getElementById('bulk-print-count')!;
+    const printCountHome = viewMode === 'cards' ? cardsToolbar : document.getElementById('filter-bar')!;
+    if (printCount.parentElement !== printCountHome) printCountHome.appendChild(printCount);
     tableToolbar.style.display = viewMode === 'list' ? 'flex' : 'none';
     sortToolbar.style.display = viewMode === 'list' ? 'none' : 'flex';
     (document.getElementById('sort-field-select') as HTMLSelectElement).value = sortField;
