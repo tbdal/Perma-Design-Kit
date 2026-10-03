@@ -22,7 +22,6 @@ Erledigt (2026-10-03) → CHANGELOG: Projekt als Link teilen, „M“ für manue
 
 ## Karten
 Runde 1 und 1b (Fläche direkt auf der Karte zeichnen, benannte farbige Flächen) sind erledigt → CHANGELOG. Offen (Runde 2):
-- [ ] Flächen nachträglich bearbeiten (Eckpunkte verschieben) und in der 3D-Ansicht anzeigen
 - [ ] OSM-Kacheln gehen nur bis Zoom 19 (≈ 20 cm/px) und wirken auf kleinen Plänen unscharf → Orthophotos (s. u.) würden das lösen
 - [ ] eigenes Luftbild (Drohne, Foto, Screenshot) hochladen und per 2 Punkten kalibrieren (Maßstab + Drehung) — die einzige globale, lizenzfreie Lösung in Garten-Auflösung
 - [ ] offene amtliche Orthophotos (10–40 cm) unter dem Plan: kuratierte Whitelist aus dem OSM Editor Layer Index, nur Einträge mit echter offener Lizenz (nicht „nur für OSM-Editing“); zuerst DE-Länder, AT (basemap.at), CH (SWISSIMAGE), NL (PDOK), FR (IGN)

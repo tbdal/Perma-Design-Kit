@@ -1,10 +1,11 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import type { GardenPlan, GardenPlanPlacement, PlantData } from './types';
+import type { GardenPlan, GardenPlanArea, GardenPlanPlacement, PlantData } from './types';
 import { displayRadiusM } from './growth-model';
 import { deriveLayer, LAYER_STYLE, type PlantLayer } from './plant-layer';
 import { seededRandom } from './blob-shape';
 import { pointInPolygon } from './gartenplan-geometry';
+import { polygonCentroid } from './gartenplan-render';
 
 /**
  * Full 3D editing view for a garden plan — camera-orbit for viewing,
@@ -24,6 +25,8 @@ export interface GardenPlan3DCallbacks {
   onGroundTap(xM: number, yM: number): void;
   onPlacementDragEnd(placementId: string, xM: number, yM: number): void;
   onPlacementSelected(placementId: string): void;
+  onAreaSelected(areaId: string): void;
+  onAreaVertexDragEnd(areaId: string, index: number, xM: number, yM: number): void;
 }
 
 export interface GardenPlan3DView {
@@ -31,6 +34,9 @@ export interface GardenPlan3DView {
   refreshPlacements(): void;
   setArmedPlant(plantId: string | null): void;
   setSelectedPlacement(placementId: string | null): void;
+  /** Rebuilds the area shapes (after add/rename/recolor/delete/vertex edit)
+   *  and shows vertex handles on `selectedAreaId`. */
+  refreshAreas(selectedAreaId: string | null): void;
   dispose(): void;
 }
 
@@ -148,6 +154,61 @@ function buildBoundaryMesh(plan: GardenPlan): THREE.Mesh {
   return new THREE.Mesh(geom, mat);
 }
 
+/** Name tag for an area: a camera-facing sprite drawn on a canvas, always on
+ *  top (depthTest off) so plants can't hide it. `heightM` = world height. */
+function buildLabelSprite(text: string, heightM: number): THREE.Sprite {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d')!;
+  const fontPx = 64;
+  ctx.font = `600 ${fontPx}px system-ui, sans-serif`;
+  canvas.width = Math.ceil(ctx.measureText(text).width) + 24;
+  canvas.height = fontPx + 24;
+  ctx.font = `600 ${fontPx}px system-ui, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.lineWidth = 10;
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineJoin = 'round';
+  ctx.strokeText(text, canvas.width / 2, canvas.height / 2);
+  ctx.fillStyle = '#1c1917';
+  ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, depthTest: false, transparent: true }));
+  sprite.scale.set(heightM * canvas.width / canvas.height, heightM, 1);
+  sprite.renderOrder = 10;
+  return sprite;
+}
+
+/** One area as a translucent colored sheet just above the ground (each one a
+ *  hair higher than the previous to avoid z-fighting where areas overlap),
+ *  with an outline and a name tag. `userData.areaId` marks it for picking. */
+function buildAreaObject(area: GardenPlanArea, index: number, selected: boolean, labelH: number): THREE.Group {
+  const group = new THREE.Group();
+  group.userData.areaId = area.id;
+  const y = 0.012 + index * 0.002;
+  const contour = area.points.map(p => new THREE.Vector2(p.xM, p.yM));
+  const triangles = THREE.ShapeUtils.triangulateShape(contour, []);
+  const geom = new THREE.BufferGeometry();
+  geom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(area.points.flatMap(p => [p.xM, y, p.yM])), 3));
+  geom.setIndex(triangles.flat());
+  geom.computeVertexNormals();
+  const fill = new THREE.Mesh(geom, new THREE.MeshBasicMaterial({
+    color: area.color, transparent: true, opacity: selected ? 0.6 : 0.42, side: THREE.DoubleSide, depthWrite: false,
+  }));
+  fill.userData.areaId = area.id;
+  group.add(fill);
+  const outlinePts = area.points.map(p => new THREE.Vector3(p.xM, y + 0.003, p.yM));
+  group.add(new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(outlinePts), new THREE.LineBasicMaterial({ color: area.color })));
+  if (area.name) {
+    const c = polygonCentroid(area.points);
+    const label = buildLabelSprite(area.name, labelH);
+    label.position.set(c.xM, labelH * 0.8, c.yM);
+    group.add(label);
+  }
+  return group;
+}
+
 function buildGroundMesh(widthM: number, heightM: number): THREE.Mesh {
   const positions = new Float32Array([
     0, 0, 0, widthM, 0, 0, widthM, 0, heightM,
@@ -195,6 +256,39 @@ export function createGardenPlan3DView(
 
   const plantsGroup = new THREE.Group();
   scene.add(plantsGroup);
+  const areasGroup = new THREE.Group();
+  scene.add(areasGroup);
+  const handlesGroup = new THREE.Group();
+  scene.add(handlesGroup);
+  const labelH = Math.max(0.4, maxDim * 0.05);
+  const handleR = Math.max(0.12, maxDim * 0.018);
+  let selectedAreaId: string | null = null;
+
+  function rebuildAreas() {
+    for (const obj of [...areasGroup.children, ...handlesGroup.children]) {
+      obj.traverse(o => {
+        const m = o as THREE.Mesh;
+        m.geometry?.dispose();
+        const mat = (m as any).material as THREE.Material & { map?: THREE.Texture };
+        mat?.map?.dispose();
+        mat?.dispose();
+      });
+    }
+    areasGroup.clear();
+    handlesGroup.clear();
+    (plan.areas ?? []).forEach((area, i) => areasGroup.add(buildAreaObject(area, i, area.id === selectedAreaId, labelH)));
+    const sel = (plan.areas ?? []).find(a => a.id === selectedAreaId);
+    sel?.points.forEach((p, i) => {
+      const h = new THREE.Mesh(
+        new THREE.SphereGeometry(handleR, 16, 12),
+        new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: new THREE.Color(sel.color), emissiveIntensity: 0.5 }),
+      );
+      h.position.set(p.xM, handleR, p.yM);
+      h.userData = { areaId: sel.id, vertexIndex: i };
+      handlesGroup.add(h);
+    });
+    requestRender();
+  }
 
   let years = plan.yearsSincePlanting;
   let armedPlantId: string | null = null;
@@ -256,6 +350,56 @@ export function createGardenPlan3DView(
 
   let dragState: { placementId: string; moved: boolean; startClientX: number; startClientY: number } | null = null;
 
+  // ── Area vertex handles: drag over the ground plane; the area's sheet is
+  // re-triangulated live from a working copy, committed via callback. ──
+  let vertexDrag: { areaId: string; index: number; points: { xM: number; yM: number }[]; moved: boolean } | null = null;
+
+  function groundPointFromEvent(e: PointerEvent): THREE.Vector3 | null {
+    setNdcFromEvent(e);
+    raycaster.setFromCamera(ndc, camera);
+    const hit = new THREE.Vector3();
+    if (!raycaster.ray.intersectPlane(groundPlane, hit)) return null;
+    hit.x = Math.max(0, Math.min(plan.areaWidthM, hit.x));
+    hit.z = Math.max(0, Math.min(plan.areaHeightM, hit.z));
+    return hit;
+  }
+
+  function onVertexPointerMove(e: PointerEvent) {
+    if (!vertexDrag) return;
+    const hit = groundPointFromEvent(e);
+    if (!hit) return;
+    vertexDrag.moved = true;
+    vertexDrag.points[vertexDrag.index] = { xM: hit.x, yM: hit.z };
+    const idx = (plan.areas ?? []).findIndex(a => a.id === vertexDrag!.areaId);
+    const area = plan.areas[idx];
+    const old = areasGroup.children.find(c => c.userData.areaId === vertexDrag!.areaId);
+    if (area && old) {
+      areasGroup.remove(old);
+      old.traverse(o => {
+        const m = o as THREE.Mesh;
+        m.geometry?.dispose();
+        const mat = (m as any).material as THREE.Material & { map?: THREE.Texture };
+        mat?.map?.dispose();
+        mat?.dispose();
+      });
+      areasGroup.add(buildAreaObject({ ...area, points: vertexDrag.points }, idx, true, labelH));
+    }
+    const handle = handlesGroup.children.find(h => h.userData.vertexIndex === vertexDrag!.index);
+    handle?.position.set(hit.x, handleR, hit.z);
+    requestRender();
+  }
+
+  function onVertexPointerUp(e: PointerEvent) {
+    if (!vertexDrag) return;
+    const { areaId, index, moved } = vertexDrag;
+    const hit = moved ? groundPointFromEvent(e) : null;
+    vertexDrag = null;
+    renderer.domElement.removeEventListener('pointermove', onVertexPointerMove);
+    controls.enabled = true;
+    if (hit) callbacks.onAreaVertexDragEnd(areaId, index, hit.x, hit.z);
+    else rebuildAreas();
+  }
+
   function onPlantPointerMove(e: PointerEvent) {
     if (!dragState) return;
     if (!dragState.moved && Math.hypot(e.clientX - dragState.startClientX, e.clientY - dragState.startClientY) > DRAG_THRESHOLD_PX) {
@@ -296,6 +440,21 @@ export function createGardenPlan3DView(
   function onContainerPointerDown(e: PointerEvent) {
     setNdcFromEvent(e);
     raycaster.setFromCamera(ndc, camera);
+
+    const handleHit = raycaster.intersectObjects(handlesGroup.children, false)[0];
+    if (handleHit) {
+      const { areaId, vertexIndex } = handleHit.object.userData as { areaId: string; vertexIndex: number };
+      const area = (plan.areas ?? []).find(a => a.id === areaId);
+      if (area) {
+        controls.enabled = false;
+        vertexDrag = { areaId, index: vertexIndex, points: area.points.map(p => ({ ...p })), moved: false };
+        renderer.domElement.setPointerCapture(e.pointerId);
+        renderer.domElement.addEventListener('pointermove', onVertexPointerMove);
+        renderer.domElement.addEventListener('pointerup', onVertexPointerUp, { once: true });
+        return;
+      }
+    }
+
     const hit = raycaster.intersectObjects(plantsGroup.children, true)[0];
     const hitId = hit ? findPlacementId(hit.object) : null;
 
@@ -317,6 +476,16 @@ export function createGardenPlan3DView(
         renderer.domElement.addEventListener('pointerup', () => { controls.enabled = true; }, { once: true });
       }
     }
+    // A plain click (no orbit drag) on an area selects it; anything that
+    // moves is left to OrbitControls as before.
+    const areaHit = raycaster.intersectObjects(areasGroup.children, true).find(h => h.object.userData.areaId);
+    if (areaHit) {
+      const areaId = areaHit.object.userData.areaId as string;
+      const sx = e.clientX, sy = e.clientY;
+      renderer.domElement.addEventListener('pointerup', (up: PointerEvent) => {
+        if (Math.hypot(up.clientX - sx, up.clientY - sy) <= DRAG_THRESHOLD_PX) callbacks.onAreaSelected(areaId);
+      }, { once: true });
+    }
     // No hit, nothing armed: fall through untouched — OrbitControls handles it.
   }
 
@@ -334,6 +503,7 @@ export function createGardenPlan3DView(
   resizeObserver.observe(container);
 
   rebuildPlacements();
+  rebuildAreas();
   requestRender();
 
   return {
@@ -347,6 +517,10 @@ export function createGardenPlan3DView(
     setArmedPlant(plantId: string | null) {
       armedPlantId = plantId;
     },
+    refreshAreas(id: string | null) {
+      selectedAreaId = id;
+      rebuildAreas();
+    },
     setSelectedPlacement(placementId: string | null) {
       selectedPlacementId = placementId;
       for (const mesh of plantsGroup.children) {
@@ -359,13 +533,14 @@ export function createGardenPlan3DView(
       resizeObserver.disconnect();
       container.removeEventListener('pointerdown', onContainerPointerDown, { capture: true } as any);
       renderer.domElement.removeEventListener('pointermove', onPlantPointerMove);
+      renderer.domElement.removeEventListener('pointermove', onVertexPointerMove);
       controls.dispose();
       scene.traverse(obj => {
         const mesh = obj as THREE.Mesh;
         if (mesh.geometry) mesh.geometry.dispose();
         const mat = (mesh as any).material;
         if (Array.isArray(mat)) mat.forEach((m: THREE.Material) => m.dispose());
-        else if (mat) mat.dispose();
+        else if (mat) { mat.map?.dispose(); mat.dispose(); }
       });
       renderer.dispose();
       if (renderer.domElement.parentNode === container) container.removeChild(renderer.domElement);

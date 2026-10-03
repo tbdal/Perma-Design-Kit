@@ -65,7 +65,7 @@ export function renderGardenPlanInnerSvg(plan: GardenPlan, plantsById: Map<strin
 /** Colors offered for new areas, cycled in order. */
 export const AREA_PALETTE = ['#22c55e', '#3b82f6', '#eab308', '#f97316', '#a855f7', '#ef4444', '#14b8a6', '#78716c'];
 
-function centroid(pts: { xM: number; yM: number }[]): { xM: number; yM: number } {
+export function polygonCentroid(pts: { xM: number; yM: number }[]): { xM: number; yM: number } {
   // Area-weighted polygon centroid; falls back to the vertex mean for
   // degenerate (zero-area) shapes.
   let a = 0, cx = 0, cy = 0;
@@ -80,17 +80,19 @@ function centroid(pts: { xM: number; yM: number }[]): { xM: number; yM: number }
 }
 
 /** Named, colored areas (beds, pond, path…) as SVG markup in plan units.
- *  Purely visual — `pointer-events="none"` so plants can still be placed on
- *  top of them. `selectedId` gets a thicker outline. */
-export function areasSvg(areas: GardenPlanArea[], selectedId: string | null, k = 1): string {
+ *  `selectedId` gets a thicker dashed outline. With `interactive` (editor)
+ *  the fills carry `data-area-id` and take clicks for selecting; clicks still
+ *  bubble to the canvas, so plants can be placed on top of an area. The PDF
+ *  export renders them inert. */
+export function areasSvg(areas: GardenPlanArea[], selectedId: string | null, k = 1, interactive = false): string {
   const u = SVG_UNITS_PER_METER;
-  return `<g class="plan-areas" pointer-events="none">${areas.map(a => {
+  return `<g class="plan-areas"${interactive ? '' : ' pointer-events="none"'}>${areas.map(a => {
     const pts = a.points.map(p => `${p.xM * u},${p.yM * u}`).join(' ');
-    const c = centroid(a.points);
+    const c = polygonCentroid(a.points);
     const sel = a.id === selectedId;
     return `
-      <polygon points="${pts}" fill="${a.color}" fill-opacity="0.3" stroke="${a.color}" stroke-width="${(sel ? 5 : 2.5) * k}"${sel ? ` stroke-dasharray="${10 * k} ${6 * k}"` : ''}/>
-      ${a.name ? `<text x="${c.xM * u}" y="${c.yM * u}" text-anchor="middle" dominant-baseline="middle" font-size="${14 * k}" font-weight="600" fill="#1c1917" stroke="#ffffff" stroke-width="${3 * k}" paint-order="stroke">${escapeHtml(a.name)}</text>` : ''}`;
+      <polygon${interactive ? ` data-area-id="${a.id}" style="cursor:pointer"` : ''} points="${pts}" fill="${a.color}" fill-opacity="0.3" stroke="${a.color}" stroke-width="${(sel ? 5 : 2.5) * k}"${sel ? ` stroke-dasharray="${10 * k} ${6 * k}"` : ''}/>
+      ${a.name ? `<text pointer-events="none" x="${c.xM * u}" y="${c.yM * u}" text-anchor="middle" dominant-baseline="middle" font-size="${14 * k}" font-weight="600" fill="#1c1917" stroke="#ffffff" stroke-width="${3 * k}" paint-order="stroke">${escapeHtml(a.name)}</text>` : ''}`;
   }).join('')}</g>`;
 }
 

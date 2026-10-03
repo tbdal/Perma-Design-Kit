@@ -63,6 +63,10 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
  
 
 
+## Flächen in 3D und bearbeitbar (2026-10-03)
+- [x] **3D** — eingezeichnete Flächen erscheinen in der 3D-Ansicht als farbige, halbtransparente Flächen mit Umriss und Namensschild; ein Klick wählt eine Fläche aus, an ihren Ecken erscheinen Kugeln, die sich über den Boden ziehen lassen.
+- [x] **2D bearbeiten** — Fläche per Klick (oder in der Liste) auswählen: Eckpunkte ziehen (mit Rasterfang), ＋ auf einer Kante fügt einen Punkt ein, Doppelklick/-tipp auf einen Punkt entfernt ihn (mind. 3 bleiben), Klick daneben oder Esc hebt die Auswahl auf. Auswahl und Änderungen sind zwischen 2D, 3D und der Liste synchron.
+
 ## Karten — Runde 1b & AP 3 (2026-10-03)
 - [x] **Fläche direkt auf der Karte zeichnen** — beim Anlegen eines Gartenplans wird der Umriss auf einer Karte (Adresssuche, „Mein Standort“, grobe Satellitenebene) angeklickt; Punkte lassen sich verschieben, Klick auf den ersten Punkt schließt die Fläche. Größe, Ursprung und Nord-Ausrichtung ergeben sich daraus (`planFromLatLngPolygon`), Breite/Tiefe muss man nicht mehr eingeben und nichts muss gedreht werden. „Raster (ohne Standort)“ bleibt als Option; der Standort-Dialog mit Drehung bleibt nur für solche Pläne.
 - [x] **Benannte, farbige Flächen** — neues Werkzeug „Fläche einzeichnen“ für Beete, Teich, Wege …; Name und Farbe in der Liste „Flächen“, Löschen per ✕. Erscheinen auch im PDF-Export; Pflanzen lassen sich weiterhin darauf platzieren.

@@ -192,6 +192,7 @@ import Layout from '../layouts/Layout.astro';
             <h2 class="mb-2 text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="areasHeading">Flächen</h2>
             <p id="areas-empty" class="text-xs text-stone-400 dark:text-stone-500" data-i18n="areasEmpty">Noch keine Flächen. Mit „Fläche einzeichnen“ Beete, Teich, Wege … einzeichnen.</p>
             <ul id="areas-list" class="space-y-1.5"></ul>
+            <p id="area-edit-hint" hidden class="mt-2 text-[11px] text-stone-500 dark:text-stone-400" data-i18n="areaEditHint">Ausgewählte Fläche: Eckpunkte ziehen (auch in 3D), ＋ auf einer Kante fügt einen Punkt ein, Doppelklick auf einen Punkt entfernt ihn. Esc hebt die Auswahl auf.</p>
           </div>
 
           <div id="suggestions-section" class="hidden rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
@@ -348,6 +349,7 @@ import Layout from '../layouts/Layout.astro';
   const btnAreaFinish = document.getElementById('btn-area-finish') as HTMLButtonElement;
   const areasList = document.getElementById('areas-list')!;
   const areasEmpty = document.getElementById('areas-empty')!;
+  const areaEditHint = document.getElementById('area-edit-hint')!;
   const lang = getLang();
 
   // ── State ───────────────────────────────────────────────────────────────
@@ -819,6 +821,20 @@ import Layout from '../layouts/Layout.astro';
         if (pl) { pl.xM = xM; pl.yM = yM; }
         scheduleAutosave();
       },
+      onAreaSelected(areaId) {
+        selectedAreaId = areaId;
+        markSelectedArea();
+      },
+      onAreaVertexDragEnd(areaId, index, xM, yM) {
+        const area = editing?.areas.find(a => a.id === areaId);
+        if (!area || !editing) return;
+        area.points[index] = {
+          xM: Math.max(0, Math.min(editing.areaWidthM, xM)),
+          yM: Math.max(0, Math.min(editing.areaHeightM, yM)),
+        };
+        renderAreasLayer();
+        scheduleAutosave();
+      },
       onPlacementSelected(placementId) {
         selectedPlacementId = placementId;
         view3d?.setSelectedPlacement(placementId);
@@ -826,6 +842,7 @@ import Layout from '../layouts/Layout.astro';
       },
     });
     view3d.setArmedPlant(armedPlantId);
+    view3d.refreshAreas(selectedAreaId);
   });
 
   document.getElementById('btn-export-pdf')!.addEventListener('click', async (e) => {
@@ -1052,12 +1069,14 @@ import Layout from '../layouts/Layout.astro';
       <g class="basemap-layer"></g>
       ${gridDefsAndBackground(w, h, editing.gridSpacingM, 'plan-grid', k)}
       <polygon points="${pointsAttr}" fill="#15803d" fill-opacity="0.08" stroke="#15803d" stroke-width="${2 * k}"/>
-      <g id="plan-areas-layer">${areasSvg(editing.areas, selectedAreaId, k)}</g>
+      <g id="plan-areas-layer">${areasSvg(editing.areas, selectedAreaId, k, true)}</g>
       <g class="north-arrow-layer"></g>
       <g id="plan-markers"></g>
+      <g id="area-handles"></g>
       <g id="area-draft" pointer-events="none"></g>`;
     renderBasemap(planSvg);
     renderAreaDraft();
+    renderAreaHandles();
     markerMap = new Map();
     const markersGroup = planSvg.querySelector('#plan-markers')!;
     for (const placement of editing.placements) {
@@ -1161,8 +1180,93 @@ import Layout from '../layouts/Layout.astro';
 
   function renderAreasLayer() {
     const layer = planSvg.querySelector('#plan-areas-layer');
-    if (layer && editing) layer.innerHTML = areasSvg(editing.areas, selectedAreaId, uiScale(editing.areaWidthM));
+    if (layer && editing) layer.innerHTML = areasSvg(editing.areas, selectedAreaId, uiScale(editing.areaWidthM), true);
+    renderAreaHandles();
+    view3d?.refreshAreas(selectedAreaId);
   }
+
+  // ── Flächen bearbeiten: Griffe an den Ecken, ＋ auf den Kanten ─────────
+  // Handles take the pointer in the capture phase so the same click can't
+  // also place a plant or start/clear a selection further down.
+  function renderAreaHandles() {
+    const g = planSvg.querySelector('#area-handles');
+    if (!g) return;
+    const area = editing?.areas.find(a => a.id === selectedAreaId);
+    if (!editing || !area || areaDraft) { g.innerHTML = ''; return; }
+    const u = SVG_UNITS_PER_METER, k = uiScale(editing.areaWidthM);
+    const n = area.points.length;
+    const mids = area.points.map((p, i) => {
+      const q = area.points[(i + 1) % n];
+      return `<g class="area-mid" data-i="${i}" style="cursor:copy"><circle cx="${(p.xM + q.xM) / 2 * u}" cy="${(p.yM + q.yM) / 2 * u}" r="${5 * k}" fill="#ffffff" fill-opacity="0.85" stroke="${area.color}" stroke-width="${1.5 * k}"/><text x="${(p.xM + q.xM) / 2 * u}" y="${(p.yM + q.yM) / 2 * u}" text-anchor="middle" dominant-baseline="central" font-size="${8 * k}" fill="${area.color}" pointer-events="none">+</text></g>`;
+    }).join('');
+    const verts = area.points.map((p, i) =>
+      `<circle class="area-vertex" data-i="${i}" cx="${p.xM * u}" cy="${p.yM * u}" r="${7 * k}" fill="#ffffff" stroke="${area.color}" stroke-width="${3 * k}" style="cursor:move"/>`).join('');
+    g.innerHTML = mids + verts;
+  }
+
+  let vertexDrag: { area: GardenPlanArea; index: number; pointerId: number } | null = null;
+  let lastVertexTap: { areaId: string; index: number; t: number } | null = null;
+  const DOUBLE_TAP_MS = 400;
+
+  planSvg.addEventListener('pointerdown', (e: PointerEvent) => {
+    const target = (e.target as Element).closest('.area-vertex, .area-mid');
+    const area = editing?.areas.find(a => a.id === selectedAreaId);
+    if (!target || !area || !editing) return;
+    e.stopPropagation();
+    e.preventDefault();
+    let index = Number((target as SVGElement).dataset.i);
+    // Double click/tap on a corner removes it. Detected here rather than via
+    // 'dblclick': pointer capture retargets that event to the <svg>.
+    if (target.classList.contains('area-vertex')) {
+      const now = performance.now();
+      const last = lastVertexTap;
+      lastVertexTap = { areaId: area.id, index, t: now };
+      if (last && last.areaId === area.id && last.index === index && now - last.t < DOUBLE_TAP_MS) {
+        lastVertexTap = null;
+        if (area.points.length > 3) {
+          area.points.splice(index, 1);
+          renderAreasLayer();
+          scheduleAutosave();
+        }
+        return;
+      }
+    }
+    if (target.classList.contains('area-mid')) {
+      const p = area.points[index], q = area.points[(index + 1) % area.points.length];
+      area.points.splice(index + 1, 0, { xM: (p.xM + q.xM) / 2, yM: (p.yM + q.yM) / 2 });
+      index += 1;
+      renderAreasLayer();
+    }
+    vertexDrag = { area, index, pointerId: e.pointerId };
+    planSvg.setPointerCapture(e.pointerId);
+  }, { capture: true });
+
+  planSvg.addEventListener('pointermove', (e: PointerEvent) => {
+    if (!vertexDrag || !editing || e.pointerId !== vertexDrag.pointerId) return;
+    lastVertexTap = null; // a drag is not half of a double tap
+    const s = snapIfClose(planSvg, clientToMeters(planSvg, e.clientX, e.clientY), editing.gridSpacingM);
+    vertexDrag.area.points[vertexDrag.index] = {
+      xM: Math.max(0, Math.min(editing.areaWidthM, s.xM)),
+      yM: Math.max(0, Math.min(editing.areaHeightM, s.yM)),
+    };
+    renderAreasLayer();
+  });
+
+  function endVertexDrag(e: PointerEvent) {
+    if (!vertexDrag || e.pointerId !== vertexDrag.pointerId) return;
+    vertexDrag = null;
+    scheduleAutosave();
+  }
+  planSvg.addEventListener('pointerup', endVertexDrag);
+  planSvg.addEventListener('pointercancel', endVertexDrag);
+
+  // Click on an area selects it, click on bare ground clears the selection
+  // (marker clicks never get here — their own handler stops propagation).
+  planSvg.addEventListener('pointerdown', (e: PointerEvent) => {
+    if (!editing || areaDraft || armedPlantId) return;
+    const id = (e.target as Element).closest<SVGElement>('[data-area-id]')?.dataset.areaId ?? null;
+    if (id !== selectedAreaId) { selectedAreaId = id; markSelectedArea(); }
+  });
 
   function renderAreaDraft() {
     const g = planSvg.querySelector('#area-draft');
@@ -1183,6 +1287,7 @@ import Layout from '../layouts/Layout.astro';
       const on = li.dataset.areaId === selectedAreaId;
       ['bg-white', 'dark:bg-stone-800', 'ring-1', 'ring-green-500'].forEach(c => li.classList.toggle(c, on));
     });
+    areaEditHint.hidden = !editing?.areas.some(a => a.id === selectedAreaId);
     renderAreasLayer();
   }
 
@@ -1259,6 +1364,7 @@ import Layout from '../layouts/Layout.astro';
     renderPlantPicker();
     renderUnplacedList();
     areaDraft = [];
+    renderAreaHandles();
     areaDrawBar.classList.remove('hidden');
     planSvg.classList.add('area-drawing');
     btnDrawArea.disabled = true;
@@ -1267,7 +1373,11 @@ import Layout from '../layouts/Layout.astro';
   document.getElementById('btn-area-undo')!.addEventListener('click', () => { areaDraft?.pop(); renderAreaDraft(); });
   document.getElementById('btn-area-cancel')!.addEventListener('click', endAreaDraw);
   btnAreaFinish.addEventListener('click', finishAreaDraw);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && areaDraft) endAreaDraw(); });
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    if (areaDraft) endAreaDraw();
+    else if (selectedAreaId && !(e.target as HTMLElement).closest?.('input, textarea, select')) { selectedAreaId = null; markSelectedArea(); }
+  });
 
   planSvg.addEventListener('pointerdown', (e: PointerEvent) => {
     if (!editing || !areaDraft) return;

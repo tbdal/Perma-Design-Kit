@@ -41,6 +41,7 @@ export const gartenplanDict: Dict = {
   btnAreaFinish: { de: 'Fertig', en: 'Done' },
   btnAreaCancel: { de: 'Abbrechen', en: 'Cancel' },
   areasHeading: { de: 'Flächen', en: 'Areas' },
+  areaEditHint: { de: 'Ausgewählte Fläche: Eckpunkte ziehen (auch in 3D), ＋ auf einer Kante fügt einen Punkt ein, Doppelklick auf einen Punkt entfernt ihn. Esc hebt die Auswahl auf.', en: 'Selected area: drag the corners (in 3D too), ＋ on an edge adds a point, double-click a point to remove it. Esc clears the selection.' },
   areasEmpty: { de: 'Noch keine Flächen. Mit „Fläche einzeichnen“ Beete, Teich, Wege … einzeichnen.', en: 'No areas yet. Use “Draw area” to add beds, a pond, paths …' },
   areaDefaultName: { de: 'Fläche {n}', en: 'Area {n}' },
   areaName: { de: 'Name der Fläche', en: 'Area name' },
