@@ -3,14 +3,10 @@
 Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Prios
-- [ ] bug fixing
-  - [ ] s.u.
-  - [ ] Baumscheibe
-  - [ ] prüfen: Wasser und Sonne sind im SVG nicht vollständig -> psd erneut in svg konvertieren @Andi
+- [ ] präsentation check auf dropbox (Andi)
 - [ ] Lizenz s.u.
 - [ ] Newsletter button: Jetzt Jörn's Newsletter auf brevo nutzen mit api?
 - [ ] spendenbutton
-- [ ] präsentation check auf dropbox (Andi)
 - [ ] impressum: Jörn aufnehmenn
 
 
