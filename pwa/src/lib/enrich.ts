@@ -5,6 +5,7 @@ import {
   type SearchResult, type SourceData,
 } from './plant-search';
 import { newId } from './id';
+import { completenessPercent } from './plant-detail';
 
 // Filling plant data from PFAF, Edible Forest Gardens (EFG) and Wikidata.
 //
@@ -154,6 +155,14 @@ export function applySources(plant: PlantData, data: GatheredSources, order: Enr
 export function contributingSourceLabels(data: GatheredSources, order: EnrichSource[]): string[] {
   const label: Record<EnrichSource, string> = { pfaf: 'PFAF', efg: 'Edible Forest Gardens', wikidata: 'Wikidata' };
   return order.filter(s => data[s]).map(s => label[s]);
+}
+
+/** Whether a plant is worth a PFAF/EFG/Wikidata round trip for "Lade alle
+ *  fehlenden Daten": it needs a latin name, and something must be missing —
+ *  enrichPlant() only ever fills empty fields, so a complete plant would make
+ *  the same requests for no possible change. */
+export function needsEnrichment(p: PlantData, lang: 'de' | 'en'): boolean {
+  return !!p.latinName && (completenessPercent(p) < 100 || needsImageCredit(p) || (lang === 'en' && !p.commonNameEn));
 }
 
 /** "Ergänzen" / "Lade alle fehlenden Daten" for an existing plant. */

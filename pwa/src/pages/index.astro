@@ -456,9 +456,9 @@ import Layout from '../layouts/Layout.astro';
   import { applyFilters, emptyFilters, sortPlants, allGroups, type ListFilters, type SortField } from '../lib/plant-list';
   import { completenessPercent, badgeDefs, plantBadgesHtml, groupPillsHtml, dotHtml, type BadgeDef } from '../lib/plant-detail';
   import { BOOL_FIELD_KEYS, FORM_BOOL_FIELD_KEYS } from '../lib/plant-fields';
-  import { searchPlants, needsImageCredit } from '../lib/plant-search';
+  import { searchPlants } from '../lib/plant-search';
   import { newId } from '../lib/id';
-  import { enrichPlant, trackSources, createPlantFromSearch } from '../lib/enrich';
+  import { enrichPlant, needsEnrichment, trackSources, createPlantFromSearch } from '../lib/enrich';
   import { announce, escapeHtml, withButtonSpinner, loadingPlaceholderHtml, imageCreditOverlayHtml } from '../lib/html';
   import { isSourceEnabled, loadSettings } from '../lib/settings';
   import { deriveLayer, LAYER_STYLE, LAYER_I18N, LAYER_CODE, PLANT_LAYERS } from '../lib/plant-layer';
@@ -1428,7 +1428,7 @@ import Layout from '../layouts/Layout.astro';
     // 100%-complete plant would make the exact same requests for no possible
     // change (enrichPlant only ever fills currently-empty fields), needlessly
     // hammering both services. Same 10-field heuristic as the "Vollst." column.
-    const plants = allPlants.filter(p => completenessPercent(p) < 100 || needsImageCredit(p) || (getLang() === 'en' && !p.commonNameEn));
+    const plants = allPlants.filter(p => needsEnrichment(p, getLang()));
     const skipped = allPlants.length - plants.length;
     if (plants.length === 0) { alert(t('alertEnrichAllNoneNeeded', { skipped })); return; }
     b.disabled = true;

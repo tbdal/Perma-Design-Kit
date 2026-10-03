@@ -63,6 +63,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
  
 
 
+## Geteilte Projekte: fehlende Daten nachladen (2026-10-03)
+- [x] Nach „In meine App übernehmen“ auf `/teilen` fragt ein Dialog, ob die fehlenden Angaben der neu übernommenen Pflanzen jetzt aus PFAF, Edible Forest Gardens und Wikidata geladen werden sollen — mit Fortschrittsbalken, Abbrechen und Zusammenfassung. Gleiche Auswahlregel wie „Lade alle fehlenden Daten“ (`needsEnrichment()` in `enrich.ts`). Ein zweiter Link im selben Tab lädt die Seite jetzt neu.
+
 ## Flächen in 3D und bearbeitbar (2026-10-03)
 - [x] **3D** — eingezeichnete Flächen erscheinen in der 3D-Ansicht als farbige, halbtransparente Flächen mit Umriss und Namensschild; ein Klick wählt eine Fläche aus, an ihren Ecken erscheinen Kugeln, die sich über den Boden ziehen lassen.
 - [x] **2D bearbeiten** — Fläche per Klick (oder in der Liste) auswählen: Eckpunkte ziehen (mit Rasterfang), ＋ auf einer Kante fügt einen Punkt ein, Doppelklick/-tipp auf einen Punkt entfernt ihn (mind. 3 bleiben), Klick daneben oder Esc hebt die Auswahl auf. Auswahl und Änderungen sind zwischen 2D, 3D und der Liste synchron.

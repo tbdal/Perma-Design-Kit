@@ -25,6 +25,22 @@ import Layout from '../layouts/Layout.astro';
     </section>
   </article>
 
+  <!-- Nach dem Übernehmen: fehlende Pflanzendaten gleich nachladen? -->
+  <dialog id="sh-enrich-dialog" aria-labelledby="sh-enrich-title" class="m-auto w-[min(32rem,calc(100vw-2rem))] rounded-xl bg-white dark:bg-stone-800 p-0 text-stone-800 dark:text-stone-100 shadow-2xl backdrop:bg-black/50">
+    <div class="space-y-3 p-5">
+      <h2 id="sh-enrich-title" class="text-base font-semibold" data-i18n="shEnrichTitle">Fehlende Daten laden?</h2>
+      <p id="sh-enrich-text" class="text-sm text-stone-600 dark:text-stone-300"></p>
+      <div id="sh-enrich-progress" hidden class="space-y-1">
+        <progress id="sh-enrich-bar" value="0" max="1" class="h-2 w-full accent-green-600"></progress>
+        <p id="sh-enrich-status" role="status" class="truncate text-xs text-stone-500 dark:text-stone-400"></p>
+      </div>
+      <div class="flex justify-end gap-2 pt-1">
+        <button id="sh-enrich-later" type="button" data-i18n="shEnrichLater" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Später</button>
+        <button id="sh-enrich-now" type="button" data-i18n="shEnrichNow" class="rounded-lg bg-green-700 px-4 py-1.5 text-sm font-medium text-white shadow hover:bg-green-800">Jetzt laden</button>
+      </div>
+    </div>
+  </dialog>
+
   <script>
     // Receiving end of "Projekt als Link teilen" (src/lib/share.ts): decode the
     // #fragment, show what's inside, import on request. The fragment is
@@ -32,7 +48,10 @@ import Layout from '../layouts/Layout.astro';
     import { applyStaticI18n, createT } from '../lib/i18n/core';
     import { teilenDict } from '../lib/i18n/dict-teilen';
     import { decodeShare, mergeShared, shareDataFromHash } from '../lib/share';
-    import { getAllPlants, importPlants, importPolycultures, importGardenPlans } from '../lib/db';
+    import { getAllPlants, importPlants, importPolycultures, importGardenPlans, savePlant } from '../lib/db';
+    import { enrichPlant, needsEnrichment } from '../lib/enrich';
+    import { getLang } from '../lib/i18n/core';
+    import type { PlantData } from '../lib/types';
     import { escapeHtml, withButtonSpinner } from '../lib/html';
     import { displayName } from '../lib/plant-name';
     import type { ParsedBackup } from '../lib/sync';
@@ -85,12 +104,68 @@ import Layout from '../layouts/Layout.astro';
               plants: merged.plants.length, reused: merged.reusedPlants,
               polycultures: merged.polycultures.length, plans: merged.gardenPlans.length,
             });
+            offerEnrichment(merged.plants.filter(p => needsEnrichment(p, getLang())));
           } catch (err) {
             alert(t('shFailed', { msg: err instanceof Error ? err.message : String(err) }));
           }
         });
       });
     }
+    // ── Fehlende Daten nachladen ─────────────────────────────────────────
+    // Shared projects often carry bare plants (only names). Offer to fill the
+    // gaps right away — same enrichPlant() as "Lade alle fehlenden Daten" on
+    // the plant page, limited to the plants just imported.
+    function offerEnrichment(plants: PlantData[]) {
+      if (plants.length === 0) return;
+      const dialog = document.getElementById('sh-enrich-dialog') as HTMLDialogElement;
+      const text = document.getElementById('sh-enrich-text')!;
+      const progress = document.getElementById('sh-enrich-progress')!;
+      const bar = document.getElementById('sh-enrich-bar') as HTMLProgressElement;
+      const statusEl = document.getElementById('sh-enrich-status')!;
+      const btnNow = document.getElementById('sh-enrich-now') as HTMLButtonElement;
+      const btnLater = document.getElementById('sh-enrich-later') as HTMLButtonElement;
+      let running = false, aborted = false;
+
+      text.textContent = t('shEnrichText', { n: plants.length });
+      dialog.showModal();
+      dialog.addEventListener('cancel', e => { if (running) { e.preventDefault(); aborted = true; } });
+      btnLater.addEventListener('click', () => { if (running) aborted = true; else dialog.close(); });
+
+      btnNow.addEventListener('click', async () => {
+        running = true;
+        btnNow.hidden = true;
+        btnLater.textContent = t('shEnrichAbort');
+        progress.hidden = false;
+        bar.max = plants.length;
+        let updated = 0, fields = 0, failed = 0, done = 0;
+        for (const p of plants) {
+          if (aborted) break;
+          statusEl.textContent = t('shEnrichProgress', { i: done + 1, n: plants.length, name: p.latinName });
+          try {
+            const filled = await enrichPlant(p);
+            if (filled > 0) { await savePlant(p); updated++; fields += filled; }
+          } catch (err) {
+            failed++;
+            console.error(`Anreicherung fehlgeschlagen für ${p.latinName}:`, err);
+          }
+          done++;
+          bar.value = done;
+        }
+        running = false;
+        text.textContent = t('shEnrichSummary', { updated, total: done, fields })
+          + (failed ? ' ' + t('shEnrichFailed', { failed }) : '')
+          + (aborted ? ' ' + t('shEnrichAborted') : '');
+        statusEl.textContent = '';
+        progress.hidden = true;
+        btnLater.textContent = t('shEnrichClose');
+        btnLater.onclick = () => dialog.close();
+      }, { once: true });
+    }
+
+    // A second link pasted into this tab only changes the #fragment, which
+    // doesn't reload the page — do it explicitly so the new project shows.
+    window.addEventListener('hashchange', () => { if (shareDataFromHash(location.hash)) location.reload(); });
+
     main();
   </script>
 </Layout>
