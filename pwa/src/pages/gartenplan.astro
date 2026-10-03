@@ -45,6 +45,10 @@ import Layout from '../layouts/Layout.astro';
         <span data-i18n="mapBarOpacity">Deckkraft</span>
         <input id="g-basemap-opacity" type="range" min="0.1" max="1" step="0.05" value="0.6" class="w-24 disabled:opacity-50" />
       </label>
+      <label class="inline-flex items-center gap-1.5">
+        <span data-i18n="coverageLabel">Funktionen</span>
+        <select id="g-coverage" class="rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs"></select>
+      </label>
       <label id="contours-toggle" hidden class="inline-flex items-center gap-1.5"><input id="g-contours" type="checkbox" checked class="accent-amber-700" /> <span data-i18n="mapContours">Höhenlinien</span></label>
       <span id="map-status" class="text-stone-500 dark:text-stone-400"></span>
       <span id="terrain-info" class="text-stone-600 dark:text-stone-300"></span>
@@ -230,6 +234,11 @@ import Layout from '../layouts/Layout.astro';
             <h2 class="mb-2 text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="pickerHeading">Pflanzen</h2>
             <input id="picker-filter" type="search" data-i18n-placeholder="pickerFilterPlaceholder" placeholder="Pflanze filtern…" class="mb-2 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-xs shadow-inner focus:border-green-500 focus:outline-none" />
             <div id="plant-picker" class="max-h-56 space-y-0.5 overflow-y-auto"></div>
+            <div class="mt-2 flex gap-1.5 border-t border-stone-200 dark:border-stone-700 pt-2">
+              <select id="pc-package" data-i18n-aria-label="pkgLabel" aria-label="Polykultur als Paket platzieren" class="rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs min-w-0 flex-1 py-1"></select>
+              <button id="btn-pc-package" type="button" data-i18n="pkgPlace" class="rounded-md bg-green-700 px-2.5 py-1 text-xs font-medium text-white hover:bg-green-800 disabled:opacity-40">Platzieren</button>
+            </div>
+            <p id="pkg-hint" class="mt-2 hidden text-xs font-medium text-green-700 dark:text-green-400" data-i18n="pkgHint">Auf die Fläche tippen: der Anker kommt dorthin, die übrigen Pflanzen drumherum.</p>
             <p id="armed-hint" class="mt-2 hidden text-xs font-medium text-green-700 dark:text-green-400" data-i18n="hintArmed">Auf die Fläche tippen zum Platzieren.</p>
           </div>
 
@@ -238,6 +247,11 @@ import Layout from '../layouts/Layout.astro';
             <p id="areas-empty" class="text-xs text-stone-400 dark:text-stone-500" data-i18n="areasEmpty">Noch keine Flächen. Mit „Fläche einzeichnen“ Beete, Teich, Wege … einzeichnen.</p>
             <ul id="areas-list" class="space-y-1.5"></ul>
             <p id="area-edit-hint" hidden class="mt-2 text-[11px] text-stone-500 dark:text-stone-400" data-i18n="areaEditHint">Ausgewählte Fläche: Eckpunkte ziehen (auch in 3D), ＋ auf einer Kante fügt einen Punkt ein, Doppelklick auf einen Punkt entfernt ihn. Esc hebt die Auswahl auf.</p>
+          </div>
+
+          <div id="coverage-section" hidden class="rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+            <h2 class="mb-1 text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="coverageHeading">Funktions-Abdeckung</h2>
+            <div id="coverage-body" class="space-y-2 text-xs"></div>
           </div>
 
           <div id="suggestions-section" class="hidden rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
@@ -330,6 +344,9 @@ import Layout from '../layouts/Layout.astro';
   import { growPlanToFit } from '../lib/gartenplan-extent';
   import type { PlanRect } from '../lib/gartenplan-geo';
   import { compassLabel, sunPosition } from '../lib/sun-position';
+  import { COVER_FUNCS, coverageGrid, coverageSummary, findGaps, suggestPlants, hasFunc, funcCount, type CoverFunc } from '../lib/function-coverage';
+  import { layoutPolyculture } from '../lib/polyculture-layout';
+  import { BOOL_FIELDS } from '../lib/plant-fields';
   import { fetchElevationGrid, slopeInfo, contourSegments, contourInterval, TERRAIN_ATTRIBUTION, type ElevationGrid } from '../lib/terrain';
   import { plantDetailHtml } from '../lib/plant-detail';
   import { compatScore } from '../lib/compat';
@@ -1080,6 +1097,7 @@ import Layout from '../layouts/Layout.astro';
     renderUnplacedList();
     renderSuggestions();
     renderSelectedPanel();
+    fillPackageSelect();
     renderPlanSvg();
     if (savedView?.mode === '3d' && plan3dContainer.hidden) btnView3d.click();
     void loadTerrain();
@@ -1373,6 +1391,7 @@ import Layout from '../layouts/Layout.astro';
     planSvg.innerHTML = `
       <g class="basemap-layer"></g>
       <g id="contour-layer" pointer-events="none"></g>
+      <g id="coverage-layer" pointer-events="none"></g>
       <g id="plan-grid-layer">${gridDefsAndBackground(w, h, editing.gridSpacingM, 'plan-grid', k, pxPerUnit() * U)}</g>
       <polygon id="plan-boundary" points="${pointsAttr}" fill="#15803d" fill-opacity="0.08" stroke="#15803d" stroke-width="${2 * k}"/>
       <g id="plan-areas-layer">${areasSvg(editing.areas, selectedAreaId, k, true)}</g>
@@ -1383,6 +1402,7 @@ import Layout from '../layouts/Layout.astro';
       <g id="lasso-layer" pointer-events="none"></g>`;
     renderBasemap(planSvg);
     renderContours();
+    renderCoverage();
     renderAreaDraft();
     renderRowDraft();
     renderAreaHandles();
@@ -1494,6 +1514,7 @@ import Layout from '../layouts/Layout.astro';
       updateMarkerShape(group, placement, plantsById.get(placement.plantId));
     }
     view3d?.updateYears(editing.yearsSincePlanting);
+    scheduleCoverage();
     scheduleAutosave();
   });
 
@@ -1729,6 +1750,7 @@ import Layout from '../layouts/Layout.astro';
   function onCanvasTap(e: PointerEvent, target: Element | null) {
     if (!editing) return;
     if (rowDraft) { addRowPoint(e); return; }
+    if (packageArmed) { placePackage(e); return; }
     if (areaDraft) { addAreaDraftPoint(e); return; }
     if (armedPlantId) { placeArmedPlant(e); return; }
     if (tool === 'pan') return; // the hand only moves the map
@@ -1773,6 +1795,7 @@ import Layout from '../layouts/Layout.astro';
       void loadTerrain();
       showToast(t('toastPlanGrown', { w: editing.areaWidthM, h: editing.areaHeightM, w0, h0 }));
     }
+    renderCoverage();
     scheduleAutosave();
   }
 
@@ -1894,6 +1917,7 @@ import Layout from '../layouts/Layout.astro';
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
     if (rowDraft) endRowDraw();
+    else if (packageArmed) setPackageArmed(null);
     else if (multiSel.size) { multiSel.clear(); refreshMarkerHighlight(); renderSelectedPanel(); }
     else if (areaDraft) endAreaDraw();
     else if (editBoundary) setBoundaryEdit(false);
@@ -2207,6 +2231,138 @@ import Layout from '../layouts/Layout.astro';
       const index = Math.abs(level / (interval * 5) - Math.round(level / (interval * 5))) < 1e-6;
       return `<path d="${d.join('')}" fill="none" stroke="#92400e" stroke-opacity="${index ? 0.7 : 0.45}" stroke-width="${(index ? 1.8 : 1) / ppu}"/>`;
     }).join('');
+  }
+
+  // ── Funktions-Abdeckung ────────────────────────────────────────────────
+  // Map mode: colour the garden by which ecological functions are provided
+  // nearby (function-coverage.ts), list gaps and suggest plants for them.
+  const coverageSelect = document.getElementById('g-coverage') as HTMLSelectElement;
+  const coverageSection = document.getElementById('coverage-section')!;
+  const coverageBody = document.getElementById('coverage-body')!;
+  const fnLabel = (f: CoverFunc) => BOOL_FIELDS.find(b => b.key === f)?.label[lang] ?? f;
+  coverageSelect.innerHTML = `<option value="">${t('coverageOff')}</option><option value="all">${t('coverageAll')}</option>`
+    + COVER_FUNCS.map(f => `<option value="${f}">${escapeHtml(fnLabel(f))}</option>`).join('');
+  coverageSelect.addEventListener('change', renderCoverage);
+
+  let coverageTimer: ReturnType<typeof setTimeout> | null = null;
+  function scheduleCoverage() {
+    if (coverageTimer) clearTimeout(coverageTimer);
+    coverageTimer = setTimeout(renderCoverage, 150);
+  }
+
+  /** Red → yellow → green for 0..1. */
+  function rampColor(f: number): string {
+    const hue = Math.round(f * 125);
+    return `hsl(${hue} 75% 45%)`;
+  }
+
+  function renderCoverage() {
+    const layer = planSvg.querySelector('#coverage-layer');
+    const mode = coverageSelect.value as '' | 'all' | CoverFunc;
+    coverageSection.hidden = !mode || !editing;
+    if (!layer) return;
+    if (!mode || !editing || editing.boundary.length < 3) { layer.innerHTML = ''; return; }
+    const plan = editing;
+    const cellM = Math.max(0.5, Math.min(plan.areaWidthM, plan.areaHeightM) / 40);
+    const grid = coverageGrid(plan, plantsById, cellM);
+    // One path per colour keeps the DOM small.
+    const buckets = new Map<string, string[]>();
+    const half = cellM * U / 2;
+    for (const c of grid.cells) {
+      const color = mode === 'all' ? rampColor(funcCount(c.mask) / COVER_FUNCS.length) : hasFunc(c.mask, mode) ? '#16a34a' : '#dc2626';
+      const arr = buckets.get(color) ?? [];
+      arr.push(`M${c.xM * U - half} ${c.yM * U - half}h${2 * half}v${2 * half}h${-2 * half}z`);
+      buckets.set(color, arr);
+    }
+    let svg = [...buckets.entries()].map(([color, d]) => `<path d="${d.join('')}" fill="${color}" fill-opacity="0.32"/>`).join('');
+
+    const summary = coverageSummary(grid);
+    if (mode === 'all') {
+      coverageBody.innerHTML = `<p class="text-stone-500 dark:text-stone-400">${t('coverageAllHint')}</p>`
+        + COVER_FUNCS.map(f => `
+          <button type="button" data-cov-fn="${f}" class="block w-full text-left">
+            <span class="flex justify-between"><span>${escapeHtml(fnLabel(f))}</span><span class="font-mono">${Math.round(summary[f] * 100)} %</span></span>
+            <span class="mt-0.5 block h-1.5 rounded bg-stone-200 dark:bg-stone-700"><span class="block h-1.5 rounded" style="width:${Math.round(summary[f] * 100)}%;background:${rampColor(summary[f])}"></span></span>
+          </button>`).join('');
+    } else {
+      const gaps = findGaps(grid, mode, 3);
+      const k = viewK();
+      svg += gaps.map(g => `<g transform="translate(${g.xM * U},${g.yM * U})"><circle r="${Math.sqrt(g.areaM2 / Math.PI) * U * 0.6}" fill="none" stroke="#b91c1c" stroke-width="${2 * k}" stroke-dasharray="${6 * k} ${4 * k}"/><text text-anchor="middle" dominant-baseline="central" font-size="${16 * k}" font-weight="700" fill="#b91c1c" stroke="#fff" stroke-width="${3 * k}" paint-order="stroke">+</text></g>`).join('');
+      const rows = gaps.map((g, gi) => {
+        const sugg = suggestPlants(mode, plants, plan, plantsById, g, g.areaM2);
+        const btns = sugg.length
+          ? sugg.map(p => `<button type="button" data-gap="${gi}" data-plant="${p.id}" class="mt-1 block w-full truncate rounded bg-white dark:bg-stone-800 px-2 py-1 text-left ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-green-50 dark:hover:bg-green-900/30">${escapeHtml(t('coveragePlantHere', { name: displayName(p) }))}</button>`).join('')
+          : `<p class="text-stone-500 dark:text-stone-400">${t('coverageNoPlants')}</p>`;
+        return `<div class="rounded-md bg-red-50 dark:bg-red-900/20 p-2"><p class="font-medium text-red-800 dark:text-red-200">${t('coverageGap', { area: Math.round(g.areaM2) })}</p>${btns}</div>`;
+      }).join('');
+      coverageBody.innerHTML = `<p class="text-stone-500 dark:text-stone-400">${escapeHtml(fnLabel(mode))}: ${Math.round(summary[mode] * 100)} % · ${t('coverageFnHint')}</p>`
+        + (gaps.length ? rows : `<p class="text-green-700 dark:text-green-400">${t('coverageNoGap')}</p>`);
+      coverageBody.querySelectorAll<HTMLButtonElement>('[data-gap]').forEach(b => b.addEventListener('click', () => {
+        const g = gaps[Number(b.dataset.gap)];
+        const p = plantsById.get(b.dataset.plant!);
+        if (!g || !p || !editing) return;
+        editing.placements.push({ id: newId(), plantId: p.id, xM: g.xM, yM: g.yM, notes: '' });
+        renderPlanSvg();
+        renderSuggestions();
+        showToast(t('toastPlantedAtGap', { name: displayName(p) }));
+      }));
+    }
+    coverageBody.querySelectorAll<HTMLButtonElement>('[data-cov-fn]').forEach(b => b.addEventListener('click', () => {
+      coverageSelect.value = b.dataset.covFn!;
+      renderCoverage();
+    }));
+    layer.innerHTML = svg;
+  }
+
+  // ── Polykultur als Paket ───────────────────────────────────────────────
+  const pcPackage = document.getElementById('pc-package') as HTMLSelectElement;
+  const pkgHint = document.getElementById('pkg-hint')!;
+  let packageArmed: string | null = null;
+
+  function fillPackageSelect() {
+    const usable = polycultures.filter(pc => pc.anchorPlantId || pc.members.length);
+    pcPackage.innerHTML = `<option value="">${escapeHtml(t(usable.length ? 'pkgPlaceholder' : 'pkgNone'))}</option>`
+      + usable.map(pc => `<option value="${pc.id}">${escapeHtml(pc.name || t('planUnnamed'))}</option>`).join('');
+    pcPackage.disabled = usable.length === 0;
+    (document.getElementById('btn-pc-package') as HTMLButtonElement).disabled = usable.length === 0;
+  }
+
+  function setPackageArmed(id: string | null) {
+    packageArmed = id;
+    pkgHint.classList.toggle('hidden', !id);
+    planSvg.classList.toggle('area-drawing', !!id);
+    if (id) { armedPlantId = null; armedHint.classList.add('hidden'); renderPlantPicker(); }
+  }
+
+  document.getElementById('btn-pc-package')!.addEventListener('click', () => {
+    if (!pcPackage.value) { pcPackage.focus(); return; }
+    if (!plan3dContainer.hidden) btnView2d.click();
+    endAreaDraw();
+    endRowDraw();
+    setPackageArmed(pcPackage.value);
+  });
+
+  function placePackage(e: PointerEvent) {
+    const pc = polycultures.find(p => p.id === packageArmed);
+    setPackageArmed(null);
+    if (!editing || !pc) return;
+    const at = clientToMeters(planSvg, e.clientX, e.clientY);
+    const spots = layoutPolyculture(pc, plantsById, at, editing.yearsSincePlanting);
+    const ids = new Set<string>();
+    for (const sp of spots) {
+      const id = newId();
+      ids.add(id);
+      editing.placements.push({ id, plantId: sp.plantId, xM: sp.xM, yM: sp.yM, notes: '' });
+    }
+    // Mark the new group so it can be moved together right away.
+    multiSel.clear();
+    ids.forEach(id => multiSel.add(id));
+    selectedPlacementId = null;
+    renderPlanSvg();
+    renderSelectedPanel();
+    renderSuggestions();
+    afterGeometryEdit();
+    showToast(t('toastPkgPlaced', { name: pc.name || t('planUnnamed'), n: spots.length }));
   }
 
   // ── Init + save/delete ──────────────────────────────────────────────────

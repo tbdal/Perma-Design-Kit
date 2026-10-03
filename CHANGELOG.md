@@ -2,6 +2,10 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Gartenplan: Funktions-Abdeckung mit Vorschlägen, Polykultur als Paket (2026-10-04)
+- [x] **Funktions-Abdeckung** — Kartenleiste „Funktionen“: „Alle“ färbt den Garten nach der Zahl der Funktionen in der Nähe (rot = keine, grün = alle), eine einzelne Funktion (Stickstoff, Mineralien, Insekten, Schädlingsschutz, Bodendecker, Kleintiere, Windschutz) zeigt abgedeckt/fehlend. Wirkradien je Funktion und Pflanzengröße (z. B. Insektenpflanzen weiter als Bodendecker). Seitenleiste mit Anteil je Funktion, den größten Lücken (gestrichelt markiert) und Pflanzvorschlägen aus dem eigenen Bestand (passend zu Sonne/Wasser/pH der Nachbarn); „Hier pflanzen“ setzt die Pflanze direkt in die Lücke.
+- [x] **Polykultur als Paket** — in der Pflanzen-Leiste Polykultur wählen, „Platzieren“, auf die Fläche tippen: Anker in die Mitte, Bodendecker unter die Krone, Stickstoff-/Mineralien-/Insekten-/Schädlings-Pflanzen an den Kronenrand, Obst und Begleiter in einen äußeren Ring; die Gruppe ist danach markiert und lässt sich gemeinsam verschieben.
+
 ## Gartenplan: Gelände und Höhenlinien (2026-10-04)
 - [x] **Höhendaten** für Pläne mit Standort aus den offenen Terrain Tiles (AWS; in Europa meist EU-DEM ≈ 25 m, sonst SRTM ≈ 30 m, teils feinere Landesmodelle): in 3D folgen Boden, Karte, Umriss, Flächen und Pflanzen dem Gelände (Schatten entsprechend), in 2D zuschaltbare **Höhenlinien** (Abstand automatisch, jede fünfte kräftiger), in der Kartenleiste „Gelände: 195 m ü. NN · Neigung 9,6° nach N · Höhenunterschied 5,7 m“ (Ausgleichsebene über die Gartenfläche). Quellenangabe in der Karte, Datenschutz und Impressum ergänzt. Grenzen: grobe Auflösung → Hangneigung/-ausrichtung, keine einzelnen Bodenwellen.
 
