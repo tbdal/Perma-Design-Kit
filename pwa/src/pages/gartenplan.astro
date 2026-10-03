@@ -215,6 +215,7 @@ import Layout from '../layouts/Layout.astro';
           <div id="plan-wrap" class="relative rounded-xl bg-white dark:bg-stone-800 p-3 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <svg id="plan-svg" class="w-full touch-none" style="touch-action:none"></svg>
             <div id="plan-3d-container" hidden class="h-[960px] max-h-[85vh] w-full touch-none" style="touch-action:none"></div>
+            <div id="measure-readout" hidden aria-live="polite" class="absolute left-1/2 top-5 z-10 -translate-x-1/2 rounded-md bg-orange-600/90 px-2.5 py-1 text-xs font-medium text-white shadow"></div>
             <div id="zoom-controls" class="absolute left-5 top-5 flex flex-col gap-1">
               <button id="zoom-in" type="button" data-i18n-aria-label="zoomIn" data-i18n-title="zoomIn" aria-label="Hineinzoomen" title="Hineinzoomen" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700">+</button>
               <button id="zoom-out" type="button" data-i18n-aria-label="zoomOut" data-i18n-title="zoomOut" aria-label="Herauszoomen" title="Herauszoomen" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700">−</button>
@@ -223,6 +224,7 @@ import Layout from '../layouts/Layout.astro';
               <button id="tool-pan" type="button" data-tool="pan" aria-pressed="false" data-i18n-aria-label="toolPan" data-i18n-title="toolPan" aria-label="Bewegen" title="Bewegen" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700 aria-pressed:bg-amber-200 aria-pressed:ring-amber-500 dark:aria-pressed:bg-amber-800 text-sm">✋</button>
               <button id="tool-select" type="button" data-tool="select" aria-pressed="true" data-i18n-aria-label="toolSelect" data-i18n-title="toolSelect" aria-label="Markieren – einzeln" title="Markieren – einzeln" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700 aria-pressed:bg-amber-200 aria-pressed:ring-amber-500 dark:aria-pressed:bg-amber-800 text-sm">↖</button>
               <button id="tool-lasso" type="button" data-tool="lasso" aria-pressed="false" data-i18n-aria-label="toolLasso" data-i18n-title="toolLasso" aria-label="Markieren – mehrere als Fläche" title="Markieren – mehrere als Fläche" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700 aria-pressed:bg-amber-200 aria-pressed:ring-amber-500 dark:aria-pressed:bg-amber-800 text-sm">⬚</button>
+              <button id="tool-measure" type="button" data-tool="measure" aria-pressed="false" data-i18n-aria-label="toolMeasure" data-i18n-title="toolMeasure" aria-label="Messen (M)" title="Messen (M)" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700 aria-pressed:bg-amber-200 aria-pressed:ring-amber-500 dark:aria-pressed:bg-amber-800 text-sm">📏</button>
             </div>
             <div aria-hidden="true" class="cursor-readout pointer-events-none absolute hidden rounded bg-stone-900/80 px-1.5 py-0.5 font-mono text-[11px] text-white"></div>
             <div class="basemap-attrib absolute bottom-3 right-3 z-10 hidden rounded-tl bg-white/80 px-1 text-[10px] text-stone-600"></div>
@@ -260,6 +262,12 @@ import Layout from '../layouts/Layout.astro';
             <h2 id="coverage-heading" class="mb-1 text-sm font-semibold text-stone-800 dark:text-stone-100">Funktions-Abdeckung</h2>
             <div id="coverage-body" class="space-y-2 text-xs"></div>
           </div>
+
+          <details id="warnings-section" hidden open class="rounded-xl bg-red-50/60 dark:bg-red-950/30 p-4 shadow-sm ring-1 ring-red-200 dark:ring-red-900">
+            <summary class="cursor-pointer text-sm font-semibold text-red-900 dark:text-red-200"><span data-i18n="warningsHeading">Hinweise</span> (<span id="warnings-count">0</span>)</summary>
+            <p class="mt-1 text-xs text-stone-500 dark:text-stone-400" data-i18n="warningsIntro">Mit Blick auf die ausgewachsenen Pflanzen (30 Jahre). Klick markiert die Pflanze(n).</p>
+            <ul id="warnings-list" class="mt-1 space-y-0.5 text-xs text-stone-700 dark:text-stone-200"></ul>
+          </details>
 
           <div id="suggestions-section" class="hidden rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <h2 class="mb-1 text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="suggestionsHeading">Vorschläge</h2>
@@ -330,6 +338,8 @@ import Layout from '../layouts/Layout.astro';
   #plan-svg.tool-pan #plan-markers, #plan-svg.tool-pan #plan-areas-layer,
   #plan-svg.tool-lasso #plan-markers, #plan-svg.tool-lasso #plan-areas-layer { pointer-events: none; }
   #plan-svg.tool-lasso { cursor: crosshair; }
+  #plan-svg.tool-measure #plan-markers, #plan-svg.tool-measure #plan-areas-layer { pointer-events: none; }
+  #plan-svg.tool-measure { cursor: crosshair; }
   #plan-svg.area-drawing #plan-markers { pointer-events: none; }
   .locate-handle { border-radius: 9999px; border: 3px solid #fff; box-shadow: 0 0 0 1px #1c1917, 0 1px 4px rgb(0 0 0 / 0.4); }
   .locate-handle-origin { background: #15803d; cursor: move; }
@@ -345,7 +355,7 @@ import Layout from '../layouts/Layout.astro';
   import { deriveLayer, LAYER_STYLE, type PlantLayer } from '../lib/plant-layer';
   import { blobPathD } from '../lib/blob-shape';
   import { pointInPolygon, formatMeters, polygonAreaM2, polygonPerimeterM, pointsAlongPolyline } from '../lib/gartenplan-geometry';
-  import { areasSvg, AREA_PALETTE, uiScale } from '../lib/gartenplan-render';
+  import { areasSvg, AREA_PALETTE, uiScale, polygonCentroid } from '../lib/gartenplan-render';
   import { planFromLatLngPolygon, planToLatLon } from '../lib/gartenplan-geo';
   import type { MapDrawer } from '../lib/gartenplan-mapdraw';
   import { basemapSvg, basemapAttribution } from '../lib/gartenplan-background';
@@ -354,6 +364,7 @@ import Layout from '../layouts/Layout.astro';
   import { compassLabel, sunPosition } from '../lib/sun-position';
   import { COVER_FUNCS, coverageGrid, coverageSummary, findGaps, suggestPlants, hasFunc, funcCount, influenceRadius, type CoverFunc } from '../lib/function-coverage';
   import { layoutPolyculture } from '../lib/polyculture-layout';
+  import { crowdingWarnings, shadeWarnings, grownOccluders } from '../lib/plan-warnings';
   import { sunSamples, sunHoursAt, sunClass, planOccluders, planCells, SEASON_DATES, type SunScene, type SunSample, type SunClass, type Occluder } from '../lib/sun-hours';
   import { BOOL_FIELDS } from '../lib/plant-fields';
   import { orthoFor } from '../lib/ortho-sources';
@@ -468,6 +479,7 @@ import Layout from '../layouts/Layout.astro';
       await saveGardenPlan(plan);
     }, 500);
     if (!restoringHistory) scheduleHistory();
+    scheduleWarnings();
   }
 
   // ── Rückgängig / Wiederholen ───────────────────────────────────────────
@@ -1223,6 +1235,7 @@ import Layout from '../layouts/Layout.astro';
     if (savedView?.mode === '3d' && plan3dContainer.hidden) btnView3d.click();
     void loadTerrain();
     resetHistory();
+    scheduleWarnings();
   }
 
   // ── Kamera merken ───────────────────────────────────────────────────────
@@ -1485,13 +1498,15 @@ import Layout from '../layouts/Layout.astro';
     const blob = group.querySelector('.marker-blob') as SVGPathElement;
     blob.setAttribute('d', blobPathD(radiusU, placement.id, style.lobes, style.wobble));
     blob.setAttribute('fill', style.fill);
-    blob.setAttribute('stroke', selected ? '#facc15' : style.stroke);
+    const warned = !selected && warnedIds.has(placement.id);
+    blob.setAttribute('stroke', selected ? '#facc15' : warned ? '#dc2626' : style.stroke);
     // Like a map: the name shrinks with the plant on screen (max 13 px) and
     // disappears below ~7 px, so zoomed-out plans don't drown in labels.
     // The selected plant always keeps its name.
     const ppu = pxPerUnit();
     const rPx = radiusU * ppu;
-    blob.setAttribute('stroke-width', String((selected ? 2.5 : 1.2) / ppu));
+    blob.setAttribute('stroke-width', String((selected ? 2.5 : warned ? 2 : 1.2) / ppu));
+    blob.setAttribute('stroke-dasharray', warned ? `${5 / ppu} ${3 / ppu}` : '');
     group.querySelector('.marker-dot')?.setAttribute('r', String(Math.min(3, Math.max(1, rPx * 0.25)) / ppu));
     const fontPx = single ? 13 : Math.min(13, rPx * 0.7);
     const label = group.querySelector('.marker-label') as SVGTextElement;
@@ -1522,7 +1537,8 @@ import Layout from '../layouts/Layout.astro';
       <g id="area-handles"></g>
       <g id="area-draft" pointer-events="none"></g>
       <g id="row-draft" pointer-events="none"></g>
-      <g id="lasso-layer" pointer-events="none"></g>`;
+      <g id="lasso-layer" pointer-events="none"></g>
+      <g id="measure-layer" pointer-events="none"></g>`;
     renderBasemap(planSvg);
     renderContours();
     renderCoverage();
@@ -1785,6 +1801,7 @@ import Layout from '../layouts/Layout.astro';
     const grid = planSvg.querySelector('#plan-grid-layer');
     if (grid) grid.innerHTML = gridDefsAndBackground(editing.areaWidthM, editing.areaHeightM, editing.gridSpacingM, 'plan-grid', k, pxPerUnit() * U);
     planSvg.querySelector('#plan-boundary')?.setAttribute('stroke-width', String(2 * k));
+    renderMeasure();
     for (const pl of editing.placements) {
       const g = markerMap.get(pl.id);
       if (g) updateMarkerShape(g, pl, plantsById.get(pl.plantId));
@@ -1876,6 +1893,7 @@ import Layout from '../layouts/Layout.astro';
     if (packageArmed) { placePackage(e); return; }
     if (areaDraft) { addAreaDraftPoint(e); return; }
     if (armedPlantId) { placeArmedPlant(e); return; }
+    if (tool === 'measure') { addMeasurePoint(e); return; }
     if (tool === 'pan') return; // the hand only moves the map
     if (multiSel.size) { multiSel.clear(); refreshMarkerHighlight(); renderSelectedPanel(); }
     const id = target?.closest<SVGElement>('[data-area-id]')?.dataset.areaId ?? null;
@@ -2039,7 +2057,8 @@ import Layout from '../layouts/Layout.astro';
   btnAreaFinish.addEventListener('click', finishAreaDraw);
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
-    if (rowDraft) endRowDraw();
+    if (measurePts.length) clearMeasure();
+    else if (rowDraft) endRowDraw();
     else if (packageArmed) setPackageArmed(null);
     else if (multiSel.size) { multiSel.clear(); refreshMarkerHighlight(); renderSelectedPanel(); }
     else if (areaDraft) endAreaDraw();
@@ -2192,7 +2211,7 @@ import Layout from '../layouts/Layout.astro';
   // Select: the classic behaviour — click selects, drag moves, drag on bare
   // ground pans; Shift/Ctrl-click builds a multi-selection.
   // Lasso: drag around plants to mark them all.
-  type Tool = 'pan' | 'select' | 'lasso';
+  type Tool = 'pan' | 'select' | 'lasso' | 'measure';
   let tool: Tool = 'select';
   const multiSel = new Set<string>();
   let lasso: { id: number; pts: GardenPlanPoint[]; lastX: number; lastY: number } | null = null;
@@ -2202,6 +2221,8 @@ import Layout from '../layouts/Layout.astro';
     document.querySelectorAll<HTMLElement>('[data-tool]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.tool === t)));
     planSvg.classList.toggle('tool-pan', t === 'pan');
     planSvg.classList.toggle('tool-lasso', t === 'lasso');
+    planSvg.classList.toggle('tool-measure', t === 'measure');
+    if (t !== 'measure') clearMeasure();
   }
   document.querySelectorAll<HTMLElement>('[data-tool]').forEach(b => b.addEventListener('click', () => setTool(b.dataset.tool as Tool)));
 
@@ -2271,6 +2292,7 @@ import Layout from '../layouts/Layout.astro';
       case 'h': if (in2d) setTool('pan'); break;
       case 'v': if (in2d) setTool('select'); break;
       case 'l': if (in2d) setTool('lasso'); break;
+      case 'm': if (in2d) setTool(tool === 'measure' ? 'select' : 'measure'); break;
       case '+': case '=': if (in2d) zoomAtCenter(1.5); break;
       case '-': if (in2d) zoomAtCenter(1 / 1.5); break;
       case '0': if (in2d) { resetPlanViewState(); applyPlanView(); } break;
@@ -2327,6 +2349,7 @@ import Layout from '../layouts/Layout.astro';
       return;
     }
     contoursToggle.hidden = false;
+    scheduleWarnings(); // terrain shade
     updateTerrainInfo();
     renderContours();
     renderBasemap(planSvg);
@@ -2610,6 +2633,117 @@ import Layout from '../layouts/Layout.astro';
         <span class="flex justify-between font-mono text-[10px] text-stone-500">${[0, 0.25, 0.5, 0.75, 1].map((f, i) => `<span>${fmtH(f * maxH)}${i === 0 || i === 4 ? ' h' : ''}</span>`).join('')}</span></div>
       <p class="text-stone-500 dark:text-stone-400">${escapeHtml(considered.join(', '))}.${editing.geo ? '' : ' ' + escapeHtml(t('sunMapNoLoc'))}${mode === 'sun-day' ? ' ' + escapeHtml(t('sunMapDateHint')) : ''}</p>`;
   }
+
+
+  // ── Hinweise (Abstand / Licht) ─────────────────────────────────────────
+  // Looking ahead to full-grown plants (plan-warnings.ts): same-layer plants
+  // that will crowd each other, and plants whose light need won't be met.
+  const warningsSection = document.getElementById('warnings-section') as HTMLDetailsElement;
+  const warningsList = document.getElementById('warnings-list')!;
+  const warningsCount = document.getElementById('warnings-count')!;
+  let warnedIds = new Set<string>();
+  let warnTimer: ReturnType<typeof setTimeout> | null = null;
+  function scheduleWarnings() {
+    if (warnTimer) clearTimeout(warnTimer);
+    warnTimer = setTimeout(renderWarnings, 600);
+  }
+  function renderWarnings() {
+    warnTimer = null;
+    if (!editing || phaseB.classList.contains('hidden')) return;
+    const plan = editing;
+    const name = (id: string) => {
+      const pl = plan.placements.find(p => p.id === id);
+      const p = pl ? plantsById.get(pl.plantId) : undefined;
+      return p ? displayName(p) : '—';
+    };
+    const crowd = crowdingWarnings(plan, plantsById);
+    const { scene } = sunContext();
+    const grown = { ...scene, occluders: [...grownOccluders(plan, plantsById, scene.groundZ), ...buildingOccluders] };
+    const shade = shadeWarnings(plan, plantsById, grown, seasonSamples());
+    const fmt1 = (v: number) => new Intl.NumberFormat(lang, { maximumFractionDigits: 1 }).format(v);
+    const items = [
+      ...shade.map(w => ({ ids: [w.id], text: t('warnShade', { name: name(w.id), h: fmt1(w.hours), need: t(w.need === 'full' ? 'warnNeedFull' : 'warnNeedMid') }) })),
+      ...crowd.map(w => ({ ids: [w.a, w.b], text: t('warnCrowded', { a: name(w.a), b: name(w.b), d: fmt1(w.distM), min: fmt1(w.minM) }) })),
+    ];
+    const before = warnedIds;
+    warnedIds = new Set(items.flatMap(i => i.ids));
+    warningsSection.hidden = items.length === 0;
+    warningsCount.textContent = String(items.length);
+    warningsList.innerHTML = items.slice(0, 30).map(i => `
+      <li><button type="button" data-ids="${i.ids.join(',')}" class="w-full rounded px-1.5 py-1 text-left hover:bg-red-50 dark:hover:bg-red-900/30">${escapeHtml(i.text)}</button></li>`).join('');
+    warningsList.querySelectorAll<HTMLButtonElement>('[data-ids]').forEach(b => b.addEventListener('click', () => {
+      const ids = b.dataset.ids!.split(',');
+      multiSel.clear();
+      if (ids.length > 1) { ids.forEach(id => multiSel.add(id)); selectedPlacementId = null; }
+      else selectedPlacementId = ids[0];
+      view3d?.setSelectedPlacement(selectedPlacementId);
+      refreshMarkerHighlight();
+      renderSelectedPanel();
+    }));
+    if (before.size !== warnedIds.size || [...warnedIds].some(id => !before.has(id))) refreshMarkerHighlight();
+  }
+
+
+  // ── Messen ─────────────────────────────────────────────────────────────
+  // Measure tool (M): taps add points (drags still pan), each segment and the
+  // total show their length; tapping the first point or Enter closes the
+  // shape and shows area + perimeter. Backspace drops the last point, Esc
+  // clears. Not saved with the plan.
+  const measureReadout = document.getElementById('measure-readout')!;
+  let measurePts: GardenPlanPoint[] = [];
+  let measureClosed = false;
+  function clearMeasure() { measurePts = []; measureClosed = false; renderMeasure(); }
+  function addMeasurePoint(e: PointerEvent) {
+    const p = clientToMeters(planSvg, e.clientX, e.clientY);
+    if (measureClosed) { measurePts = []; measureClosed = false; }
+    // Tap near the first point (≤ 12 px) closes the shape.
+    if (measurePts.length >= 3) {
+      const f = measurePts[0];
+      if (Math.hypot(f.xM - p.xM, f.yM - p.yM) * U * pxPerUnit() <= 12) { measureClosed = true; renderMeasure(); return; }
+    }
+    measurePts.push(p);
+    renderMeasure();
+  }
+  function renderMeasure() {
+    const g = planSvg.querySelector('#measure-layer');
+    const n = measurePts.length;
+    measureReadout.hidden = n === 0;
+    if (!g) return;
+    if (n === 0) { g.innerHTML = ''; return; }
+    const k = viewK();
+    const pts = measurePts.map(p => `${p.xM * U},${p.yM * U}`).join(' ');
+    const label = (x: number, y: number, text: string, size = 12) =>
+      `<text x="${x * U}" y="${y * U}" text-anchor="middle" dominant-baseline="central" font-size="${size * k}" font-weight="600" fill="#7c2d12" stroke="#fff" stroke-width="${3 * k}" paint-order="stroke">${escapeHtml(text)}</text>`;
+    let svg = measureClosed
+      ? `<polygon points="${pts}" fill="#f97316" fill-opacity="0.15" stroke="#ea580c" stroke-width="${2 * k}"/>`
+      : `<polyline points="${pts}" fill="none" stroke="#ea580c" stroke-width="${2 * k}" stroke-dasharray="${6 * k} ${3 * k}"/>`;
+    const segs = measureClosed ? n : n - 1;
+    let total = 0;
+    for (let i = 0; i < segs; i++) {
+      const a = measurePts[i], b = measurePts[(i + 1) % n];
+      const d = Math.hypot(b.xM - a.xM, b.yM - a.yM);
+      total += d;
+      svg += label((a.xM + b.xM) / 2, (a.yM + b.yM) / 2, formatMeters(d, lang), 11);
+    }
+    svg += measurePts.map((p, i) => `<circle cx="${p.xM * U}" cy="${p.yM * U}" r="${(i === 0 && n >= 3 && !measureClosed ? 6 : 4) * k}" fill="#fff" stroke="#ea580c" stroke-width="${2 * k}"/>`).join('');
+    const fmt1 = (v: number) => new Intl.NumberFormat(lang, { maximumFractionDigits: 1 }).format(v);
+    if (measureClosed) {
+      const c = polygonCentroid(measurePts);
+      const area = polygonAreaM2(measurePts);
+      svg += label(c.xM, c.yM, `${fmt1(area)} m²`, 14);
+      measureReadout.textContent = t('measureArea', { area: fmt1(area), perim: formatMeters(polygonPerimeterM(measurePts), lang) });
+    } else {
+      measureReadout.textContent = n === 1 ? t('measureStart') : t('measureLength', { len: formatMeters(total, lang) });
+    }
+    g.innerHTML = svg;
+  }
+  document.addEventListener('keydown', e => {
+    if (tool !== 'measure' || !measurePts.length) return;
+    const tg = e.target as HTMLElement | null;
+    if (tg?.closest?.('input, textarea, select')) return;
+    if (e.key === 'Enter' && measurePts.length >= 3) { measureClosed = true; renderMeasure(); e.preventDefault(); }
+    else if (e.key === 'Backspace' || e.key === 'Delete') { if (measureClosed) measureClosed = false; else measurePts.pop(); renderMeasure(); e.preventDefault(); e.stopImmediatePropagation(); }
+  }, true);
 
   // ── Polykultur als Paket ───────────────────────────────────────────────
   const pcPackage = document.getElementById('pc-package') as HTMLSelectElement;

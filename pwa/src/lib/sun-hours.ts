@@ -8,7 +8,7 @@ import { pointInPolygon } from './gartenplan-geometry';
 // "Besonnung": average hours of direct sun per day at a point of the garden.
 // The sun's path (sun-position.ts) is sampled over one day or a season; for
 // each sample a ray from the ground towards the sun is tested against
-//   – tree/shrub crowns (ellipsoids that let a little light through),
+//   – tree/shrub crowns (ellipsoids letting 10–15 % of the light through),
 //   – buildings (footprint prisms, e.g. from OSM),
 //   – the terrain (elevation grid, ray marched).
 // All heights are absolute (m above the same datum as `groundZ`).
@@ -30,9 +30,13 @@ export interface SunSample { dx: number; dy: number; dz: number; hours: number; 
 
 export const SEASON_DATES = (year: number) => [3, 4, 5, 6, 7, 8].map(m => new Date(year, m, m === 5 ? 21 : 15));
 
+/** Sun lower than this counts as down: low sun is weak and in practice
+ *  blocked by fences, hedges and neighbouring houses the plan doesn't know. */
+export const MIN_SUN_ALT_DEG = 10;
+
 /** Sun samples every `stepMin` minutes over the given days (local time). The
- *  hours are averaged over the days, so the sum of all daylight samples is
- *  the mean day length. Sun lower than 2° counts as down. */
+ *  hours are averaged over the days, so the sum of all samples is the mean
+ *  time the sun stands higher than MIN_SUN_ALT_DEG. */
 export function sunSamples(dates: Date[], lat: number, lon: number, rotationDeg: number, stepMin = 20): SunSample[] {
   const out: SunSample[] = [];
   const w = stepMin / 60 / dates.length;
@@ -40,7 +44,7 @@ export function sunSamples(dates: Date[], lat: number, lon: number, rotationDeg:
     for (let m = stepMin / 2; m < 24 * 60; m += stepMin) {
       const t = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, m);
       const p = sunPosition(t, lat, lon);
-      if (p.altitudeDeg < 2) continue;
+      if (p.altitudeDeg < MIN_SUN_ALT_DEG) continue;
       const e = sunDirectionEnu(p.bearingDeg, p.altitudeDeg);
       const h = enuToPlan({ e: e.e, n: e.n }, rotationDeg);
       out.push({ dx: h.xM, dy: h.yM, dz: e.up, hours: w });
@@ -57,7 +61,7 @@ export function crownOccluder(id: string, at: GardenPlanPoint, plant: PlantData,
   const finalR = plant.widthM && plant.widthM > 0 ? plant.widthM / 2 : 0.25;
   const h = plant.heightM && plant.heightM > 0 ? Math.max(0.1, plant.heightM * Math.min(1, r / finalR)) : r * (layer === 'tree' ? 2.6 : 1.4);
   const rz = layer === 'tree' ? Math.min(r * 1.1, h * 0.45) : h / 2;
-  return { kind: 'crown', id, x: at.xM, y: at.yM, r: Math.max(0.1, r), zc: groundZ(at.xM, at.yM) + h - rz, rz: Math.max(0.05, rz), transmit: layer === 'tree' ? 0.25 : 0.15 };
+  return { kind: 'crown', id, x: at.xM, y: at.yM, r: Math.max(0.1, r), zc: groundZ(at.xM, at.yM) + h - rz, rz: Math.max(0.05, rz), transmit: layer === 'tree' ? 0.15 : 0.1 };
 }
 
 export function planOccluders(plan: GardenPlan, plantsById: Map<string, PlantData>, years: number, groundZ: (x: number, y: number) => number): Occluder[] {

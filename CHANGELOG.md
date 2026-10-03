@@ -2,6 +2,12 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Gartenplan: Hinweise zu Abstand und Licht, Messwerkzeug; Navigation per Tastatur (2026-10-04)
+- [x] **Hinweise** in der Seitenleiste, mit Blick auf die ausgewachsenen Pflanzen (30 Jahre): zu eng stehende Pflanzen derselben Schicht (Baum/Baum, Strauch/Strauch … — Unterpflanzung in Gilden ist gewollt und wird nicht gemeldet) und Pflanzen, deren Lichtbedarf nicht gedeckt wird (Sonne < 6 h, Halbschatten < 3 h; Schatten durch Kronen, Gelände, später Gebäude). Betroffene Pflanzen rot gestrichelt umrandet; Klick auf einen Hinweis markiert sie.
+- [x] **Messwerkzeug** (📏 bzw. Taste **M**): Punkte setzen zeigt die Länge jedes Abschnitts und gesamt; Klick auf den ersten Punkt oder Enter schließt die Fläche (Fläche + Umfang). ⌫ entfernt den letzten Punkt, Esc löscht.
+- [x] Besonnung: Sonne zählt erst ab 10° Höhe (flache Sonne ist schwach und wird meist von Zäunen, Hecken, Nachbarhäusern verdeckt), dichteres Laub (10–15 % Licht).
+- [x] **Navigation per Tastatur** auf allen Seiten: **Alt+1** Pflanzen, **Alt+2** Kalender, **Alt+3** Polykulturen, **Alt+4** Gartenplan (Mac: Option).
+
 ## Gartenplan: Besonnungskarte, Quellenvermerk in 3D (2026-10-04)
 - [x] **Besonnungskarte** — Kartenleiste „Einfärben“ → *Besonnung*: mittlere Stunden direkter Sonne pro Tag für jeden Fleck, am gewählten Tag (Datum über den Sonnenstand in 3D) oder im Mittel April–September. Schatten werfen Baumkronen in ihrer Größe zum eingestellten Jahr (Laub lässt etwas Licht durch) und das Gelände; Gebäude folgen. Seitenleiste mit Durchschnitt, Anteil Sonne (≥ 6 h) / Halbschatten (3–6 h) / Schatten (< 3 h) und Legende; in 2D und 3D.
 - [x] **Pflanzvorschläge berücksichtigen das Licht:** Bei der Funktions-Abdeckung zeigt jede Lücke ihre Sonnenstunden („☀ 5,2 h (halbschattig)“), und Pflanzen, deren Lichtbedarf passt, rücken nach oben.

@@ -5,14 +5,14 @@ const LAT = 50, LON = 10;
 const flat: SunScene = { occluders: [], groundZ: () => 0 };
 
 describe('sun hours', () => {
-  it('open ground gets the whole (mean) day length', () => {
+  it('open ground gets all hours with the sun above 10°', () => {
     const june = sunSamples([new Date(2026, 5, 21)], LAT, LON, 0, 20);
     const dec = sunSamples([new Date(2026, 11, 21)], LAT, LON, 0, 20);
     const hJune = sunHoursAt(0, 0, flat, june), hDec = sunHoursAt(0, 0, flat, dec);
-    expect(hJune).toBeGreaterThan(14.5);
-    expect(hJune).toBeLessThan(16.5);
-    expect(hDec).toBeGreaterThan(6.5);
-    expect(hDec).toBeLessThan(8.5);
+    expect(hJune).toBeGreaterThan(13);
+    expect(hJune).toBeLessThan(14.5);
+    expect(hDec).toBeGreaterThan(3);
+    expect(hDec).toBeLessThan(6.5);
   });
 
   it('a tree shades the ground north of it far more than south of it', () => {
