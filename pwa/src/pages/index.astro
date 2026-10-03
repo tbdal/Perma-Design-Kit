@@ -21,7 +21,14 @@ import Layout from '../layouts/Layout.astro';
   <!-- Actions: Heading, View-Switch, Sortieren links; Primär-CTA + Daten-Overflow rechts -->
   <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
     <div class="flex flex-wrap items-center gap-x-6 gap-y-3">
-      <h1 class="text-xl font-bold text-stone-800 dark:text-stone-100" data-i18n="headingTiles">Pflanzenkacheln</h1>
+      <!-- All three headings stacked invisibly in one grid cell: the column is
+           as wide as the longest, so the view switch stays put across views. -->
+      <h1 class="grid text-xl font-bold text-stone-800 dark:text-stone-100">
+        <span id="view-heading" class="col-start-1 row-start-1" data-i18n="headingTiles">Pflanzenkacheln</span>
+        <span class="invisible col-start-1 row-start-1" aria-hidden="true" data-i18n="headingTiles">Pflanzenkacheln</span>
+        <span class="invisible col-start-1 row-start-1" aria-hidden="true" data-i18n="headingList">Pflanzenliste</span>
+        <span class="invisible col-start-1 row-start-1" aria-hidden="true" data-i18n="headingCards">Pflanzenkarten</span>
+      </h1>
       <div class="flex items-center gap-3">
         <span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="viewLabel">Ansicht</span>
         <div class="flex overflow-hidden rounded-lg ring-1 ring-stone-200 dark:ring-stone-700">
@@ -785,7 +792,7 @@ import Layout from '../layouts/Layout.astro';
     const cardsToolbar = document.getElementById('cards-toolbar')!;
     const tableToolbar = document.getElementById('table-toolbar')!;
     const sortToolbar = document.getElementById('sort-toolbar')!;
-    const heading = document.querySelector('h1.text-xl') as HTMLElement | null;
+    const heading = document.getElementById('view-heading');
     const activeClass = ['bg-green-700', 'text-white'];
     const inactiveClass = ['bg-stone-100', 'dark:bg-stone-800', 'text-stone-700', 'dark:text-stone-200'];
     [btnGrid, btnList, btnCards].forEach(b => { b.classList.remove(...activeClass); b.classList.add(...inactiveClass); });
