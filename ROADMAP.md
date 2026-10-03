@@ -2,7 +2,7 @@
 
 Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELOG.md).
 
-## jetzt
+## AP0 - done
 - [x] in /root/pdk/temp steht eine neue psd, welche auch icons für wasser und licht beinhaltet - und weiter designänderungen beinhaltet. konvertiere dieses zu svg und nutze sie als basis für die baumscheibe. hinter der höhe und breite soll jeweils ein "m" für meter stehen.
 - [x] Startseite übersichtlicher gestalten:
   - [x] Untermenü: kleine Verbesserungen für die Lesbarkeit:
@@ -34,8 +34,8 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 
 - [x] include the following new uses to the filtering dropdown menu "uses" and include tickboxes in the edit view of a plant, using the following english and Germen terms: ornamental - Ästhetik, wood - Nutzholz, dyes - Farbstoff, fiber - Fasern,
 - [x] printing out: define min. size of plant card in cm to include in page by user. only print plant cards which will be bigger. show list of all discarded plants to user.
-- [ ] Druck kommt immer noch mit microkreisen raus
-- [ ] Druckmenü schwer verständlich  
+- [x] Druck kommt immer noch mit microkreisen raus
+- [x] Druckmenü schwer verständlich  
 
 - [x] neue funktion: für jede pflanze soll die möglichkeit existieren sie in einer oder mehreren gruppen einzusortieren. implementiere dies, so, dass dies auf der bearbeiten-seite, in der liste und weiteren sichtbar ist in welchen gruppen eine Pflanze ist.
 
