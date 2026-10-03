@@ -67,9 +67,15 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [x] PDF Druck Baumscheibe: Maßstab 1: x in einer eigenen Zeile. Nächste Zeile: Min. Größe (cm)
 - [x] Pflanzkalender: neue Option: Sortierung nach früheste / späteste Blüte & Frucht
 - [x] functions and uses: use tables on ca page 9 (https://www.dropbox.com/scl/fi/qaunmejk6g7o2fvr4gb78/PermaDesignKit-Documentation.docx?rlkey=15noytq7x3t7d605fxqc2t8lj&st=fhmliol6&dl=0) for functions and uses: Namen und Reihenfolge übernehmen in Editiermodus. nicht vorhandene löschen
-
 - [x] Ansicht, Filter, Ausgabeformat: Text etwas größer
 
+## Arbeitspaket 2
+- [ ] in der Produkttour beispieldaten und nachladen als letztes erwähnen: 
+- [ ] eigenes Projekt einfach als Link teilbar machen?
+
+## Karten
+- [ ] auf Gartenplaner ermöglichen, dass frei verfügbare layer von osm.. und Satellit angezeigten werden können. Mapbox oder was ist die beste Foss Alternative?
+- [ ] beim Bewegen der Maus auf der Karte am Mauszeiger die Position relativ zu 0,0 in x m, y m anzeigen
 
 ## kurzfristig
 - [ ] Design festlegen. icon integrieren?
