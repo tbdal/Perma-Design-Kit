@@ -392,6 +392,16 @@ import Layout from '../layouts/Layout.astro';
     }
   }
 
+  // The design switches (and is stored) on click, not via "Einstellungen
+  // speichern" — far below the radios, that button was easy to miss.
+  document.querySelectorAll<HTMLInputElement>('.design-radio').forEach(r => {
+    r.addEventListener('change', () => {
+      const d = r.value as DesignPref;
+      setDesign(d);
+      applyDesign(d);
+    });
+  });
+
   // ── Save handler ────────────────────────────────────────────────────────
   document.getElementById('btn-save')!.addEventListener('click', () => {
     document.querySelectorAll('.src-enabled').forEach((cb) => {
@@ -412,10 +422,6 @@ import Layout from '../layouts/Layout.astro';
     const themeChoice = (document.querySelector<HTMLInputElement>('.theme-radio:checked')?.value ?? 'auto') as ThemePref;
     setTheme(themeChoice);
     applyTheme(themeChoice);
-
-    const designChoice = (document.querySelector<HTMLInputElement>('.design-radio:checked')?.value ?? 'standard') as DesignPref;
-    setDesign(designChoice);
-    applyDesign(designChoice);
 
     setAnalyticsOptOut(analyticsOptout.checked);
 
