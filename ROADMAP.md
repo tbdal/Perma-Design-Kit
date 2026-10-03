@@ -30,6 +30,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] zulip wieder starten: cd /opt/zulip && docker compose start
 - [x] barrierefreiheit - inklusivität mitdenken: Farbenblindheit..
 - [ ] Button: Gruppen als Polykultur einrichten
+- [ ] Tabelle kleiner machen für kleinere Bildschirme
 - [ ] warum gibt's für diese Pflanzen keine Daten?
   Gemeiner Rhabarber	Rheum rhabarbarum	—
 	Haferschlehe	Prunus domestica insititia
