@@ -54,10 +54,6 @@ export const BOOL_FIELDS: readonly BoolFieldDef[] = [
     badge: { pill: 'bg-stone-200 text-stone-700', hex: '#78716c', pdfCode: 'Fa' } },
   { key: 'wood', group: 'usage', label: { de: 'Nutzholz', en: 'Wood' }, csv: 'Nutzholz',
     badge: { pill: 'bg-amber-200 text-amber-900', hex: '#92400e', pdfCode: 'Nu' } },
-  { key: 'ornamental', group: 'usage', label: { de: 'Ästhetik', en: 'Ornamental' }, csv: 'Ästhetik',
-    badge: { pill: 'bg-pink-100 text-pink-700', hex: '#ec4899', pdfCode: 'As' } },
-  { key: 'dyes', group: 'usage', label: { de: 'Farbstoff', en: 'Dyes' }, csv: 'Farbstoff',
-    badge: { pill: 'bg-purple-100 text-purple-700', hex: '#a855f7', pdfCode: 'Fb' } },
 
   // ── Funktionen (order: documentation, "Functions"; Wind (See) is not
   //    part of it and only kept for data compatibility) ──

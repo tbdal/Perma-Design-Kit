@@ -25,7 +25,7 @@ describe('central field table', () => {
 
   it('follows the documented order of uses and functions', () => {
     expect(fieldsOf('usage').map(f => f.key)).toEqual(
-      ['eatable', 'meds', 'culinaric', 'material', 'fuel', 'fodder', 'fiber', 'wood', 'ornamental', 'dyes']);
+      ['eatable', 'meds', 'culinaric', 'material', 'fuel', 'fodder', 'fiber', 'wood']);
     expect(fieldsOf('function').filter(f => f.inForm !== false).map(f => f.key)).toEqual(
       ['nitrogenFix', 'mineralFix', 'insects', 'pest', 'groundCover', 'animalProtection', 'windBreaking']);
   });
