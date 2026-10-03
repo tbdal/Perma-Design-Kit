@@ -2,6 +2,9 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Gartenplan: Vorschlags-Vorschau auch in 3D (2026-10-04)
+- [x] **Funktions-Abdeckung:** Beim Darüberfahren über einen Pflanzvorschlag steht die Pflanze jetzt auch in 3D als halbtransparentes Modell an der Lücke — in ihrer Größe zum eingestellten Jahr, mit ihrem Wirkbereich als grüner Fläche auf dem Gelände und dem Namen darüber.
+
 ## Gartenplan: Rückgängig/Wiederholen, Funktions-Abdeckung in 3D; Tastatur in der Suche (2026-10-04)
 - [x] **Rückgängig / Wiederholen** im Gartenplan: Buttons ↶ ↷ neben 2D/3D und **Strg/⌘+Z**, **Strg/⌘+Umschalt+Z** bzw. **Strg+Y** (in Eingabefeldern bleibt deren eigenes Rückgängig). Erfasst alle Änderungen am Plan — Pflanzen setzen/verschieben/entfernen, Flächen, Umriss, Jahre-Regler, Hintergrund … —, ein Ziehen zählt als ein Schritt; bis zu 100 Schritte, in 2D und 3D.
 - [x] Fix: Eine einzelne Pflanze entfernen und „Hier pflanzen“ (Funktions-Abdeckung) wurden nicht automatisch gespeichert.

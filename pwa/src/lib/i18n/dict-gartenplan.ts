@@ -41,7 +41,7 @@ export const gartenplanDict: Dict = {
   coverageAll: { de: 'Alle (Abdeckung)', en: 'All (coverage)' },
   coverageHeading: { de: 'Funktions-Abdeckung', en: 'Function coverage' },
   coverageAllHint: { de: 'Grün = viele Funktionen in der Nähe, rot = keine. Auf eine Funktion klicken für Lücken und Vorschläge.', en: 'Green = many functions nearby, red = none. Click a function for gaps and suggestions.' },
-  coverageFnHint: { de: 'Grün = abgedeckt, rot = fehlt. Vorschläge aus deinem Bestand, passend zu den Nachbarn (Sonne/Wasser/pH) — mit der Maus darüberfahren zeigt sie in der Karte.', en: 'Green = covered, red = missing. Suggestions from your collection that suit the neighbours (sun/water/pH) — hover to preview them on the map.' },
+  coverageFnHint: { de: 'Grün = abgedeckt, rot = fehlt. Vorschläge aus deinem Bestand, passend zu den Nachbarn (Sonne/Wasser/pH) — mit der Maus darüberfahren zeigt sie in der Karte (2D und 3D).', en: 'Green = covered, red = missing. Suggestions from your collection that suit the neighbours (sun/water/pH) — hover to preview them on the map (2D and 3D).' },
   coverageGap: { de: 'Lücke ≈ {area} m²', en: 'Gap ≈ {area} m²' },
   coverageNoGap: { de: 'Überall abgedeckt.', en: 'Covered everywhere.' },
   coverageNoPlants: { de: 'Keine Pflanze mit dieser Funktion im Bestand — auf der Pflanzenseite ergänzen.', en: 'No plant with this function in your collection — add one on the plant page.' },

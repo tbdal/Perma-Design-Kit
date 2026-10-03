@@ -2473,6 +2473,7 @@ import Layout from '../layouts/Layout.astro';
     const r = displayRadiusM(p, editing.yearsSincePlanting);
     const h = p.heightM && p.widthM ? p.heightM * Math.min(1, r / (p.widthM / 2)) : r * 2;
     const reach = influenceRadius(fn, r, h);
+    view3d?.setPreview({ xM: g.xM, yM: g.yM, plant: p, reachM: reach, label: displayName(p) });
     const k = viewK();
     const ns = 'http://www.w3.org/2000/svg';
     const grp = document.createElementNS(ns, 'g');
@@ -2486,6 +2487,7 @@ import Layout from '../layouts/Layout.astro';
   }
   function hideSuggestionPreview() {
     planSvg.querySelector('#cov-preview')?.remove();
+    view3d?.setPreview(null);
   }
 
   // ── Polykultur als Paket ───────────────────────────────────────────────

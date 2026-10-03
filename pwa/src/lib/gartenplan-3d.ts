@@ -82,7 +82,18 @@ export interface CoverageOverlay3D {
   gaps: { xM: number; yM: number; rM: number }[];
 }
 
+/** Hover preview of a planting suggestion (function coverage). */
+export interface SuggestionPreview3D {
+  xM: number;
+  yM: number;
+  plant: PlantData;
+  reachM: number;   // influence radius of the function
+  label: string;
+}
+
 export interface GardenPlan3DView {
+  /** Ghost of a suggested plant at a gap with its reach (null hides it). */
+  setPreview(preview: SuggestionPreview3D | null): void;
   /** Shows (or with null hides) the function-coverage colouring. */
   setCoverage(overlay: CoverageOverlay3D | null): void;
   updateYears(years: number): void;
@@ -120,16 +131,22 @@ export interface View3DOptions {
 const DRAG_THRESHOLD_PX = 4;
 
 
-function buildPlantMesh(placement: GardenPlanPlacement, plant: PlantData | undefined, years: number): THREE.Group {
+/** Crown radius, height and layer of a plant after `years`. */
+function plantDims(plant: PlantData | undefined, years: number) {
   const radiusM = plant ? displayRadiusM(plant, years) : 0.2;
   const layer: PlantLayer = plant ? deriveLayer(plant) : 'shrub';
-  const style = LAYER_STYLE[layer];
   // Height grows in step with the crown: the growth model gives the current
   // crown radius, so the same fraction of the final height applies.
   const finalRadius = plant?.widthM && plant.widthM > 0 ? plant.widthM / 2 : 0.25;
   const frac = Math.min(1, radiusM / finalRadius);
   const fallbackH = layer === 'tree' ? radiusM * 2.6 : layer === 'shrub' ? radiusM * 1.6 : layer === 'rhizo' ? 0.15 : radiusM * 1.2;
   const heightM = plant?.heightM && plant.heightM > 0 ? Math.max(0.1, plant.heightM * frac) : fallbackH;
+  return { radiusM, heightM, layer };
+}
+
+function buildPlantMesh(placement: GardenPlanPlacement, plant: PlantData | undefined, years: number): THREE.Group {
+  const { radiusM, heightM, layer } = plantDims(plant, years);
+  const style = LAYER_STYLE[layer];
   const group = buildPlantModel(placement.id, crownShape(plant, layer), radiusM, heightM, style.fill);
 
   const ring = new THREE.Mesh(
@@ -845,7 +862,59 @@ export function createGardenPlan3DView(
     requestRender();
   }
 
+  // ── Suggestion preview: translucent plant model at its current size, the
+  // function's reach as a draped green disc, and the name above it. ──
+  let previewGroup: THREE.Group | null = null;
+  function setPreview(pv: SuggestionPreview3D | null) {
+    if (previewGroup) {
+      previewGroup.traverse(obj => {
+        const m = obj as THREE.Mesh;
+        m.geometry?.dispose();
+        const mat = m.material as THREE.Material | THREE.Material[] | undefined;
+        (Array.isArray(mat) ? mat : mat ? [mat] : []).forEach(x => x.dispose());
+      });
+      scene.remove(previewGroup);
+      previewGroup = null;
+    }
+    if (pv) {
+      const g = new THREE.Group();
+      const { radiusM, heightM, layer } = plantDims(pv.plant, years);
+      const model = buildPlantModel('preview-' + pv.plant.id, crownShape(pv.plant, layer), radiusM, heightM, LAYER_STYLE[layer].fill);
+      model.traverse(obj => {
+        const m = obj as THREE.Mesh;
+        if (!m.isMesh) return;
+        m.castShadow = false;
+        const ghost = (x: THREE.Material) => { const c = x.clone(); c.transparent = true; c.opacity = 0.6; c.depthWrite = false; return c; };
+        m.material = Array.isArray(m.material) ? m.material.map(ghost) : ghost(m.material);
+        m.renderOrder = 4;
+      });
+      model.position.set(pv.xM, ground(pv.xM, pv.yM), pv.yM);
+      g.add(model);
+      const circle = Array.from({ length: 48 }, (_, i) => {
+        const a = (i / 48) * Math.PI * 2;
+        return { xM: pv.xM + Math.cos(a) * pv.reachM, yM: pv.yM + Math.sin(a) * pv.reachM };
+      });
+      const lift = 0.16 + (plan.areas?.length ?? 0) * 0.02;
+      const disc = new THREE.Mesh(drapedPolygon(circle, ground, lift, drapeCell),
+        new THREE.MeshBasicMaterial({ color: 0x16a34a, transparent: true, opacity: 0.25, depthWrite: false, side: THREE.DoubleSide }));
+      disc.renderOrder = 3;
+      g.add(disc);
+      const rim = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(drapedOutline(circle, ground, lift + 0.01, Math.max(0.5, pv.reachM / 16))),
+        new THREE.LineDashedMaterial({ color: 0x15803d, dashSize: Math.max(0.3, pv.reachM / 10), gapSize: Math.max(0.2, pv.reachM / 14), depthWrite: false }));
+      rim.computeLineDistances();
+      rim.renderOrder = 3;
+      g.add(rim);
+      const label = buildLabelSprite(pv.label, Math.max(0.35, maxDim * 0.035));
+      label.position.set(pv.xM, ground(pv.xM, pv.yM) + heightM + Math.max(0.4, maxDim * 0.03), pv.yM);
+      g.add(label);
+      scene.add(g);
+      previewGroup = g;
+    }
+    requestRender();
+  }
+
   return {
+    setPreview,
     setCoverage,
     updateYears(newYears: number) {
       years = newYears;
