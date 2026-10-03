@@ -73,6 +73,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 	Haferschlehe	Prunus domestica insititia
 	Jostabeere	Ribes x nidigrolaria
 	Rubus pentalobus	Rubus pentalobus
+	--> bot. Name nicht korrekt --> über PFAF-Suche finden & eintragen, dann Daten nachladen
 - Ansicht, Filter, Ausgabeformat: Text etwas größer
 
 
