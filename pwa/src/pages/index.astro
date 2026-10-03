@@ -741,8 +741,8 @@ import Layout from '../layouts/Layout.astro';
     const growthChips = GROWTH_BADGES.map(([,,dot,l,code]) => chip(dot, l, code)).join(' ');
     const layerChips = PLANT_LAYERS.map(l => chip(LAYER_STYLE[l].fill, t(LAYER_I18N[l]), LAYER_CODE[l])).join(' ');
     return `
-      <details id="color-legend"${legendOpen ? ' open' : ''} class="mx-3 mb-2 sm:mx-0 rounded-lg bg-stone-50 dark:bg-stone-900 px-3 py-1.5 text-xs text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700">
-        <summary class="cursor-pointer select-none font-medium text-stone-500 dark:text-stone-400">${escapeHtml(t('legendToggle'))}</summary>
+      <details id="color-legend"${legendOpen ? ' open' : ''} class="group/legend mx-3 mb-2 sm:mx-0 rounded-lg bg-stone-50 dark:bg-stone-900 px-3 py-1.5 text-xs text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700 not-open:bg-green-50 not-open:ring-green-300 dark:not-open:bg-green-950/60 dark:not-open:ring-green-700">
+        <summary class="cursor-pointer select-none font-medium text-stone-500 dark:text-stone-400 group-not-open/legend:font-semibold group-not-open/legend:text-green-800 dark:group-not-open/legend:text-green-300">${escapeHtml(t('legendToggle'))}<span class="ml-2 inline-flex gap-0.5 align-middle group-open/legend:hidden" aria-hidden="true">${[...USAGE_BADGES.slice(0, 2), ...FUNCTION_BADGES.slice(0, 2), ...SUN_BADGES.slice(0, 1)].map(([,,dot]) => `<span class="inline-block h-2 w-2 rounded-full" style="background-color:${dot}"></span>`).join('')}</span></summary>
         <div class="mt-2 space-y-1.5">
           <div class="flex flex-wrap items-center gap-x-3 gap-y-1"><strong class="text-stone-500 dark:text-stone-400">${escapeHtml(t('legendUsageHeading'))}</strong>${usageChips}</div>
           <div class="flex flex-wrap items-center gap-x-3 gap-y-1"><strong class="text-stone-500 dark:text-stone-400">${escapeHtml(t('legendFunctionsHeading'))}</strong>${functionChips}</div>

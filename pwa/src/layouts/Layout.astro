@@ -232,7 +232,7 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
       const WELCOME_KEY = 'pdk-welcome-seen';
       const markSeen = () => { try { localStorage.setItem(WELCOME_KEY, '1'); } catch {} };
 
-      type TourStep = { selector: string; closest?: string; dummy?: boolean; fallback?: string; title: string; text: string; fallbackText?: string };
+      type TourStep = { selector: string; closest?: string; dummy?: boolean; fallback?: string; title: string; text: string; fallbackText?: string; link?: { href: string; label: string } }; // link: i18n keys (URL differs per language)
       const TOUR_STEPS: TourStep[] = [
         { selector: '#plant-search', closest: 'div', title: 'tourSearchTitle', text: 'tourSearchText' },
         { selector: '#tour-dummy .btn-edit', dummy: true, title: 'tourEditTitle', text: 'tourEditText' },
@@ -240,6 +240,9 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
         { selector: '#btn-view-cards', title: 'tourCardsTitle', text: 'tourCardsText' },
         { selector: 'a[data-nav="/polykulturen"]', title: 'tourGuildsTitle', text: 'tourGuildsText' },
         { selector: 'a[data-nav="/gartenplan"]', title: 'tourPlanTitle', text: 'tourPlanText' },
+        // Last: start from an example — both buttons live in the "Daten ⋮" menu.
+        { selector: '#data-menu > summary', title: 'tourSamplesTitle', text: 'tourSamplesText',
+          link: { href: 'tourSamplesHref', label: 'tourSamplesLink' } },
       ];
       const visible = (el: Element | null): el is HTMLElement => {
         if (!el) return false;
@@ -271,10 +274,10 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
         const steps = TOUR_STEPS.map(s => {
           const main = Array.from(document.querySelectorAll(s.selector)).find(visible);
           const box = main && s.closest ? (main.closest(s.closest) as HTMLElement | null) : null;
-          if (main) return { el: box && visible(box) ? box : main, title: s.title, text: s.text };
+          if (main) return { el: box && visible(box) ? box : main, title: s.title, text: s.text, link: s.link };
           const fb = s.fallback ? Array.from(document.querySelectorAll(s.fallback)).find(visible) : null;
-          return fb ? { el: fb, title: s.title, text: s.fallbackText ?? s.text } : null;
-        }).filter((s): s is { el: HTMLElement; title: string; text: string } => !!s);
+          return fb ? { el: fb, title: s.title, text: s.fallbackText ?? s.text, link: s.link } : null;
+        }).filter((s): s is { el: HTMLElement; title: string; text: string; link: TourStep['link'] } => !!s);
         if (dummy) dummy.hidden = true;
         if (steps.length === 0) return;
         let idx = 0;
@@ -294,7 +297,15 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
           if (dummy) dummy.hidden = !dummy.contains(cur.el);
           cur.el.scrollIntoView({ block: 'center', behavior: 'instant' as ScrollBehavior });
           document.getElementById('tour-title')!.textContent = tt(cur.title);
-          document.getElementById('tour-text')!.textContent = tt(cur.text);
+          const textEl = document.getElementById('tour-text')!;
+          textEl.textContent = tt(cur.text);
+          if (cur.link) {
+            const a = document.createElement('a');
+            a.href = tt(cur.link.href); a.target = '_blank'; a.rel = 'noopener';
+            a.className = 'mt-1 block text-green-700 dark:text-green-400 underline underline-offset-2 hover:no-underline';
+            a.textContent = tt(cur.link.label);
+            textEl.append(a);
+          }
           document.getElementById('tour-progress')!.textContent = `${idx + 1} / ${steps.length}`;
           prev.style.visibility = idx === 0 ? 'hidden' : 'visible';
           next.textContent = tt(idx === steps.length - 1 ? 'welcomeDone' : 'welcomeNext');

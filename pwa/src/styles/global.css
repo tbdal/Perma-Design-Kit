@@ -128,6 +128,8 @@ html[data-design="horizont"] {
   --color-stone-950: #161c09;
 }
 html[data-design="horizont"] body { background: var(--hz-ground-color); }
+/* Dark mode: a near-black ground below the tree line. */
+html[data-design="horizont"].dark { --hz-ground-color: #101210; }
 
 /* Headings in the display face, as in the design. */
 html[data-design="horizont"] :is(h1, h2, .hz-hero-title) {
