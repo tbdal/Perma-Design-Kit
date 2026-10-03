@@ -47,7 +47,7 @@ Runde 1 und 1b (Fläche direkt auf der Karte zeichnen, benannte farbige Flächen
 	--> bot. Name nicht korrekt --> über PFAF-Suche finden & eintragen, dann Daten nachladen
 
 ### bugs
-- [ ] Pinus spp. ohne daten
+- [x] Pinus spp. ohne daten → erledigt (Gattungs-Einträge, s. CHANGELOG)
 
 ## bis 1.11./Symposium
 - [ ] bug reporting aufsetzen (mit Formular vorstrukturieren)

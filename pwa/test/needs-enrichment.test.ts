@@ -1,6 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import { createEmptyPlant, type PlantData } from '../src/lib/types';
 import { needsEnrichment } from '../src/lib/enrich';
+import { wikidataSearchName } from '../src/lib/plant-search';
+
+describe('wikidataSearchName', () => {
+  it('searches the genus for genus-level entries', () => {
+    expect(wikidataSearchName('Pinus spp.')).toBe('Pinus');
+    expect(wikidataSearchName('Aronia sp.')).toBe('Aronia');
+    expect(wikidataSearchName('Malus domestica')).toBe('Malus domestica');
+  });
+});
 
 const plant = (extra: Partial<PlantData>): PlantData => ({ ...createEmptyPlant(), ...extra });
 

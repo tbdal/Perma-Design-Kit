@@ -2,6 +2,13 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Reihe pflanzen, QGIS, 3D-Kartenboden, „spp.“-Pflanzen (2026-10-03)
+- [x] **Reihe pflanzen** — neues Werkzeug „⋯ Reihe pflanzen“: Pflanze wählen, Linie (auch mit Knicken) per Klicks zeichnen, Abstand in m (Vorschlag: Pflanzenbreite), Vorschau der Pflanzpunkte, „Pflanzen“ setzt alle auf einmal.
+- [x] **GeoJSON für QGIS** — „⤓ GeoJSON (QGIS)“ exportiert Umriss, Flächen und Pflanzen (mit Attributen wie Schicht, Kronenradius, Notizen) in WGS84; „⤒ GeoJSON importieren“ in der Planliste liest es wieder ein: eigene Exporte können den Plan aktualisieren, fremde GeoJSON (Polygone + Punkte) werden ein neuer Plan, unbekannte Pflanzen werden über den lateinischen Namen zugeordnet oder angelegt. GeoPackage bewusst (noch) nicht — bräuchte eine ~1 MB SQLite-Bibliothek im Browser.
+- [x] **Breites Layout** — der Gartenplan nutzt wie die Pflanzenseite die volle Breite; auf sehr breiten Bildschirmen bekommt die Planfläche mehr Anteil.
+- [x] **3D-Kartenboden** — OSM bzw. Satellit liegt in 3D als Boden, auch rund um die Fläche; das Meter-Raster in 3D ist entfernt.
+- [x] **„Pinus spp.“ & Co. bekommen Daten** — Gattungs-Einträge („… spp.“, „… sp.“) werden in Wikidata über den Gattungsnamen gesucht; Edible Forest Gardens liefert einen Gattungs-Durchschnitt (Merkmale, die ≥ 2/3 der Arten teilen, Größen als Median). PFAF hat keine Gattungsseiten.
+
 ## Gartenplan 3D: Sonne, Schatten, Perspektive behalten (2026-10-03)
 - [x] **Sonnenstand** — in 3D Datum, Uhrzeit-Regler, „Jetzt“ und „▶ Tagesverlauf“; Sonnenposition (SunCalc-Algorithmus, `sun-position.ts`) für den Standort des Gartens (ohne Standort 50° N). Anzeige „Sonne 171° (S), 65° über dem Horizont“. Nachts geöffnet startet die Ansicht um 12 Uhr.
 - [x] **Schatten & Licht** — Sonne als schattenwerfendes Licht, weiche Schatten, filmische Tonwerte, Rasen mit umgebender Wiese, Himmelsfarbe nach Sonnenhöhe (Tag/Dämmerung/Nacht), Sonnenbahn des Tages als Bogen mit Stundenmarken und Sonne.

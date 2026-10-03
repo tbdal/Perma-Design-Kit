@@ -318,10 +318,17 @@ export async function fetchPlantDetails(wikidataId: string): Promise<Partial<Pla
 }
 
 /** Wikidata item id for a Latin name (first search hit), or undefined. */
+/** "Pinus spp." / "Pinus sp." / "Pinus ssp." → "Pinus" (genus-level entries,
+ *  e.g. in the Crawford sample list); anything else unchanged. */
+export function wikidataSearchName(latinName: string): string {
+  const m = latinName.trim().match(/^([A-Z][a-z-]+)\s+(?:spp?|ssp)\.?$/i);
+  return m ? m[1] : latinName;
+}
+
 export async function findWikidataId(latinName: string): Promise<string | undefined> {
   const url = new URL('https://www.wikidata.org/w/api.php');
   url.searchParams.set('action', 'wbsearchentities');
-  url.searchParams.set('search', latinName);
+  url.searchParams.set('search', wikidataSearchName(latinName));
   url.searchParams.set('language', 'en');
   url.searchParams.set('type', 'item');
   url.searchParams.set('limit', '1');

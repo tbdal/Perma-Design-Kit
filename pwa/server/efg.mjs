@@ -166,11 +166,53 @@ export function efgIndex() {
   return cached;
 }
 
-/** Fields for a Latin name, or {} if the sheet doesn't list the plant. */
+/** "Pinus spp.", "Pinus sp.", "Pinus ssp." or a bare "Pinus" → "pinus";
+ *  null for a full binomial. */
+export function genusOf(latinName) {
+  const m = normalizeName(latinName || '').match(/^([a-z][a-z-]+)(?:\s+(?:spp?|ssp)\.?)?$/);
+  return m ? m[1] : null;
+}
+
+const median = (xs) => { const s = [...xs].sort((a, b) => a - b); return s.length % 2 ? s[(s.length - 1) / 2] : (s[s.length / 2 - 1] + s[s.length / 2]) / 2; };
+
+/** Genus-level entry from all listed species of the genus: a yes/no trait
+ *  counts if at least two thirds of the species have it, sizes and ratings
+ *  are medians, text fields only when two thirds agree. The common name is
+ *  left out — it would be one species' name. */
+function genusEntry(genus, index) {
+  const species = [...index.entries()].filter(([k]) => k.startsWith(genus + ' ')).map(([, v]) => v);
+  if (species.length === 0) return null;
+  const quorum = Math.ceil(species.length * 2 / 3);
+  const out = {};
+  const keys = new Set(species.flatMap(s => Object.keys(s)));
+  for (const k of keys) {
+    if (k === 'latinName' || k === 'commonName') continue;
+    const vals = species.map(s => s[k]).filter(v => v !== null && v !== undefined && v !== '');
+    if (vals.length === 0) continue;
+    if (typeof vals[0] === 'boolean') out[k] = vals.filter(Boolean).length >= quorum;
+    else if (typeof vals[0] === 'number') out[k] = Math.round(median(vals) * 10) / 10;
+    else if (typeof vals[0] === 'string') {
+      const counts = new Map();
+      for (const v of vals) counts.set(v, (counts.get(v) ?? 0) + 1);
+      const [best, n] = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+      if (n >= quorum) out[k] = best;
+    }
+  }
+  out.eatable = (out.eatableScore ?? 0) >= 3;
+  out.meds = (out.medsScore ?? 0) >= 3;
+  return out;
+}
+
+/** Fields for a Latin name, or {} if the sheet doesn't list the plant.
+ *  Genus-level names ("Pinus spp.") get a consensus of the genus' species. */
 export function lookupEfg(latinName, index = efgIndex()) {
   const key = normalizeName(latinName || '');
   const hit = index.get(key) ?? index.get(SYNONYMS[key]);
-  if (!hit) return {};
-  const { latinName: _ignored, ...fields } = hit;
-  return { source: 'efg', ...fields };
+  if (hit) {
+    const { latinName: _ignored, ...fields } = hit;
+    return { source: 'efg', ...fields };
+  }
+  const genus = genusOf(latinName);
+  const g = genus ? genusEntry(genus, index) : null;
+  return g ? { source: 'efg', ...g } : {};
 }

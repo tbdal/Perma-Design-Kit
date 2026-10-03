@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { lookupEfg, parseLength, efgIndex } from '../server/efg.mjs';
+import { lookupEfg, parseLength, efgIndex, genusOf } from '../server/efg.mjs';
 
 describe('EFG (Edible Forest Gardens) data', () => {
   it('loads the species sheet', () => {
@@ -39,5 +39,22 @@ describe('EFG (Edible Forest Gardens) data', () => {
   it('matches names case- and whitespace-insensitively and returns {} for unknown plants', () => {
     expect(lookupEfg('  symphytum   OFFICINALE ').mineralFix).toBe(true);
     expect(lookupEfg('Nonexistus plantus')).toEqual({});
+  });
+
+  it('answers genus-level names ("Pinus spp.") with a consensus of the species', () => {
+    const pinus = lookupEfg('Pinus spp.');
+    expect(pinus.source).toBe('efg');
+    expect(pinus.habit).toBe('tree');
+    expect(pinus.commonName).toBeUndefined();
+    expect(pinus.heightM).toBeGreaterThan(5);
+    expect(lookupEfg('Pinus sp.')).toEqual(pinus);
+    expect(lookupEfg('Pinus')).toEqual(pinus);
+    expect(lookupEfg('Nonexistus spp.')).toEqual({});
+  });
+
+  it('recognises genus-level spellings', () => {
+    expect(genusOf('Pinus spp.')).toBe('pinus');
+    expect(genusOf('Aronia ssp')).toBe('aronia');
+    expect(genusOf('Malus domestica')).toBeNull();
   });
 });
