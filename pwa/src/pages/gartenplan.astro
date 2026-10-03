@@ -93,7 +93,7 @@ import Layout from '../layouts/Layout.astro';
           </div>
           <div id="drawing-wrap" class="relative hidden rounded-xl bg-white dark:bg-stone-800 p-3 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <svg id="drawing-svg" class="w-full touch-none" style="touch-action:none"></svg>
-            <div class="cursor-readout pointer-events-none absolute hidden rounded bg-stone-900/80 px-1.5 py-0.5 font-mono text-[11px] text-white"></div>
+            <div aria-hidden="true" class="cursor-readout pointer-events-none absolute hidden rounded bg-stone-900/80 px-1.5 py-0.5 font-mono text-[11px] text-white"></div>
             <div class="basemap-attrib absolute bottom-3 right-3 hidden rounded-tl bg-white/80 px-1 text-[10px] text-stone-600"></div>
           </div>
           <div id="drawing-controls" class="hidden flex flex-wrap gap-2">
@@ -138,7 +138,7 @@ import Layout from '../layouts/Layout.astro';
           <div id="plan-wrap" class="relative rounded-xl bg-white dark:bg-stone-800 p-3 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <svg id="plan-svg" class="w-full touch-none" style="touch-action:none"></svg>
             <div id="plan-3d-container" hidden class="h-[480px] w-full touch-none" style="touch-action:none"></div>
-            <div class="cursor-readout pointer-events-none absolute hidden rounded bg-stone-900/80 px-1.5 py-0.5 font-mono text-[11px] text-white"></div>
+            <div aria-hidden="true" class="cursor-readout pointer-events-none absolute hidden rounded bg-stone-900/80 px-1.5 py-0.5 font-mono text-[11px] text-white"></div>
             <div class="basemap-attrib absolute bottom-3 right-3 hidden rounded-tl bg-white/80 px-1 text-[10px] text-stone-600"></div>
           </div>
           <div class="flex flex-wrap items-center gap-x-4 gap-y-1 px-1 text-xs text-stone-500 dark:text-stone-400">
@@ -183,9 +183,9 @@ import Layout from '../layouts/Layout.astro';
   <div id="toast" class="fixed bottom-6 right-6 hidden rounded-lg bg-green-700 px-4 py-2.5 text-sm font-medium text-white shadow-lg"></div>
 
   <!-- Standort & Ausrichtung (Leaflet, src/lib/gartenplan-locate.ts) -->
-  <dialog id="locate-dialog" class="m-auto w-[min(56rem,calc(100vw-2rem))] rounded-xl bg-white dark:bg-stone-800 p-0 text-stone-800 dark:text-stone-100 shadow-2xl backdrop:bg-black/50">
+  <dialog id="locate-dialog" aria-labelledby="locate-title" class="m-auto w-[min(56rem,calc(100vw-2rem))] rounded-xl bg-white dark:bg-stone-800 p-0 text-stone-800 dark:text-stone-100 shadow-2xl backdrop:bg-black/50">
     <div class="space-y-2 p-4">
-      <h2 class="text-base font-semibold" data-i18n="locateTitle">Standort &amp; Ausrichtung</h2>
+      <h2 id="locate-title" class="text-base font-semibold" data-i18n="locateTitle">Standort &amp; Ausrichtung</h2>
       <p class="text-xs text-stone-500 dark:text-stone-400" data-i18n="locateHint">Klicke auf die Karte, um die Ecke 0,0 (oben links im Plan) zu setzen. Ziehe den runden Griff an der Ecke oben rechts, um den Plan auszurichten – z. B. entlang eines Zauns.</p>
       <div class="flex flex-wrap items-center gap-2">
         <form id="locate-search-form" class="flex min-w-0 flex-1 gap-2">
@@ -205,10 +205,10 @@ import Layout from '../layouts/Layout.astro';
           <span data-i18n="locateRotation">Drehung</span>
           <button type="button" data-rot-step="-15" class="rounded bg-stone-100 dark:bg-stone-700 px-1.5 py-0.5 ring-1 ring-stone-300 dark:ring-stone-600">−15°</button>
           <button type="button" data-rot-step="-1" class="rounded bg-stone-100 dark:bg-stone-700 px-1.5 py-0.5 ring-1 ring-stone-300 dark:ring-stone-600">−1°</button>
-          <input id="locate-rot" type="range" min="0" max="359" step="1" value="0" class="w-32" />
+          <input id="locate-rot" type="range" data-i18n-aria-label="locateRotation" aria-label="Drehung" min="0" max="359" step="1" value="0" class="w-32" />
           <button type="button" data-rot-step="1" class="rounded bg-stone-100 dark:bg-stone-700 px-1.5 py-0.5 ring-1 ring-stone-300 dark:ring-stone-600">+1°</button>
           <button type="button" data-rot-step="15" class="rounded bg-stone-100 dark:bg-stone-700 px-1.5 py-0.5 ring-1 ring-stone-300 dark:ring-stone-600">+15°</button>
-          <input id="locate-rot-num" type="number" min="0" max="359" step="1" value="0" class="w-16 rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-1.5 py-0.5" />°
+          <input id="locate-rot-num" type="number" data-i18n-aria-label="locateRotation" aria-label="Drehung" min="0" max="359" step="1" value="0" class="w-16 rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-1.5 py-0.5" />°
         </span>
       </div>
       <div class="flex flex-wrap justify-end gap-2 pt-1">
