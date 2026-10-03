@@ -46,7 +46,8 @@ Runde 1 und 1b (Fläche direkt auf der Karte zeichnen, benannte farbige Flächen
 	Rubus pentalobus	Rubus pentalobus
 	--> bot. Name nicht korrekt --> über PFAF-Suche finden & eintragen, dann Daten nachladen
 
-
+### bugs
+- [ ] Pinus spp. ohne daten
 
 ## bis 1.11./Symposium
 - [ ] bug reporting aufsetzen (mit Formular vorstrukturieren)
