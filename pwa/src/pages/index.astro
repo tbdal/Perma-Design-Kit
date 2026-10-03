@@ -29,13 +29,14 @@ import Layout from '../layouts/Layout.astro';
         <span class="invisible col-start-1 row-start-1" aria-hidden="true" data-i18n="headingList">Pflanzenliste</span>
         <span class="invisible col-start-1 row-start-1" aria-hidden="true" data-i18n="headingCards">Pflanzenkarten</span>
       </h1>
-      <div class="flex items-center gap-3">
-        <span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="viewLabel">Ansicht</span>
-        <div class="flex overflow-hidden rounded-lg ring-1 ring-stone-200 dark:ring-stone-700">
-          <button id="btn-view-grid" data-i18n-title="viewGridTitle" class="bg-green-700 px-3 py-2 text-sm font-medium text-white transition hover:bg-green-800" title="Kachelansicht">⊞</button>
-          <button id="btn-view-list" data-i18n-title="viewListTitle" class="bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 transition hover:bg-stone-200 dark:hover:bg-stone-700" title="Listenansicht">☰</button>
-          <button id="btn-view-cards" data-i18n-title="viewCardsTitle" class="bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 transition hover:bg-stone-200 dark:hover:bg-stone-700" title="Kartenansicht">▤</button>
-        </div>
+      <!-- "Ansicht" is the shaded first segment of the switch: rounded on the
+           left (a half circle in the pill-shaped Horizont design), flush
+           against the buttons on the right. -->
+      <div role="group" aria-labelledby="view-label" class="flex overflow-hidden rounded-lg ring-1 ring-stone-200 dark:ring-stone-700">
+        <span id="view-label" class="flex items-center bg-stone-200 dark:bg-stone-700 pl-3.5 pr-3 text-xs font-medium text-stone-600 dark:text-stone-300" data-i18n="viewLabel">Ansicht</span>
+        <button id="btn-view-grid" data-i18n-title="viewGridTitle" class="bg-green-700 px-3 py-2 text-sm font-medium text-white transition hover:bg-green-800" title="Kachelansicht">⊞</button>
+        <button id="btn-view-list" data-i18n-title="viewListTitle" class="bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 transition hover:bg-stone-200 dark:hover:bg-stone-700" title="Listenansicht">☰</button>
+        <button id="btn-view-cards" data-i18n-title="viewCardsTitle" class="bg-stone-100 dark:bg-stone-800 px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 transition hover:bg-stone-200 dark:hover:bg-stone-700" title="Kartenansicht">▤</button>
       </div>
       <!-- Sort (grid/cards only — list view sorts via clickable table headers) -->
       <div id="sort-toolbar" style="display:none" class="flex items-center gap-2">
