@@ -70,7 +70,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [x] Ansicht, Filter, Ausgabeformat: Text etwas größer
 
 ## Arbeitspaket 2
-- [ ] in der Produkttour beispieldaten und nachladen als letztes erwähnen: 
+- [ ] in der Produkttour beispieldaten und nachladen als letztes erwähnen: "Wenn du mit einem Beispiel starten möchtest kannst du die 
 - [ ] eigenes Projekt einfach als Link teilbar machen?
 - [ ] eingeklappte Farblegende farblich mehr hervorheben
 
