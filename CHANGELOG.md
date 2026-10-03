@@ -2,6 +2,10 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Gartenplan: Tastenkürzel, dezentere Flächen-Beschriftung (2026-10-04)
+- [x] **Tastenkürzel** im Gartenplan: 2/3 (2D/3D), H/V/L (Bewegen/Markieren/Lasso), +/−/0 (Zoom), F (Fläche einzeichnen), R (Reihe pflanzen), U (Umriss bearbeiten), T/O (3D Draufsicht/Schräg), Entf (Markiertes entfernen), Esc. Die Übersicht mit **Shift+?** zeigt jetzt die Kürzel der jeweiligen Seite (Gartenplan bzw. Pflanzen).
+- [x] Flächen-Beschriftung kleiner und transparenter (2D und 3D).
+
 ## Gartenplan 3D: naturgetreuere Pflanzen (2026-10-04)
 - [x] Pflanzen in 3D aus Stamm, Ästen und vielen Blatt-/Nadelbüscheln (prozedural gemalte Texturen, Schatten folgen den Blättern) statt Kugeln; Form nach Art: Laubbäume mit runder Krone auf Stamm, Kiefern mit hoher Schirmkrone, Fichte/Tanne & Co. als Kegel, mehrstämmige Sträucher, Stauden als Blattbüschel, Kletterpflanzen am Stab, Bodendecker als Teppich. Höhe wächst mit dem Jahre-Regler mit (Endhöhe aus den Pflanzendaten).
 

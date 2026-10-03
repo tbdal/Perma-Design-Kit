@@ -198,11 +198,28 @@ const barMaxW = 'max-w-[1600px]';
         <table class="w-full text-sm">
           <tbody class="divide-y divide-stone-200 dark:divide-stone-700">
             <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">?</kbd></td><td data-i18n="shortcutsOverview">Diese Übersicht</td></tr>
+          </tbody>
+          <tbody data-shortcuts-for="plants" class="divide-y divide-stone-200 dark:divide-stone-700">
             <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">/</kbd></td><td data-i18n="shortcutsFocusSearch">Suche fokussieren</td></tr>
             <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Esc</kbd></td><td data-i18n="shortcutsCloseDialog">Offenen Dialog schließen</td></tr>
             <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">n</kbd></td><td data-i18n="shortcutsNewPlant">Neue Pflanze</td></tr>
             <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">g</kbd> / <kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">l</kbd> / <kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">c</kbd></td><td data-i18n="shortcutsViewSwitch">Kacheln / Liste / Karten</td></tr>
             <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Shift</kbd>+Klick</td><td data-i18n="shortcutsShiftClick">Bereich von letzter bis aktueller Checkbox auswählen</td></tr>
+          </tbody>
+          <tbody data-shortcuts-for="gartenplan" hidden class="divide-y divide-stone-200 dark:divide-stone-700">
+            <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">2</kbd> / <kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">3</kbd></td><td data-i18n="scGpView">2D- / 3D-Ansicht</td></tr>
+            <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">H</kbd></td><td data-i18n="scGpPan">Bewegen (Karte verschieben)</td></tr>
+            <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">V</kbd></td><td data-i18n="scGpSelect">Markieren – einzeln</td></tr>
+            <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">L</kbd></td><td data-i18n="scGpLasso">Markieren – mehrere als Fläche (Lasso)</td></tr>
+            <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Shift</kbd>+Klick</td><td data-i18n="scGpShiftClick">Pflanze zur Markierung hinzufügen / entfernen</td></tr>
+            <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">+</kbd> / <kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">−</kbd> / <kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">0</kbd></td><td data-i18n="scGpZoom">Hinein- / herauszoomen / ganzer Plan</td></tr>
+            <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Strg</kbd>/<kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">⌘</kbd>+Mausrad</td><td data-i18n="scGpWheel">Zoomen am Mauszeiger</td></tr>
+            <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">F</kbd></td><td data-i18n="scGpArea">Fläche einzeichnen</td></tr>
+            <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">R</kbd></td><td data-i18n="scGpRow">Reihe pflanzen (gewählte Pflanze)</td></tr>
+            <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">U</kbd></td><td data-i18n="scGpBoundary">Umriss bearbeiten</td></tr>
+            <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">T</kbd> / <kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">O</kbd></td><td data-i18n="scGp3dViews">3D: Draufsicht / Schrägansicht</td></tr>
+            <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Entf</kbd></td><td data-i18n="scGpDelete">Markierte Pflanze(n) bzw. Fläche entfernen</td></tr>
+            <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Esc</kbd></td><td data-i18n="scGpEsc">Abbrechen / Markierung aufheben</td></tr>
           </tbody>
         </table>
         <p class="mt-4 text-xs text-stone-500 dark:text-stone-400"><span data-i18n="shortcutsFooterNote">Shortcuts greifen außerhalb von Eingabefeldern.</span> <kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1 text-[10px] font-mono">Esc</kbd> <span data-i18n="shortcutsFooterNote2">wirkt überall.</span></p>
@@ -579,8 +596,11 @@ const barMaxW = 'max-w-[1600px]';
         const t = e.target as HTMLElement | null;
         if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
         e.preventDefault();
-        if (shortcutsModal?.open) shortcutsModal.close();
-        else shortcutsModal?.showModal();
+        if (shortcutsModal?.open) { shortcutsModal.close(); return; }
+        // Show the shortcuts of the page you're on (garden plan vs. plant page).
+        const page = location.pathname.startsWith('/gartenplan') ? 'gartenplan' : 'plants';
+        shortcutsModal?.querySelectorAll<HTMLElement>('[data-shortcuts-for]').forEach(tb => { tb.hidden = tb.dataset.shortcutsFor !== page; });
+        shortcutsModal?.showModal();
       });
 
       // ── PWA install prompts ──────────────────────────────────────────────

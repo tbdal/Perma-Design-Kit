@@ -92,7 +92,7 @@ export function areasSvg(areas: GardenPlanArea[], selectedId: string | null, k =
     const sel = a.id === selectedId;
     return `
       <polygon${interactive ? ` data-area-id="${a.id}" style="cursor:pointer"` : ''} points="${pts}" fill="${a.color}" fill-opacity="0.3" stroke="${a.color}" stroke-width="${(sel ? 5 : 2.5) * k}"${sel ? ` stroke-dasharray="${10 * k} ${6 * k}"` : ''}/>
-      ${a.name ? `<text pointer-events="none" x="${c.xM * u}" y="${c.yM * u}" text-anchor="middle" dominant-baseline="middle" font-size="${14 * k}" font-weight="600" fill="#1c1917" stroke="#ffffff" stroke-width="${3 * k}" paint-order="stroke">${escapeHtml(a.name)}</text>` : ''}`;
+      ${a.name ? `<text pointer-events="none" x="${c.xM * u}" y="${c.yM * u}" text-anchor="middle" dominant-baseline="middle" font-size="${11 * k}" font-weight="600" fill="#1c1917" fill-opacity="0.7" stroke="#ffffff" stroke-opacity="0.6" stroke-width="${2.5 * k}" paint-order="stroke">${escapeHtml(a.name)}</text>` : ''}`;
   }).join('')}</g>`;
 }
 

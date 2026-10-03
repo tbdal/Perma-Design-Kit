@@ -133,7 +133,7 @@ function buildLabelSprite(text: string, heightM: number): THREE.Sprite {
   ctx.fillText(text, canvas.width / 2, canvas.height / 2);
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
-  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, depthTest: false, transparent: true }));
+  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, depthTest: false, transparent: true, opacity: 0.75 }));
   sprite.scale.set(heightM * canvas.width / canvas.height, heightM, 1);
   sprite.renderOrder = 10;
   return sprite;
@@ -326,7 +326,7 @@ export function createGardenPlan3DView(
   scene.add(areasGroup);
   const handlesGroup = new THREE.Group();
   scene.add(handlesGroup);
-  const labelH = Math.max(0.4, maxDim * 0.05);
+  const labelH = Math.max(0.28, maxDim * 0.032);
   const handleR = Math.max(0.12, maxDim * 0.018);
   let selectedAreaId: string | null = null;
 

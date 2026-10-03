@@ -2090,6 +2090,41 @@ import Layout from '../layouts/Layout.astro';
     renderSelectedPanel();
   }
 
+  // ── Tastenkürzel (Übersicht mit „?“, siehe Layout) ─────────────────────
+  document.addEventListener('keydown', (e: KeyboardEvent) => {
+    const tgt = e.target as HTMLElement | null;
+    if (tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'TEXTAREA' || tgt.tagName === 'SELECT' || tgt.isContentEditable)) return;
+    if (e.ctrlKey || e.metaKey || e.altKey || document.querySelector('dialog[open]')) return;
+    if (!editing || phaseB.classList.contains('hidden')) return;
+    const in2d = plan3dContainer.hidden;
+    const click = (id: string) => (document.getElementById(id) as HTMLButtonElement | null)?.click();
+    const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    let handled = true;
+    switch (key) {
+      case '2': if (!in2d) btnView2d.click(); break;
+      case '3': if (in2d) btnView3d.click(); break;
+      case 'h': if (in2d) setTool('pan'); break;
+      case 'v': if (in2d) setTool('select'); break;
+      case 'l': if (in2d) setTool('lasso'); break;
+      case '+': case '=': if (in2d) zoomAtCenter(1.5); break;
+      case '-': if (in2d) zoomAtCenter(1 / 1.5); break;
+      case '0': if (in2d) { resetPlanViewState(); applyPlanView(); } break;
+      case 'f': btnDrawArea.click(); break;
+      case 'r': click('btn-draw-row'); break;
+      case 'u': btnEditBoundary.click(); break;
+      case 't': if (!in2d) view3d?.setViewPreset('top'); break;
+      case 'o': if (!in2d) view3d?.setViewPreset('oblique'); break;
+      case 'Delete': case 'Backspace':
+        if (multiSel.size) click('btn-multi-remove');
+        else if (selectedPlacementId) click('btn-remove-placement');
+        else if (selectedAreaId) click('btn-remove-area');
+        else handled = false;
+        break;
+      default: handled = false;
+    }
+    if (handled) e.preventDefault();
+  });
+
   // ── Init + save/delete ──────────────────────────────────────────────────
   async function init() {
     plants = await getAllPlants();
