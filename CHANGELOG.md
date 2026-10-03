@@ -2,6 +2,9 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Gartenplan 3D: naturgetreuere Pflanzen (2026-10-04)
+- [x] Pflanzen in 3D aus Stamm, Ästen und vielen Blatt-/Nadelbüscheln (prozedural gemalte Texturen, Schatten folgen den Blättern) statt Kugeln; Form nach Art: Laubbäume mit runder Krone auf Stamm, Kiefern mit hoher Schirmkrone, Fichte/Tanne & Co. als Kegel, mehrstämmige Sträucher, Stauden als Blattbüschel, Kletterpflanzen am Stab, Bodendecker als Teppich. Höhe wächst mit dem Jahre-Regler mit (Endhöhe aus den Pflanzendaten).
+
 ## Gartenplan: Kamera wird gemerkt (2026-10-04)
 - [x] Pro Gartenplan werden 2D-Ausschnitt, 3D-Kamera und die zuletzt offene Ansicht gespeichert, wenn die Karte verlassen wird (zurück zur Liste, Neuladen, Tab-Wechsel), und beim nächsten Öffnen wiederhergestellt — war 3D offen, startet der Plan wieder in 3D mit derselben Kamera.
 

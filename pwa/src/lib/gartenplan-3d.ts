@@ -3,7 +3,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import type { GardenPlan, GardenPlanArea, GardenPlanPlacement, PlantData } from './types';
 import { displayRadiusM } from './growth-model';
 import { deriveLayer, LAYER_STYLE, type PlantLayer } from './plant-layer';
-import { seededRandom } from './blob-shape';
+import { buildPlantModel, crownShape } from './plant-mesh-3d';
 import { pointInPolygon } from './gartenplan-geometry';
 import { polygonCentroid } from './gartenplan-render';
 import { enuToPlan, tilesForRect } from './gartenplan-geo';
@@ -65,76 +65,18 @@ export interface View3DOptions {
 
 const DRAG_THRESHOLD_PX = 4;
 
-/** Moves each vertex of an icosahedron along its own (already-normalized)
- *  position vector by a seeded ± fraction of the radius — same determinism
- *  guarantee as the 2D blob outline (blob-shape.ts): a given placement
- *  always gets the same wobbly canopy shape across re-renders/reloads. */
-function jitterVertices(geometry: THREE.BufferGeometry, seed: string, wobble: number, radius: number) {
-  const rand = seededRandom(seed);
-  const pos = geometry.attributes.position as THREE.BufferAttribute;
-  const v = new THREE.Vector3();
-  for (let i = 0; i < pos.count; i++) {
-    v.fromBufferAttribute(pos, i).normalize();
-    const scale = 1 - wobble / 2 + rand() * wobble;
-    v.multiplyScalar(radius * scale);
-    pos.setXYZ(i, v.x, v.y, v.z);
-  }
-  pos.needsUpdate = true;
-  geometry.computeVertexNormals();
-}
 
 function buildPlantMesh(placement: GardenPlanPlacement, plant: PlantData | undefined, years: number): THREE.Group {
-  const group = new THREE.Group();
   const radiusM = plant ? displayRadiusM(plant, years) : 0.2;
   const layer: PlantLayer = plant ? deriveLayer(plant) : 'shrub';
   const style = LAYER_STYLE[layer];
-
-  if (layer === 'tree') {
-    // These floors exist only to avoid a degenerate zero-size mesh — they
-    // must stay below displayRadiusM()'s own MIN_DISPLAY_RADIUS_M (0.08) run
-    // through the same multipliers, or they silently override the age-based
-    // scaling below that floor. The old floors (0.3 / 0.04 / 0.05) sat ABOVE
-    // radiusM's guaranteed minimum scaled by these multipliers (0.08*1.2 =
-    // 0.096 etc.) — for any plant whose widthM defaults to 0.5 (unset, e.g.
-    // not yet PFAF-enriched), the mature trunk height (0.25*1.2 = 0.3) never
-    // exceeded that floor either, so the trunk rendered at a fixed size for
-    // the entire 0-30 year slider range while the canopy still visibly grew.
-    const trunkHeight = Math.max(0.05, radiusM * 1.2);
-    const trunkGeom = new THREE.CylinderGeometry(
-      Math.max(0.01, radiusM * 0.06), Math.max(0.012, radiusM * 0.08), trunkHeight, 8,
-    );
-    const trunk = new THREE.Mesh(trunkGeom, new THREE.MeshStandardMaterial({ color: 0x78350f }));
-    trunk.position.y = trunkHeight / 2;
-    group.add(trunk);
-
-    const canopyGeom = new THREE.IcosahedronGeometry(radiusM, 1);
-    jitterVertices(canopyGeom, placement.id, style.wobble, radiusM);
-    const canopy = new THREE.Mesh(canopyGeom, new THREE.MeshStandardMaterial({ color: style.fill, flatShading: true }));
-    canopy.position.y = trunkHeight + radiusM * 0.7;
-    group.add(canopy);
-  } else if (layer === 'shrub') {
-    const shrubGeom = new THREE.IcosahedronGeometry(radiusM, 1);
-    jitterVertices(shrubGeom, placement.id, style.wobble, radiusM);
-    shrubGeom.scale(1, 0.7, 1);
-    const shrub = new THREE.Mesh(shrubGeom, new THREE.MeshStandardMaterial({ color: style.fill, flatShading: true }));
-    shrub.position.y = radiusM * 0.6;
-    group.add(shrub);
-  } else if (layer === 'climber') {
-    // A slim leafy column, as if grown up a support. No jitterVertices():
-    // it projects onto a sphere and would squash the column.
-    const h = Math.max(0.1, radiusM * 2);
-    const columnGeom = new THREE.CylinderGeometry(radiusM * 0.35, radiusM * 0.5, h, 8);
-    const column = new THREE.Mesh(columnGeom, new THREE.MeshStandardMaterial({ color: style.fill, flatShading: true }));
-    column.position.y = h / 2;
-    group.add(column);
-  } else {
-    // herb and rhizo: a low disc (rhizo in its own earthy color)
-    const h = Math.max(0.08, radiusM * 0.15);
-    const herbGeom = new THREE.CylinderGeometry(radiusM, radiusM * 1.1, h, 12);
-    const herb = new THREE.Mesh(herbGeom, new THREE.MeshStandardMaterial({ color: style.fill }));
-    herb.position.y = h / 2;
-    group.add(herb);
-  }
+  // Height grows in step with the crown: the growth model gives the current
+  // crown radius, so the same fraction of the final height applies.
+  const finalRadius = plant?.widthM && plant.widthM > 0 ? plant.widthM / 2 : 0.25;
+  const frac = Math.min(1, radiusM / finalRadius);
+  const fallbackH = layer === 'tree' ? radiusM * 2.6 : layer === 'shrub' ? radiusM * 1.6 : layer === 'rhizo' ? 0.15 : radiusM * 1.2;
+  const heightM = plant?.heightM && plant.heightM > 0 ? Math.max(0.1, plant.heightM * frac) : fallbackH;
+  const group = buildPlantModel(placement.id, crownShape(plant, layer), radiusM, heightM, style.fill);
 
   const ring = new THREE.Mesh(
     new THREE.RingGeometry(radiusM * 1.05, radiusM * 1.2, 24),
@@ -425,6 +367,8 @@ export function createGardenPlan3DView(
 
   let renderQueued = false; // declared before first use: the camera fit renders early
   function rebuildPlacements() {
+    // Free the old per-plant geometry (materials/textures are shared).
+    plantsGroup.traverse(o => { (o as THREE.Mesh).geometry?.dispose(); });
     plantsGroup.clear();
     for (const placement of plan.placements) {
       const mesh = buildPlantMesh(placement, plantsById.get(placement.plantId), years);
