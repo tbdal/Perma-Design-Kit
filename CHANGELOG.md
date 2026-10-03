@@ -2,6 +2,12 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Gartenplan 3D: Sonne, Schatten, Perspektive behalten (2026-10-03)
+- [x] **Sonnenstand** — in 3D Datum, Uhrzeit-Regler, „Jetzt“ und „▶ Tagesverlauf“; Sonnenposition (SunCalc-Algorithmus, `sun-position.ts`) für den Standort des Gartens (ohne Standort 50° N). Anzeige „Sonne 171° (S), 65° über dem Horizont“. Nachts geöffnet startet die Ansicht um 12 Uhr.
+- [x] **Schatten & Licht** — Sonne als schattenwerfendes Licht, weiche Schatten, filmische Tonwerte, Rasen mit umgebender Wiese, Himmelsfarbe nach Sonnenhöhe (Tag/Dämmerung/Nacht), Sonnenbahn des Tages als Bogen mit Stundenmarken und Sonne.
+- [x] **Perspektive behalten** — 2D → 3D startet senkrecht von oben auf genau den 2D-Ausschnitt (immer über den Baumkronen); 3D → 2D übernimmt den Ausschnitt der 3D-Kamera; ohne Änderung in 2D kehrt 3D zur vorherigen Kamera zurück.
+- [x] 3D-Griffe für Flächen-Ecken halb so groß, mit größerer unsichtbarer Trefferfläche.
+
 ## Gartenplan: Zoom-feste Beschriftung, Ausgewählt-Panel für Flächen (2026-10-03)
 - [x] Beschriftungen, Linien, Rasterzahlen und Griffe bleiben beim Zoomen gleich groß auf dem Bildschirm (vorher wuchsen sie beim Hineinzoomen mit).
 - [x] Griffe zum Verändern von Polygonen halb so groß, mit unsichtbar größerer Trefferfläche (auch per Touch gut zu greifen).

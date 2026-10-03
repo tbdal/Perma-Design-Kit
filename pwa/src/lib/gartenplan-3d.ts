@@ -6,6 +6,8 @@ import { deriveLayer, LAYER_STYLE, type PlantLayer } from './plant-layer';
 import { seededRandom } from './blob-shape';
 import { pointInPolygon } from './gartenplan-geometry';
 import { polygonCentroid } from './gartenplan-render';
+import { enuToPlan } from './gartenplan-geo';
+import { sunPosition, sunDirectionEnu } from './sun-position';
 
 /**
  * Full 3D editing view for a garden plan — camera-orbit for viewing,
@@ -37,7 +39,25 @@ export interface GardenPlan3DView {
   /** Rebuilds the area shapes (after add/rename/recolor/delete/vertex edit)
    *  and shows vertex handles on `selectedAreaId`. */
   refreshAreas(selectedAreaId: string | null): void;
+  /** Moves the sun (light, shadows, sky, sun path) to the given moment. */
+  setSunTime(date: Date): { bearingDeg: number; altitudeDeg: number };
+  getCameraState(): Camera3DState;
+  /** Ground rectangle (plan meters) roughly visible around the camera target
+   *  — used to keep the same section when switching back to 2D. */
+  getViewRect(): { minX: number; minY: number; maxX: number; maxY: number };
   dispose(): void;
+}
+
+export interface Camera3DState { position: [number, number, number]; target: [number, number, number]; }
+
+export interface View3DOptions {
+  /** Restore an earlier 3D camera (back from 2D without changes there). */
+  camera?: Camera3DState | null;
+  /** Otherwise start looking straight down on this plan-meter rectangle —
+   *  the section the 2D view showed — so the perspective carries over. */
+  fit?: { minX: number; minY: number; maxX: number; maxY: number } | null;
+  latLon: { lat: number; lon: number };
+  rotationDeg: number;
 }
 
 const DRAG_THRESHOLD_PX = 4;
@@ -151,7 +171,9 @@ function buildBoundaryMesh(plan: GardenPlan): THREE.Mesh {
   // one-sided material would randomly render the fill invisible from above
   // for some plans. DoubleSide is the robust fix, not winding-detection.
   const mat = new THREE.MeshStandardMaterial({ color: 0x15803d, transparent: true, opacity: 0.15, side: THREE.DoubleSide });
-  return new THREE.Mesh(geom, mat);
+  const mesh = new THREE.Mesh(geom, mat);
+  mesh.receiveShadow = true;
+  return mesh;
 }
 
 /** Name tag for an area: a camera-facing sprite drawn on a canvas, always on
@@ -193,9 +215,10 @@ function buildAreaObject(area: GardenPlanArea, index: number, selected: boolean,
   geom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(area.points.flatMap(p => [p.xM, y, p.yM])), 3));
   geom.setIndex(triangles.flat());
   geom.computeVertexNormals();
-  const fill = new THREE.Mesh(geom, new THREE.MeshBasicMaterial({
-    color: area.color, transparent: true, opacity: selected ? 0.6 : 0.42, side: THREE.DoubleSide, depthWrite: false,
+  const fill = new THREE.Mesh(geom, new THREE.MeshStandardMaterial({
+    color: area.color, transparent: true, opacity: selected ? 0.65 : 0.5, side: THREE.DoubleSide, depthWrite: false, roughness: 1,
   }));
+  fill.receiveShadow = true;
   fill.userData.areaId = area.id;
   group.add(fill);
   const outlinePts = area.points.map(p => new THREE.Vector3(p.xM, y + 0.003, p.yM));
@@ -217,7 +240,9 @@ function buildGroundMesh(widthM: number, heightM: number): THREE.Mesh {
   const geom = new THREE.BufferGeometry();
   geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
   geom.computeVertexNormals();
-  return new THREE.Mesh(geom, new THREE.MeshStandardMaterial({ color: 0xf5f5f4, side: THREE.DoubleSide }));
+  const mesh = new THREE.Mesh(geom, new THREE.MeshStandardMaterial({ color: 0xc9dba4, roughness: 1, side: THREE.DoubleSide }));
+  mesh.receiveShadow = true;
+  return mesh;
 }
 
 function boundaryCentroid(plan: GardenPlan): { x: number; z: number } {
@@ -231,24 +256,49 @@ export function createGardenPlan3DView(
   plan: GardenPlan,
   plantsById: Map<string, PlantData>,
   callbacks: GardenPlan3DCallbacks,
+  opts: View3DOptions,
 ): GardenPlan3DView {
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xffffff);
+  const sky = new THREE.Color(0xbfdbfe);
+  scene.background = sky;
 
-  const camera = new THREE.PerspectiveCamera(50, Math.max(1, container.clientWidth) / Math.max(1, container.clientHeight), 0.1, 500);
+  const VFOV = 50;
   const maxDim = Math.max(plan.areaWidthM, plan.areaHeightM, 2);
+  const camera = new THREE.PerspectiveCamera(VFOV, Math.max(1, container.clientWidth) / Math.max(1, container.clientHeight), 0.1, Math.max(500, maxDim * 30));
   const { x: cx, z: cz } = boundaryCentroid(plan);
   camera.position.set(cx + maxDim * 0.6, maxDim * 0.8, cz + maxDim * 0.6);
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(Math.max(1, container.clientWidth), Math.max(1, container.clientHeight));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
   container.appendChild(renderer.domElement);
 
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x8b8378, 1.1));
-  const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
-  dirLight.position.set(cx + maxDim, maxDim * 1.5, cz + maxDim * 0.5);
-  scene.add(dirLight);
+  // ── Light: sky/ground fill + a shadow-casting sun placed by setSunTime() ──
+  const hemi = new THREE.HemisphereLight(0xe0f2fe, 0x6b7f4a, 0.8);
+  scene.add(hemi);
+  const sun = new THREE.DirectionalLight(0xfff1d6, 2.4);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  const shadowR = maxDim * 0.9;
+  Object.assign(sun.shadow.camera, { left: -shadowR, right: shadowR, top: shadowR, bottom: -shadowR, near: 0.5, far: maxDim * 8 });
+  sun.shadow.bias = -0.0005;
+  sun.shadow.normalBias = 0.02;
+  sun.target.position.set(cx, 0, cz);
+  scene.add(sun, sun.target);
+
+  // Surrounding meadow so shadows and the sun path have context.
+  const meadow = new THREE.Mesh(
+    new THREE.CircleGeometry(maxDim * 4, 48),
+    new THREE.MeshStandardMaterial({ color: 0xa8bd84, roughness: 1 }),
+  );
+  meadow.rotation.x = -Math.PI / 2;
+  meadow.position.set(cx, -0.004, cz);
+  meadow.receiveShadow = true;
+  scene.add(meadow);
 
   scene.add(buildGroundMesh(plan.areaWidthM, plan.areaHeightM));
   scene.add(buildGridLines(plan.areaWidthM, plan.areaHeightM, plan.gridSpacingM));
@@ -279,11 +329,16 @@ export function createGardenPlan3DView(
     (plan.areas ?? []).forEach((area, i) => areasGroup.add(buildAreaObject(area, i, area.id === selectedAreaId, labelH)));
     const sel = (plan.areas ?? []).find(a => a.id === selectedAreaId);
     sel?.points.forEach((p, i) => {
+      // Invisible, larger pick sphere around a small visible knob.
       const h = new THREE.Mesh(
-        new THREE.SphereGeometry(handleR, 16, 12),
-        new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: new THREE.Color(sel.color), emissiveIntensity: 0.5 }),
+        new THREE.SphereGeometry(handleR * 1.6, 12, 8),
+        new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false }),
       );
-      h.position.set(p.xM, handleR, p.yM);
+      h.add(new THREE.Mesh(
+        new THREE.SphereGeometry(handleR / 2, 16, 12),
+        new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: new THREE.Color(sel.color), emissiveIntensity: 0.6 }),
+      ));
+      h.position.set(p.xM, handleR / 2, p.yM);
       h.userData = { areaId: sel.id, vertexIndex: i };
       handlesGroup.add(h);
     });
@@ -294,10 +349,12 @@ export function createGardenPlan3DView(
   let armedPlantId: string | null = null;
   let selectedPlacementId: string | null = null;
 
+  let renderQueued = false; // declared before first use: the camera fit renders early
   function rebuildPlacements() {
     plantsGroup.clear();
     for (const placement of plan.placements) {
       const mesh = buildPlantMesh(placement, plantsById.get(placement.plantId), years);
+      mesh.traverse(o => { if (o.name !== 'selection-ring' && (o as THREE.Mesh).isMesh) { o.castShadow = true; o.receiveShadow = true; } });
       const ring = mesh.getObjectByName('selection-ring');
       if (ring) ring.visible = placement.id === selectedPlacementId;
       plantsGroup.add(mesh);
@@ -311,9 +368,103 @@ export function createGardenPlan3DView(
   controls.maxDistance = maxDim * 3;
   controls.maxPolarAngle = Math.PI / 2 - 0.02;
   controls.enableDamping = false;
+  if (opts.camera) {
+    camera.position.set(...opts.camera.position);
+    controls.target.set(...opts.camera.target);
+  } else if (opts.fit) {
+    // Straight down onto the 2D section; the tiny z offset keeps "plan up"
+    // (north) at the top of the screen, like in 2D. Never below twice the
+    // tallest plant, or the camera would sit inside the canopies.
+    const f = opts.fit;
+    const fx = (f.minX + f.maxX) / 2, fz = (f.minY + f.maxY) / 2;
+    const vf = (VFOV / 2) * Math.PI / 180;
+    const hf = Math.atan(Math.tan(vf) * camera.aspect);
+    rebuildPlacements();
+    const tallest = plantsGroup.children.length ? new THREE.Box3().setFromObject(plantsGroup).max.y : 0;
+    const dist = Math.max((f.maxX - f.minX) / 2 / Math.tan(hf), (f.maxY - f.minY) / 2 / Math.tan(vf), tallest * 2.5, 3);
+    controls.target.set(fx, 0, fz);
+    camera.position.set(fx, dist, fz + dist * 0.001);
+  }
+  controls.maxDistance = Math.max(controls.maxDistance, camera.position.distanceTo(controls.target) * 1.5);
+  // Untouched camera → hand the original 2D section back unchanged (the
+  // camera may have been raised above the canopies, which would zoom out).
+  const startPos = camera.position.clone(), startTarget = controls.target.clone();
   controls.update();
 
-  let renderQueued = false;
+  // ── Sun: position from date/time at the garden's location ──
+  const RAD = Math.PI / 180;
+  const sunPathGroup = new THREE.Group();
+  scene.add(sunPathGroup);
+  const skyR = maxDim * 1.2;
+  const sunBall = new THREE.Mesh(
+    new THREE.SphereGeometry(Math.max(0.15, maxDim * 0.03), 20, 14),
+    new THREE.MeshBasicMaterial({ color: 0xfde047 }),
+  );
+  scene.add(sunBall);
+  let sunPathDay = '';
+
+  /** Sun direction as a 3D unit vector (x = plan x, y = up, z = plan y). */
+  function sunVector(bearingDeg: number, altitudeDeg: number): THREE.Vector3 {
+    const d = sunDirectionEnu(bearingDeg, altitudeDeg);
+    const h = enuToPlan({ e: d.e, n: d.n }, opts.rotationDeg);
+    return new THREE.Vector3(h.xM, d.up, h.yM);
+  }
+
+  function rebuildSunPath(date: Date) {
+    sunPathGroup.traverse(o => {
+      const m = o as THREE.Mesh;
+      m.geometry?.dispose();
+      const mat = (m as any).material as THREE.Material & { map?: THREE.Texture };
+      mat?.map?.dispose();
+      mat?.dispose();
+    });
+    sunPathGroup.clear();
+    const center = new THREE.Vector3(cx, 0, cz);
+    const day = new Date(date);
+    day.setHours(0, 0, 0, 0);
+    const pts: THREE.Vector3[] = [];
+    for (let min = 0; min <= 24 * 60; min += 10) {
+      const t = new Date(day.getTime() + min * 60000);
+      const p = sunPosition(t, opts.latLon.lat, opts.latLon.lon);
+      if (p.altitudeDeg < -1) continue;
+      pts.push(center.clone().add(sunVector(p.bearingDeg, p.altitudeDeg).multiplyScalar(skyR)));
+      if (min % 60 === 0 && min > 0 && min < 24 * 60 && p.altitudeDeg > 0) {
+        const dot = new THREE.Mesh(new THREE.SphereGeometry(Math.max(0.05, maxDim * 0.008), 8, 6), new THREE.MeshBasicMaterial({ color: 0xf59e0b }));
+        dot.position.copy(pts[pts.length - 1]);
+        sunPathGroup.add(dot);
+        if ((min / 60) % 3 === 0) {
+          const lbl = buildLabelSprite(`${min / 60}`, Math.max(0.25, maxDim * 0.03));
+          lbl.position.copy(pts[pts.length - 1]).add(new THREE.Vector3(0, Math.max(0.2, maxDim * 0.03), 0));
+          sunPathGroup.add(lbl);
+        }
+      }
+    }
+    if (pts.length > 1) {
+      sunPathGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),
+        new THREE.LineBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.85 })));
+    }
+  }
+
+  const SKY_DAY = new THREE.Color(0xbfdbfe), SKY_GOLD = new THREE.Color(0xfcd9a8), SKY_NIGHT = new THREE.Color(0x1e293b);
+  function setSunTime(date: Date) {
+    const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+    if (key !== sunPathDay) { sunPathDay = key; rebuildSunPath(date); }
+    const p = sunPosition(date, opts.latLon.lat, opts.latLon.lon);
+    const dir = sunVector(p.bearingDeg, p.altitudeDeg);
+    const up = p.altitudeDeg > 0;
+    sun.position.set(cx, 0, cz).add(dir.clone().multiplyScalar(maxDim * 3));
+    sun.intensity = up ? 2.6 * Math.min(1, Math.max(0.2, Math.sin(p.altitudeDeg * RAD) * 2)) : 0;
+    sun.castShadow = up;
+    hemi.intensity = up ? 0.7 + 0.5 * Math.min(1, p.altitudeDeg / 35) : 0.3;
+    sunBall.visible = up;
+    sunBall.position.set(cx, 0, cz).add(dir.multiplyScalar(skyR));
+    if (!up) sky.copy(SKY_NIGHT).lerp(SKY_GOLD, Math.max(0, 1 + p.altitudeDeg / 6) * 0.4);
+    else if (p.altitudeDeg < 10) sky.copy(SKY_GOLD).lerp(SKY_DAY, p.altitudeDeg / 10);
+    else sky.copy(SKY_DAY);
+    requestRender();
+    return p;
+  }
+
   function requestRender() {
     if (renderQueued) return;
     renderQueued = true;
@@ -385,7 +536,7 @@ export function createGardenPlan3DView(
       areasGroup.add(buildAreaObject({ ...area, points: vertexDrag.points }, idx, true, labelH));
     }
     const handle = handlesGroup.children.find(h => h.userData.vertexIndex === vertexDrag!.index);
-    handle?.position.set(hit.x, handleR, hit.z);
+    handle?.position.set(hit.x, handleR / 2, hit.z);
     requestRender();
   }
 
@@ -516,6 +667,18 @@ export function createGardenPlan3DView(
     },
     setArmedPlant(plantId: string | null) {
       armedPlantId = plantId;
+    },
+    setSunTime,
+    getCameraState(): Camera3DState {
+      return { position: camera.position.toArray() as [number, number, number], target: controls.target.toArray() as [number, number, number] };
+    },
+    getViewRect() {
+      if (opts.fit && camera.position.distanceTo(startPos) < 1e-6 && controls.target.distanceTo(startTarget) < 1e-6) return opts.fit;
+      const dist = camera.position.distanceTo(controls.target);
+      const h = 2 * dist * Math.tan((VFOV / 2) * Math.PI / 180);
+      const w = h * camera.aspect;
+      const t = controls.target;
+      return { minX: t.x - w / 2, minY: t.z - h / 2, maxX: t.x + w / 2, maxY: t.z + h / 2 };
     },
     refreshAreas(id: string | null) {
       selectedAreaId = id;

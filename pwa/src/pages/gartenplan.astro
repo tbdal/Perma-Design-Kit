@@ -171,6 +171,15 @@ import Layout from '../layouts/Layout.astro';
             <span class="mr-auto" data-i18n="boundaryEditHint">Umriss bearbeiten: Ecken ziehen, ＋ auf einer Kante fügt einen Punkt ein, Doppelklick entfernt ihn. Über den Rand ziehen vergrößert den Plan.</span>
             <button id="btn-boundary-done" type="button" data-i18n="btnAreaFinish" class="rounded-md bg-green-700 px-2.5 py-1 font-medium text-white">Fertig</button>
           </div>
+          <div id="sun-controls" hidden class="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg bg-sky-50 dark:bg-sky-900/30 px-3 py-2 text-xs text-sky-900 dark:text-sky-100 ring-1 ring-sky-200 dark:ring-sky-800">
+            <span class="font-semibold" data-i18n="sunHeading">☀ Sonnenstand</span>
+            <input id="sun-date" type="date" data-i18n-aria-label="sunDate" aria-label="Datum" class="rounded-md border border-sky-300 dark:border-sky-700 bg-white dark:bg-stone-900 px-1.5 py-0.5" />
+            <input id="sun-time" type="range" min="0" max="1435" step="5" data-i18n-aria-label="sunTime" aria-label="Uhrzeit" class="w-40 accent-amber-500" />
+            <span id="sun-time-label" class="w-10 font-mono"></span>
+            <button id="sun-now" type="button" data-i18n="sunNow" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">Jetzt</button>
+            <button id="sun-play" type="button" data-i18n="sunPlay" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">▶ Tagesverlauf</button>
+            <span id="sun-info" class="basis-full text-sky-800 dark:text-sky-200 sm:basis-auto"></span>
+          </div>
           <div id="plan-wrap" class="relative rounded-xl bg-white dark:bg-stone-800 p-3 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <svg id="plan-svg" class="w-full touch-none" style="touch-action:none"></svg>
             <div id="plan-3d-container" hidden class="h-[480px] w-full touch-none" style="touch-action:none"></div>
@@ -290,6 +299,7 @@ import Layout from '../layouts/Layout.astro';
   import { basemapSvg, basemapAttribution, hasBasemap } from '../lib/gartenplan-background';
   import { growPlanToFit } from '../lib/gartenplan-extent';
   import type { PlanRect } from '../lib/gartenplan-geo';
+  import { compassLabel, sunPosition } from '../lib/sun-position';
   import { plantDetailHtml } from '../lib/plant-detail';
   import { compatScore } from '../lib/compat';
   import { newId } from '../lib/id';
@@ -550,6 +560,7 @@ import Layout from '../layouts/Layout.astro';
   }
 
   function closeEditor() {
+    stopSunPlay();
     destroyMapDrawer();
     endAreaDraw();
     setBoundaryEdit(false);
@@ -828,6 +839,18 @@ import Layout from '../layouts/Layout.astro';
 
   btnView2d.addEventListener('click', () => {
     if (!editing) return;
+    if (view3d) {
+      // Keep the perspective: 2D shows what the 3D camera was looking at.
+      last3dCamera = view3d.getCameraState();
+      const r = view3d.getViewRect();
+      const aspect = editing.areaHeightM / editing.areaWidthM;
+      const w = Math.max((r.maxX - r.minX), (r.maxY - r.minY) / aspect) * U;
+      const cxU = (r.minX + r.maxX) / 2 * U, cyU = (r.minY + r.maxY) / 2 * U;
+      planView = { x: cxU - w / 2, y: cyU - w * aspect / 2, w, h: w * aspect };
+      last2dView = { ...planView };
+    }
+    stopSunPlay();
+    sunControls.hidden = true;
     view3d?.dispose();
     view3d = null;
     plan3dContainer.hidden = true;
@@ -847,7 +870,13 @@ import Layout from '../layouts/Layout.astro';
     endAreaDraw();
     setBoundaryEdit(false);
     const { createGardenPlan3DView } = await import('../lib/gartenplan-3d');
+    // Perspective carries over: rebuilds keep the live camera; coming from 2D
+    // we restore the last 3D camera if 2D wasn't moved, else look straight
+    // down onto the section 2D showed.
+    const unchanged2d = last2dView && ['x', 'y', 'w', 'h'].every(k => Math.abs((last2dView as any)[k] - (planView as any)[k]) < 1e-6);
+    const camera = view3d?.getCameraState() ?? (unchanged2d ? last3dCamera : null);
     view3d?.dispose();
+    const geo = editing.geo;
     view3d = createGardenPlan3DView(plan3dContainer, editing, plantsById, {
       onGroundTap(xM, yM) {
         if (!editing || !armedPlantId) return;
@@ -881,9 +910,73 @@ import Layout from '../layouts/Layout.astro';
         view3d?.setSelectedPlacement(placementId);
         renderSelectedPanel();
       },
+    }, {
+      camera,
+      fit: camera ? null : viewRectM(),
+      latLon: geo ? { lat: geo.lat, lon: geo.lon } : DEFAULT_SUN_LATLON,
+      rotationDeg: geo?.rotationDeg ?? 0,
     });
     view3d.setArmedPlant(armedPlantId);
     view3d.refreshAreas(selectedAreaId);
+    sunControls.hidden = false;
+    if (!sunDateInput.value) {
+      setSunNow();
+      // Opened at night? Start at noon so the scene isn't just dark.
+      const ll = geo ? { lat: geo.lat, lon: geo.lon } : DEFAULT_SUN_LATLON;
+      if (sunPosition(new Date(), ll.lat, ll.lon).altitudeDeg <= 0) sunTimeInput.value = '720';
+    }
+    applySun();
+  });
+
+  // ── Sonnenstand (3D) ────────────────────────────────────────────────────
+  // Date + time drive the sun in the 3D view (light direction, shadows, sky,
+  // sun path) for the garden's location; unlocated plans assume 50° N.
+  const DEFAULT_SUN_LATLON = { lat: 50, lon: 10 };
+  const sunControls = document.getElementById('sun-controls')!;
+  const sunDateInput = document.getElementById('sun-date') as HTMLInputElement;
+  const sunTimeInput = document.getElementById('sun-time') as HTMLInputElement;
+  const sunTimeLabel = document.getElementById('sun-time-label')!;
+  const sunInfo = document.getElementById('sun-info')!;
+  const sunPlayBtn = document.getElementById('sun-play') as HTMLButtonElement;
+  let last3dCamera: import('../lib/gartenplan-3d').Camera3DState | null = null;
+  let last2dView: { x: number; y: number; w: number; h: number } | null = null;
+  let sunPlayTimer: ReturnType<typeof setInterval> | null = null;
+
+  const pad = (n: number) => String(n).padStart(2, '0');
+  function setSunNow() {
+    const now = new Date();
+    sunDateInput.value = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+    sunTimeInput.value = String(Math.round((now.getHours() * 60 + now.getMinutes()) / 5) * 5);
+  }
+  function applySun() {
+    const mins = Number(sunTimeInput.value);
+    sunTimeLabel.textContent = `${pad(Math.floor(mins / 60))}:${pad(mins % 60)}`;
+    if (!view3d || !sunDateInput.value) return;
+    const [y, mo, d] = sunDateInput.value.split('-').map(Number);
+    const p = view3d.setSunTime(new Date(y, mo - 1, d, Math.floor(mins / 60), mins % 60));
+    const where = editing?.geo ? '' : ' · ' + t('sunNoLocation');
+    sunInfo.textContent = (p.altitudeDeg > 0
+      ? t('sunInfo', { bearing: Math.round(p.bearingDeg), dir: compassLabel(p.bearingDeg, lang), alt: Math.round(p.altitudeDeg) })
+      : t('sunBelow')) + where;
+  }
+  function stopSunPlay() {
+    if (sunPlayTimer) clearInterval(sunPlayTimer);
+    sunPlayTimer = null;
+    sunPlayBtn.textContent = t('sunPlay');
+  }
+  sunDateInput.addEventListener('input', applySun);
+  sunTimeInput.addEventListener('input', () => { stopSunPlay(); applySun(); });
+  document.getElementById('sun-now')!.addEventListener('click', () => { stopSunPlay(); setSunNow(); applySun(); });
+  sunPlayBtn.addEventListener('click', () => {
+    if (sunPlayTimer) { stopSunPlay(); return; }
+    sunPlayBtn.textContent = t('sunStop');
+    if (Number(sunTimeInput.value) >= 1435) sunTimeInput.value = '0';
+    sunPlayTimer = setInterval(() => {
+      const next = Number(sunTimeInput.value) + 10;
+      if (next > 1435) { stopSunPlay(); return; }
+      sunTimeInput.value = String(next);
+      applySun();
+    }, 60);
   });
 
   document.getElementById('btn-export-pdf')!.addEventListener('click', async (e) => {
