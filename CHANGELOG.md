@@ -63,6 +63,13 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
  
 
 
+## Gartenplan: Zoom, Karte sofort, Umriss bearbeitbar (2026-10-03)
+- [x] **Karte sofort** — beim Anlegen eines Plans erscheint die Karte direkt (Suche, Zoom, Ecken anklicken), ohne „Fläche zeichnen starten“; der Name wird erst beim Abschließen verlangt. Raster-Modus wie bisher mit Start-Button.
+- [x] **Zoom & Verschieben in 2D** — Buttons +/−/⤢, Strg/⌘ + Mausrad bzw. Trackpad-Geste, zwei Finger auf dem Handy; Ziehen auf freier Fläche verschiebt. Beim Herauszoomen ist auch die Umgebung des Gartens auf der Karte zu sehen (Kacheln für den sichtbaren Ausschnitt). Antippen (Pflanze setzen, Flächen-Ecke, Auswahl) reagiert jetzt beim Loslassen, damit Ziehen nicht versehentlich etwas setzt.
+- [x] **Satellit als Hintergrund** — in der Kartenleiste Kein / Karte (OSM) / Satellit (grob, 10 m).
+- [x] **Kompass entfernt** — Pläne sind ohnehin genordet.
+- [x] **Umriss nachträglich bearbeiten** — „✎ Umriss bearbeiten“: Ecken ziehen, ＋ fügt Punkte ein, Doppelklick entfernt. Zieht man Ecken (auch von Flächen) oder Pflanzen über den Rand, wächst der Plan mit (`growPlanToFit`), der Kartenursprung wandert mit, nichts verrutscht.
+
 ## Geteilte Projekte: fehlende Daten nachladen (2026-10-03)
 - [x] Nach „In meine App übernehmen“ auf `/teilen` fragt ein Dialog, ob die fehlenden Angaben der neu übernommenen Pflanzen jetzt aus PFAF, Edible Forest Gardens und Wikidata geladen werden sollen — mit Fortschrittsbalken, Abbrechen und Zusammenfassung. Gleiche Auswahlregel wie „Lade alle fehlenden Daten“ (`needsEnrichment()` in `enrich.ts`). Ein zweiter Link im selben Tab lädt die Seite jetzt neu.
 

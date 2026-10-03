@@ -86,7 +86,7 @@ export interface GardenPlanGeo {
   lat: number;               // position of plan point 0,0
   lon: number;
   rotationDeg: number;
-  basemap: 'none' | 'osm';
+  basemap: 'none' | 'osm' | 'sat';
   opacity: number;           // 0..1
 }
 

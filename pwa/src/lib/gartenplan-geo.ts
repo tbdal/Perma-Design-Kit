@@ -99,8 +99,16 @@ const MAX_TILES = 64;
  *  still at least as sharp as the screen (`screenMPerPx` ground meters per
  *  device pixel), capped at `maxZoom` and at MAX_TILES tiles. */
 export function tilesForPlan(widthM: number, heightM: number, geo: GardenPlanGeo, screenMPerPx: number, maxZoom: number): PlanTile[] {
+  return tilesForRect({ minX: 0, minY: 0, maxX: widthM, maxY: heightM }, geo, screenMPerPx, maxZoom);
+}
+
+export interface PlanRect { minX: number; minY: number; maxX: number; maxY: number; }
+
+/** Same as tilesForPlan() for any rectangle in plan meters — the visible part
+ *  of a zoomed/panned canvas, which may also reach beyond the plan itself. */
+export function tilesForRect(r: PlanRect, geo: GardenPlanGeo, screenMPerPx: number, maxZoom: number): PlanTile[] {
   const corners = [
-    { xM: 0, yM: 0 }, { xM: widthM, yM: 0 }, { xM: widthM, yM: heightM }, { xM: 0, yM: heightM },
+    { xM: r.minX, yM: r.minY }, { xM: r.maxX, yM: r.minY }, { xM: r.maxX, yM: r.maxY }, { xM: r.minX, yM: r.maxY },
   ].map(p => planToEnu(p, geo.rotationDeg));
   const k = scale(geo);
   const o = lonLatToMerc(geo.lat, geo.lon);

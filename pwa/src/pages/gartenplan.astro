@@ -34,6 +34,7 @@ import Layout from '../layouts/Layout.astro';
         <select id="g-basemap" class="rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs disabled:opacity-50">
           <option value="none" data-i18n="mapBgNone">Kein</option>
           <option value="osm" data-i18n="mapBgOsm">Karte (OpenStreetMap)</option>
+          <option value="sat" data-i18n="mapBgSat">Satellit (grob, 10 m)</option>
         </select>
       </label>
       <label class="inline-flex items-center gap-1.5">
@@ -141,6 +142,7 @@ import Layout from '../layouts/Layout.astro';
             <button id="btn-view-2d" data-i18n="btnView2d" class="rounded-md bg-white dark:bg-stone-700 px-2.5 py-1 font-medium text-stone-800 dark:text-stone-100 shadow-sm">2D</button>
             <button id="btn-view-3d" data-i18n="btnView3d" class="rounded-md px-2.5 py-1 font-medium text-stone-500 dark:text-stone-400">3D</button>
           </div>
+          <button id="btn-edit-boundary" type="button" aria-pressed="false" data-i18n="btnEditBoundary" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700 aria-pressed:bg-amber-100 aria-pressed:ring-amber-400 dark:aria-pressed:bg-amber-900/40">✎ Umriss bearbeiten</button>
           <button id="btn-draw-area" type="button" data-i18n="btnDrawArea" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">▱ Fläche einzeichnen</button>
           <button id="btn-export-pdf" data-i18n="btnExportPdf" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">PDF exportieren</button>
           <button id="btn-redraw-area" data-i18n="btnRedrawArea" class="text-xs font-medium text-stone-500 dark:text-stone-400 hover:text-red-600 dark:hover:text-red-400">Fläche neu zeichnen</button>
@@ -165,9 +167,18 @@ import Layout from '../layouts/Layout.astro';
             <button id="btn-area-cancel" type="button" data-i18n="btnAreaCancel" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium ring-1 ring-amber-300 dark:ring-amber-700">Abbrechen</button>
             <button id="btn-area-finish" type="button" data-i18n="btnAreaFinish" disabled class="rounded-md bg-green-700 px-2.5 py-1 font-medium text-white disabled:opacity-40">Fertig</button>
           </div>
+          <div id="boundary-edit-bar" class="hidden flex flex-wrap items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-900/30 px-3 py-2 text-xs text-amber-900 dark:text-amber-100 ring-1 ring-amber-200 dark:ring-amber-800">
+            <span class="mr-auto" data-i18n="boundaryEditHint">Umriss bearbeiten: Ecken ziehen, ＋ auf einer Kante fügt einen Punkt ein, Doppelklick entfernt ihn. Über den Rand ziehen vergrößert den Plan.</span>
+            <button id="btn-boundary-done" type="button" data-i18n="btnAreaFinish" class="rounded-md bg-green-700 px-2.5 py-1 font-medium text-white">Fertig</button>
+          </div>
           <div id="plan-wrap" class="relative rounded-xl bg-white dark:bg-stone-800 p-3 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <svg id="plan-svg" class="w-full touch-none" style="touch-action:none"></svg>
             <div id="plan-3d-container" hidden class="h-[480px] w-full touch-none" style="touch-action:none"></div>
+            <div id="zoom-controls" class="absolute left-5 top-5 flex flex-col gap-1">
+              <button id="zoom-in" type="button" data-i18n-aria-label="zoomIn" data-i18n-title="zoomIn" aria-label="Hineinzoomen" title="Hineinzoomen" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700">+</button>
+              <button id="zoom-out" type="button" data-i18n-aria-label="zoomOut" data-i18n-title="zoomOut" aria-label="Herauszoomen" title="Herauszoomen" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700">−</button>
+              <button id="zoom-fit" type="button" data-i18n-aria-label="zoomFit" data-i18n-title="zoomFit" aria-label="Ganzen Plan zeigen" title="Ganzen Plan zeigen" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700 text-sm">⤢</button>
+            </div>
             <div aria-hidden="true" class="cursor-readout pointer-events-none absolute hidden rounded bg-stone-900/80 px-1.5 py-0.5 font-mono text-[11px] text-white"></div>
             <div class="basemap-attrib absolute bottom-3 right-3 hidden rounded-tl bg-white/80 px-1 text-[10px] text-stone-600"></div>
           </div>
@@ -276,7 +287,9 @@ import Layout from '../layouts/Layout.astro';
   import { areasSvg, AREA_PALETTE, uiScale } from '../lib/gartenplan-render';
   import { planFromLatLngPolygon, planToLatLon } from '../lib/gartenplan-geo';
   import type { MapDrawer } from '../lib/gartenplan-mapdraw';
-  import { basemapSvg, northArrowSvg, hasBasemap, OSM_TILES } from '../lib/gartenplan-background';
+  import { basemapSvg, basemapAttribution, hasBasemap } from '../lib/gartenplan-background';
+  import { growPlanToFit } from '../lib/gartenplan-extent';
+  import type { PlanRect } from '../lib/gartenplan-geo';
   import { plantDetailHtml } from '../lib/plant-detail';
   import { compatScore } from '../lib/compat';
   import { newId } from '../lib/id';
@@ -350,6 +363,9 @@ import Layout from '../layouts/Layout.astro';
   const areasList = document.getElementById('areas-list')!;
   const areasEmpty = document.getElementById('areas-empty')!;
   const areaEditHint = document.getElementById('area-edit-hint')!;
+  const zoomControls = document.getElementById('zoom-controls')!;
+  const btnEditBoundary = document.getElementById('btn-edit-boundary') as HTMLButtonElement;
+  const boundaryEditBar = document.getElementById('boundary-edit-bar')!;
   const lang = getLang();
 
   // ── State ───────────────────────────────────────────────────────────────
@@ -521,21 +537,22 @@ import Layout from '../layouts/Layout.astro';
     drawingControls.classList.add('hidden');
     mapBar.classList.add('hidden');
 
+    listView.hidden = true;
+    editorView.hidden = false;
     if (editing.boundary.length > 0) {
       enterPhaseB();
     } else {
       phaseA.classList.remove('hidden');
       phaseB.classList.add('hidden');
+      showDrawingUi();
     }
-
-    listView.hidden = true;
-    editorView.hidden = false;
     window.scrollTo({ top: 0 });
   }
 
   function closeEditor() {
     destroyMapDrawer();
     endAreaDraw();
+    setBoundaryEdit(false);
     view3d?.dispose();
     view3d = null;
     editing = null;
@@ -548,22 +565,20 @@ import Layout from '../layouts/Layout.astro';
   // The map only sits *under* the plan: tiles are rendered into each SVG's
   // .basemap-layer group (gartenplan-background.ts), rotated by geo.rotationDeg,
   // while grid, boundary and placements stay in plain plan meters.
-  function screenMPerPx(svg: SVGSVGElement, widthM: number): number {
-    const px = svg.getBoundingClientRect().width;
-    return px > 0 ? widthM / px / (window.devicePixelRatio || 1) : 0.02;
-  }
-
   function renderBasemap(svg: SVGSVGElement) {
     if (!editing) return;
     const layer = svg.querySelector('.basemap-layer');
     if (!layer) return;
-    // Phase A draws with the (not yet committed) form dimensions.
-    const plan = svg === drawingSvg ? { ...editing, areaWidthM: areaWidthM(), areaHeightM: areaHeightM() } : editing;
-    layer.innerHTML = basemapSvg(plan, screenMPerPx(svg, plan.areaWidthM), `${svg.id}-basemap-clip`);
-    const arrow = svg.querySelector('.north-arrow-layer');
-    if (arrow) arrow.innerHTML = northArrowSvg(plan);
+    // Phase A (grid) draws with the not yet committed form dimensions; the
+    // plan canvas covers whatever is visible after zoom/pan.
+    const isPlan = svg === planSvg;
+    const plan = isPlan ? editing : { ...editing, areaWidthM: areaWidthM(), areaHeightM: areaHeightM() };
+    const view = isPlan ? viewRectM() : { minX: 0, minY: 0, maxX: plan.areaWidthM, maxY: plan.areaHeightM };
+    const px = svg.getBoundingClientRect().width;
+    const mPerPx = px > 0 ? (view.maxX - view.minX) / px / (window.devicePixelRatio || 1) : 0.02;
+    layer.innerHTML = basemapSvg(plan, view, mPerPx);
     const attrib = svg.parentElement!.querySelector<HTMLElement>('.basemap-attrib')!;
-    attrib.innerHTML = hasBasemap(plan) ? OSM_TILES.attributionHtml : '';
+    attrib.innerHTML = basemapAttribution(plan);
     attrib.classList.toggle('hidden', !hasBasemap(plan));
   }
 
@@ -607,7 +622,7 @@ import Layout from '../layouts/Layout.astro';
 
   fBasemap.addEventListener('change', () => {
     if (!editing?.geo) return;
-    editing.geo.basemap = fBasemap.value === 'none' ? 'none' : 'osm';
+    editing.geo.basemap = fBasemap.value === 'none' || fBasemap.value === 'sat' ? fBasemap.value : 'osm';
     refreshBasemaps();
     scheduleAutosave();
   });
@@ -669,8 +684,7 @@ import Layout from '../layouts/Layout.astro';
       ${gridDefsAndBackground(w, h, spacing, 'drawing-grid', uiScale(w))}
       ${drawingPoints.length >= 2 ? `<polyline points="${pointsAttr}" fill="none" stroke="#15803d" stroke-width="3"/>` : ''}
       ${drawingPoints.length >= 3 ? `<polygon points="${pointsAttr}" fill="#15803d" fill-opacity="0.12" stroke="none"/>` : ''}
-      ${markers}
-      <g class="north-arrow-layer"></g>`;
+      ${markers}`;
     renderBasemap(drawingSvg);
     vertexCountEl.textContent = t('vertexCount', { count: drawingPoints.length });
     btnFinishBoundary.disabled = drawingPoints.length < 3;
@@ -691,7 +705,23 @@ import Layout from '../layouts/Layout.astro';
     sizeFields.classList.toggle('hidden', m === 'map');
     sizeFromMapHint.classList.toggle('hidden', m === 'grid');
   }
-  drawModeRadios.forEach(r => r.addEventListener('change', () => setDrawMode(drawMode())));
+  drawModeRadios.forEach(r => r.addEventListener('change', () => {
+    setDrawMode(drawMode());
+    if (editing && editing.boundary.length === 0) showDrawingUi();
+  }));
+
+  /** Phase A without a boundary yet: on the map, drawing starts right away
+   *  (search, zoom, click corners); the grid still needs "Fläche zeichnen
+   *  starten" because width/depth are chosen first. */
+  function showDrawingUi() {
+    if (drawMode() === 'map') { void startDrawing(); return; }
+    destroyMapDrawer();
+    mapdrawWrap.classList.add('hidden');
+    drawingWrap.classList.add('hidden');
+    drawingHint.classList.add('hidden');
+    drawingControls.classList.add('hidden');
+    btnStartDrawing.classList.remove('hidden');
+  }
 
   function destroyMapDrawer() {
     mapDrawer?.destroy();
@@ -703,29 +733,37 @@ import Layout from '../layouts/Layout.astro';
     btnFinishBoundary.disabled = n < 3;
   }
 
-  btnStartDrawing.addEventListener('click', async () => {
+  async function startDrawing() {
     if (!editing) return;
-    if (!fName.value.trim()) { alert(t('alertEnterName')); fName.focus(); return; }
-    [fWidth, fHeight, fGridSpacing, ...drawModeRadios].forEach(el => { el.disabled = true; });
     btnStartDrawing.classList.add('hidden');
     drawingHint.classList.remove('hidden');
     drawingControls.classList.remove('hidden');
     drawingPoints = [];
     if (drawMode() === 'map') {
+      drawingWrap.classList.add('hidden');
       drawingHintText.textContent = t('hintDrawingMap');
       mapdrawWrap.classList.remove('hidden');
       setVertexCount(0);
+      if (mapDrawer) { mapDrawer.clear(); mapDrawer.refresh(); return; }
       const geo = editing.geo;
       const center = geo ? planToLatLon({ xM: editing.areaWidthM / 2, yM: editing.areaHeightM / 2 }, geo) : null;
       const { createMapDrawer } = await import('../lib/gartenplan-mapdraw');
-      destroyMapDrawer();
+      if (mapDrawer || drawMode() !== 'map' || !editing) return; // changed meanwhile
       mapDrawer = createMapDrawer(mapdrawMapEl, { center, lang, t, onChange: setVertexCount, onClose: finishBoundary });
       requestAnimationFrame(() => mapDrawer?.refresh());
     } else {
+      [fWidth, fHeight, fGridSpacing, ...drawModeRadios].forEach(el => { el.disabled = true; });
+      destroyMapDrawer();
+      mapdrawWrap.classList.add('hidden');
       drawingHintText.textContent = t('hintDrawing');
       drawingWrap.classList.remove('hidden');
       renderDrawingSvg();
     }
+  }
+
+  btnStartDrawing.addEventListener('click', () => {
+    if (!fName.value.trim()) { alert(t('alertEnterName')); fName.focus(); return; }
+    void startDrawing();
   });
 
   drawingSvg.addEventListener('pointerdown', (e: PointerEvent) => {
@@ -752,6 +790,7 @@ import Layout from '../layouts/Layout.astro';
 
   function finishBoundary() {
     if (!editing) return;
+    if (!fName.value.trim()) { alert(t('alertEnterName')); fName.focus(); return; }
     editing.gridSpacingM = gridSpacingM();
     if (mapDrawer) {
       const pts = mapDrawer.points();
@@ -793,6 +832,7 @@ import Layout from '../layouts/Layout.astro';
     view3d = null;
     plan3dContainer.hidden = true;
     planSvg.classList.remove('hidden');
+    zoomControls.hidden = false;
     setViewToggleActive(true);
     renderPlanSvg();
   });
@@ -803,6 +843,9 @@ import Layout from '../layouts/Layout.astro';
     plan3dContainer.hidden = false;
     setViewToggleActive(false);
     document.querySelector('#plan-wrap .basemap-attrib')!.classList.add('hidden');
+    zoomControls.hidden = true;
+    endAreaDraw();
+    setBoundaryEdit(false);
     const { createGardenPlan3DView } = await import('../lib/gartenplan-3d');
     view3d?.dispose();
     view3d = createGardenPlan3DView(plan3dContainer, editing, plantsById, {
@@ -828,12 +871,9 @@ import Layout from '../layouts/Layout.astro';
       onAreaVertexDragEnd(areaId, index, xM, yM) {
         const area = editing?.areas.find(a => a.id === areaId);
         if (!area || !editing) return;
-        area.points[index] = {
-          xM: Math.max(0, Math.min(editing.areaWidthM, xM)),
-          yM: Math.max(0, Math.min(editing.areaHeightM, yM)),
-        };
+        area.points[index] = { xM, yM };
         renderAreasLayer();
-        scheduleAutosave();
+        afterGeometryEdit();
       },
       onPlacementSelected(placementId) {
         selectedPlacementId = placementId;
@@ -874,6 +914,8 @@ import Layout from '../layouts/Layout.astro';
     mapBar.classList.add('hidden');
     phaseA.classList.remove('hidden');
     phaseB.classList.add('hidden');
+    setBoundaryEdit(false);
+    showDrawingUi();
     window.scrollTo({ top: 0 });
     scheduleAutosave();
   });
@@ -885,6 +927,7 @@ import Layout from '../layouts/Layout.astro';
     phaseB.classList.remove('hidden');
     mapBar.classList.remove('hidden');
     syncMapBar();
+    resetPlanViewState();
     renderAreasList();
     yearsInput.value = String(editing.yearsSincePlanting);
     yearsLabel.textContent = t('yearsSuffix', { years: editing.yearsSincePlanting });
@@ -1064,13 +1107,13 @@ import Layout from '../layouts/Layout.astro';
     scheduleAutosave();
     const w = editing.areaWidthM, h = editing.areaHeightM, k = uiScale(w);
     const pointsAttr = editing.boundary.map(p => `${p.xM * SVG_UNITS_PER_METER},${p.yM * SVG_UNITS_PER_METER}`).join(' ');
-    planSvg.setAttribute('viewBox', `0 0 ${w * SVG_UNITS_PER_METER} ${h * SVG_UNITS_PER_METER}`);
+    if (!planView.w) resetPlanViewState();
+    planSvg.setAttribute('viewBox', `${planView.x} ${planView.y} ${planView.w} ${planView.h}`);
     planSvg.innerHTML = `
       <g class="basemap-layer"></g>
       ${gridDefsAndBackground(w, h, editing.gridSpacingM, 'plan-grid', k)}
-      <polygon points="${pointsAttr}" fill="#15803d" fill-opacity="0.08" stroke="#15803d" stroke-width="${2 * k}"/>
+      <polygon id="plan-boundary" points="${pointsAttr}" fill="#15803d" fill-opacity="0.08" stroke="#15803d" stroke-width="${2 * k}"/>
       <g id="plan-areas-layer">${areasSvg(editing.areas, selectedAreaId, k, true)}</g>
-      <g class="north-arrow-layer"></g>
       <g id="plan-markers"></g>
       <g id="area-handles"></g>
       <g id="area-draft" pointer-events="none"></g>`;
@@ -1136,7 +1179,7 @@ import Layout from '../layouts/Layout.astro';
         const pt = clientToMeters(planSvg, e.clientX, e.clientY);
         placement.xM = pt.xM;
         placement.yM = pt.yM;
-        scheduleAutosave();
+        afterGeometryEdit();
       } else {
         selectedPlacementId = placement.id;
         renderPlanSvg();
@@ -1145,9 +1188,8 @@ import Layout from '../layouts/Layout.astro';
     });
   }
 
-  planSvg.addEventListener('pointerdown', (e: PointerEvent) => {
-    if (!editing || !armedPlantId || areaDraft) return;
-    if ((e.target as Element).closest('g[data-placement-id]')) return; // handled by the marker's own listener
+  function placeArmedPlant(e: PointerEvent) {
+    if (!editing || !armedPlantId) return;
     const pt = clientToMeters(planSvg, e.clientX, e.clientY);
     if (!pointInPolygon(pt, editing.boundary)) return;
     const placement: GardenPlanPlacement = { id: newId(), plantId: armedPlantId, xM: pt.xM, yM: pt.yM, notes: '' };
@@ -1156,7 +1198,7 @@ import Layout from '../layouts/Layout.astro';
     renderUnplacedList();
     renderSuggestions();
     renderPlanSvg();
-  });
+  }
 
   yearsInput.addEventListener('input', () => {
     if (!editing) return;
@@ -1181,8 +1223,19 @@ import Layout from '../layouts/Layout.astro';
   function renderAreasLayer() {
     const layer = planSvg.querySelector('#plan-areas-layer');
     if (layer && editing) layer.innerHTML = areasSvg(editing.areas, selectedAreaId, uiScale(editing.areaWidthM), true);
+    const boundaryEl = planSvg.querySelector('#plan-boundary');
+    if (boundaryEl && editing) boundaryEl.setAttribute('points', editing.boundary.map(p => `${p.xM * SVG_UNITS_PER_METER},${p.yM * SVG_UNITS_PER_METER}`).join(' '));
     renderAreaHandles();
     view3d?.refreshAreas(selectedAreaId);
+  }
+
+  /** What the corner handles currently edit: the garden boundary (via
+   *  "Umriss bearbeiten") or the selected area. */
+  function editTarget(): { id: string; points: GardenPlanPoint[]; color: string } | null {
+    if (!editing) return null;
+    if (editBoundary) return { id: '__boundary', points: editing.boundary, color: '#15803d' };
+    const a = editing.areas.find(x => x.id === selectedAreaId);
+    return a ? { id: a.id, points: a.points, color: a.color } : null;
   }
 
   // ── Flächen bearbeiten: Griffe an den Ecken, ＋ auf den Kanten ─────────
@@ -1191,7 +1244,7 @@ import Layout from '../layouts/Layout.astro';
   function renderAreaHandles() {
     const g = planSvg.querySelector('#area-handles');
     if (!g) return;
-    const area = editing?.areas.find(a => a.id === selectedAreaId);
+    const area = editTarget();
     if (!editing || !area || areaDraft) { g.innerHTML = ''; return; }
     const u = SVG_UNITS_PER_METER, k = uiScale(editing.areaWidthM);
     const n = area.points.length;
@@ -1204,13 +1257,13 @@ import Layout from '../layouts/Layout.astro';
     g.innerHTML = mids + verts;
   }
 
-  let vertexDrag: { area: GardenPlanArea; index: number; pointerId: number } | null = null;
+  let vertexDrag: { area: { points: GardenPlanPoint[] }; index: number; pointerId: number } | null = null;
   let lastVertexTap: { areaId: string; index: number; t: number } | null = null;
   const DOUBLE_TAP_MS = 400;
 
   planSvg.addEventListener('pointerdown', (e: PointerEvent) => {
     const target = (e.target as Element).closest('.area-vertex, .area-mid');
-    const area = editing?.areas.find(a => a.id === selectedAreaId);
+    const area = editTarget();
     if (!target || !area || !editing) return;
     e.stopPropagation();
     e.preventDefault();
@@ -1244,29 +1297,158 @@ import Layout from '../layouts/Layout.astro';
   planSvg.addEventListener('pointermove', (e: PointerEvent) => {
     if (!vertexDrag || !editing || e.pointerId !== vertexDrag.pointerId) return;
     lastVertexTap = null; // a drag is not half of a double tap
-    const s = snapIfClose(planSvg, clientToMeters(planSvg, e.clientX, e.clientY), editing.gridSpacingM);
-    vertexDrag.area.points[vertexDrag.index] = {
-      xM: Math.max(0, Math.min(editing.areaWidthM, s.xM)),
-      yM: Math.max(0, Math.min(editing.areaHeightM, s.yM)),
-    };
+    // Not clamped: dragging past the edge grows the plan on release.
+    vertexDrag.area.points[vertexDrag.index] = snapIfClose(planSvg, clientToMeters(planSvg, e.clientX, e.clientY), editing.gridSpacingM);
     renderAreasLayer();
   });
 
   function endVertexDrag(e: PointerEvent) {
     if (!vertexDrag || e.pointerId !== vertexDrag.pointerId) return;
     vertexDrag = null;
-    scheduleAutosave();
+    afterGeometryEdit();
   }
   planSvg.addEventListener('pointerup', endVertexDrag);
   planSvg.addEventListener('pointercancel', endVertexDrag);
 
-  // Click on an area selects it, click on bare ground clears the selection
-  // (marker clicks never get here — their own handler stops propagation).
+  // ── Zoom & Verschieben (2D) ────────────────────────────────────────────
+  // The viewBox is the camera: planView in SVG units, same aspect as the plan
+  // so the canvas never changes height. Dragging on bare ground pans, two
+  // fingers pinch-zoom, Ctrl/⌘ + wheel (or a trackpad pinch) zooms at the
+  // cursor; plain wheel keeps scrolling the page. Because a drag may become a
+  // pan, taps (place plant, add area corner, select) fire on release.
+  const U = SVG_UNITS_PER_METER;
+  let planView = { x: 0, y: 0, w: 0, h: 0 };
+  let basemapViewTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function resetPlanViewState() {
+    if (!editing) return;
+    planView = { x: 0, y: 0, w: editing.areaWidthM * U, h: editing.areaHeightM * U };
+  }
+  function viewRectM(): PlanRect {
+    return { minX: planView.x / U, minY: planView.y / U, maxX: (planView.x + planView.w) / U, maxY: (planView.y + planView.h) / U };
+  }
+  function applyPlanView() {
+    planSvg.setAttribute('viewBox', `${planView.x} ${planView.y} ${planView.w} ${planView.h}`);
+    if (basemapViewTimer) clearTimeout(basemapViewTimer);
+    basemapViewTimer = setTimeout(() => renderBasemap(planSvg), 120);
+  }
+  /** `base` zoomed by `factor` (>1 = in) around the SVG point cx/cy. */
+  function zoomedView(base: typeof planView, factor: number, cx: number, cy: number): typeof planView {
+    if (!editing) return base;
+    const full = editing.areaWidthM * U;
+    const w = Math.max(Math.min(full, 2 * U), Math.min(full * 4, base.w / factor));
+    const f = w / base.w;
+    return { x: cx - (cx - base.x) * f, y: cy - (cy - base.y) * f, w, h: base.h * f };
+  }
+  function zoomAtCenter(factor: number) {
+    planView = zoomedView(planView, factor, planView.x + planView.w / 2, planView.y + planView.h / 2);
+    applyPlanView();
+  }
+  document.getElementById('zoom-in')!.addEventListener('click', () => zoomAtCenter(1.5));
+  document.getElementById('zoom-out')!.addEventListener('click', () => zoomAtCenter(1 / 1.5));
+  document.getElementById('zoom-fit')!.addEventListener('click', () => { resetPlanViewState(); applyPlanView(); });
+  planSvg.addEventListener('wheel', (e: WheelEvent) => {
+    if (!(e.ctrlKey || e.metaKey) || !editing) return;
+    e.preventDefault();
+    const p = clientToMeters(planSvg, e.clientX, e.clientY);
+    planView = zoomedView(planView, Math.exp(-e.deltaY * 0.0025), p.xM * U, p.yM * U);
+    applyPlanView();
+  }, { passive: false });
+
+  const activePointers = new Map<number, { x: number; y: number }>();
+  let pan: { id: number; sx: number; sy: number; view: typeof planView; moved: boolean; target: Element | null } | null = null;
+  let pinch: { d: number; view: typeof planView; cx: number; cy: number } | null = null;
+
+  // Marker and corner-handle presses never get here: they stop propagation.
   planSvg.addEventListener('pointerdown', (e: PointerEvent) => {
-    if (!editing || areaDraft || armedPlantId) return;
-    const id = (e.target as Element).closest<SVGElement>('[data-area-id]')?.dataset.areaId ?? null;
-    if (id !== selectedAreaId) { selectedAreaId = id; markSelectedArea(); }
+    activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (activePointers.size === 2) {
+      const [a, b] = [...activePointers.values()];
+      const mid = clientToMeters(planSvg, (a.x + b.x) / 2, (a.y + b.y) / 2);
+      pinch = { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, view: { ...planView }, cx: mid.xM * U, cy: mid.yM * U };
+      pan = null;
+      return;
+    }
+    pan = { id: e.pointerId, sx: e.clientX, sy: e.clientY, view: { ...planView }, moved: false, target: e.target as Element };
   });
+
+  planSvg.addEventListener('pointermove', (e: PointerEvent) => {
+    if (activePointers.has(e.pointerId)) activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pinch && activePointers.size === 2) {
+      const [a, b] = [...activePointers.values()];
+      planView = zoomedView(pinch.view, Math.hypot(a.x - b.x, a.y - b.y) / pinch.d, pinch.cx, pinch.cy);
+      applyPlanView();
+      return;
+    }
+    if (!pan || e.pointerId !== pan.id || vertexDrag) return;
+    if (!pan.moved && Math.hypot(e.clientX - pan.sx, e.clientY - pan.sy) > 4) {
+      pan.moved = true;
+      planSvg.setPointerCapture(e.pointerId);
+    }
+    if (!pan.moved) return;
+    const unitsPerPx = pan.view.w / planSvg.getBoundingClientRect().width;
+    planView = { ...pan.view, x: pan.view.x - (e.clientX - pan.sx) * unitsPerPx, y: pan.view.y - (e.clientY - pan.sy) * unitsPerPx };
+    applyPlanView();
+  });
+
+  function endCanvasPointer(e: PointerEvent) {
+    activePointers.delete(e.pointerId);
+    if (activePointers.size < 2) pinch = null;
+    if (!pan || e.pointerId !== pan.id) return;
+    const p = pan;
+    pan = null;
+    if (!p.moved && e.type === 'pointerup') onCanvasTap(e, p.target);
+  }
+  planSvg.addEventListener('pointerup', endCanvasPointer);
+  planSvg.addEventListener('pointercancel', endCanvasPointer);
+
+  /** A tap (no pan) on the canvas: add an area corner while drawing, place
+   *  the armed plant, otherwise select the tapped area / clear selection. */
+  function onCanvasTap(e: PointerEvent, target: Element | null) {
+    if (!editing) return;
+    if (areaDraft) { addAreaDraftPoint(e); return; }
+    if (armedPlantId) { placeArmedPlant(e); return; }
+    const id = target?.closest<SVGElement>('[data-area-id]')?.dataset.areaId ?? null;
+    if (id) setBoundaryEdit(false);
+    if (id !== selectedAreaId) { selectedAreaId = id; markSelectedArea(); }
+  }
+
+  // ── Umriss bearbeiten ───────────────────────────────────────────────────
+  let editBoundary = false;
+  function setBoundaryEdit(on: boolean) {
+    if (on === editBoundary) return;
+    editBoundary = on;
+    btnEditBoundary.setAttribute('aria-pressed', String(on));
+    boundaryEditBar.classList.toggle('hidden', !on);
+    if (on && selectedAreaId) { selectedAreaId = null; markSelectedArea(); }
+    renderAreaHandles();
+  }
+  btnEditBoundary.addEventListener('click', () => {
+    if (!plan3dContainer.hidden) btnView2d.click();
+    endAreaDraw();
+    setBoundaryEdit(!editBoundary);
+  });
+  document.getElementById('btn-boundary-done')!.addEventListener('click', () => setBoundaryEdit(false));
+
+  /** After any geometry change (corner, area, plant moved): grow the plan if
+   *  something now lies outside it, keeping the view on the same spot. */
+  function afterGeometryEdit() {
+    if (!editing) return;
+    const w0 = editing.areaWidthM, h0 = editing.areaHeightM;
+    const shift = growPlanToFit(editing, 1);
+    if (shift) {
+      planView = { ...planView, x: planView.x + shift.dx * U, y: planView.y + shift.dy * U };
+      fWidth.value = String(editing.areaWidthM);
+      fHeight.value = String(editing.areaHeightM);
+      // Scale the view with the plan so the canvas keeps its aspect ratio.
+      planView.h = planView.w * editing.areaHeightM / editing.areaWidthM;
+      renderPlanSvg();
+      if (!plan3dContainer.hidden) btnView3d.click();
+      showToast(t('toastPlanGrown', { w: editing.areaWidthM, h: editing.areaHeightM, w0, h0 }));
+    }
+    scheduleAutosave();
+  }
+
 
   function renderAreaDraft() {
     const g = planSvg.querySelector('#area-draft');
@@ -1309,7 +1491,7 @@ import Layout from '../layouts/Layout.astro';
   }
   areasList.addEventListener('focusin', e => {
     const a = areaOf(e.target);
-    if (a && a.id !== selectedAreaId) { selectedAreaId = a.id; markSelectedArea(); }
+    if (a && a.id !== selectedAreaId) { setBoundaryEdit(false); selectedAreaId = a.id; markSelectedArea(); }
   });
   areasList.addEventListener('input', e => {
     const a = areaOf(e.target);
@@ -1350,7 +1532,7 @@ import Layout from '../layouts/Layout.astro';
     selectedAreaId = area.id;
     endAreaDraw();
     renderAreasList();
-    scheduleAutosave();
+    afterGeometryEdit();
     const input = areasList.querySelector<HTMLInputElement>(`[data-area-id="${area.id}"] .area-name`);
     input?.focus();
     input?.select();
@@ -1363,6 +1545,7 @@ import Layout from '../layouts/Layout.astro';
     armedHint.classList.add('hidden');
     renderPlantPicker();
     renderUnplacedList();
+    setBoundaryEdit(false);
     areaDraft = [];
     renderAreaHandles();
     areaDrawBar.classList.remove('hidden');
@@ -1376,10 +1559,11 @@ import Layout from '../layouts/Layout.astro';
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
     if (areaDraft) endAreaDraw();
+    else if (editBoundary) setBoundaryEdit(false);
     else if (selectedAreaId && !(e.target as HTMLElement).closest?.('input, textarea, select')) { selectedAreaId = null; markSelectedArea(); }
   });
 
-  planSvg.addEventListener('pointerdown', (e: PointerEvent) => {
+  function addAreaDraftPoint(e: PointerEvent) {
     if (!editing || !areaDraft) return;
     const raw = clientToMeters(planSvg, e.clientX, e.clientY);
     const first = areaDraft[0];
@@ -1388,13 +1572,9 @@ import Layout from '../layouts/Layout.astro';
       const pxPerM = Math.hypot(ctm.a, ctm.b) * SVG_UNITS_PER_METER;
       if (Math.hypot(raw.xM - first.xM, raw.yM - first.yM) * pxPerM <= SNAP_TOLERANCE_PX) { finishAreaDraw(); return; }
     }
-    const s = snapIfClose(planSvg, raw, editing.gridSpacingM);
-    areaDraft.push({
-      xM: Math.max(0, Math.min(editing.areaWidthM, s.xM)),
-      yM: Math.max(0, Math.min(editing.areaHeightM, s.yM)),
-    });
+    areaDraft.push(snapIfClose(planSvg, raw, editing.gridSpacingM));
     renderAreaDraft();
-  });
+  }
 
   // ── Init + save/delete ──────────────────────────────────────────────────
   async function init() {

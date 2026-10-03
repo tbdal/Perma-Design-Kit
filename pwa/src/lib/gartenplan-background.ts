@@ -1,5 +1,5 @@
 import type { GardenPlan } from './types';
-import { tilesForPlan } from './gartenplan-geo';
+import { tilesForRect, type PlanRect } from './gartenplan-geo';
 import { SVG_UNITS_PER_METER } from './gartenplan-render';
 
 // Map tile sources. Kept in one place so swapping a provider (e.g. the EOX
@@ -34,39 +34,31 @@ export function hasBasemap(plan: GardenPlan): boolean {
   return !!plan.geo && plan.geo.basemap !== 'none';
 }
 
-/** OSM tiles under the plan, as SVG markup in plan units. Tiles are laid out
- *  in the local east/south frame and the whole group is turned by
- *  rotate(−θ) — exactly the ENU → plan mapping of gartenplan-geo.ts with SVG's
- *  y-down axis. `screenMPerPx` = ground meters per device pixel on screen. */
-export function basemapSvg(plan: GardenPlan, screenMPerPx: number, clipId: string): string {
+function sourceFor(plan: GardenPlan): TileSource {
+  return plan.geo?.basemap === 'sat' ? S2_TILES : OSM_TILES;
+}
+
+/** Attribution HTML for the plan's current background, '' without one. */
+export function basemapAttribution(plan: GardenPlan): string {
+  return hasBasemap(plan) ? sourceFor(plan).attributionHtml : '';
+}
+
+/** Map tiles (OSM or coarse satellite) for the visible rectangle `view` (plan
+ *  meters — may reach beyond the plan when zoomed out, so the surroundings
+ *  show too). Tiles are laid out in the local east/south frame and the group
+ *  is turned by rotate(−θ) — exactly the ENU → plan mapping of
+ *  gartenplan-geo.ts with SVG's y-down axis. `screenMPerPx` = ground meters
+ *  per device pixel on screen. */
+export function basemapSvg(plan: GardenPlan, view: PlanRect, screenMPerPx: number): string {
   const geo = plan.geo;
   if (!geo || geo.basemap === 'none') return '';
-  const tiles = tilesForPlan(plan.areaWidthM, plan.areaHeightM, geo, screenMPerPx, OSM_TILES.maxZoom);
+  const src = sourceFor(plan);
+  const tiles = tilesForRect(view, geo, screenMPerPx, src.maxZoom);
   const u = SVG_UNITS_PER_METER;
   // A hair of overlap hides the anti-aliasing seams between rotated tiles.
   const images = tiles.map(t => {
     const size = t.sizeM * u * 1.003;
-    return `<image href="${tileUrl(OSM_TILES, t.z, t.x, t.y)}" x="${t.eM * u}" y="${t.sM * u}" width="${size}" height="${size}" preserveAspectRatio="none"/>`;
+    return `<image href="${tileUrl(src, t.z, t.x, t.y)}" x="${t.eM * u}" y="${t.sM * u}" width="${size}" height="${size}" preserveAspectRatio="none"/>`;
   }).join('');
-  return `
-    <clipPath id="${clipId}"><rect width="${plan.areaWidthM * u}" height="${plan.areaHeightM * u}"/></clipPath>
-    <g clip-path="url(#${clipId})" opacity="${geo.opacity}" pointer-events="none">
-      <g transform="rotate(${-geo.rotationDeg})">${images}</g>
-    </g>`;
-}
-
-/** North arrow in the top-right corner, pointing to geographic north. */
-export function northArrowSvg(plan: GardenPlan): string {
-  if (!plan.geo) return '';
-  const u = SVG_UNITS_PER_METER;
-  const r = Math.max(14, Math.min(plan.areaWidthM, plan.areaHeightM) * u * 0.07);
-  const cx = plan.areaWidthM * u - r * 2.2, cy = r * 2.2;
-  return `
-    <g transform="translate(${cx},${cy})" pointer-events="none">
-      <circle r="${r * 1.8}" fill="#ffffff" fill-opacity="0.85" stroke="#a8a29e" stroke-width="1"/>
-      <g transform="rotate(${-plan.geo.rotationDeg})">
-        <path d="M 0 ${-r} L ${r * 0.45} ${r * 0.6} L 0 ${r * 0.3} L ${-r * 0.45} ${r * 0.6} Z" fill="#1c1917"/>
-        <text y="${-r * 1.08}" text-anchor="middle" font-size="${r * 0.8}" font-weight="bold" fill="#1c1917">N</text>
-      </g>
-    </g>`;
+  return `<g opacity="${geo.opacity}" pointer-events="none"><g transform="rotate(${-geo.rotationDeg})">${images}</g></g>`;
 }
