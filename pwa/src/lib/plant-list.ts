@@ -71,7 +71,7 @@ export function allGroups(plants: PlantData[]): string[] {
 
 export type SortField =
   | 'commonName' | 'latinName' | 'heightM' | 'widthM' | 'completeness'
-  | 'growSpeed' | 'layer' | 'flowerMonth' | 'fruitMonth' | 'groups';
+  | 'growSpeed' | 'layer' | 'flowerMonth' | 'fruitMonth' | 'groups' | 'createdAt';
 
 /** Slow=1 / Mid=2 / High=3; unset sorts last. */
 function growSpeedRank(p: PlantData): number {
@@ -103,6 +103,11 @@ function sortKey(p: PlantData, field: SortField): string | number {
     case 'groups': return [...(p.groups ?? [])].sort((a, b) => a.localeCompare(b, 'de'))[0]?.toLowerCase() ?? '￿';
     case 'commonName': return displayName(p).toLowerCase();
     case 'latinName': return (p.latinName || '').toLowerCase();
+    // Newest first in "asc" (the label is "Zuletzt hinzugefügt"); no date last.
+    case 'createdAt': {
+      const t = Date.parse(p.createdAt ?? '');
+      return Number.isNaN(t) ? Infinity : -t;
+    }
   }
 }
 

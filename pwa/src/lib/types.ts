@@ -246,6 +246,9 @@ export interface PlantData {
   imageCredit: string;
   // Number of times to print this plant's card (0 = excluded from exports, default 1)
   printCount: number;
+  // When the plant was added (ISO). '' for plants from before this field
+  // existed — they sort last under "Zuletzt hinzugefügt".
+  createdAt: string;
   // Provenance: source per field (optional, not all plants have this)
   _sources?: Partial<Record<keyof PlantData, DataSource>>;
 }
@@ -303,5 +306,6 @@ export function createEmptyPlant(): PlantData {
     imageUrl: '',
     imageCredit: '',
     printCount: 1,
+    createdAt: new Date().toISOString(),
   };
 }

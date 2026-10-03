@@ -41,6 +41,7 @@ import Layout from '../layouts/Layout.astro';
       <div id="sort-toolbar" style="display:none" class="flex items-center gap-2">
         <span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="sortLabel">Sortieren</span>
         <select id="sort-field-select" class="rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2 py-1.5 text-sm shadow-sm focus:border-green-500 focus:outline-none">
+          <option value="createdAt" data-i18n="sortByAdded">Zuletzt hinzugefügt</option>
           <option value="commonName" data-i18n="sortByNameAz">Name (A-Z)</option>
           <option value="latinName" data-i18n="thLatin">Lateinisch</option>
           <option value="heightM" data-i18n="thHeightShort">H</option>
@@ -635,6 +636,8 @@ import Layout from '../layouts/Layout.astro';
     const p = createEmptyPlant();
     p.id = el('id').value || p.id;
     p._sources = orig?._sources ? { ...orig._sources } : {};
+    // Editing must not reset the add date ('' stays '' for older plants).
+    if (orig) p.createdAt = orig.createdAt ?? '';
 
     for (const f of textFields) {
       const val = el(f).value;

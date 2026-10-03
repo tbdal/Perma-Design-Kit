@@ -59,6 +59,7 @@ const COLUMNS: Column[] = [
   { header: 'Gruppen', example: 'Waldgarten', get: p => (p.groups ?? []).join(', '), set: (p, v) => { p.groups = v.split(',').map(s => s.trim()).filter(Boolean); } },
   text('Englisch', 'commonNameEn', 'Elder'),
   text('Sorte', 'varietyName', ''),
+  { header: 'Hinzugefügt', example: '', get: p => p.createdAt ?? '', set: (p, v) => { if (!Number.isNaN(Date.parse(v))) p.createdAt = v; } },
   { header: 'Score_Essbar', example: '3', get: p => String(p.eatableScore ?? 0), set: (p, v) => { p.eatableScore = num(v) ?? 0; } },
   { header: 'Score_Medizin', example: '3', get: p => String(p.medsScore ?? 0), set: (p, v) => { p.medsScore = num(v) ?? 0; } },
   { header: 'Score_Material', example: '2', get: p => String(p.materialScore ?? 0), set: (p, v) => { p.materialScore = num(v) ?? 0; } },

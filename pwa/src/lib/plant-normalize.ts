@@ -47,6 +47,8 @@ export function normalizePlant(raw: unknown): PlantData | null {
 
   p.id = nonEmptyStr(raw.id, p.id);
   p.habit = parseHabit(raw.habit);
+  // Keep a valid add date; data without one counts as added now.
+  if (typeof raw.createdAt !== 'string' || Number.isNaN(Date.parse(raw.createdAt))) p.createdAt = new Date().toISOString();
   const h = finite(raw.heightM), w = finite(raw.widthM);
   p.heightM = h != null && h >= 0 ? h : null;
   p.widthM = w != null && w >= 0 ? w : null;

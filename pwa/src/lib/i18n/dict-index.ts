@@ -69,6 +69,7 @@ export const indexDict: Dict = {
   // ── Sort toolbar (grid/cards) ────────────────────────────────────────
   sortLabel: { de: 'Sortieren', en: 'Sort' },
   sortByNameAz: { de: 'Name (A-Z)', en: 'Name (A-Z)' },
+  sortByAdded: { de: 'Zuletzt hinzugefügt', en: 'Recently added' },
   sortByFlowerMonth: { de: 'Blühmonat', en: 'Flowering month' },
   sortByFruitMonth: { de: 'Erntemonat', en: 'Harvest month' },
   sortDirTitle: { de: 'Sortierrichtung umkehren', en: 'Reverse sort direction' },
