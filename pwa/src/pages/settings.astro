@@ -39,6 +39,13 @@ import Layout from '../layouts/Layout.astro';
           <option value="baumscheibe" data-i18n="optBaumscheibe">Baumscheibe</option>
         </select>
       </label>
+      <label class="flex items-start gap-2 text-sm sm:col-span-2">
+        <input type="checkbox" id="dot-codes" class="mt-0.5 accent-green-600" />
+        <span>
+          <span class="font-medium text-stone-700 dark:text-stone-200" data-i18n="labelDotCodes">Kürzel statt Farbpunkte</span>
+          <span class="block text-xs text-stone-500 dark:text-stone-400" data-i18n="helpDotCodes">Zeigt in der Pflanzenliste und ihrer Legende Kürzel (Es, Me, N …) statt reiner Farbpunkte – hilfreich bei Farbenblindheit und im Graustufendruck.</span>
+        </span>
+      </label>
     </div>
   </section>
 
@@ -70,7 +77,7 @@ import Layout from '../layouts/Layout.astro';
       <input type="checkbox" id="analytics-optout" class="mt-0.5 accent-green-600" />
       <span>
         <span class="font-medium text-stone-700 dark:text-stone-200" data-i18n="privacyOptOutLabel">Reichweitenmessung deaktivieren</span>
-        <span class="block text-xs text-stone-500 dark:text-stone-400"><span data-i18n="privacyOptOutDescPre">Die selbst gehostete Reichweitenmessung (Umami) erfasst keine personenbezogenen Daten — falls du trotzdem nicht gezählt werden möchtest, hier den Haken setzen. Details in der</span> <a href="/datenschutz" data-i18n="privacyOptOutDescLink" class="text-green-700 dark:text-green-400 hover:underline">Datenschutzerklärung</a>.</span>
+        <span class="block text-xs text-stone-500 dark:text-stone-400"><span data-i18n="privacyOptOutDescPre">Die selbst gehostete Reichweitenmessung (Umami) erfasst keine personenbezogenen Daten — falls du trotzdem nicht gezählt werden möchtest, hier den Haken setzen. Details in der</span> <a href="/datenschutz" data-i18n="privacyOptOutDescLink" class="text-green-700 dark:text-green-400 underline underline-offset-2 hover:no-underline">Datenschutzerklärung</a>.</span>
       </span>
     </label>
   </section>
@@ -122,15 +129,15 @@ import Layout from '../layouts/Layout.astro';
     <!-- Auto-Sync Toggle -->
     <div class="mt-5 flex items-start justify-between gap-4">
       <div class="min-w-0">
-        <p class="text-sm font-medium text-stone-700 dark:text-stone-200" data-i18n="autoSyncLabel">Automatisch synchronisieren</p>
+        <p id="auto-sync-label" class="text-sm font-medium text-stone-700 dark:text-stone-200" data-i18n="autoSyncLabel">Automatisch synchronisieren</p>
         <p class="mt-0.5 text-xs text-stone-500 dark:text-stone-400" data-i18n="autoSyncDesc">
           Beim Tab-Wechsel oder Schließen automatisch zum ersten konfigurierten Anbieter synchronisieren
           (Priorität: WebDAV → GitHub Gist).
         </p>
-        <p id="last-sync-info" class="mt-1 text-xs text-stone-400 dark:text-stone-500"></p>
+        <p id="last-sync-info" class="mt-1 text-xs text-stone-500 dark:text-stone-400"></p>
       </div>
       <label class="relative inline-flex shrink-0 cursor-pointer items-center">
-        <input type="checkbox" id="auto-sync-toggle" class="peer sr-only" />
+        <input type="checkbox" id="auto-sync-toggle" aria-labelledby="auto-sync-label" class="peer sr-only" />
         <div class="h-6 w-11 rounded-full bg-stone-300 dark:bg-stone-600 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-all peer-checked:bg-green-600 peer-checked:after:translate-x-full"></div>
       </label>
     </div>
@@ -187,9 +194,7 @@ import Layout from '../layouts/Layout.astro';
     <details class="mt-4 rounded-lg border border-stone-200 dark:border-stone-700 p-4">
       <summary class="cursor-pointer text-sm font-semibold text-stone-700 dark:text-stone-200" data-i18n="gistSummary">GitHub Gist (geräteübergreifend)</summary>
       <p class="mt-2 text-xs text-stone-500 dark:text-stone-400">
-        <span data-i18n="gistDescPre">Speichert das Backup als privates GitHub Gist. Du brauchst einen GitHub-Account und ein</span>
-        <a href="https://github.com/settings/tokens/new?scopes=gist&description=Perma+Design+Kit" target="_blank" rel="noopener" data-i18n="gistDescLink" class="text-green-700 dark:text-green-400 hover:underline">Personal Access Token</a>
-        <span data-i18n="gistDescPost">mit dem Scope</span> <code>gist</code><span data-i18n="gistDescPost2">. Beim ersten Hochladen wird ein neues Gist angelegt
+        <span data-i18n="gistDescPre">Speichert das Backup als privates GitHub Gist. Du brauchst einen GitHub-Account und ein</span> <a href="https://github.com/settings/tokens/new?scopes=gist&description=Perma+Design+Kit" target="_blank" rel="noopener" data-i18n="gistDescLink" class="text-green-700 dark:text-green-400 underline underline-offset-2 hover:no-underline">Personal Access Token</a> <span data-i18n="gistDescPost">mit dem Scope</span> <code>gist</code><span data-i18n="gistDescPost2">. Beim ersten Hochladen wird ein neues Gist angelegt
         und die ID automatisch gespeichert — danach einfach wieder drücken.</span>
       </p>
       <div class="mt-3 grid gap-3 sm:grid-cols-2">
@@ -253,7 +258,7 @@ import Layout from '../layouts/Layout.astro';
       const btn = (dir: 'up' | 'down', disabled: boolean, label: string, sym: string) =>
         `<button type="button" data-move="${dir}" data-idx="${i}" ${disabled ? 'disabled' : ''} aria-label="${escapeHtml(label)}" class="rounded-md px-2.5 py-1 text-sm ring-1 ring-stone-200 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700 disabled:opacity-30 disabled:hover:bg-transparent">${sym}</button>`;
       return `<li class="flex items-center gap-3 rounded-lg bg-stone-50 dark:bg-stone-900/40 px-3 py-2 ${off ? 'opacity-60' : ''}">
-        <span class="w-5 text-sm font-bold tabular-nums text-stone-400">${i + 1}.</span>
+        <span class="w-5 text-sm font-bold tabular-nums text-stone-500 dark:text-stone-400">${i + 1}.</span>
         <span class="flex-1 text-sm font-medium text-stone-800 dark:text-stone-100">${escapeHtml(src?.name ?? id)}${off ? ` <span class="text-xs font-normal text-stone-500">(${escapeHtml(t('priorityDisabled'))})</span>` : ''}</span>
         ${btn('up', i === 0, t('priorityUp'), '↑')}
         ${btn('down', i === order.length - 1, t('priorityDown'), '↓')}
@@ -276,6 +281,7 @@ import Layout from '../layouts/Layout.astro';
   const toast = document.getElementById('toast')!;
   const defaultView = document.getElementById('default-view') as HTMLSelectElement;
   const defaultCardVariant = document.getElementById('default-card-variant') as HTMLSelectElement;
+  const dotCodes = document.getElementById('dot-codes') as HTMLInputElement;
   const analyticsOptout = document.getElementById('analytics-optout') as HTMLInputElement;
   const statsPlants = document.getElementById('stats-plants')!;
   const statsStorage = document.getElementById('stats-storage')!;
@@ -303,11 +309,11 @@ import Layout from '../layouts/Layout.astro';
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-3">
               <label class="relative inline-flex cursor-pointer items-center">
-                <input type="checkbox" class="src-enabled peer sr-only" data-idx="${i}" ${src.enabled ? 'checked' : ''} />
+                <input type="checkbox" class="src-enabled peer sr-only" aria-label="${escapeHtml(src.name)}" data-idx="${i}" ${src.enabled ? 'checked' : ''} />
                 <div class="h-6 w-11 rounded-full bg-stone-300 dark:bg-stone-600 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-all peer-checked:bg-green-600 peer-checked:after:translate-x-full"></div>
               </label>
               <h3 class="text-sm font-bold text-stone-800 dark:text-stone-100">${src.name}</h3>
-              ${src.url ? `<a href="${src.url}" target="_blank" rel="noopener" class="text-xs text-stone-400 dark:text-stone-500 hover:text-green-700 hover:underline">${new URL(src.url).hostname}</a>` : ''}
+              ${src.url ? `<a href="${src.url}" target="_blank" rel="noopener" class="text-xs text-stone-500 dark:text-stone-400 hover:text-green-700 underline underline-offset-2 hover:no-underline">${new URL(src.url).hostname}</a>` : ''}
             </div>
             <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">${SOURCE_DESC_KEY[src.id] ? t(SOURCE_DESC_KEY[src.id]) : src.description}</p>
           </div>
@@ -333,6 +339,7 @@ import Layout from '../layouts/Layout.astro';
   function renderPrefs() {
     defaultView.value = settings.defaultView;
     defaultCardVariant.value = settings.defaultCardVariant;
+    dotCodes.checked = settings.dotCodes;
     const t = getTheme();
     document.querySelectorAll<HTMLInputElement>('.theme-radio').forEach(r => { r.checked = r.value === t; });
     const d = getDesign();
@@ -380,6 +387,7 @@ import Layout from '../layouts/Layout.astro';
     });
     settings.defaultView = defaultView.value as ViewMode;
     settings.defaultCardVariant = defaultCardVariant.value as CardVariant;
+    settings.dotCodes = dotCodes.checked;
     saveSettings(settings);
 
     const themeChoice = (document.querySelector<HTMLInputElement>('.theme-radio:checked')?.value ?? 'auto') as ThemePref;

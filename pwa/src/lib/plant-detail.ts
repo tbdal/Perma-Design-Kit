@@ -5,12 +5,34 @@ import { badgedFieldsOf, fieldsOf, fieldLabelKey, type FieldGroup } from './plan
 
 type Translate = (key: string, vars?: Record<string, string | number>) => string;
 
-/** [PlantData key, pill classes, dot hex, translated label] — the shape the
- *  tile/table renderers consume, derived from the central field table. */
-export type BadgeDef = [keyof PlantData, string, string, string];
+/** [PlantData key, pill classes, dot hex, translated label, short code] — the
+ *  shape the tile/table renderers consume, derived from the central field
+ *  table. The code is the table PDF's chip code (Es, Me, N, Mi …). */
+export type BadgeDef = [keyof PlantData, string, string, string, string];
 
 export function badgeDefs(group: FieldGroup, t: Translate): BadgeDef[] {
-  return badgedFieldsOf(group).map(f => [f.key, f.badge.pill, f.badge.hex, t(fieldLabelKey(f.key))]);
+  return badgedFieldsOf(group).map(f => [f.key, f.badge.pill, f.badge.hex, t(fieldLabelKey(f.key)), f.badge.pdfCode]);
+}
+
+/** Black or white, whichever reads better on the given #rrggbb background. */
+function inkOn(hex: string): string {
+  const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255)
+    .map(v => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+  const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return (lum + 0.05) / 0.05 >= 1.05 / (lum + 0.05) ? '#000' : '#fff';
+}
+
+/**
+ * One color key (dot) for the plant table and its legend. Always named for
+ * screen readers; with `showCode` (setting "Kürzel statt Farbpunkte") it
+ * carries its short code, so it doesn't rely on color alone.
+ */
+export function dotHtml(hex: string, label: string, code: string, showCode: boolean): string {
+  const name = escapeHtml(label);
+  if (!showCode) {
+    return `<span role="img" aria-label="${name}" title="${name}" class="inline-block h-2 w-2 rounded-full" style="background-color:${hex}"></span>`;
+  }
+  return `<span role="img" aria-label="${name}" title="${name}" class="inline-flex h-4 min-w-4 items-center justify-center rounded px-0.5 text-[9px] font-bold leading-none" style="background-color:${hex};color:${inkOn(hex)}">${escapeHtml(code)}</span>`;
 }
 
 /** Data-completeness score 0–100 — the single definition behind the tiles'
@@ -89,11 +111,11 @@ export function plantDetailHtml(p: PlantData, t: Translate): string {
     ${dims ? `<div class="mb-1.5 flex gap-3 text-xs text-stone-500 dark:text-stone-400">${dims}</div>` : ''}
     ${badges ? `<div class="mb-2 flex flex-wrap gap-1">${badges}</div>` : ''}
     ${groupPillsHtml(p, 'mb-2')}
-    ${phenology ? `<div class="mb-2"><span class="mb-0.5 block text-[10px] uppercase tracking-wide text-stone-400 dark:text-stone-500">${escapeHtml(t('thPhenology'))}</span>${phenology}</div>` : ''}
+    ${phenology ? `<div class="mb-2"><span class="mb-0.5 block text-[10px] uppercase tracking-wide text-stone-500 dark:text-stone-400">${escapeHtml(t('thPhenology'))}</span>${phenology}</div>` : ''}
     <div class="mb-2 flex items-center gap-2">
       <div class="h-1.5 w-20 overflow-hidden rounded-full bg-stone-100 dark:bg-stone-800">
         <div class="h-full rounded-full ${barColor}" style="width:${pct}%"></div>
       </div>
-      <span class="text-[10px] tabular-nums text-stone-400 dark:text-stone-500">${pct}%</span>
+      <span class="text-[10px] tabular-nums text-stone-500 dark:text-stone-400">${pct}%</span>
     </div>`;
 }

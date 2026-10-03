@@ -24,6 +24,9 @@ export interface AppSettings {
   defaultCardVariant: CardVariant;
   /** Highest priority first: per field, the first source with data wins. */
   sourcePriority: EnrichSource[];
+  /** Show short codes instead of plain color dots in the plant table/legend
+   *  (color-blind friendly). */
+  dotCodes: boolean;
 }
 
 const STORAGE_KEY = "perma-design-kit-settings";
@@ -35,6 +38,7 @@ const DEFAULT_PREFS: Omit<AppSettings, 'sources'> = {
   defaultView: 'grid',
   defaultCardVariant: 'baumscheibe',
   sourcePriority: DEFAULT_SOURCE_PRIORITY,
+  dotCodes: false,
 };
 
 /** Keeps a saved priority list valid: known sources only, each once, any
@@ -104,6 +108,7 @@ export function loadSettings(): AppSettings {
         defaultView: views.includes(saved.defaultView as ViewMode) ? saved.defaultView! : DEFAULT_PREFS.defaultView,
         defaultCardVariant: variants.includes(saved.defaultCardVariant as CardVariant) ? saved.defaultCardVariant! : DEFAULT_PREFS.defaultCardVariant,
         sourcePriority: normalizePriority(saved.sourcePriority),
+        dotCodes: saved.dotCodes === true,
       };
     }
   } catch {}

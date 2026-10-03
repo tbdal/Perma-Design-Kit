@@ -26,6 +26,8 @@ export const settingsDict: Dict = {
   optList: { de: 'Liste', en: 'List' },
   optCards: { de: 'Karten', en: 'Cards' },
   labelDefaultCardVariant: { de: 'Standard-Kartenvariante', en: 'Default card variant' },
+  labelDotCodes: { de: 'Kürzel statt Farbpunkte', en: 'Codes instead of color dots' },
+  helpDotCodes: { de: 'Zeigt in der Pflanzenliste und ihrer Legende Kürzel (Es, Me, N …) statt reiner Farbpunkte – hilfreich bei Farbenblindheit und im Graustufendruck.', en: 'Shows short codes (Es, Me, N …) instead of plain color dots in the plant list and its legend – helpful for color blindness and grayscale printing.' },
   optPoly: { de: 'Pflanzenkarten', en: 'Plant cards' },
   optStripe: { de: 'Streifenkarten', en: 'Strip cards' },
   optBaumscheibe: { de: 'Baumscheibe', en: 'Baumscheibe' },

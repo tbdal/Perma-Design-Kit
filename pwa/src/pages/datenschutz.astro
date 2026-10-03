@@ -16,9 +16,7 @@ import Layout from '../layouts/Layout.astro';
 
     <section class="space-y-2">
       <h2 class="text-xl font-semibold" data-i18n="dsResponsibleTitle">Verantwortlich</h2>
-      <p><span data-i18n="dsResponsibleBody1">Verantwortlich für die Bereitstellung dieser Anwendung sind die im</span>
-        <a class="font-medium text-green-700 hover:underline dark:text-green-400" href="/impressum" data-i18n="dsResponsibleLink">Impressum</a>
-        <span data-i18n="dsResponsibleBody2">genannten Personen.</span></p>
+      <p><span data-i18n="dsResponsibleBody1">Verantwortlich für die Bereitstellung dieser Anwendung sind die im</span> <a class="font-medium text-green-700 underline underline-offset-2 hover:no-underline dark:text-green-400" href="/impressum" data-i18n="dsResponsibleLink">Impressum</a> <span data-i18n="dsResponsibleBody2">genannten Personen.</span></p>
     </section>
 
     <section class="space-y-2">
@@ -39,8 +37,7 @@ import Layout from '../layouts/Layout.astro';
           dein Gerät nur, wenn du eine Sync-Aktion auslöst — und dann ausschließlich an die von
           dir angegebene Adresse (dein WebDAV-Server bzw.</span> <code>api.github.com</code><span data-i18n="dsLi3Body2">).</span></li>
         <li><strong data-i18n="dsLi4Strong">Service-Worker-Cache</strong>: <span data-i18n="dsLi4Body1">statische Anwendungs­dateien für die Offline-Nutzung.
-          Die App fragt den Browser außerdem über</span> <code>navigator.storage.persist()</code>
-          <span data-i18n="dsLi4Body2">an, die lokalen Daten bei Speicherdruck nicht zu verwerfen.</span></li>
+          Die App fragt den Browser außerdem über</span> <code>navigator.storage.persist()</code> <span data-i18n="dsLi4Body2">an, die lokalen Daten bei Speicherdruck nicht zu verwerfen.</span></li>
       </ul>
       <p data-i18n="dsLocalDataOutro">Du kannst diese Daten jederzeit über die Browser-Einstellungen oder über die Export- und Lösch­funktionen
         innerhalb der App entfernen.</p>
@@ -51,13 +48,13 @@ import Layout from '../layouts/Layout.astro';
       <p data-i18n="dsExternalIntro">Wenn du Pflanzen­daten suchst oder anreicherst, werden Anfragen an externe Dienste gesendet.
         Welche Quellen aktiv sind, kannst du in den Einstellungen festlegen.</p>
       <ul class="list-disc pl-6">
-        <li><strong>Wikidata</strong> (<a class="text-green-700 dark:text-green-400 hover:underline" href="https://www.wikidata.org" target="_blank" rel="noopener">wikidata.org</a>) —
+        <li><strong>Wikidata</strong> (<a class="text-green-700 dark:text-green-400 underline underline-offset-2 hover:no-underline" href="https://www.wikidata.org" target="_blank" rel="noopener">wikidata.org</a>) —
           <span data-i18n="dsExtLi1Body">direkte API-Anfragen aus deinem Browser für Such­ergebnisse und Pflanzen­details.</span></li>
-        <li><strong>PFAF</strong> (<a class="text-green-700 dark:text-green-400 hover:underline" href="https://pfaf.org" target="_blank" rel="noopener">pfaf.org</a>) —
+        <li><strong>PFAF</strong> (<a class="text-green-700 dark:text-green-400 underline underline-offset-2 hover:no-underline" href="https://pfaf.org" target="_blank" rel="noopener">pfaf.org</a>) —
           <span data-i18n="dsExtLi2Body1">Anfragen werden über einen eigenen Server-Proxy (</span><code>/api/plant-proxy</code><span data-i18n="dsExtLi2Body2">) weitergeleitet, weil die
           Quelle keinen direkten Browser-Zugriff erlaubt.</span></li>
         <li><strong>Wikimedia Commons</strong> — <span data-i18n="dsExtLi3Body">Pflanzen­bilder werden bei Bedarf direkt von dort geladen.</span></li>
-        <li><strong>GitHub API</strong> (<a class="text-green-700 dark:text-green-400 hover:underline" href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement" target="_blank" rel="noopener">Privacy Statement</a>) —
+        <li><strong>GitHub API</strong> (<a class="text-green-700 dark:text-green-400 underline underline-offset-2 hover:no-underline" href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement" target="_blank" rel="noopener">Privacy Statement</a>) —
           <span data-i18n="dsExtLi4Body1">nur wenn du Gist-Sync aktiviert hast. Anfragen gehen mit deinem Personal Access Token
           direkt an</span> <code>api.github.com</code>.</li>
         <li><strong>OpenStreetMap</strong> (<a class="text-green-700 dark:text-green-400 hover:underline" href="https://osmfoundation.org/wiki/Privacy_Policy" target="_blank" rel="noopener">Privacy Policy</a>) —
@@ -75,14 +72,12 @@ import Layout from '../layouts/Layout.astro';
 
     <section class="space-y-2">
       <h2 class="text-xl font-semibold" data-i18n="dsCookiesTitle">Cookies</h2>
-      <p><span data-i18n="dsCookiesBody1">Diese Anwendung setzt keine Cookies. Für lokale Einstellungen wird ausschließlich</span> <code>localStorage</code>
-        <span data-i18n="dsCookiesBody2">und</span> <code>IndexedDB</code> <span data-i18n="dsCookiesBody3">verwendet. Diese Daten verbleiben auf deinem Gerät.</span></p>
+      <p><span data-i18n="dsCookiesBody1">Diese Anwendung setzt keine Cookies. Für lokale Einstellungen wird ausschließlich</span> <code>localStorage</code> <span data-i18n="dsCookiesBody2">und</span> <code>IndexedDB</code> <span data-i18n="dsCookiesBody3">verwendet. Diese Daten verbleiben auf deinem Gerät.</span></p>
     </section>
 
     <section class="space-y-2">
       <h2 class="text-xl font-semibold" data-i18n="dsAnalyticsTitle">Reichweiten­messung mit Umami (selbst gehostet)</h2>
-      <p><span data-i18n="dsAnalyticsIntro1">Wir verwenden ein selbst betriebenes</span> <strong>Umami Analytics</strong>
-        <span data-i18n="dsAnalyticsAddress">(läuft auf unserem eigenen Server unter</span> <a class="text-green-700 dark:text-green-400 hover:underline" href="https://stats.permadesignkit.org" target="_blank" rel="noopener">stats.permadesignkit.org</a><span data-i18n="dsAnalyticsIntro2">), um Seitenaufrufe und grobe Nutzungsmuster zu zählen. Es fließen dabei keine Daten an ein
+      <p><span data-i18n="dsAnalyticsIntro1">Wir verwenden ein selbst betriebenes</span> <strong>Umami Analytics</strong> <span data-i18n="dsAnalyticsAddress">(läuft auf unserem eigenen Server unter</span> <a class="text-green-700 dark:text-green-400 underline underline-offset-2 hover:no-underline" href="https://stats.permadesignkit.org" target="_blank" rel="noopener">stats.permadesignkit.org</a><span data-i18n="dsAnalyticsIntro2">), um Seitenaufrufe und grobe Nutzungsmuster zu zählen. Es fließen dabei keine Daten an ein
         drittes Unternehmen — anders als bei Cloud-Analyse-Diensten bleibt alles auf unserer eigenen
         Infrastruktur. Umami verzichtet ausdrücklich auf personen­bezogene Daten:</span></p>
       <ul class="list-disc pl-6">
@@ -102,13 +97,11 @@ import Layout from '../layouts/Layout.astro';
       <h3 class="pt-2 text-base font-semibold" data-i18n="dsAnalyticsOptOutTitle">Reichweiten­messung deaktivieren</h3>
       <p data-i18n="dsAnalyticsOptOutIntro">Wenn du nicht gezählt werden möchtest, kannst du die Messung direkt in der App deaktivieren:</p>
       <ol class="list-decimal pl-6">
-        <li><span data-i18n="dsOptOutLi1a">Öffne die</span> <a class="text-green-700 dark:text-green-400 hover:underline" href="/settings" data-i18n="dsSettingsLink">Einstellungen</a>.</li>
-        <li><span data-i18n="dsOptOutLi2a">Setze in der Sektion</span> <strong data-i18n="dsPrivacySection">Privatsphäre</strong>
-          <span data-i18n="dsOptOutLi2b">den Haken bei „</span><em data-i18n="dsAnalyticsOptOutLabel">Reichweitenmessung deaktivieren</em><span data-i18n="dsOptOutLi2c">".</span></li>
+        <li><span data-i18n="dsOptOutLi1a">Öffne die</span> <a class="text-green-700 dark:text-green-400 underline underline-offset-2 hover:no-underline" href="/settings" data-i18n="dsSettingsLink">Einstellungen</a>.</li>
+        <li><span data-i18n="dsOptOutLi2a">Setze in der Sektion</span> <strong data-i18n="dsPrivacySection">Privatsphäre</strong> <span data-i18n="dsOptOutLi2b">den Haken bei „</span><em data-i18n="dsAnalyticsOptOutLabel">Reichweitenmessung deaktivieren</em><span data-i18n="dsOptOutLi2c">".</span></li>
         <li><span data-i18n="dsOptOutLi3a">Klicke auf</span> <strong data-i18n="dsSaveSettingsBtn">Einstellungen speichern</strong>.</li>
       </ol>
-      <p><span data-i18n="dsOptOutBody1">Technisch wird dabei in deinem Browser der lokale Schlüssel</span>
-        <code>umami.disabled</code> <span data-i18n="dsOptOutBody2">auf</span> <code>true</code> <span data-i18n="dsOptOutBody3">gesetzt — ein Opt-out-Signal,
+      <p><span data-i18n="dsOptOutBody1">Technisch wird dabei in deinem Browser der lokale Schlüssel</span> <code>umami.disabled</code> <span data-i18n="dsOptOutBody2">auf</span> <code>true</code> <span data-i18n="dsOptOutBody3">gesetzt — ein Opt-out-Signal,
         das das Umami-Skript automatisch respektiert. Es werden ab dem Zeitpunkt keine weiteren
         Aufrufe gezählt. Die Einstellung wirkt nur in diesem Browser-Profil und nur, solange du den
         lokalen Speicher der Seite nicht löschst.</span></p>
@@ -121,9 +114,7 @@ import Layout from '../layouts/Layout.astro';
       <p data-i18n="dsRightsBody1">Da personen­bezogene Daten ausschließlich auf deinem Gerät verbleiben, hast du jederzeit volle Kontrolle:
         Daten exportieren (JSON / CSV), bearbeiten oder löschen. Server­seitig werden keine personen­bezogenen
         Daten gespeichert, die wir auf Anfrage herausgeben oder löschen müssten.</p>
-      <p><span data-i18n="dsRightsBody2a">Bei Fragen zum Datenschutz wende dich an die im</span>
-        <a class="font-medium text-green-700 dark:text-green-400 hover:underline" href="/impressum" data-i18n="dsResponsibleLink">Impressum</a>
-        <span data-i18n="dsRightsBody2b">genannte Adresse.</span></p>
+      <p><span data-i18n="dsRightsBody2a">Bei Fragen zum Datenschutz wende dich an die im</span> <a class="font-medium text-green-700 dark:text-green-400 underline underline-offset-2 hover:no-underline" href="/impressum" data-i18n="dsResponsibleLink">Impressum</a><span data-i18n="dsRightsBody2b"> genannte Adresse.</span></p>
     </section>
   </article>
   <script>

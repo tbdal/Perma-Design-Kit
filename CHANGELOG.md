@@ -1,6 +1,67 @@
 # Changelog — Perma Design Kit
 
-Abgeschlossene Roadmap-Punkte, chronologisch nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
+Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
+
+## Arbeitspakete 2026-10-03
+### AP0 - done
+- [x] in /root/pdk/temp steht eine neue psd, welche auch icons für wasser und licht beinhaltet - und weiter designänderungen beinhaltet. konvertiere dieses zu svg und nutze sie als basis für die baumscheibe. hinter der höhe und breite soll jeweils ein "m" für meter stehen.
+- [x] Startseite übersichtlicher gestalten:
+  - [x] Untermenü: kleine Verbesserungen für die Lesbarkeit:
+    - [x] View / Ansicht vor den 3 Buttons für Pflanzenkacheln/Liste/.. schreiben
+    - [x] Zwischen dieser Zeile "Ansicht" und Filter etwas mehr Abstand
+    - [x] "Filter:" : gleiche Schriftgröße wie "Ansicht"
+    - [x] Pflanzenkarten: Vor Dropdown "Baumscheibe.." schreiben: Ausgabe-Layout. Dann die PDF-Ausgaben gruppieren und auch eher als dropdown organisieren Ausgabeformat davor schreiben? Filter eins nach oben schieben
+    - [x] export / Ausgabe: Ausgabeproject scale / Maßstab dazuschreiben
+
+- [x] Sortenname auf Pflanzenkachel in Klammern hinter DE/EN-Namen schreiben
+- [x] Tabellenansicht: Druck als pdf genauso wie auf anderen Seiten unter Filterzeile anzeigen (und aus Daten-Button entfernen). Genauso diese Tabellendruckfunktion im "Kalender"-Ansicht einfügen
+- [x] checkbox im Kalender hinzufügen: "Pflanzen ohne Kalenderdaten anzeigen"
+- [x] implement a sort function for all three views: show dropdown/tickbox to sort by date from january to december, do this for both flowering and harvest times. Also implement sorting method A-Z. (Also include option to show complete list irrespective of data completion.)
+- [x] kalender: blüte und frucht übereinander in zwei horizontalen Reihen, wie im pdf
+- [x] change title of the calendar view to "flowering & harvest calendars"
+- [x] enable filter for all uses and functions
+- [x] add an optional text field in "basic data" with the following Label: notes - Notizen
+
+
+- [x] alle Ansichten: Sortierungen, v.a. a-Z (+innerhalb schichten)
+- [x] Namensgebung Nutzung & Funktionen auf DE&EN korrekt eintragen mit folgender Liste:
+  - [x] functions: nitrogen fixer - Stickstoff-Fixierer, dynamic accumulator - Mineraliensammler, invertebrates - Insekten, pest control - Schädlingsschutz, ground cover - Bodendecker, wildlife - Kleintiere, windbreak - Windschutz
+  - [x] uses: edibility - Essbarkeit, medicinal - Gesundheit, culinary - Küche, materials - Materialien, fuel - Brennstoff, fodder - Tierfutter, fiber - Fasern, wood - Nutzholz 
+- [x] menu order: plants- calendars - polycultures - "garden plan" last & grey out & put info into start page of garden plan "experimental, feature in development";
+- [x] changes in the popup "edit mode" of a plant:
+  - [x] field "uses": create three evenly distributed invisible rows, group the tickboxes as follows: edibility, medicinal and culinary in the first row; fuel, wood, materials in the second row; fodder, fiber in the third row
+  - [x] field "uses": add tickboxes for the following uses: fuel, fodder, fiber, wood, ornamental
+  - [x] field "functions": show tickboxes and labels for all possible functions
+
+- [x] include the following new uses to the filtering dropdown menu "uses" and include tickboxes in the edit view of a plant, using the following english and Germen terms: ornamental - Ästhetik, wood - Nutzholz, dyes - Farbstoff, fiber - Fasern,
+- [x] printing out: define min. size of plant card in cm to include in page by user. only print plant cards which will be bigger. show list of all discarded plants to user.
+- [x] Druck kommt immer noch mit microkreisen raus
+- [x] Druckmenü schwer verständlich  
+
+- [x] neue funktion: für jede pflanze soll die möglichkeit existieren sie in einer oder mehreren gruppen einzusortieren. implementiere dies, so, dass dies auf der bearbeiten-seite, in der liste und weiteren sichtbar ist in welchen gruppen eine Pflanze ist.
+
+- [x] in /root/pdk/temp stehen mehrere neue jpgs. erstelle 2-3 designs für die webseite basierend auf diesen jpgs - inkl. neuem logo auf basis dieser desings, welches oben links angezeigt wird. erstelle erstmal nur voransichten und schalte das nicht live. 
+
+### AP 0.1 - done
+- [x] EdibleForestGardens(Toensmeier) - Datensatz neben PFAF und WD integrieren: https://docs.google.com/spreadsheets/d/1_PgxV4pxlNTa0Ep9TDY_57oJfVtrofmu/htmlview#gid=1609043836$- Ziehe die Tabelle auf den Server und fülle abfragen auch damit.
+- [x] Priorisierung bei der Datenbefüllung der Pflanzen: PFAF > EdibleForestGardens(Toensmeier) > Wikidata. In den Einstellungen eine Möglichkeit schaffen, dass die Nutzerin die Reihenfolge selbst definieren kann. Quelle von Toensmeier (Buch) überall wie pfaf und WD als Quelle - soweit genutzt - angeben.
+- [x] Faser- und Nutzholz-icons werden immer angezeigt. das stimmt so nicht, bitte prüfen
+
+### AP 1 - done
+- [x] handy-ansicht ist verschoben bzw. nicht richtig skaliert
+- [x] Farblegende default einklappen.
+- [x] PDF Druck Baumscheibe: Maßstab 1: x in einer eigenen Zeile. Nächste Zeile: Min. Größe (cm)
+- [x] Pflanzkalender: neue Option: Sortierung nach früheste / späteste Blüte & Frucht
+- [x] functions and uses: use tables on ca page 9 (https://www.dropbox.com/scl/fi/qaunmejk6g7o2fvr4gb78/PermaDesignKit-Documentation.docx?rlkey=15noytq7x3t7d605fxqc2t8lj&st=fhmliol6&dl=0) for functions and uses: Namen und Reihenfolge übernehmen in Editiermodus. nicht vorhandene löschen
+- [x] Ansicht, Filter, Ausgabeformat: Text etwas größer
+
+### erledigt
+- [x] code-review ultra
+- [x] Design festlegen. icon integrieren?
+- [x] layer: option das zu verändern in Bearbeiten-Dialog einfügen
+  - vorhandene Layer: tree, shrub, herb, climber, rhizo
+ 
+
 
 ## Karten — Runde 1 (2026-10-03)
 - [x] **Mausposition in Metern** — beim Zeichnen und im Plan zeigt ein Label am Mauszeiger `x 3,25 m · y 1,80 m` relativ zu 0,0 (auch beim Ziehen von Pflanzen und per Touch).

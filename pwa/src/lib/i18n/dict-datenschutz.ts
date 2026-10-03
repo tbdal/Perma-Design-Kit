@@ -125,5 +125,5 @@ export const datenschutzDict: Dict = {
     en: 'Because personal data remains exclusively on your device, you are always in full control: export (JSON / CSV), edit, or delete data. No personal data is stored server-side that we would need to disclose or delete on request.',
   },
   dsRightsBody2a: { de: 'Bei Fragen zum Datenschutz wende dich an die im', en: 'For privacy questions, please contact the address given in the' },
-  dsRightsBody2b: { de: 'genannte Adresse.', en: '.' },
+  dsRightsBody2b: { de: ' genannte Adresse.', en: '.' },
 };

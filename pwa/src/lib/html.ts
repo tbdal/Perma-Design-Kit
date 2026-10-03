@@ -46,7 +46,7 @@ export async function withButtonSpinner<T>(btn: HTMLButtonElement, task: () => P
  *  rendered, which awaits an SVG fetch + per-plant DOM work and can take a
  *  visible moment for more than a couple of plants). */
 export function loadingPlaceholderHtml(label: string): string {
-  return `<div class="col-span-full flex flex-col items-center justify-center gap-3 py-16 text-stone-400 dark:text-stone-500">
+  return `<div class="col-span-full flex flex-col items-center justify-center gap-3 py-16 text-stone-500 dark:text-stone-400">
     <span class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-current/20 border-t-current"></span>
     <span class="text-sm">${escapeHtml(label)}</span>
   </div>`;
@@ -60,4 +60,13 @@ export function imageCreditOverlayHtml(credit: string | undefined): string {
   if (!credit) return '';
   const c = escapeHtml(credit);
   return `<div title="${c}" style="position:absolute;left:0;right:0;bottom:0;padding:1px 4px;background:rgba(0,0,0,.55);color:#fff;font-size:8px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:Arial,sans-serif;">${c}</div>`;
+}
+
+/** Speaks `text` to screen readers via the polite live region in
+ *  Layout.astro (#a11y-status). Repeating the same text re-announces it. */
+export function announce(text: string): void {
+  const region = document.getElementById('a11y-status');
+  if (!region) return;
+  region.textContent = '';
+  setTimeout(() => { region.textContent = text; }, 60);
 }

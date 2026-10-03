@@ -215,8 +215,6 @@ export interface PlantData {
   fuel: boolean;
   wood: boolean;
   fiber: boolean;
-  ornamental: boolean;
-  dyes: boolean;
   // Ecosystem functions
   nitrogenFix: boolean;
   mineralFix: boolean;
@@ -288,8 +286,6 @@ export function createEmptyPlant(): PlantData {
     fuel: false,
     wood: false,
     fiber: false,
-    ornamental: false,
-    dyes: false,
     nitrogenFix: false,
     mineralFix: false,
     groundCover: false,
