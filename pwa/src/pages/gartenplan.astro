@@ -115,7 +115,7 @@ import Layout from '../layouts/Layout.astro';
           <div id="drawing-wrap" class="relative hidden rounded-xl bg-white dark:bg-stone-800 p-3 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <svg id="drawing-svg" class="w-full touch-none" style="touch-action:none"></svg>
             <div aria-hidden="true" class="cursor-readout pointer-events-none absolute hidden rounded bg-stone-900/80 px-1.5 py-0.5 font-mono text-[11px] text-white"></div>
-            <div class="basemap-attrib absolute bottom-3 right-3 hidden rounded-tl bg-white/80 px-1 text-[10px] text-stone-600"></div>
+            <div class="basemap-attrib absolute bottom-3 right-3 z-10 hidden rounded-tl bg-white/80 px-1 text-[10px] text-stone-600"></div>
           </div>
           <div id="mapdraw-wrap" class="hidden space-y-2 rounded-xl bg-white dark:bg-stone-800 p-3 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <div class="flex flex-wrap items-center gap-2">
@@ -225,7 +225,7 @@ import Layout from '../layouts/Layout.astro';
               <button id="tool-lasso" type="button" data-tool="lasso" aria-pressed="false" data-i18n-aria-label="toolLasso" data-i18n-title="toolLasso" aria-label="Markieren – mehrere als Fläche" title="Markieren – mehrere als Fläche" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700 aria-pressed:bg-amber-200 aria-pressed:ring-amber-500 dark:aria-pressed:bg-amber-800 text-sm">⬚</button>
             </div>
             <div aria-hidden="true" class="cursor-readout pointer-events-none absolute hidden rounded bg-stone-900/80 px-1.5 py-0.5 font-mono text-[11px] text-white"></div>
-            <div class="basemap-attrib absolute bottom-3 right-3 hidden rounded-tl bg-white/80 px-1 text-[10px] text-stone-600"></div>
+            <div class="basemap-attrib absolute bottom-3 right-3 z-10 hidden rounded-tl bg-white/80 px-1 text-[10px] text-stone-600"></div>
           </div>
           <div class="flex flex-wrap items-center gap-x-4 gap-y-1 px-1 text-xs text-stone-500 dark:text-stone-400">
             <span class="inline-flex items-center gap-1.5"><span class="inline-block h-2.5 w-2.5 rounded-full" style="background-color:#166534"></span><span data-i18n="layerTree">Baum</span></span>
@@ -257,7 +257,7 @@ import Layout from '../layouts/Layout.astro';
           </div>
 
           <div id="coverage-section" hidden class="rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
-            <h2 class="mb-1 text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="coverageHeading">Funktions-Abdeckung</h2>
+            <h2 id="coverage-heading" class="mb-1 text-sm font-semibold text-stone-800 dark:text-stone-100">Funktions-Abdeckung</h2>
             <div id="coverage-body" class="space-y-2 text-xs"></div>
           </div>
 
@@ -354,9 +354,10 @@ import Layout from '../layouts/Layout.astro';
   import { compassLabel, sunPosition } from '../lib/sun-position';
   import { COVER_FUNCS, coverageGrid, coverageSummary, findGaps, suggestPlants, hasFunc, funcCount, influenceRadius, type CoverFunc } from '../lib/function-coverage';
   import { layoutPolyculture } from '../lib/polyculture-layout';
+  import { sunSamples, sunHoursAt, sunClass, planOccluders, planCells, SEASON_DATES, type SunScene, type SunSample, type SunClass, type Occluder } from '../lib/sun-hours';
   import { BOOL_FIELDS } from '../lib/plant-fields';
   import { orthoFor } from '../lib/ortho-sources';
-  import { fetchElevationGrid, slopeInfo, contourSegments, contourInterval, TERRAIN_ATTRIBUTION, type ElevationGrid } from '../lib/terrain';
+  import { fetchElevationGrid, sampleGrid, slopeInfo, contourSegments, contourInterval, TERRAIN_ATTRIBUTION, type ElevationGrid } from '../lib/terrain';
   import { plantDetailHtml } from '../lib/plant-detail';
   import { compatScore } from '../lib/compat';
   import { newId } from '../lib/id';
@@ -749,9 +750,17 @@ import Layout from '../layouts/Layout.astro';
     const px = svg.getBoundingClientRect().width;
     const mPerPx = px > 0 ? (view.maxX - view.minX) / px / (window.devicePixelRatio || 1) : 0.02;
     layer.innerHTML = basemapSvg(plan, view, mPerPx);
+    updateAttribution(svg);
+  }
+
+  /** Source credits (map / aerial photo / satellite, elevation) — required by
+   *  the licenses, so shown whenever such data is on screen, in 2D and 3D. */
+  function updateAttribution(svg: SVGSVGElement) {
+    if (!editing) return;
+    const isPlan = svg === planSvg;
     const attrib = svg.parentElement!.querySelector<HTMLElement>('.basemap-attrib')!;
     const terrainAttr = isPlan && terrain ? `${TERRAIN_ATTRIBUTION}${terrain.sources.length ? ` (${escapeHtml(terrain.sources.join(', '))})` : ''}` : '';
-    attrib.innerHTML = [basemapAttribution(plan), terrainAttr].filter(Boolean).join(' · ');
+    attrib.innerHTML = [basemapAttribution(editing), terrainAttr].filter(Boolean).join(' · ');
     attrib.classList.toggle('hidden', !attrib.innerHTML);
   }
 
@@ -1038,7 +1047,7 @@ import Layout from '../layouts/Layout.astro';
     planSvg.classList.add('hidden');
     plan3dContainer.hidden = false;
     setViewToggleActive(false);
-    document.querySelector('#plan-wrap .basemap-attrib')!.classList.add('hidden');
+    updateAttribution(planSvg); // the 3D ground shows the same map / photo tiles
     zoomControls.hidden = true;
     endAreaDraw();
     setBoundaryEdit(false);
@@ -1141,7 +1150,7 @@ import Layout from '../layouts/Layout.astro';
     sunPlayTimer = null;
     sunPlayBtn.textContent = t('sunPlay');
   }
-  sunDateInput.addEventListener('input', applySun);
+  sunDateInput.addEventListener('input', () => { applySun(); if (coverageSelect.value === 'sun-day') scheduleCoverage(); });
   sunTimeInput.addEventListener('input', () => { stopSunPlay(); applySun(); });
   document.getElementById('view-top')!.addEventListener('click', () => view3d?.setViewPreset('top'));
   document.getElementById('view-oblique')!.addEventListener('click', () => view3d?.setViewPreset('oblique'));
@@ -2362,8 +2371,11 @@ import Layout from '../layouts/Layout.astro';
   const coverageSection = document.getElementById('coverage-section')!;
   const coverageBody = document.getElementById('coverage-body')!;
   const fnLabel = (f: CoverFunc) => BOOL_FIELDS.find(b => b.key === f)?.label[lang] ?? f;
-  coverageSelect.innerHTML = `<option value="">${t('coverageOff')}</option><option value="all">${t('coverageAll')}</option>`
-    + COVER_FUNCS.map(f => `<option value="${f}">${escapeHtml(fnLabel(f))}</option>`).join('');
+  coverageSelect.innerHTML = `<option value="">${t('coverageOff')}</option>`
+    + `<optgroup label="${escapeHtml(t('covGroupFunctions'))}"><option value="all">${t('coverageAll')}</option>`
+    + COVER_FUNCS.map(f => `<option value="${f}">${escapeHtml(fnLabel(f))}</option>`).join('') + '</optgroup>'
+    + `<optgroup label="${escapeHtml(t('covGroupSun'))}"><option value="sun-day">${escapeHtml(t('sunMapDay'))}</option><option value="sun-season">${escapeHtml(t('sunMapSeason'))}</option></optgroup>`;
+  const coverageHeading = document.getElementById('coverage-heading')!;
   coverageSelect.addEventListener('change', renderCoverage);
 
   let coverageTimer: ReturnType<typeof setTimeout> | null = null;
@@ -2382,7 +2394,11 @@ import Layout from '../layouts/Layout.astro';
 
   function renderCoverage() {
     const layer = planSvg.querySelector('#coverage-layer');
-    const mode = coverageSelect.value as '' | 'all' | CoverFunc;
+    const raw = coverageSelect.value;
+    if (raw === 'sun-day' || raw === 'sun-season') { void renderSunMap(raw); return; }
+    sunMapToken++;
+    coverageHeading.textContent = t('coverageHeading');
+    const mode = raw as '' | 'all' | CoverFunc;
     coverageSection.hidden = !mode || !editing;
     if (!layer) return;
     if (!mode || !editing || editing.boundary.length < 3) { layer.innerHTML = ''; coverage3d = null; view3d?.setCoverage(null); return; }
@@ -2416,13 +2432,14 @@ import Layout from '../layouts/Layout.astro';
       const k = viewK();
       svg += gaps.map(g => `<g transform="translate(${g.xM * U},${g.yM * U})"><circle r="${Math.sqrt(g.areaM2 / Math.PI) * U * 0.6}" fill="none" stroke="#b91c1c" stroke-width="${2 * k}" stroke-dasharray="${6 * k} ${4 * k}"/><text text-anchor="middle" dominant-baseline="central" font-size="${16 * k}" font-weight="700" fill="#b91c1c" stroke="#fff" stroke-width="${3 * k}" paint-order="stroke">+</text></g>`).join('');
       const rows = gaps.map((g, gi) => {
-        const sugg = suggestPlants(mode, plants, plan, plantsById, g, g.areaM2);
+        const sunH = sunHoursAt(g.xM, g.yM, sunContext().scene, seasonSamples());
+        const sugg = suggestPlants(mode, plants, plan, plantsById, g, g.areaM2, 3, sunClass(sunH));
         const btns = sugg.length
           ? sugg.map(p => `<button type="button" data-gap="${gi}" data-plant="${p.id}" class="mt-1 block w-full rounded bg-white dark:bg-stone-800 px-2 py-1 text-left ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-green-50 hover:ring-green-500 focus-visible:ring-green-500 dark:hover:bg-green-900/30">
               <span class="block truncate">${escapeHtml(t('coveragePlantHere', { name: displayName(p) }))}</span>
               <span class="block truncate text-[11px] text-stone-500 dark:text-stone-400">${escapeHtml(suggestionMeta(p))}</span></button>`).join('')
           : `<p class="text-stone-500 dark:text-stone-400">${t('coverageNoPlants')}</p>`;
-        return `<div class="rounded-md bg-red-50 dark:bg-red-900/20 p-2"><p class="font-medium text-red-800 dark:text-red-200">${t('coverageGap', { area: Math.round(g.areaM2) })}</p>${btns}</div>`;
+        return `<div class="rounded-md bg-red-50 dark:bg-red-900/20 p-2"><p class="font-medium text-red-800 dark:text-red-200">${t('coverageGap', { area: Math.round(g.areaM2) })} · ${escapeHtml(t('sunAtGap', { h: fmtH(sunH), cls: t(SUN_CLASS_KEY[sunClass(sunH)]) }))}</p>${btns}</div>`;
       }).join('');
       coverageBody.innerHTML = `<p class="text-stone-500 dark:text-stone-400">${escapeHtml(fnLabel(mode))}: ${Math.round(summary[mode] * 100)} % · ${t('coverageFnHint')}</p>`
         + (gaps.length ? rows : `<p class="text-green-700 dark:text-green-400">${t('coverageNoGap')}</p>`);
@@ -2488,6 +2505,110 @@ import Layout from '../layouts/Layout.astro';
   function hideSuggestionPreview() {
     planSvg.querySelector('#cov-preview')?.remove();
     view3d?.setPreview(null);
+  }
+
+  // ── Besonnung ──────────────────────────────────────────────────────────
+  // Map mode "Sonnenstunden": mean hours of direct sun per day for each spot,
+  // shaded by tree crowns (at the slider's age), buildings and terrain
+  // (sun-hours.ts). Also feeds the light at a gap into the planting
+  // suggestions of the function coverage.
+  const SUN_CLASS_KEY: Record<SunClass, string> = { full: 'sunClassFull', mid: 'sunClassMid', shadow: 'sunClassShadow' };
+  const fmtH = (h: number) => new Intl.NumberFormat(lang, { maximumFractionDigits: 1, minimumFractionDigits: 1 }).format(h);
+  let sunMapToken = 0;
+  let seasonCache: { key: string; samples: SunSample[] } | null = null;
+  /** Building footprints as prisms (filled by the OSM building layer). */
+  let buildingOccluders: Occluder[] = [];
+
+  function sunLatLon() {
+    const geo = editing?.geo;
+    return geo ? { lat: geo.lat, lon: geo.lon, rot: geo.rotationDeg } : { ...DEFAULT_SUN_LATLON, rot: 0 };
+  }
+  function seasonSamples(): SunSample[] {
+    const ll = sunLatLon();
+    const year = new Date().getFullYear();
+    const key = `${ll.lat}|${ll.lon}|${ll.rot}|${year}`;
+    if (seasonCache?.key !== key) seasonCache = { key, samples: sunSamples(SEASON_DATES(year), ll.lat, ll.lon, ll.rot, 30) };
+    return seasonCache.samples;
+  }
+  function chosenDay(): Date {
+    if (sunDateInput.value) {
+      const [y, m, d] = sunDateInput.value.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    }
+    return new Date();
+  }
+  let terrainMaxZ: { grid: ElevationGrid; z: number } | null = null;
+  function sunContext(): { scene: SunScene } {
+    const tg = terrain;
+    const groundZ = tg ? (x: number, y: number) => sampleGrid(tg, x, y) : () => 0;
+    if (tg && terrainMaxZ?.grid !== tg) terrainMaxZ = { grid: tg, z: Math.max(...tg.heights) };
+    const tr = tg ? {
+      z: groundZ, minX: tg.minX, minY: tg.minY, maxX: tg.minX + (tg.nx - 1) * tg.cellM, maxY: tg.minY + (tg.ny - 1) * tg.cellM,
+      maxZ: terrainMaxZ!.z, stepM: Math.max(1, tg.cellM),
+    } : null;
+    const occluders = [...planOccluders(editing!, plantsById, editing!.yearsSincePlanting, groundZ), ...buildingOccluders];
+    return { scene: { occluders, groundZ, terrain: tr } };
+  }
+
+  /** Dark blue (no sun) → yellow (all the sun the sky offers there). */
+  function sunColor(h: number, maxH = 8): string {
+    const f = Math.min(1, Math.max(0, h / maxH));
+    return `hsl(${Math.round(225 - 175 * f)}, 70%, ${Math.round(30 + 22 * f)}%)`;
+  }
+
+  async function renderSunMap(mode: 'sun-day' | 'sun-season') {
+    const token = ++sunMapToken;
+    const layer = planSvg.querySelector('#coverage-layer');
+    if (!editing || !layer || editing.boundary.length < 3) return;
+    const plan = editing;
+    coverageSection.hidden = false;
+    coverageHeading.textContent = t('sunMapHeading');
+    coverageBody.innerHTML = `<p class="animate-pulse text-stone-500 dark:text-stone-400">${t('sunMapComputing')}</p>`;
+    const ll = sunLatLon();
+    const day = chosenDay();
+    const samples = mode === 'sun-day' ? sunSamples([day], ll.lat, ll.lon, ll.rot, 15) : seasonSamples();
+    const { scene } = sunContext();
+    const cellM = Math.max(0.5, Math.min(plan.areaWidthM, plan.areaHeightM) / 36);
+    const cells = planCells(plan, cellM);
+    const hours: number[] = [];
+    // In chunks so the page stays responsive on big plans.
+    for (let i = 0; i < cells.length; i += 150) {
+      for (const c of cells.slice(i, i + 150)) hours.push(sunHoursAt(c.xM, c.yM, scene, samples));
+      await new Promise(r => setTimeout(r, 0));
+      if (token !== sunMapToken || editing !== plan) return;
+    }
+    // Colour scale up to the open-sky maximum (day length), so shade shows
+    // even in summer when nearly every spot gets more than 6 h.
+    const maxH = Math.max(1, samples.reduce((a, s) => a + s.hours, 0));
+    const buckets = new Map<string, string[]>();
+    const half = cellM * U / 2;
+    const cells3d = cells.map((c, i) => {
+      const color = sunColor(Math.round(hours[i] * 2) / 2, maxH);
+      const arr = buckets.get(color) ?? [];
+      arr.push(`M${c.xM * U - half} ${c.yM * U - half}h${2 * half}v${2 * half}h${-2 * half}z`);
+      buckets.set(color, arr);
+      return { xM: c.xM, yM: c.yM, color };
+    });
+    layer.innerHTML = [...buckets.entries()].map(([color, d]) => `<path d="${d.join('')}" fill="${color}" fill-opacity="0.45"/>`).join('');
+    coverage3d = { cellM, cells: cells3d, gaps: [] };
+    view3d?.setCoverage(coverage3d);
+
+    const n = hours.length || 1;
+    const mean = hours.reduce((a, b) => a + b, 0) / n;
+    const share = (cls: SunClass) => hours.filter(h => sunClass(h) === cls).length / n;
+    const when = mode === 'sun-day' ? new Intl.DateTimeFormat(lang, { day: 'numeric', month: 'long', year: 'numeric' }).format(day) : t('sunMapWhenSeason');
+    const bar = (cls: SunClass, key: string, color: string) => `
+      <div><span class="flex justify-between"><span>${escapeHtml(t(key))}</span><span class="font-mono">${Math.round(share(cls) * 100)} %</span></span>
+      <span class="mt-0.5 block h-1.5 rounded bg-stone-200 dark:bg-stone-700"><span class="block h-1.5 rounded" style="width:${Math.round(share(cls) * 100)}%;background:${color}"></span></span></div>`;
+    const considered = [t('sunMapConsidered', { years: plan.yearsSincePlanting })];
+    if (terrain) considered.push(t('sunMapTerrain'));
+    if (buildingOccluders.length) considered.push(t('sunMapBuildings'));
+    coverageBody.innerHTML = `
+      <p class="text-stone-600 dark:text-stone-300">${escapeHtml(t('sunMapMean', { h: fmtH(mean), when }))}</p>
+      ${bar('full', 'sunFull', sunColor(Math.max(6, maxH * 0.9), maxH))}${bar('mid', 'sunMid', sunColor(4.5, maxH))}${bar('shadow', 'sunShadow', sunColor(1.5, maxH))}
+      <div class="mt-1"><span class="block h-2 rounded" style="background:linear-gradient(90deg, ${[0, 0.25, 0.5, 0.75, 1].map(f => sunColor(f * maxH, maxH)).join(',')})"></span>
+        <span class="flex justify-between font-mono text-[10px] text-stone-500">${[0, 0.25, 0.5, 0.75, 1].map((f, i) => `<span>${fmtH(f * maxH)}${i === 0 || i === 4 ? ' h' : ''}</span>`).join('')}</span></div>
+      <p class="text-stone-500 dark:text-stone-400">${escapeHtml(considered.join(', '))}.${editing.geo ? '' : ' ' + escapeHtml(t('sunMapNoLoc'))}${mode === 'sun-day' ? ' ' + escapeHtml(t('sunMapDateHint')) : ''}</p>`;
   }
 
   // ── Polykultur als Paket ───────────────────────────────────────────────

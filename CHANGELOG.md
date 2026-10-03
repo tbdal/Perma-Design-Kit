@@ -2,6 +2,11 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Gartenplan: Besonnungskarte, Quellenvermerk in 3D (2026-10-04)
+- [x] **Besonnungskarte** — Kartenleiste „Einfärben“ → *Besonnung*: mittlere Stunden direkter Sonne pro Tag für jeden Fleck, am gewählten Tag (Datum über den Sonnenstand in 3D) oder im Mittel April–September. Schatten werfen Baumkronen in ihrer Größe zum eingestellten Jahr (Laub lässt etwas Licht durch) und das Gelände; Gebäude folgen. Seitenleiste mit Durchschnitt, Anteil Sonne (≥ 6 h) / Halbschatten (3–6 h) / Schatten (< 3 h) und Legende; in 2D und 3D.
+- [x] **Pflanzvorschläge berücksichtigen das Licht:** Bei der Funktions-Abdeckung zeigt jede Lücke ihre Sonnenstunden („☀ 5,2 h (halbschattig)“), und Pflanzen, deren Lichtbedarf passt, rücken nach oben.
+- [x] **Quellenvermerk** von Karte/Luftbild/Satellit und Höhendaten wird jetzt auch in der 3D-Ansicht durchgehend angezeigt (verschwand beim Wechsel nach 3D).
+
 ## Gartenplan: Vorschlags-Vorschau auch in 3D (2026-10-04)
 - [x] **Funktions-Abdeckung:** Beim Darüberfahren über einen Pflanzvorschlag steht die Pflanze jetzt auch in 3D als halbtransparentes Modell an der Lücke — in ihrer Größe zum eingestellten Jahr, mit ihrem Wirkbereich als grüner Fläche auf dem Gelände und dem Namen darüber.
 

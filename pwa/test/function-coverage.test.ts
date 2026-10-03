@@ -50,6 +50,14 @@ describe('function coverage', () => {
     expect(s.map(x => x.id)).not.toContain('comfrey');
   });
 
+  it('prefers plants that suit the light at the gap', () => {
+    const shadeN = P('shadeN', { nitrogenFix: true, sunShadow: true, widthM: 1 });
+    const sunN = P('sunN', { nitrogenFix: true, sunFull: true, widthM: 1 });
+    const p = plan();
+    expect(suggestPlants('nitrogenFix', [sunN, shadeN], p, plantsById, { xM: 17, yM: 5 }, 40, 1, 'shadow')[0].id).toBe('shadeN');
+    expect(suggestPlants('nitrogenFix', [sunN, shadeN], p, plantsById, { xM: 17, yM: 5 }, 40, 1, 'full')[0].id).toBe('sunN');
+  });
+
   it('gives insectaries a wider reach than ground cover', () => {
     expect(influenceRadius('insects', 1, 1)).toBeGreaterThan(influenceRadius('groundCover', 1, 1));
   });

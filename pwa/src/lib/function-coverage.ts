@@ -2,6 +2,7 @@ import type { GardenPlan, GardenPlanPoint, PlantData } from './types';
 import { displayRadiusM } from './growth-model';
 import { pointInPolygon } from './gartenplan-geometry';
 import { compatScore } from './compat';
+import type { SunClass } from './sun-hours';
 
 // "Funktions-Abdeckung": where in the garden are the ecological functions
 // (nitrogen, minerals, insects, pest control, ground cover, wildlife, wind)
@@ -100,7 +101,8 @@ export function findGaps(g: CoverageGrid, fn: CoverFunc, max = 3): Gap[] {
 /** Plants from the collection that provide `fn`, best first: compatible
  *  (sun/water/pH) with the plants already growing near the spot, small
  *  enough for the gap, and not yet over-represented in the plan. */
-export function suggestPlants(fn: CoverFunc, collection: PlantData[], plan: GardenPlan, plantsById: Map<string, PlantData>, at: GardenPlanPoint, gapAreaM2: number, max = 3): PlantData[] {
+export function suggestPlants(fn: CoverFunc, collection: PlantData[], plan: GardenPlan, plantsById: Map<string, PlantData>, at: GardenPlanPoint, gapAreaM2: number, max = 3, sun?: SunClass): PlantData[] {
+  const sunKey = sun === 'full' ? 'sunFull' : sun === 'mid' ? 'sunMid' : sun === 'shadow' ? 'sunShadow' : null;
   const near = plan.placements
     .filter(pl => (pl.xM - at.xM) ** 2 + (pl.yM - at.yM) ** 2 <= 64)
     .map(pl => plantsById.get(pl.plantId))
@@ -113,7 +115,11 @@ export function suggestPlants(fn: CoverFunc, collection: PlantData[], plan: Gard
     .map(p => {
       const compat = near.length ? near.reduce((s, n) => s + compatScore(p, n), 0) / near.length : 3;
       const fits = !p.widthM || p.widthM / 2 <= gapR * 1.5 ? 1 : 0;
-      const score = compat + fits - Math.min(2, (used.get(p.id) ?? 0) * 0.3);
+      // Light at the spot (sun-hours.ts): plants that want it score up,
+      // plants that state other needs down; no sun data → neutral.
+      const hasSun = p.sunFull || p.sunMid || p.sunShadow;
+      const light = sunKey && hasSun ? (p[sunKey] ? 1.5 : -1.5) : 0;
+      const score = compat + fits + light - Math.min(2, (used.get(p.id) ?? 0) * 0.3);
       return { p, score };
     })
     .sort((a, b) => b.score - a.score || a.p.latinName.localeCompare(b.p.latinName))
