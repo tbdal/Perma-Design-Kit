@@ -286,3 +286,56 @@ html[data-design="horizont"] .site-footer {
   color: #b9c78f;
 }
 html[data-design="horizont"] .site-footer :is(a, button):hover { color: #eef4d0; }
+/* ══ Accessibility display options (Einstellungen / "Aa" in the header) ══
+   data-contrast="more": set by boot.js from the user's choice or the OS
+   "increase contrast" setting. Muted greys move one or two steps towards the
+   text color, borders get stronger. Unlayered, so it wins over Tailwind. */
+html[data-contrast="more"]:not(.dark) {
+  --color-stone-200: #d6d3d1;
+  --color-stone-300: #a6a09b;
+  --color-stone-400: #57534d;
+  --color-stone-500: #44403b;
+  --color-stone-600: #292524;
+  --color-stone-700: #1c1917;
+}
+html.dark[data-contrast="more"] {
+  --color-stone-300: #fafaf9;
+  --color-stone-400: #e7e5e4;
+  --color-stone-500: #d6d3d1;
+  --color-stone-600: #a6a09b;
+}
+html[data-design="horizont"][data-contrast="more"]:not(.dark) {
+  --color-stone-200: #c6cda4;
+  --color-stone-300: #a3ab84;
+  --color-stone-400: #59633d;
+  --color-stone-500: #434b2c;
+  --color-stone-600: #2b3614;
+  --color-stone-700: #1f2710;
+}
+html[data-design="horizont"].dark[data-contrast="more"] {
+  --color-stone-300: #f6f5e6;
+  --color-stone-400: #edeedb;
+  --color-stone-500: #dfe2c4;
+  --color-stone-600: #a3ab84;
+}
+html[data-contrast="more"] :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible { outline-width: 3px; }
+/* "Gartenplan" (in development) is dimmed in the menu — not in high contrast. */
+html[data-contrast="more"] .site-header a[data-nav="/gartenplan"] { color: var(--color-green-100); }
+html[data-design="horizont"][data-contrast="more"] .site-header a[data-nav="/gartenplan"] { color: #1f2710; }
+
+/* data-font: larger text. Tailwind sizes are rem-based, so the whole UI
+   scales with the root font size. */
+html[data-font="115"] { font-size: 115%; }
+html[data-font="130"] { font-size: 130%; }
+
+/* Windows contrast themes (forced colors) drop background colors. Keep the
+   color keys (dots, chips, calendar bars) and toggle switches visible, and
+   mark pressed buttons (view switch) with the system highlight. */
+@media (forced-colors: active) {
+  [style*="background-color"],
+  #calendar-table [aria-hidden="true"] div,
+  #overview [aria-hidden="true"] div,
+  input.peer.sr-only + div,
+  #plant-list [class*="bg-"]:empty { forced-color-adjust: none; }
+  [aria-pressed="true"] { outline: 2px solid Highlight; outline-offset: -2px; }
+}

@@ -178,6 +178,55 @@ export function applyDesign(d: DesignPref): void {
   window.dispatchEvent(new Event('pdk-design-change'));
 }
 
+// ── Accessibility display options: separate keys, read by boot.js before
+// first paint (same as theme and design). Per device, not in backups.
+
+/** 'system' follows the OS "increase contrast" setting (prefers-contrast). */
+export type ContrastPref = 'system' | 'normal' | 'more';
+/** Root font size in percent; every rem-based size scales with it. */
+export type FontSizePref = '100' | '115' | '130';
+
+export function getContrast(): ContrastPref {
+  try {
+    const v = localStorage.getItem('pdk-contrast');
+    return v === 'more' || v === 'normal' ? v : 'system';
+  } catch { return 'system'; }
+}
+
+export function setContrast(c: ContrastPref): void {
+  try {
+    if (c === 'system') localStorage.removeItem('pdk-contrast');
+    else localStorage.setItem('pdk-contrast', c);
+  } catch {}
+}
+
+export function applyContrast(c: ContrastPref): void {
+  const more = c === 'more' || (c === 'system' && window.matchMedia('(prefers-contrast: more)').matches);
+  if (more) document.documentElement.dataset.contrast = 'more';
+  else delete document.documentElement.dataset.contrast;
+  window.dispatchEvent(new Event('pdk-display-change'));
+}
+
+export function getFontSize(): FontSizePref {
+  try {
+    const v = localStorage.getItem('pdk-font');
+    return v === '115' || v === '130' ? v : '100';
+  } catch { return '100'; }
+}
+
+export function setFontSize(f: FontSizePref): void {
+  try {
+    if (f === '100') localStorage.removeItem('pdk-font');
+    else localStorage.setItem('pdk-font', f);
+  } catch {}
+}
+
+export function applyFontSize(f: FontSizePref): void {
+  if (f === '100') delete document.documentElement.dataset.font;
+  else document.documentElement.dataset.font = f;
+  window.dispatchEvent(new Event('pdk-display-change'));
+}
+
 // ── Analytics opt-out: uses Umami's own localStorage key so the tracking
 // script honors it automatically (self-hosted Umami replaced Plausible
 // Cloud 2026-09-22, see CHANGELOG.md). A prior Plausible opt-out is
