@@ -62,13 +62,13 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 
 
 ## Arbeitspaket 1
-- [ ] handy-ansicht ist verschoben bzw. nicht richtig skaliert
-- [ ] Farblegende default einklappen.
-- [ ] PDF Druck Baumscheibe: Maßstab 1: x in einer eigenen Zeile. Nächste Zeile: Min. Größe (cm)
-- [ ] Pflanzkalender: neue Option: Sortierung nach früheste / späteste Blüte & Frucht
-- [ ] functions and uses: use tables on ca page 9 (https://www.dropbox.com/scl/fi/qaunmejk6g7o2fvr4gb78/PermaDesignKit-Documentation.docx?rlkey=15noytq7x3t7d605fxqc2t8lj&st=fhmliol6&dl=0) for functions and uses: Namen und Reihenfolge übernehmen in Editiermodus. nicht vorhandene löschen
+- [x] handy-ansicht ist verschoben bzw. nicht richtig skaliert
+- [x] Farblegende default einklappen.
+- [x] PDF Druck Baumscheibe: Maßstab 1: x in einer eigenen Zeile. Nächste Zeile: Min. Größe (cm)
+- [x] Pflanzkalender: neue Option: Sortierung nach früheste / späteste Blüte & Frucht
+- [x] functions and uses: use tables on ca page 9 (https://www.dropbox.com/scl/fi/qaunmejk6g7o2fvr4gb78/PermaDesignKit-Documentation.docx?rlkey=15noytq7x3t7d605fxqc2t8lj&st=fhmliol6&dl=0) for functions and uses: Namen und Reihenfolge übernehmen in Editiermodus. nicht vorhandene löschen
 
-- [ ] Ansicht, Filter, Ausgabeformat: Text etwas größer
+- [x] Ansicht, Filter, Ausgabeformat: Text etwas größer
 
 
 ## kurzfristig

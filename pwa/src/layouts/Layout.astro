@@ -60,7 +60,9 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
     <div class="hz-anchor" aria-hidden="true"><div class="hz-sky"></div></div>
 
     <header class="site-header sticky top-0 z-50 bg-green-900 dark:bg-green-950 shadow-lg">
-      <nav class={`mx-auto flex ${containerMaxW} items-center gap-2 px-4 py-3 sm:px-6`}>
+      <!-- On phones the page links get their own (swipeable) second row, so the
+           header never makes the page wider than the screen. -->
+      <nav class={`mx-auto flex ${containerMaxW} flex-wrap items-center gap-x-2 gap-y-1 px-4 py-3 sm:flex-nowrap sm:px-6`}>
         <a href="/" class="flex shrink-0 items-center gap-2 text-lg font-bold tracking-tight text-white">
           <span class="hz-wordmark" aria-hidden="true">PERMA<br />DESIGN<br />KIT</span>
           <svg class="hz-std h-7 w-7" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
@@ -70,7 +72,7 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
           </svg>
           <span class="hz-std hidden sm:inline">Perma Design Kit</span>
         </a>
-        <div class="ml-3 flex items-center gap-1 text-sm font-medium">
+        <div class="order-last -mx-2.5 flex w-[calc(100%+1.25rem)] items-center gap-1 overflow-x-auto text-sm font-medium sm:order-none sm:mx-0 sm:ml-3 sm:w-auto sm:overflow-visible">
           <a href="/" data-nav="/" data-i18n="navPlants" class="rounded-md px-2.5 py-1 text-green-100 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900">Pflanzen</a>
           <a href="/kalender" data-nav="/kalender" data-i18n="navCalendar" class="rounded-md px-2.5 py-1 text-green-100 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900">Kalender</a>
           <a href="/polykulturen" data-nav="/polykulturen" data-i18n="navGuilds" class="rounded-md px-2.5 py-1 text-green-100 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900">Polykulturen</a>
@@ -341,6 +343,20 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
       const onScroll = () => header?.classList.toggle('hz-scrolled', scrollY > 4);
       onScroll();
       window.addEventListener('scroll', onScroll, { passive: true });
+    </script>
+    <script>
+      // Filter dropdowns open below their chip, left-aligned; near the right
+      // edge of a phone screen that would cut the panel off. Shift it left.
+      document.addEventListener('toggle', (e) => {
+        const details = e.target as HTMLDetailsElement;
+        if (!details.classList?.contains('filter-dropdown')) return;
+        const panel = details.querySelector<HTMLElement>(':scope > div');
+        if (!panel) return;
+        panel.style.translate = '';
+        if (!details.open) return;
+        const overflow = panel.getBoundingClientRect().right - (document.documentElement.clientWidth - 8);
+        if (overflow > 0) panel.style.translate = `-${Math.ceil(overflow)}px 0`;
+      }, true);
     </script>
     <script>
       import { autoSyncIfConfigured } from '../lib/sync';

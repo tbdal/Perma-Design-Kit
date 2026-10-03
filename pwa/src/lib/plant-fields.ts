@@ -20,6 +20,9 @@ export interface BoolFieldDef {
   csv: string;
   /** Column in the legacy PowerShell override.csv format, if it had one. */
   legacyCsv?: string;
+  /** false = kept for data/import compatibility but not offered in the edit
+   *  form (not part of the documented functions/uses). */
+  inForm?: false;
   /** Badge/dot/chip styling. Fields without it get no badge or PDF chip. */
   badge?: {
     /** Tailwind classes for the pill badge (literal strings so the JIT sees them). */
@@ -34,44 +37,46 @@ export interface BoolFieldDef {
 }
 
 export const BOOL_FIELDS: readonly BoolFieldDef[] = [
-  // ── Nutzung ──
+  // ── Nutzung (order: documentation, "Uses") ──
   { key: 'eatable', group: 'usage', label: { de: 'Essbarkeit', en: 'Edibility' }, csv: 'Essbar', legacyCsv: 'b_eatable_element',
     badge: { pill: 'bg-amber-100 text-amber-800', hex: '#dc330c', pdfCode: 'Es' } },
-  { key: 'culinaric', group: 'usage', label: { de: 'Küche', en: 'Culinary' }, csv: 'Kulinarisch', legacyCsv: 'b_culinaric_element',
-    badge: { pill: 'bg-yellow-100 text-yellow-800', hex: '#f88a70', pdfCode: 'Ku' } },
   { key: 'meds', group: 'usage', label: { de: 'Gesundheit', en: 'Medicinal' }, csv: 'Medizinisch', legacyCsv: 'b_meds_element',
     badge: { pill: 'bg-rose-100 text-rose-700', hex: '#fa512a', pdfCode: 'Me' } },
+  { key: 'culinaric', group: 'usage', label: { de: 'Küche', en: 'Culinary' }, csv: 'Kulinarisch', legacyCsv: 'b_culinaric_element',
+    badge: { pill: 'bg-yellow-100 text-yellow-800', hex: '#f88a70', pdfCode: 'Ku' } },
   { key: 'material', group: 'usage', label: { de: 'Materialien', en: 'Materials' }, csv: 'Material', legacyCsv: 'b_material_element',
     badge: { pill: 'bg-orange-100 text-orange-800', hex: '#fb923c', pdfCode: 'Ma' } },
-  { key: 'fodder', group: 'usage', label: { de: 'Tierfutter', en: 'Fodder' }, csv: 'Futter', legacyCsv: 'b_fodder_element',
-    badge: { pill: 'bg-lime-100 text-lime-700', hex: '#a3e635', pdfCode: 'Fu' } },
   { key: 'fuel', group: 'usage', label: { de: 'Brennstoff', en: 'Fuel' }, csv: 'Brennstoff', legacyCsv: 'b_fuel_element',
     badge: { pill: 'bg-red-100 text-red-700', hex: '#f87171', pdfCode: 'Br' } },
-  { key: 'wood', group: 'usage', label: { de: 'Nutzholz', en: 'Wood' }, csv: 'Nutzholz',
-    badge: { pill: 'bg-amber-200 text-amber-900', hex: '#92400e', pdfCode: 'Nu' } },
+  { key: 'fodder', group: 'usage', label: { de: 'Tierfutter', en: 'Fodder' }, csv: 'Futter', legacyCsv: 'b_fodder_element',
+    badge: { pill: 'bg-lime-100 text-lime-700', hex: '#a3e635', pdfCode: 'Fu' } },
   { key: 'fiber', group: 'usage', label: { de: 'Fasern', en: 'Fiber' }, csv: 'Fasern',
     badge: { pill: 'bg-stone-200 text-stone-700', hex: '#78716c', pdfCode: 'Fa' } },
+  { key: 'wood', group: 'usage', label: { de: 'Nutzholz', en: 'Wood' }, csv: 'Nutzholz',
+    badge: { pill: 'bg-amber-200 text-amber-900', hex: '#92400e', pdfCode: 'Nu' } },
   { key: 'ornamental', group: 'usage', label: { de: 'Ästhetik', en: 'Ornamental' }, csv: 'Ästhetik',
     badge: { pill: 'bg-pink-100 text-pink-700', hex: '#ec4899', pdfCode: 'As' } },
   { key: 'dyes', group: 'usage', label: { de: 'Farbstoff', en: 'Dyes' }, csv: 'Farbstoff',
     badge: { pill: 'bg-purple-100 text-purple-700', hex: '#a855f7', pdfCode: 'Fb' } },
 
-  // ── Funktionen ──
+  // ── Funktionen (order: documentation, "Functions"; Wind (See) is not
+  //    part of it and only kept for data compatibility) ──
   { key: 'nitrogenFix', group: 'function', label: { de: 'Stickstoff-Fixierer', en: 'Nitrogen fixer' }, csv: 'N_Fixierung', legacyCsv: 'b_nitrogen-fix-element',
     badge: { pill: 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300', hex: '#92d051', pdfCode: 'N' } },
   { key: 'mineralFix', group: 'function', label: { de: 'Mineraliensammler', en: 'Dynamic accumulator' }, csv: 'Mineralien', legacyCsv: 'b_mineral-fix-element',
     badge: { pill: 'bg-emerald-100 text-emerald-800', hex: '#3cbbe4', pdfCode: 'Mi' } },
-  { key: 'groundCover', group: 'function', label: { de: 'Bodendecker', en: 'Ground cover' }, csv: 'Bodendecker', legacyCsv: 'b_ground-cover_element',
-    badge: { pill: 'bg-teal-100 text-teal-800', hex: '#d4a525', pdfCode: 'Bo' } },
   { key: 'insects', group: 'function', label: { de: 'Insekten', en: 'Invertebrates' }, csv: 'Insekten', legacyCsv: 'b_insects_element',
     badge: { pill: 'bg-cyan-100 text-cyan-800', hex: '#fadb07', pdfCode: 'In' } },
   { key: 'pest', group: 'function', label: { de: 'Schädlingsschutz', en: 'Pest control' }, csv: 'Schädling', legacyCsv: 'b_pest_element',
     badge: { pill: 'bg-red-100 text-red-800', hex: '#ef4444', pdfCode: 'Sc' } },
-  { key: 'windBreaking', group: 'function', label: { de: 'Windschutz', en: 'Windbreak' }, csv: 'Windschutz', legacyCsv: 'b_wind-breaking_element',
-    badge: { pill: 'bg-sky-100 text-sky-800', hex: '#c6c6c6', pdfCode: 'Wi' } },
+  { key: 'groundCover', group: 'function', label: { de: 'Bodendecker', en: 'Ground cover' }, csv: 'Bodendecker', legacyCsv: 'b_ground-cover_element',
+    badge: { pill: 'bg-teal-100 text-teal-800', hex: '#d4a525', pdfCode: 'Bo' } },
   { key: 'animalProtection', group: 'function', label: { de: 'Kleintiere', en: 'Wildlife' }, csv: 'Tierschutz', legacyCsv: 'b_animal-protection_element',
     badge: { pill: 'bg-violet-100 text-violet-800', hex: '#ba7010', pdfCode: 'Ti' } },
-  { key: 'windBreakingOnSea', group: 'function', label: { de: 'Wind (See)', en: 'Wind (coastal)' }, csv: 'Wind_See', legacyCsv: 'b_wind-breaking-on-sea_icon' },
+  { key: 'windBreaking', group: 'function', label: { de: 'Windschutz', en: 'Windbreak' }, csv: 'Windschutz', legacyCsv: 'b_wind-breaking_element',
+    badge: { pill: 'bg-sky-100 text-sky-800', hex: '#c6c6c6', pdfCode: 'Wi' } },
+  { key: 'windBreakingOnSea', group: 'function', label: { de: 'Wind (See)', en: 'Wind (coastal)' }, csv: 'Wind_See', legacyCsv: 'b_wind-breaking-on-sea_icon',
+    inForm: false },
 
   // ── Sonne ──
   { key: 'sunFull', group: 'sun', label: { de: 'Volle Sonne', en: 'Full sun' }, csv: 'Sonne_voll', legacyCsv: 'b_sun-full_element',
@@ -106,6 +111,9 @@ export const BOOL_FIELDS: readonly BoolFieldDef[] = [
 ];
 
 export const BOOL_FIELD_KEYS: readonly BoolFieldKey[] = BOOL_FIELDS.map(f => f.key);
+
+/** The fields offered as checkboxes in the edit form. */
+export const FORM_BOOL_FIELD_KEYS: readonly BoolFieldKey[] = BOOL_FIELDS.filter(f => f.inForm !== false).map(f => f.key);
 
 export function fieldsOf(group: FieldGroup): readonly BoolFieldDef[] {
   return BOOL_FIELDS.filter(f => f.group === group);
