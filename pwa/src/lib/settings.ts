@@ -150,6 +150,29 @@ export function applyTheme(t: ThemePref): void {
   document.documentElement.classList.toggle('dark', isDark);
 }
 
+// ── Site design: separate key for the same reason as the theme (boot.js reads
+// it before first paint). Absent = 'standard'.
+
+export type DesignPref = 'standard' | 'horizont';
+
+export function getDesign(): DesignPref {
+  try { return localStorage.getItem('pdk-design') === 'horizont' ? 'horizont' : 'standard'; }
+  catch { return 'standard'; }
+}
+
+export function setDesign(d: DesignPref): void {
+  try {
+    if (d === 'standard') localStorage.removeItem('pdk-design');
+    else localStorage.setItem('pdk-design', d);
+  } catch {}
+}
+
+export function applyDesign(d: DesignPref): void {
+  if (d === 'standard') delete document.documentElement.dataset.design;
+  else document.documentElement.dataset.design = d;
+  window.dispatchEvent(new Event('pdk-design-change'));
+}
+
 // ── Analytics opt-out: uses Umami's own localStorage key so the tracking
 // script honors it automatically (self-hosted Umami replaced Plausible
 // Cloud 2026-09-22, see CHANGELOG.md). A prior Plausible opt-out is

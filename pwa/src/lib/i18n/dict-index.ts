@@ -2,6 +2,7 @@ import type { Dict } from './core';
 
 export const indexDict: Dict = {
   // ── Search hero ──────────────────────────────────────────────────────
+  heroTitle: { de: 'Was wächst in deinem Waldgarten?', en: 'What grows in your forest garden?' },
   searchSubtitle: { de: 'Pflanzendatenbank durchsuchen', en: 'Search the plant database' },
   searchPlaceholder: { de: 'Pflanze suchen — lat. oder dt. Name, z.B. Sambucus nigra', en: 'Search for a plant — Latin or English name, e.g. Sambucus nigra' },
   searchBtn: { de: 'Suchen', en: 'Search' },

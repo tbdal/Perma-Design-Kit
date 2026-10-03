@@ -55,15 +55,20 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
       </div>
     </div>
 
-    <header class="sticky top-0 z-50 bg-green-900 dark:bg-green-950 shadow-lg">
+    <!-- Horizont design only: sky + tree line behind the header (and the
+         search on the plant page). Height set by the script below. -->
+    <div class="hz-anchor" aria-hidden="true"><div class="hz-sky"></div></div>
+
+    <header class="site-header sticky top-0 z-50 bg-green-900 dark:bg-green-950 shadow-lg">
       <nav class={`mx-auto flex ${containerMaxW} items-center gap-2 px-4 py-3 sm:px-6`}>
         <a href="/" class="flex shrink-0 items-center gap-2 text-lg font-bold tracking-tight text-white">
-          <svg class="h-7 w-7" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <span class="hz-wordmark" aria-hidden="true">PERMA<br />DESIGN<br />KIT</span>
+          <svg class="hz-std h-7 w-7" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
             <polyline points="16,11 20.1,14 16,19.2 9.7,14 16,6.6 24.5,14 16,23.6 16,27"
               fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             <circle cx="16" cy="11" r="1.2" fill="white"/>
           </svg>
-          <span class="hidden sm:inline">Perma Design Kit</span>
+          <span class="hz-std hidden sm:inline">Perma Design Kit</span>
         </a>
         <div class="ml-3 flex items-center gap-1 text-sm font-medium">
           <a href="/" data-nav="/" data-i18n="navPlants" class="rounded-md px-2.5 py-1 text-green-100 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900">Pflanzen</a>
@@ -94,11 +99,11 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
         </div>
       </nav>
     </header>
-    <main class={`mx-auto w-full ${containerMaxW} flex-1 px-4 py-6 sm:px-6`}>
+    <main class={`site-main mx-auto w-full ${containerMaxW} flex-1 px-4 py-6 sm:px-6`}>
       <slot />
     </main>
 
-    <footer class="border-t border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 py-4 text-sm text-stone-500 dark:text-stone-400">
+    <footer class="site-footer border-t border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 py-4 text-sm text-stone-500 dark:text-stone-400">
       <div class={`mx-auto flex ${containerMaxW} flex-wrap items-center justify-between gap-2 px-4 sm:px-6`}>
         <span>© 2026 Perma Design Kit</span>
         <nav class="flex flex-wrap gap-4">
@@ -303,6 +308,34 @@ const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
         const legal = /^\/(impressum|datenschutz|hilfe)\/?$/.test(location.pathname);
         if (!seen && !legal) open();
       }
+    </script>
+    <script>
+      // Horizont design: the sky band must end exactly where the tree line
+      // meets the content, which depends on the rendered header height and,
+      // on the plant page, the search block in the sky ([data-hz-sky]).
+      const root = document.documentElement;
+      const anchor = document.querySelector<HTMLElement>('.hz-anchor');
+      const header = document.querySelector<HTMLElement>('.site-header');
+      const main = document.querySelector<HTMLElement>('.site-main');
+      const sky = main?.querySelector<HTMLElement>('[data-hz-sky]') ?? null;
+      const pageY = (el: Element) => el.getBoundingClientRect().top + scrollY;
+      function layoutHorizon() {
+        if (root.dataset.design !== 'horizont' || !anchor || !main) return;
+        const trees = parseFloat(getComputedStyle(root).getPropertyValue('--hz-trees')) || 0;
+        const ground = (sky ? sky.getBoundingClientRect().bottom + scrollY : pageY(main)) + trees;
+        root.style.setProperty('--hz-band-h', `${Math.round(ground - pageY(anchor))}px`);
+        root.style.setProperty('--hz-ground', `${Math.round(ground - pageY(main))}px`);
+      }
+      layoutHorizon();
+      const ro = new ResizeObserver(layoutHorizon);
+      if (header) ro.observe(header);
+      if (sky) ro.observe(sky);
+      window.addEventListener('resize', layoutHorizon);
+      window.addEventListener('pdk-design-change', layoutHorizon);
+      document.fonts?.ready.then(layoutHorizon);
+      const onScroll = () => header?.classList.toggle('hz-scrolled', scrollY > 4);
+      onScroll();
+      window.addEventListener('scroll', onScroll, { passive: true });
     </script>
     <script>
       import { autoSyncIfConfigured } from '../lib/sync';

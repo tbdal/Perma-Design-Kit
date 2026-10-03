@@ -23,3 +23,244 @@
 /* Class-based dark mode: applied when an ancestor has the .dark class.
    Toggled on <html> by the theme switch in Layout.astro. */
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* Archivo (OFL) self-hosted, same reason as Raleway — used by the Horizont design. */
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/archivo-var-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/archivo-var-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Archivo Black';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/archivo-black-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Archivo Black';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/archivo-black-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* ══ Design "Horizont" ═══════════════════════════════════════════════════
+   Opt-in via Settings → Design (boot.js sets html[data-design="horizont"]).
+   Pure restyling of the Standard markup: the Tailwind color variables are
+   remapped to an olive palette, so every page keeps working unchanged.
+   Sky + tree line on top (public/horizont-sky.jpg, a mirrored tile so it
+   repeats seamlessly), dark olive ground below, in light mode the content
+   sits on a cream sheet. These rules are deliberately unlayered so they win
+   over Tailwind's utility layer. */
+
+.hz-anchor, .hz-wordmark, .hz-only { display: none; }
+
+html[data-design="horizont"] {
+  --hz-trees: 96px;
+  --hz-sky-top: #a5ba6b;
+  --hz-ground-color: #33401a;
+  --hz-ink: #1f2710;
+  --default-font-family: 'Archivo', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Archivo', ui-sans-serif, system-ui, sans-serif;
+
+  --color-green-50: #f4f8e4;
+  --color-green-100: #e8f0c8;
+  --color-green-200: #d6e3a6;
+  --color-green-300: #bfd27f;
+  --color-green-400: #aec46a;
+  --color-green-500: #8fa548;
+  --color-green-600: #6d8233;
+  --color-green-700: #4f5f22;
+  --color-green-800: #3d4a1b;
+  --color-green-900: #33401a;
+  --color-green-950: #26300f;
+
+  --color-stone-50: #f6f5e6;
+  --color-stone-100: #edeedb;
+  --color-stone-200: #dfe2c4;
+  --color-stone-300: #c6cda4;
+  --color-stone-400: #a3ab84;
+  --color-stone-500: #6f7752;
+  --color-stone-600: #59633d;
+  --color-stone-700: #46552a;
+  --color-stone-800: #2b3614;
+  --color-stone-900: #222b0f;
+  --color-stone-950: #161c09;
+}
+@media (min-width: 640px) {
+  html[data-design="horizont"] { --hz-trees: 150px; }
+}
+
+html[data-design="horizont"] body { background: var(--hz-ground-color); }
+
+/* Headings in the display face, as in the design. */
+html[data-design="horizont"] :is(h1, h2, .hz-hero-title) {
+  font-family: 'Archivo Black', 'Archivo', sans-serif;
+  font-weight: 400;
+}
+
+/* ── Sky band ─────────────────────────────────────────────────────────── */
+html[data-design="horizont"] .hz-anchor { display: block; position: relative; height: 0; }
+html[data-design="horizont"] .hz-sky {
+  position: absolute;
+  inset: 0 0 auto 0;
+  /* Fallback until Layout.astro's script measures the real header height. */
+  height: var(--hz-band-h, calc(72px + var(--hz-trees)));
+  background:
+    linear-gradient(180deg, rgb(199 215 143 / 0.55) 0%, rgb(199 215 143 / 0) 55%),
+    url('/horizont-sky.jpg') center bottom / auto calc(var(--hz-trees) / 0.35) repeat-x,
+    var(--hz-sky-top);
+}
+
+/* ── Header: sits in the sky, frosted once the page scrolls under it ──── */
+html[data-design="horizont"] .site-header {
+  background: transparent;
+  box-shadow: none;
+  transition: background-color .2s, box-shadow .2s;
+}
+html[data-design="horizont"] .site-header.hz-scrolled {
+  background: rgb(190 206 128 / 0.88);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 6px 18px rgb(20 26 8 / 0.18);
+}
+html[data-design="horizont"] .site-header .hz-std { display: none; }
+html[data-design="horizont"] .site-header .hz-wordmark {
+  display: block;
+  font-family: 'Archivo Black', 'Archivo', sans-serif;
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 0.95;
+  letter-spacing: 0;
+  color: #0f1208;
+  text-shadow: 0 0 5px #e6f58a, 0 0 1px #e6f58a;
+}
+html[data-design="horizont"] .site-header :where(a[data-nav], #lang-toggle, #theme-toggle, a[href="/settings"]) {
+  color: var(--hz-ink);
+  font-weight: 600;
+  border-radius: 999px;
+}
+html[data-design="horizont"] .site-header :where(a[data-nav], #lang-toggle, #theme-toggle, a[href="/settings"]):hover {
+  background: rgb(255 255 255 / 0.35);
+  color: #0f1208;
+}
+html[data-design="horizont"] .site-header a[data-nav="/gartenplan"] { color: #4f5b30; }
+@media (max-width: 639px) {
+  html[data-design="horizont"] .site-header .hz-wordmark { font-size: 11px; }
+  html[data-design="horizont"] .site-header :where(a[data-nav], #lang-toggle, #theme-toggle, a[href="/settings"]) {
+    font-weight: 500;
+    padding-left: 0.45rem;
+    padding-right: 0.45rem;
+  }
+}
+/* Active page (Layout.astro adds bg-green-800 + text-white to it). */
+html[data-design="horizont"] .site-header a[data-nav].bg-green-800 {
+  background: rgb(255 255 255 / 0.5);
+  color: #0f1208;
+  font-weight: 700;
+}
+html[data-design="horizont"] #lang-menu button { color: var(--color-stone-700); }
+html[data-design="horizont"].dark #lang-menu button { color: var(--color-stone-200); }
+
+/* ── Content: below the tree line ─────────────────────────────────────── */
+html[data-design="horizont"] .site-main {
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
+  margin-bottom: 2rem;
+  padding-top: calc(var(--hz-trees) + 2.25rem);
+}
+@media (min-width: 640px) {
+  html[data-design="horizont"] .site-main { padding-left: 2rem; padding-right: 2rem; }
+}
+/* Light mode: a cream sheet on the dark ground (dark mode: content sits on
+   the ground directly, like the design). --hz-ground = distance from the
+   top of <main> to the tree line, set by Layout.astro. */
+html[data-design="horizont"]:not(.dark) .site-main::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: calc(var(--hz-ground, var(--hz-trees)) + 0.75rem) 0 0 0;
+  background: var(--color-stone-50);
+  border-radius: 28px;
+}
+
+/* Plant page: the search block lives in the sky, the trees follow below it. */
+html[data-design="horizont"] .site-main:has([data-hz-sky]) { padding-top: 1.75rem; }
+html[data-design="horizont"] [data-hz-sky] {
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: calc(var(--hz-trees) + 2.25rem);
+  text-align: center;
+}
+html[data-design="horizont"] .hz-hero-title {
+  display: block;
+  /* Wider than the 760px search column, so it stays on one line on desktop. */
+  width: max-content;
+  max-width: calc(100vw - 2rem);
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.6rem, 4.2vw, 2.5rem);
+  line-height: 1.05;
+  color: #0f1208;
+}
+html[data-design="horizont"] [data-hz-sky] > p[data-i18n="searchSubtitle"] {
+  margin-bottom: 1.25rem;
+  font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: #2a3313;
+}
+/* Search bar stays light in the (always light) sky, in both themes. */
+html[data-design="horizont"] [data-hz-sky] > div.rounded-2xl {
+  border-radius: 999px;
+  background: #fbfbf2;
+  box-shadow: 0 8px 24px rgb(40 52 16 / 0.18);
+  --tw-ring-color: transparent;
+}
+html[data-design="horizont"] [data-hz-sky] > div.rounded-2xl:focus-within { --tw-ring-color: #e6f58a; }
+html[data-design="horizont"] [data-hz-sky] input { color: var(--hz-ink); font-size: 1rem; }
+html[data-design="horizont"] [data-hz-sky] input::placeholder { color: #6c7450; }
+html[data-design="horizont"] [data-hz-sky] svg { color: #5f6d3a; }
+html[data-design="horizont"] #btn-search {
+  border-radius: 999px;
+  background: var(--hz-ground-color);
+  color: #f1f6d4;
+  font-weight: 700;
+}
+html[data-design="horizont"] #btn-search:hover { background: #26300f; }
+html[data-design="horizont"] #search-results { text-align: left; }
+
+/* ── Shapes: pill buttons, softer cards ───────────────────────────────── */
+html[data-design="horizont"] :is(button, summary, a).rounded-lg,
+html[data-design="horizont"] :is(button, a).rounded-xl,
+html[data-design="horizont"] .rounded-lg:has(> #btn-view-grid) {
+  border-radius: 999px;
+}
+html[data-design="horizont"] .site-main :is(div, article, section, li).rounded-xl { border-radius: 18px; }
+
+/* ── Footer on the dark ground ────────────────────────────────────────── */
+html[data-design="horizont"] .site-footer {
+  background: transparent;
+  border-top-color: rgb(230 245 138 / 0.15);
+  color: #b9c78f;
+}
+html[data-design="horizont"] .site-footer :is(a, button):hover { color: #eef4d0; }
