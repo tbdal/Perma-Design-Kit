@@ -74,7 +74,17 @@ export interface GardenPlan3DCallbacks {
   onAreaVertexDragEnd(areaId: string, index: number, xM: number, yM: number): void;
 }
 
+/** Function-coverage colouring (function-coverage.ts) for the 3D ground:
+ *  cell centres with a CSS colour (hex or "hsl(h, s%, l%)"), gap rings. */
+export interface CoverageOverlay3D {
+  cellM: number;
+  cells: { xM: number; yM: number; color: string }[];
+  gaps: { xM: number; yM: number; rM: number }[];
+}
+
 export interface GardenPlan3DView {
+  /** Shows (or with null hides) the function-coverage colouring. */
+  setCoverage(overlay: CoverageOverlay3D | null): void;
   updateYears(years: number): void;
   refreshPlacements(): void;
   setArmedPlant(plantId: string | null): void;
@@ -783,7 +793,60 @@ export function createGardenPlan3DView(
   refreshTiles();
   requestRender();
 
+  // ── Function coverage: translucent coloured cells draped on the ground
+  // (corner heights from the terrain) plus dashed rings at the gaps. ──
+  let coverageGroup: THREE.Group | null = null;
+  function setCoverage(o: CoverageOverlay3D | null) {
+    if (coverageGroup) {
+      coverageGroup.traverse(obj => {
+        const m = obj as THREE.Mesh;
+        m.geometry?.dispose();
+        (m.material as THREE.Material | undefined)?.dispose();
+      });
+      scene.remove(coverageGroup);
+      coverageGroup = null;
+    }
+    if (o && o.cells.length) {
+      const g = new THREE.Group();
+      const lift = 0.12 + (plan.areas?.length ?? 0) * 0.02; // above the area sheets
+      const pos: number[] = [], col: number[] = [];
+      const c = new THREE.Color();
+      const h = o.cellM / 2;
+      for (const cell of o.cells) {
+        c.setStyle(cell.color, THREE.SRGBColorSpace);
+        const x0 = cell.xM - h, x1 = cell.xM + h, z0 = cell.yM - h, z1 = cell.yM + h;
+        const v = (x: number, z: number) => { pos.push(x, ground(x, z) + lift, z); col.push(c.r, c.g, c.b); };
+        v(x0, z0); v(x0, z1); v(x1, z0);
+        v(x1, z0); v(x0, z1); v(x1, z1);
+      }
+      const geom = new THREE.BufferGeometry();
+      geom.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+      geom.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+      const mesh = new THREE.Mesh(geom, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.4, depthWrite: false, side: THREE.DoubleSide }));
+      mesh.renderOrder = 2;
+      g.add(mesh);
+      for (const gap of o.gaps) {
+        const pts: THREE.Vector3[] = [];
+        const n = 64;
+        for (let i = 0; i < n; i++) {
+          const a = (i / n) * Math.PI * 2;
+          const x = gap.xM + Math.cos(a) * gap.rM, z = gap.yM + Math.sin(a) * gap.rM;
+          pts.push(new THREE.Vector3(x, ground(x, z) + lift + 0.02, z));
+        }
+        const line = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts),
+          new THREE.LineDashedMaterial({ color: 0xb91c1c, dashSize: Math.max(0.3, gap.rM / 8), gapSize: Math.max(0.2, gap.rM / 12), depthWrite: false }));
+        line.computeLineDistances();
+        line.renderOrder = 3;
+        g.add(line);
+      }
+      scene.add(g);
+      coverageGroup = g;
+    }
+    requestRender();
+  }
+
   return {
+    setCoverage,
     updateYears(newYears: number) {
       years = newYears;
       rebuildPlacements();

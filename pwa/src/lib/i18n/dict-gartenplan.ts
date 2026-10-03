@@ -32,6 +32,8 @@ export const gartenplanDict: Dict = {
   mapBgOrthoNone: { de: 'Luftbild (hier keins — Satellit grob)', en: 'Aerial photo (none here — coarse satellite)' },
   mapBgOrthoGeneric: { de: 'Luftbild (amtlich)', en: 'Aerial photo (official)' },
   mapContours: { de: 'Höhenlinien', en: 'Contours' },
+  undoTitle: { de: 'Rückgängig (Strg+Z)', en: 'Undo (Ctrl+Z)' },
+  redoTitle: { de: 'Wiederholen (Strg+Umschalt+Z)', en: 'Redo (Ctrl+Shift+Z)' },
   mapGrid: { de: 'Meterlinien', en: 'Grid lines' },
   mapGridTitle: { de: 'Meterlinien ein-/ausblenden (G)', en: 'Show / hide grid lines (G)' },
   coverageLabel: { de: 'Funktionen', en: 'Functions' },

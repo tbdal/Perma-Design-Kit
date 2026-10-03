@@ -10,12 +10,12 @@ import Layout from '../layouts/Layout.astro';
       <svg class="ml-4 h-5 w-5 shrink-0 text-stone-500 dark:text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/>
       </svg>
-      <input type="text" id="plant-search" data-i18n-placeholder="searchPlaceholder" placeholder="Pflanze suchen — lat. oder dt. Name, z.B. Sambucus nigra"
+      <input type="text" id="plant-search" role="combobox" aria-controls="search-results" aria-autocomplete="list" data-i18n-placeholder="searchPlaceholder" placeholder="Pflanze suchen — lat. oder dt. Name, z.B. Sambucus nigra"
         class="min-w-0 flex-1 bg-transparent py-3.5 pl-3 pr-2 text-sm text-stone-800 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:outline-none" autocomplete="off" />
       <button id="btn-search" data-i18n="searchBtn" class="shrink-0 rounded-xl m-1.5 bg-green-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-green-800 active:scale-95">Suchen</button>
     </div>
     <!-- Floating dropdown -->
-    <div id="search-results" class="absolute left-0 right-0 top-full z-50 mt-1 hidden max-h-80 overflow-y-auto rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 shadow-xl"></div>
+    <div id="search-results" role="listbox" class="absolute left-0 right-0 top-full z-50 mt-1 hidden max-h-80 overflow-y-auto rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 shadow-xl"></div>
   </section>
 
   <!-- Actions: Heading, View-Switch, Sortieren links; Primär-CTA + Daten-Overflow rechts -->
@@ -1489,8 +1489,29 @@ import Layout from '../layouts/Layout.astro';
   const searchInput = document.getElementById('plant-search') as HTMLInputElement;
   const searchResults = document.getElementById('search-results')!;
   let searchTimeout: ReturnType<typeof setTimeout>;
+  // Keyboard navigation in the result list: ↑/↓ highlight a hit, Enter adds it.
+  let activeResult = -1;
+
+  function resultRows(): HTMLElement[] {
+    return [...searchResults.querySelectorAll<HTMLElement>('[data-idx]')];
+  }
+  function setActiveResult(i: number) {
+    const rows = resultRows();
+    activeResult = rows.length ? (i + rows.length) % rows.length : -1;
+    rows.forEach((r, k) => {
+      const on = k === activeResult;
+      r.classList.toggle('bg-green-50', on);
+      r.classList.toggle('dark:bg-green-900/30', on);
+      r.setAttribute('aria-selected', on ? 'true' : 'false');
+      if (on) r.scrollIntoView({ block: 'nearest' });
+    });
+    if (activeResult >= 0) searchInput.setAttribute('aria-activedescendant', rows[activeResult].id);
+    else searchInput.removeAttribute('aria-activedescendant');
+  }
 
   async function doSearch() {
+    activeResult = -1;
+    searchInput.removeAttribute('aria-activedescendant');
     const q = searchInput.value.trim();
     if (q.length < 2) { searchResults.innerHTML = ''; searchResults.classList.add('hidden'); return; }
     searchResults.classList.remove('hidden');
@@ -1506,7 +1527,7 @@ import Layout from '../layouts/Layout.astro';
       searchResults.innerHTML = results.map((r, i) => {
         const dupe = !!r.latinName && existingLatin.has(r.latinName.trim().toLowerCase());
         return `
-        <div class="flex items-center justify-between gap-2 px-4 py-2.5 hover:bg-stone-50 dark:hover:bg-stone-800 transition" data-idx="${i}">
+        <div id="search-result-${i}" role="option" aria-selected="false" class="flex items-center justify-between gap-2 px-4 py-2.5 hover:bg-stone-50 dark:hover:bg-stone-800 transition" data-idx="${i}">
           <div class="min-w-0">
             <p class="truncate text-sm font-medium text-stone-800 dark:text-stone-100">${escapeHtml(r.commonName || r.latinName)}</p>
             ${r.latinName ? `<p class="truncate text-xs italic text-stone-500 dark:text-stone-400">${escapeHtml(r.latinName)}</p>` : ''}
@@ -1549,7 +1570,24 @@ import Layout from '../layouts/Layout.astro';
   }
 
   document.getElementById('btn-search')!.addEventListener('click', doSearch);
-  searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); doSearch(); } if (e.key === 'Escape') { searchResults.classList.add('hidden'); } });
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      if (!resultRows().length) return;
+      e.preventDefault();
+      searchResults.classList.remove('hidden');
+      setActiveResult(activeResult < 0 ? (e.key === 'ArrowDown' ? 0 : -1) : activeResult + (e.key === 'ArrowDown' ? 1 : -1));
+      return;
+    }
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const row = !searchResults.classList.contains('hidden') ? resultRows()[activeResult] : undefined;
+      const btn = row?.querySelector<HTMLButtonElement>('.btn-add-result');
+      if (btn) { if (!btn.disabled) btn.click(); return; }
+      clearTimeout(searchTimeout);
+      doSearch();
+    }
+    if (e.key === 'Escape') { searchResults.classList.add('hidden'); }
+  });
   searchInput.addEventListener('input', () => { clearTimeout(searchTimeout); searchTimeout = setTimeout(doSearch, 300); });
   document.addEventListener('click', (e) => {
     if (!searchResults.contains(e.target as Node) && e.target !== searchInput) {

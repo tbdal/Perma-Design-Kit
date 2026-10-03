@@ -151,6 +151,10 @@ import Layout from '../layouts/Layout.astro';
           <span id="years-label" class="w-20 text-sm font-medium text-stone-700 dark:text-stone-200"></span>
         </div>
         <div class="flex items-center gap-3">
+          <div class="flex items-center gap-1">
+            <button id="btn-undo" type="button" disabled data-i18n-aria-label="undoTitle" data-i18n-title="undoTitle" aria-label="Rückgängig (Strg+Z)" title="Rückgängig (Strg+Z)" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-2.5 py-1 text-sm font-medium text-stone-700 dark:text-stone-200 hover:bg-stone-200 dark:hover:bg-stone-700 disabled:opacity-40 disabled:hover:bg-stone-100 dark:disabled:hover:bg-stone-800">↶</button>
+            <button id="btn-redo" type="button" disabled data-i18n-aria-label="redoTitle" data-i18n-title="redoTitle" aria-label="Wiederholen (Strg+Umschalt+Z)" title="Wiederholen (Strg+Umschalt+Z)" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-2.5 py-1 text-sm font-medium text-stone-700 dark:text-stone-200 hover:bg-stone-200 dark:hover:bg-stone-700 disabled:opacity-40 disabled:hover:bg-stone-100 dark:disabled:hover:bg-stone-800">↷</button>
+          </div>
           <div class="flex items-center gap-1 rounded-lg bg-stone-100 dark:bg-stone-800 p-0.5 text-xs">
             <button id="btn-view-2d" data-i18n="btnView2d" class="rounded-md bg-white dark:bg-stone-700 px-2.5 py-1 font-medium text-stone-800 dark:text-stone-100 shadow-sm">2D</button>
             <button id="btn-view-3d" data-i18n="btnView3d" class="rounded-md px-2.5 py-1 font-medium text-stone-500 dark:text-stone-400">3D</button>
@@ -462,7 +466,87 @@ import Layout from '../layouts/Layout.astro';
       plan.updatedAt = new Date().toISOString();
       await saveGardenPlan(plan);
     }, 500);
+    if (!restoringHistory) scheduleHistory();
   }
+
+  // ── Rückgängig / Wiederholen ───────────────────────────────────────────
+  // Every edit already ends in scheduleAutosave(), so that is where states
+  // are recorded: a JSON snapshot of the plan (without updatedAt), debounced
+  // so a drag or a slider move becomes one step. Undo/redo write the snapshot
+  // back into the same plan object (it is shared with `plans`) and re-render.
+  const HISTORY_MAX = 100;
+  let history: string[] = [];
+  let historyIndex = -1;
+  let historyTimer: ReturnType<typeof setTimeout> | null = null;
+  let restoringHistory = false;
+  const btnUndo = document.getElementById('btn-undo') as HTMLButtonElement;
+  const btnRedo = document.getElementById('btn-redo') as HTMLButtonElement;
+
+  function planSnapshot(): string {
+    const { updatedAt: _u, ...rest } = editing!;
+    return JSON.stringify(rest);
+  }
+  function syncUndoButtons() {
+    btnUndo.disabled = historyIndex <= 0;
+    btnRedo.disabled = historyIndex >= history.length - 1;
+  }
+  function resetHistory() {
+    if (historyTimer) clearTimeout(historyTimer);
+    historyTimer = null;
+    history = editing ? [planSnapshot()] : [];
+    historyIndex = history.length - 1;
+    syncUndoButtons();
+  }
+  function scheduleHistory() {
+    if (historyTimer) clearTimeout(historyTimer);
+    historyTimer = setTimeout(recordHistory, 400);
+  }
+  function recordHistory() {
+    historyTimer = null;
+    if (!editing || historyIndex < 0) return;
+    const snap = planSnapshot();
+    if (snap === history[historyIndex]) return;
+    history = history.slice(0, historyIndex + 1);
+    history.push(snap);
+    if (history.length > HISTORY_MAX) history.shift();
+    historyIndex = history.length - 1;
+    syncUndoButtons();
+  }
+  function stepHistory(dir: -1 | 1) {
+    if (!editing || phaseB.classList.contains('hidden')) return;
+    if (historyTimer) { clearTimeout(historyTimer); recordHistory(); } // pending edit first
+    const target = historyIndex + dir;
+    if (target < 0 || target >= history.length) return;
+    historyIndex = target;
+    const prev = editing;
+    const before = { geo: JSON.stringify(prev.geo), w: prev.areaWidthM, h: prev.areaHeightM };
+    const data = JSON.parse(history[historyIndex]) as GardenPlan;
+    for (const k of Object.keys(prev) as (keyof GardenPlan)[]) if (k !== 'updatedAt' && !(k in data)) delete (prev as any)[k];
+    Object.assign(prev, data);
+    // Drop selections / tools that point at things which no longer exist.
+    endAreaDraw();
+    endRowDraw();
+    if (editBoundary) setBoundaryEdit(false);
+    if (selectedPlacementId && !prev.placements.some(p => p.id === selectedPlacementId)) selectedPlacementId = null;
+    if (selectedAreaId && !(prev.areas ?? []).some(a => a.id === selectedAreaId)) selectedAreaId = null;
+    for (const id of [...multiSel]) if (!prev.placements.some(p => p.id === id)) multiSel.delete(id);
+    yearsInput.value = String(prev.yearsSincePlanting);
+    yearsLabel.textContent = t('yearsSuffix', { years: prev.yearsSincePlanting });
+    syncMapBar();
+    renderAreasList();
+    renderUnplacedList();
+    renderSuggestions();
+    renderSelectedPanel();
+    renderPlanSvg();
+    if (!plan3dContainer.hidden) btnView3d.click(); // rebuild 3D, camera kept
+    if (before.geo !== JSON.stringify(prev.geo) || before.w !== prev.areaWidthM || before.h !== prev.areaHeightM) void loadTerrain();
+    restoringHistory = true;
+    scheduleAutosave();
+    restoringHistory = false;
+    syncUndoButtons();
+  }
+  btnUndo.addEventListener('click', () => stepHistory(-1));
+  btnRedo.addEventListener('click', () => stepHistory(1));
 
   function showToast(msg: string) {
     toast.textContent = msg;
@@ -975,11 +1059,13 @@ import Layout from '../layouts/Layout.astro';
         renderUnplacedList();
         renderSuggestions();
         view3d?.refreshPlacements();
+        scheduleCoverage();
         scheduleAutosave();
       },
       onPlacementDragEnd(placementId, xM, yM) {
         const pl = editing?.placements.find(p => p.id === placementId);
         if (pl) { pl.xM = xM; pl.yM = yM; }
+        scheduleCoverage();
         scheduleAutosave();
       },
       onAreaSelected(areaId) {
@@ -1008,6 +1094,7 @@ import Layout from '../layouts/Layout.astro';
     });
     view3d.setArmedPlant(armedPlantId);
     view3d.refreshAreas(selectedAreaId);
+    view3d.setCoverage(coverage3d);
     sunControls.hidden = false;
     if (!sunDateInput.value) {
       setSunNow();
@@ -1062,10 +1149,11 @@ import Layout from '../layouts/Layout.astro';
   sunPlayBtn.addEventListener('click', () => {
     if (sunPlayTimer) { stopSunPlay(); return; }
     sunPlayBtn.textContent = t('sunStop');
-    if (Number(sunTimeInput.value) >= 1435) sunTimeInput.value = '0';
+    // Day over (no further 10-min step fits) → start the day again.
+    if (Number(sunTimeInput.value) + 10 > 1435) { sunTimeInput.value = '0'; applySun(); }
     sunPlayTimer = setInterval(() => {
       const next = Number(sunTimeInput.value) + 10;
-      if (next > 1435) { stopSunPlay(); return; }
+      if (next > 1435) { sunTimeInput.value = '1435'; applySun(); stopSunPlay(); return; }
       sunTimeInput.value = String(next);
       applySun();
     }, 60);
@@ -1125,6 +1213,7 @@ import Layout from '../layouts/Layout.astro';
     renderPlanSvg();
     if (savedView?.mode === '3d' && plan3dContainer.hidden) btnView3d.click();
     void loadTerrain();
+    resetHistory();
   }
 
   // ── Kamera merken ───────────────────────────────────────────────────────
@@ -1308,6 +1397,7 @@ import Layout from '../layouts/Layout.astro';
       view3d?.refreshPlacements();
       renderSelectedPanel();
       renderSuggestions();
+      scheduleAutosave();
     });
   }
 
@@ -2153,8 +2243,15 @@ import Layout from '../layouts/Layout.astro';
   document.addEventListener('keydown', (e: KeyboardEvent) => {
     const tgt = e.target as HTMLElement | null;
     if (tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'TEXTAREA' || tgt.tagName === 'SELECT' || tgt.isContentEditable)) return;
-    if (e.ctrlKey || e.metaKey || e.altKey || document.querySelector('dialog[open]')) return;
+    if (document.querySelector('dialog[open]')) return;
     if (!editing || phaseB.classList.contains('hidden')) return;
+    if ((e.ctrlKey || e.metaKey) && !e.altKey) {
+      const k = e.key.toLowerCase();
+      if (k === 'z') { e.preventDefault(); stepHistory(e.shiftKey ? 1 : -1); }
+      else if (k === 'y' && !e.shiftKey) { e.preventDefault(); stepHistory(1); }
+      return;
+    }
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
     const in2d = plan3dContainer.hidden;
     const click = (id: string) => (document.getElementById(id) as HTMLButtonElement | null)?.click();
     const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
@@ -2278,15 +2375,17 @@ import Layout from '../layouts/Layout.astro';
   /** Red → yellow → green for 0..1. */
   function rampColor(f: number): string {
     const hue = Math.round(f * 125);
-    return `hsl(${hue} 75% 45%)`;
+    return `hsl(${hue}, 75%, 45%)`; // comma syntax: also parsed by THREE.Color
   }
+  /** The same colouring for the 3D view (kept so a newly built 3D view gets it). */
+  let coverage3d: import('../lib/gartenplan-3d').CoverageOverlay3D | null = null;
 
   function renderCoverage() {
     const layer = planSvg.querySelector('#coverage-layer');
     const mode = coverageSelect.value as '' | 'all' | CoverFunc;
     coverageSection.hidden = !mode || !editing;
     if (!layer) return;
-    if (!mode || !editing || editing.boundary.length < 3) { layer.innerHTML = ''; return; }
+    if (!mode || !editing || editing.boundary.length < 3) { layer.innerHTML = ''; coverage3d = null; view3d?.setCoverage(null); return; }
     const plan = editing;
     const cellM = Math.max(0.5, Math.min(plan.areaWidthM, plan.areaHeightM) / 40);
     const grid = coverageGrid(plan, plantsById, cellM);
@@ -2300,6 +2399,8 @@ import Layout from '../layouts/Layout.astro';
       buckets.set(color, arr);
     }
     let svg = [...buckets.entries()].map(([color, d]) => `<path d="${d.join('')}" fill="${color}" fill-opacity="0.32"/>`).join('');
+    const cells3d = grid.cells.map(c => ({ xM: c.xM, yM: c.yM, color: mode === 'all' ? rampColor(funcCount(c.mask) / COVER_FUNCS.length) : hasFunc(c.mask, mode) ? '#16a34a' : '#dc2626' }));
+    coverage3d = { cellM, cells: cells3d, gaps: [] };
 
     const summary = coverageSummary(grid);
     if (mode === 'all') {
@@ -2311,6 +2412,7 @@ import Layout from '../layouts/Layout.astro';
           </button>`).join('');
     } else {
       const gaps = findGaps(grid, mode, 3);
+      coverage3d.gaps = gaps.map(g => ({ xM: g.xM, yM: g.yM, rM: Math.sqrt(g.areaM2 / Math.PI) * 0.6 }));
       const k = viewK();
       svg += gaps.map(g => `<g transform="translate(${g.xM * U},${g.yM * U})"><circle r="${Math.sqrt(g.areaM2 / Math.PI) * U * 0.6}" fill="none" stroke="#b91c1c" stroke-width="${2 * k}" stroke-dasharray="${6 * k} ${4 * k}"/><text text-anchor="middle" dominant-baseline="central" font-size="${16 * k}" font-weight="700" fill="#b91c1c" stroke="#fff" stroke-width="${3 * k}" paint-order="stroke">+</text></g>`).join('');
       const rows = gaps.map((g, gi) => {
@@ -2337,7 +2439,9 @@ import Layout from '../layouts/Layout.astro';
         if (!g || !p || !editing) return;
         editing.placements.push({ id: newId(), plantId: p.id, xM: g.xM, yM: g.yM, notes: '' });
         renderPlanSvg();
+        view3d?.refreshPlacements();
         renderSuggestions();
+        scheduleAutosave();
         showToast(t('toastPlantedAtGap', { name: displayName(p) }));
       }));
     }
@@ -2346,6 +2450,7 @@ import Layout from '../layouts/Layout.astro';
       renderCoverage();
     }));
     layer.innerHTML = svg;
+    view3d?.setCoverage(coverage3d);
   }
 
   /** "Höhe 4 m · Breite 4 m · Stickstoff-Fixierer, Windschutz" */

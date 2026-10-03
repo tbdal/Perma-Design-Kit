@@ -2,6 +2,13 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Gartenplan: Rückgängig/Wiederholen, Funktions-Abdeckung in 3D; Tastatur in der Suche (2026-10-04)
+- [x] **Rückgängig / Wiederholen** im Gartenplan: Buttons ↶ ↷ neben 2D/3D und **Strg/⌘+Z**, **Strg/⌘+Umschalt+Z** bzw. **Strg+Y** (in Eingabefeldern bleibt deren eigenes Rückgängig). Erfasst alle Änderungen am Plan — Pflanzen setzen/verschieben/entfernen, Flächen, Umriss, Jahre-Regler, Hintergrund … —, ein Ziehen zählt als ein Schritt; bis zu 100 Schritte, in 2D und 3D.
+- [x] Fix: Eine einzelne Pflanze entfernen und „Hier pflanzen“ (Funktions-Abdeckung) wurden nicht automatisch gespeichert.
+- [x] **Funktions-Abdeckung auch in 3D:** Einfärbung auf dem Gelände, Lücken als gestrichelte rote Ringe; aktualisiert sich beim Setzen/Verschieben in 3D.
+- [x] **Tagesverlauf:** Ist das Tagesende erreicht, startet ein Klick den Tag neu (blieb vorher je nach Startzeit bei 23:30 hängen).
+- [x] **Pflanzensuche:** mit ↑/↓ durch die Ergebnisse, **Enter** fügt das markierte hinzu (ohne Markierung sucht Enter wie bisher).
+
 ## Gartenplan: Meterlinien ausblendbar (2026-10-04)
 - [x] Checkbox **„Meterlinien“** in der Kartenleiste (Taste **G**): blendet das Raster im 2D-Plan und beim Zeichnen aus, z. B. um das Luftbild ungestört zu sehen; Meterzahlen am Rand und Umriss bleiben. Die Einstellung wird gemerkt. Kürzerer Quellenvermerk beim Luftbild.
 
