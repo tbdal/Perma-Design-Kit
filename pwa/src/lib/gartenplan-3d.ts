@@ -260,7 +260,7 @@ export function createGardenPlan3DView(
 
   const VFOV = 50;
   const maxDim = Math.max(plan.areaWidthM, plan.areaHeightM, 2);
-  const camera = new THREE.PerspectiveCamera(VFOV, Math.max(1, container.clientWidth) / Math.max(1, container.clientHeight), 0.1, Math.max(500, maxDim * 30));
+  const camera = new THREE.PerspectiveCamera(VFOV, Math.max(1, container.clientWidth) / Math.max(1, container.clientHeight), 0.1, 400000); // far: unlimited zoom-out (log depth keeps precision)
   const { x: cx, z: cz } = boundaryCentroid(plan);
   camera.position.set(cx + maxDim * 0.6, maxDim * 0.8, cz + maxDim * 0.6);
 
@@ -295,7 +295,7 @@ export function createGardenPlan3DView(
 
   // Surrounding meadow so shadows and the sun path have context.
   const meadow = new THREE.Mesh(
-    new THREE.CircleGeometry(maxDim * 4, 48),
+    new THREE.CircleGeometry(100000, 64), // reaches the horizon at any zoom
     new THREE.MeshStandardMaterial({ color: 0xa8bd84, roughness: 1 }),
   );
   meadow.rotation.x = -Math.PI / 2;
@@ -306,40 +306,75 @@ export function createGardenPlan3DView(
   const lawn = buildGroundMesh(plan.areaWidthM, plan.areaHeightM);
   scene.add(lawn);
 
-  // ── Map background on the ground (OSM / coarse satellite), reaching well
-  // beyond the plan so the surroundings show. Tiles are laid out in the
-  // local east/south frame and turned with the plan (same mapping as the
-  // rotate(−θ) in 2D, here around the vertical axis). ──
+  // ── Map background on the ground (OSM / coarse satellite). Reloaded for
+  // the visible area after every camera move, so zooming out shows the
+  // surroundings at a coarser tile zoom — down to region scale. Tiles are
+  // laid out in the local east/south frame and turned with the plan (same
+  // mapping as the rotate(−θ) in 2D, here around the vertical axis). The old
+  // tile set stays (slightly lowered) until the new one has loaded. ──
   const geo = plan.geo;
-  if (geo && geo.basemap !== 'none') {
-    const src = geo.basemap === 'sat' ? S2_TILES : OSM_TILES;
-    const margin = maxDim * 1.5;
-    const rect = { minX: -margin, minY: -margin, maxX: plan.areaWidthM + margin, maxY: plan.areaHeightM + margin };
-    const tiles = tilesForRect(rect, geo, (rect.maxX - rect.minX) / 2048, src.maxZoom);
-    const tileGroup = new THREE.Group();
-    tileGroup.rotation.y = geo.rotationDeg * Math.PI / 180;
-    const loader = new THREE.TextureLoader();
-    loader.setCrossOrigin('anonymous');
-    for (const t of tiles) {
-      const g = new THREE.PlaneGeometry(t.sizeM * 1.002, t.sizeM * 1.002);
+  const tileSrc = geo && geo.basemap !== 'none' ? (geo.basemap === 'sat' ? S2_TILES : OSM_TILES) : null;
+  const tileLoader = new THREE.TextureLoader();
+  tileLoader.setCrossOrigin('anonymous');
+  let tileGroup: THREE.Group | null = null;
+  let oldTileGroup: THREE.Group | null = null;
+  let tileKey = '';
+  if (tileSrc) lawn.visible = false; // the map is the ground inside the plan too
+
+  function disposeTiles(g: THREE.Group | null) {
+    if (!g) return;
+    g.traverse(o => {
+      const m = o as THREE.Mesh;
+      m.geometry?.dispose();
+      const mat = (m as any).material as THREE.MeshStandardMaterial | undefined;
+      mat?.map?.dispose();
+      mat?.dispose();
+    });
+    scene.remove(g);
+  }
+
+  function refreshTiles() {
+    if (!geo || !tileSrc) return;
+    const t = controls.target;
+    const R = Math.max(maxDim * 1.5, camera.position.distanceTo(t) * 1.8);
+    const tiles = tilesForRect({ minX: t.x - R, minY: t.z - R, maxX: t.x + R, maxY: t.z + R }, geo, (2 * R) / 2048, tileSrc.maxZoom);
+    const key = tiles.map(q => `${q.z}/${q.x}/${q.y}`).join(',');
+    if (!tiles.length || key === tileKey) return;
+    tileKey = key;
+    disposeTiles(oldTileGroup);
+    oldTileGroup = tileGroup;
+    if (oldTileGroup) oldTileGroup.position.y = -0.02;
+    const next = new THREE.Group();
+    next.rotation.y = geo.rotationDeg * Math.PI / 180;
+    tileGroup = next;
+    let pending = tiles.length;
+    const settled = () => {
+      if (--pending > 0 || tileGroup !== next) return;
+      disposeTiles(oldTileGroup);
+      oldTileGroup = null;
+      requestRender();
+    };
+    for (const q of tiles) {
+      const g = new THREE.PlaneGeometry(q.sizeM * 1.002, q.sizeM * 1.002);
       g.rotateX(-Math.PI / 2);
       const mat = new THREE.MeshStandardMaterial({ roughness: 1, color: 0xffffff });
       const mesh = new THREE.Mesh(g, mat);
-      mesh.position.set(t.eM + t.sizeM / 2, 0, t.sM + t.sizeM / 2);
+      mesh.position.set(q.eM + q.sizeM / 2, 0, q.sM + q.sizeM / 2);
       mesh.receiveShadow = true;
       mesh.visible = false; // until its texture has arrived
-      loader.load(tileUrl(src, t.z, t.x, t.y), tex => {
+      tileLoader.load(tileUrl(tileSrc, q.z, q.x, q.y), tex => {
+        if (tileGroup !== next && oldTileGroup !== next) { tex.dispose(); return; }
         tex.colorSpace = THREE.SRGBColorSpace;
         tex.anisotropy = 4;
         mat.map = tex;
         mat.needsUpdate = true;
         mesh.visible = true;
         requestRender();
-      });
-      tileGroup.add(mesh);
+        settled();
+      }, undefined, settled);
+      next.add(mesh);
     }
-    scene.add(tileGroup);
-    lawn.visible = false; // the map is the ground inside the plan too
+    scene.add(next);
   }
   scene.add(buildBoundaryMesh(plan));
 
@@ -404,7 +439,7 @@ export function createGardenPlan3DView(
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.target.set(cx, 0, cz);
   controls.minDistance = 1;
-  controls.maxDistance = maxDim * 3;
+  controls.maxDistance = 50000; // zoom out without limit (≈ region scale)
   controls.maxPolarAngle = Math.PI / 2 - 0.02;
   controls.enableDamping = false;
   if (opts.camera) {
@@ -424,7 +459,11 @@ export function createGardenPlan3DView(
     controls.target.set(fx, 0, fz);
     camera.position.set(fx, dist, fz + dist * 0.001);
   }
-  controls.maxDistance = Math.max(controls.maxDistance, camera.position.distanceTo(controls.target) * 1.5);
+  let tileTimer: ReturnType<typeof setTimeout> | null = null;
+  controls.addEventListener('change', () => {
+    if (tileTimer) clearTimeout(tileTimer);
+    tileTimer = setTimeout(refreshTiles, 350);
+  });
   // Untouched camera → hand the original 2D section back unchanged (the
   // camera may have been raised above the canopies, which would zoom out).
   const startPos = camera.position.clone(), startTarget = controls.target.clone();
@@ -694,6 +733,7 @@ export function createGardenPlan3DView(
 
   rebuildPlacements();
   rebuildAreas();
+  refreshTiles();
   requestRender();
 
   return {
@@ -741,6 +781,7 @@ export function createGardenPlan3DView(
     },
     dispose() {
       resizeObserver.disconnect();
+      if (tileTimer) clearTimeout(tileTimer);
       container.removeEventListener('pointerdown', onContainerPointerDown, { capture: true } as any);
       renderer.domElement.removeEventListener('pointermove', onPlantPointerMove);
       renderer.domElement.removeEventListener('pointermove', onVertexPointerMove);

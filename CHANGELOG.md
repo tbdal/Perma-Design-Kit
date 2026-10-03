@@ -2,6 +2,11 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Gartenplan: unbegrenzt herauszoomen, Werkzeugleiste mit Lasso (2026-10-03)
+- [x] **Unbegrenzt herauszoomen** — 2D bis ca. 50 km Breite (Kacheln werden automatisch gröber); in 3D lädt die Bodenkarte nach jeder Kamerabewegung den sichtbaren Bereich nach, bis zur Region (z. B. ganz München), die Wiese reicht bis zum Horizont.
+- [x] **Werkzeugleiste in der 2D-Karte** (unter den Zoom-Buttons): ✋ **Bewegen** — Ziehen verschiebt immer die Karte, auch über Pflanzen; ↖ **Markieren – einzeln** — wie bisher, Umschalt/Strg-Klick nimmt weitere Pflanzen dazu; ⬚ **Markieren – mehrere als Fläche** — Pflanzen mit gedrückter Maus umfahren (Lasso).
+- [x] **Mehrfachauswahl** — „Ausgewählt“ zeigt Anzahl und Arten, „Alle entfernen“, „Markierung aufheben“; eine markierte Pflanze ziehen verschiebt alle; Esc hebt die Markierung auf.
+
 ## Gartenplan: sauberes Rendering in 2D und 3D (2026-10-03)
 - [x] **3D ohne Streifen** — logarithmischer Tiefenpuffer, deckende Kartenkacheln (halbtransparente überlappten sich zu dunklen Streifen), Wiese nur noch als Platzhalter deutlich darunter, Umriss/Flächen mit Polygon-Offset: kein Z-Fighting mehr bei großen Plänen.
 - [x] **3D-Schatten ohne Artefakte** — Schattenausschnitt und Bias passend zur Planbreite, keine strahlenförmigen Keile mehr.

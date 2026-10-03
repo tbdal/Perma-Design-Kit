@@ -206,6 +206,10 @@ import Layout from '../layouts/Layout.astro';
               <button id="zoom-in" type="button" data-i18n-aria-label="zoomIn" data-i18n-title="zoomIn" aria-label="Hineinzoomen" title="Hineinzoomen" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700">+</button>
               <button id="zoom-out" type="button" data-i18n-aria-label="zoomOut" data-i18n-title="zoomOut" aria-label="Herauszoomen" title="Herauszoomen" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700">−</button>
               <button id="zoom-fit" type="button" data-i18n-aria-label="zoomFit" data-i18n-title="zoomFit" aria-label="Ganzen Plan zeigen" title="Ganzen Plan zeigen" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700 text-sm">⤢</button>
+              <span class="my-1 h-px bg-stone-300 dark:bg-stone-600"></span>
+              <button id="tool-pan" type="button" data-tool="pan" aria-pressed="false" data-i18n-aria-label="toolPan" data-i18n-title="toolPan" aria-label="Bewegen" title="Bewegen" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700 aria-pressed:bg-amber-200 aria-pressed:ring-amber-500 dark:aria-pressed:bg-amber-800 text-sm">✋</button>
+              <button id="tool-select" type="button" data-tool="select" aria-pressed="true" data-i18n-aria-label="toolSelect" data-i18n-title="toolSelect" aria-label="Markieren – einzeln" title="Markieren – einzeln" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700 aria-pressed:bg-amber-200 aria-pressed:ring-amber-500 dark:aria-pressed:bg-amber-800 text-sm">↖</button>
+              <button id="tool-lasso" type="button" data-tool="lasso" aria-pressed="false" data-i18n-aria-label="toolLasso" data-i18n-title="toolLasso" aria-label="Markieren – mehrere als Fläche" title="Markieren – mehrere als Fläche" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700 aria-pressed:bg-amber-200 aria-pressed:ring-amber-500 dark:aria-pressed:bg-amber-800 text-sm">⬚</button>
             </div>
             <div aria-hidden="true" class="cursor-readout pointer-events-none absolute hidden rounded bg-stone-900/80 px-1.5 py-0.5 font-mono text-[11px] text-white"></div>
             <div class="basemap-attrib absolute bottom-3 right-3 hidden rounded-tl bg-white/80 px-1 text-[10px] text-stone-600"></div>
@@ -298,6 +302,10 @@ import Layout from '../layouts/Layout.astro';
 
 <style is:global>
   #plan-svg.area-drawing { cursor: crosshair; }
+  #plan-svg.tool-pan { cursor: grab; }
+  #plan-svg.tool-pan #plan-markers, #plan-svg.tool-pan #plan-areas-layer,
+  #plan-svg.tool-lasso #plan-markers, #plan-svg.tool-lasso #plan-areas-layer { pointer-events: none; }
+  #plan-svg.tool-lasso { cursor: crosshair; }
   #plan-svg.area-drawing #plan-markers { pointer-events: none; }
   .locate-handle { border-radius: 9999px; border: 3px solid #fff; box-shadow: 0 0 0 1px #1c1917, 0 1px 4px rgb(0 0 0 / 0.4); }
   .locate-handle-origin { background: #15803d; cursor: move; }
@@ -1175,6 +1183,7 @@ import Layout from '../layouts/Layout.astro';
   }
 
   function renderSelectedPanel() {
+    if (editing && multiSel.size) { renderMultiPanel(); return; }
     if (editing && (selectedAreaId || editBoundary)) { renderSelectedShapePanel(); return; }
     if (!editing || !selectedPlacementId) {
       selectedPanel.innerHTML = `<p class="text-xs text-stone-500 dark:text-stone-400">${t('selectedPanelEmpty')}</p>`;
@@ -1206,6 +1215,35 @@ import Layout from '../layouts/Layout.astro';
       renderSelectedPanel();
       renderSuggestions();
     });
+  }
+
+  /** "Ausgewählt" for a multi-selection (lasso / Shift-click): count per
+   *  plant, remove all, clear. */
+  function renderMultiPanel() {
+    if (!editing) return;
+    const sel = editing.placements.filter(pl => multiSel.has(pl.id));
+    const counts = new Map<string, number>();
+    for (const pl of sel) counts.set(pl.plantId, (counts.get(pl.plantId) ?? 0) + 1);
+    const rows = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10)
+      .map(([id, n]) => `<li class="flex justify-between gap-2"><span class="truncate">${plantLabel(plantsById.get(id))}</span><span class="font-mono">${n}×</span></li>`).join('');
+    selectedPanel.innerHTML = `
+      <p class="mb-2 text-sm font-medium text-stone-800 dark:text-stone-100">${t('multiSelected', { n: sel.length })}</p>
+      <ul class="space-y-0.5 text-xs text-stone-700 dark:text-stone-200">${rows}</ul>
+      <p class="mt-2 text-[11px] text-stone-500 dark:text-stone-400">${t('multiHint')}</p>
+      <div class="mt-2 flex flex-wrap gap-2">
+        <button id="btn-multi-remove" class="rounded-md bg-red-100 dark:bg-red-900/40 px-2.5 py-1 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/60">${t('multiRemove')}</button>
+        <button id="btn-multi-clear" class="rounded-md bg-stone-100 dark:bg-stone-700 px-2.5 py-1 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600">${t('multiClear')}</button>
+      </div>`;
+    document.getElementById('btn-multi-remove')!.addEventListener('click', () => {
+      if (!editing || !confirm(t('multiRemoveConfirm', { n: multiSel.size }))) return;
+      editing.placements = editing.placements.filter(pl => !multiSel.has(pl.id));
+      multiSel.clear();
+      renderPlanSvg();
+      renderSelectedPanel();
+      renderSuggestions();
+      scheduleAutosave();
+    });
+    document.getElementById('btn-multi-clear')!.addEventListener('click', () => { multiSel.clear(); refreshMarkerHighlight(); renderSelectedPanel(); });
   }
 
   /** "Ausgewählt" for a selected area or the garden outline being edited:
@@ -1249,7 +1287,8 @@ import Layout from '../layouts/Layout.astro';
     const radiusU = radiusM * SVG_UNITS_PER_METER;
     const layer = p ? deriveLayer(p) : 'shrub';
     const style = LAYER_STYLE[layer];
-    const selected = selectedPlacementId === placement.id;
+    const single = selectedPlacementId === placement.id;
+    const selected = single || multiSel.has(placement.id);
     const blob = group.querySelector('.marker-blob') as SVGPathElement;
     blob.setAttribute('d', blobPathD(radiusU, placement.id, style.lobes, style.wobble));
     blob.setAttribute('fill', style.fill);
@@ -1261,10 +1300,10 @@ import Layout from '../layouts/Layout.astro';
     const rPx = radiusU * ppu;
     blob.setAttribute('stroke-width', String((selected ? 2.5 : 1.2) / ppu));
     group.querySelector('.marker-dot')?.setAttribute('r', String(Math.min(3, Math.max(1, rPx * 0.25)) / ppu));
-    const fontPx = selected ? 13 : Math.min(13, rPx * 0.7);
+    const fontPx = single ? 13 : Math.min(13, rPx * 0.7);
     const label = group.querySelector('.marker-label') as SVGTextElement;
     const f = fontPx / ppu;
-    label.style.display = selected || fontPx >= 7 ? '' : 'none';
+    label.style.display = single || fontPx >= 7 ? '' : 'none';
     label.setAttribute('y', String(radiusU + f * 1.05));
     label.setAttribute('font-size', String(f));
     label.setAttribute('stroke-width', String(f * 0.25));
@@ -1287,7 +1326,8 @@ import Layout from '../layouts/Layout.astro';
       <g id="plan-markers"></g>
       <g id="area-handles"></g>
       <g id="area-draft" pointer-events="none"></g>
-      <g id="row-draft" pointer-events="none"></g>`;
+      <g id="row-draft" pointer-events="none"></g>
+      <g id="lasso-layer" pointer-events="none"></g>`;
     renderBasemap(planSvg);
     renderAreaDraft();
     renderRowDraft();
@@ -1331,12 +1371,19 @@ import Layout from '../layouts/Layout.astro';
     let dragging = false;
     let moved = false;
     let startClientX = 0, startClientY = 0;
+    let start = { xM: 0, yM: 0 };
+    // Dragging a marked plant moves the whole multi-selection along.
+    let carried: { pl: GardenPlanPlacement; g: SVGGElement; x0: number; y0: number }[] = [];
     group.addEventListener('pointerdown', (e: PointerEvent) => {
       e.stopPropagation();
       dragging = true;
       moved = false;
       startClientX = e.clientX;
       startClientY = e.clientY;
+      start = clientToMeters(planSvg, e.clientX, e.clientY);
+      carried = multiSel.has(placement.id)
+        ? (editing?.placements ?? []).filter(pl => multiSel.has(pl.id)).map(pl => ({ pl, g: markerMap.get(pl.id)!, x0: pl.xM, y0: pl.yM })).filter(c => c.g)
+        : [{ pl: placement, g: group, x0: placement.xM, y0: placement.yM }];
       group.setPointerCapture(e.pointerId);
     });
     group.addEventListener('pointermove', (e: PointerEvent) => {
@@ -1344,16 +1391,24 @@ import Layout from '../layouts/Layout.astro';
       if (Math.hypot(e.clientX - startClientX, e.clientY - startClientY) > 4) moved = true;
       if (!moved) return;
       const pt = clientToMeters(planSvg, e.clientX, e.clientY);
-      group.setAttribute('transform', `translate(${pt.xM * SVG_UNITS_PER_METER},${pt.yM * SVG_UNITS_PER_METER})`);
+      const dx = pt.xM - start.xM, dy = pt.yM - start.yM;
+      for (const c of carried) c.g.setAttribute('transform', `translate(${(c.x0 + dx) * SVG_UNITS_PER_METER},${(c.y0 + dy) * SVG_UNITS_PER_METER})`);
     });
     group.addEventListener('pointerup', (e: PointerEvent) => {
       dragging = false;
       if (moved) {
         const pt = clientToMeters(planSvg, e.clientX, e.clientY);
-        placement.xM = pt.xM;
-        placement.yM = pt.yM;
+        const dx = pt.xM - start.xM, dy = pt.yM - start.yM;
+        for (const c of carried) { c.pl.xM = c.x0 + dx; c.pl.yM = c.y0 + dy; }
         afterGeometryEdit();
+      } else if (e.shiftKey || e.ctrlKey || e.metaKey) {
+        // Add to / remove from the multi-selection.
+        if (selectedPlacementId) { multiSel.add(selectedPlacementId); selectedPlacementId = null; }
+        if (multiSel.has(placement.id)) multiSel.delete(placement.id); else multiSel.add(placement.id);
+        refreshMarkerHighlight();
+        renderSelectedPanel();
       } else {
+        multiSel.clear();
         selectedPlacementId = placement.id;
         setBoundaryEdit(false);
         if (selectedAreaId) { selectedAreaId = null; markSelectedArea(); }
@@ -1544,7 +1599,8 @@ import Layout from '../layouts/Layout.astro';
   function zoomedView(base: typeof planView, factor: number, cx: number, cy: number): typeof planView {
     if (!editing) return base;
     const full = editing.areaWidthM * U;
-    const w = Math.max(Math.min(full, 2 * U), Math.min(full * 4, base.w / factor));
+    // Zoom out without a practical limit (50 km); tiles get coarser on their own.
+    const w = Math.max(Math.min(full, 2 * U), Math.min(50000 * U, base.w / factor));
     const f = w / base.w;
     return { x: cx - (cx - base.x) * f, y: cy - (cy - base.y) * f, w, h: base.h * f };
   }
@@ -1570,6 +1626,7 @@ import Layout from '../layouts/Layout.astro';
   // Marker and corner-handle presses never get here: they stop propagation.
   planSvg.addEventListener('pointerdown', (e: PointerEvent) => {
     activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (tool === 'lasso' && activePointers.size === 1 && !areaDraft && !rowDraft && !armedPlantId) { startLasso(e); return; }
     if (activePointers.size === 2) {
       const [a, b] = [...activePointers.values()];
       const mid = clientToMeters(planSvg, (a.x + b.x) / 2, (a.y + b.y) / 2);
@@ -1582,6 +1639,7 @@ import Layout from '../layouts/Layout.astro';
 
   planSvg.addEventListener('pointermove', (e: PointerEvent) => {
     if (activePointers.has(e.pointerId)) activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (lasso && e.pointerId === lasso.id) { extendLasso(e); return; }
     if (pinch && activePointers.size === 2) {
       const [a, b] = [...activePointers.values()];
       planView = zoomedView(pinch.view, Math.hypot(a.x - b.x, a.y - b.y) / pinch.d, pinch.cx, pinch.cy);
@@ -1601,6 +1659,7 @@ import Layout from '../layouts/Layout.astro';
 
   function endCanvasPointer(e: PointerEvent) {
     activePointers.delete(e.pointerId);
+    if (lasso && e.pointerId === lasso.id) { finishLasso(); return; }
     if (activePointers.size < 2) pinch = null;
     if (!pan || e.pointerId !== pan.id) return;
     const p = pan;
@@ -1617,6 +1676,8 @@ import Layout from '../layouts/Layout.astro';
     if (rowDraft) { addRowPoint(e); return; }
     if (areaDraft) { addAreaDraftPoint(e); return; }
     if (armedPlantId) { placeArmedPlant(e); return; }
+    if (tool === 'pan') return; // the hand only moves the map
+    if (multiSel.size) { multiSel.clear(); refreshMarkerHighlight(); renderSelectedPanel(); }
     const id = target?.closest<SVGElement>('[data-area-id]')?.dataset.areaId ?? null;
     if (id) setBoundaryEdit(false);
     if (id !== selectedAreaId) { selectedAreaId = id; markSelectedArea(); }
@@ -1680,6 +1741,7 @@ import Layout from '../layouts/Layout.astro';
       ['bg-white', 'dark:bg-stone-800', 'ring-1', 'ring-green-500'].forEach(c => li.classList.toggle(c, on));
     });
     areaEditHint.hidden = !editing?.areas.some(a => a.id === selectedAreaId);
+    if (selectedAreaId && multiSel.size) multiSel.clear();
     if (selectedAreaId && selectedPlacementId) {
       selectedPlacementId = null;
       for (const pl of editing?.placements ?? []) { const g = markerMap.get(pl.id); if (g) updateMarkerShape(g, pl, plantsById.get(pl.plantId)); }
@@ -1776,6 +1838,7 @@ import Layout from '../layouts/Layout.astro';
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
     if (rowDraft) endRowDraw();
+    else if (multiSel.size) { multiSel.clear(); refreshMarkerHighlight(); renderSelectedPanel(); }
     else if (areaDraft) endAreaDraw();
     else if (editBoundary) setBoundaryEdit(false);
     else if (selectedAreaId && !(e.target as HTMLElement).closest?.('input, textarea, select')) { selectedAreaId = null; markSelectedArea(); }
@@ -1920,6 +1983,67 @@ import Layout from '../layouts/Layout.astro';
       alert(t('alertGeojsonFailed', { msg: err instanceof Error ? err.message : String(err) }));
     }
   });
+
+  // ── Werkzeuge: Bewegen / Markieren einzeln / Markieren als Fläche ───────
+  // Pan: every drag moves the map (markers and areas ignore the pointer).
+  // Select: the classic behaviour — click selects, drag moves, drag on bare
+  // ground pans; Shift/Ctrl-click builds a multi-selection.
+  // Lasso: drag around plants to mark them all.
+  type Tool = 'pan' | 'select' | 'lasso';
+  let tool: Tool = 'select';
+  const multiSel = new Set<string>();
+  let lasso: { id: number; pts: GardenPlanPoint[]; lastX: number; lastY: number } | null = null;
+
+  function setTool(t: Tool) {
+    tool = t;
+    document.querySelectorAll<HTMLElement>('[data-tool]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.tool === t)));
+    planSvg.classList.toggle('tool-pan', t === 'pan');
+    planSvg.classList.toggle('tool-lasso', t === 'lasso');
+  }
+  document.querySelectorAll<HTMLElement>('[data-tool]').forEach(b => b.addEventListener('click', () => setTool(b.dataset.tool as Tool)));
+
+  function refreshMarkerHighlight() {
+    for (const pl of editing?.placements ?? []) {
+      const g = markerMap.get(pl.id);
+      if (g) updateMarkerShape(g, pl, plantsById.get(pl.plantId));
+    }
+  }
+
+  function renderLasso() {
+    const g = planSvg.querySelector('#lasso-layer');
+    if (!g) return;
+    if (!lasso || lasso.pts.length < 2) { g.innerHTML = ''; return; }
+    const u = SVG_UNITS_PER_METER, k = viewK();
+    g.innerHTML = `<polygon points="${lasso.pts.map(p => `${p.xM * u},${p.yM * u}`).join(' ')}" fill="#f59e0b" fill-opacity="0.12" stroke="#d97706" stroke-width="${1.5 * k}" stroke-dasharray="${5 * k} ${4 * k}"/>`;
+  }
+
+  function startLasso(e: PointerEvent) {
+    lasso = { id: e.pointerId, pts: [clientToMeters(planSvg, e.clientX, e.clientY)], lastX: e.clientX, lastY: e.clientY };
+    planSvg.setPointerCapture(e.pointerId);
+  }
+
+  function extendLasso(e: PointerEvent) {
+    if (!lasso || Math.hypot(e.clientX - lasso.lastX, e.clientY - lasso.lastY) < 3) return;
+    lasso.lastX = e.clientX;
+    lasso.lastY = e.clientY;
+    lasso.pts.push(clientToMeters(planSvg, e.clientX, e.clientY));
+    renderLasso();
+  }
+
+  function finishLasso() {
+    const l = lasso;
+    lasso = null;
+    renderLasso();
+    if (!editing || !l) return;
+    multiSel.clear();
+    selectedPlacementId = null;
+    if (l.pts.length >= 3) {
+      for (const pl of editing.placements) if (pointInPolygon(pl, l.pts)) multiSel.add(pl.id);
+    }
+    if (multiSel.size && selectedAreaId) { selectedAreaId = null; markSelectedArea(); }
+    refreshMarkerHighlight();
+    renderSelectedPanel();
+  }
 
   // ── Init + save/delete ──────────────────────────────────────────────────
   async function init() {
