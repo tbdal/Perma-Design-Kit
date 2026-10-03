@@ -2,6 +2,11 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Karten — Runde 1 (2026-10-03)
+- [x] **Mausposition in Metern** — beim Zeichnen und im Plan zeigt ein Label am Mauszeiger `x 3,25 m · y 1,80 m` relativ zu 0,0 (auch beim Ziehen von Pflanzen und per Touch).
+- [x] **Kartenhintergrund unter dem Gartenplan** — „📍 Standort & Ausrichtung…“ öffnet eine Leaflet-Karte (lädt erst beim Öffnen) mit Adresssuche (Nominatim) und „Mein Standort“; Klick setzt die Plan-Ecke 0,0, der gelbe Griff an der Ecke oben rechts bzw. Slider/±1°/±15° drehen den Plan (z. B. entlang eines Zauns). Unter dem Plan liegen OSM-Kacheln, passend gedreht, mit Deckkraft-Regler, Nordpfeil und Attribution. Der Plan selbst bleibt in lokalen Metern — Raster, Zeichnen, Platzieren und 3D unverändert. Neues Feld `GardenPlan.geo` (normalisiert, wandert mit Backup/Sync); Geo-Mathematik in `src/lib/gartenplan-geo.ts` mit Tests.
+- [x] **Grobe Satellitenebene** — Sentinel-2 cloudless 2016 (10 m) als umschaltbare Ebene im Standort-Dialog zur Orientierung. Datenschutz und Impressum um OSM/Nominatim/EOX ergänzt.
+
 ## Code-Review (2026-09-29)
 - [x] **Gruppen-Spalte in der Tabelle** — eigene Spalte „Gruppen" (sortierbar, Pflanzen ohne Gruppe ans Ende), dazu ein Filter-Dropdown mit allen vorhandenen Gruppennamen plus „(ohne Gruppe)"; auch in der Sortier-Auswahl von Kachel-/Kartenansicht.
 - [x] **PFAF: Halbschatten-/Schattenpflanzen bekamen „Volle Sonne"** — `includes('sun.jpg')` traf auch `partsun.jpg`/`fullsun.jpg`. Parser in `server/pfaf-parse.mjs` ausgelagert, jetzt exakter Dateiname. Erneutes „Ergänzen" korrigiert bereits gespeicherte falsche Werte, sofern sie von PFAF stammen (manuelle Werte bleiben).

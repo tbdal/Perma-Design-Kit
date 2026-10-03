@@ -26,6 +26,23 @@ import Layout from '../layouts/Layout.astro';
       </div>
     </div>
 
+    <!-- Karte: Standort, Ausrichtung, Hintergrund — gilt für beide Phasen -->
+    <div id="map-bar" class="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl bg-stone-50 dark:bg-stone-900 px-3 py-2 text-xs text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700">
+      <button id="btn-locate" type="button" data-i18n="mapBarLocate" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">📍 Standort &amp; Ausrichtung…</button>
+      <label class="inline-flex items-center gap-1.5">
+        <span data-i18n="mapBarBackground">Hintergrund</span>
+        <select id="g-basemap" class="rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs disabled:opacity-50">
+          <option value="none" data-i18n="mapBgNone">Kein</option>
+          <option value="osm" data-i18n="mapBgOsm">Karte (OpenStreetMap)</option>
+        </select>
+      </label>
+      <label class="inline-flex items-center gap-1.5">
+        <span data-i18n="mapBarOpacity">Deckkraft</span>
+        <input id="g-basemap-opacity" type="range" min="0.1" max="1" step="0.05" value="0.6" class="w-24 disabled:opacity-50" />
+      </label>
+      <span id="map-status" class="text-stone-500 dark:text-stone-400"></span>
+    </div>
+
     <!-- Phase A: Grunddaten + Fläche zeichnen -->
     <div id="phase-a">
       <div class="grid gap-6 lg:grid-cols-3">
@@ -74,8 +91,10 @@ import Layout from '../layouts/Layout.astro';
             <span data-i18n="hintDrawing">Klicke auf die Fläche, um Eckpunkte zu setzen (mind. 3).</span>
             <span id="vertex-count" class="ml-1 font-medium"></span>
           </div>
-          <div id="drawing-wrap" class="hidden rounded-xl bg-white dark:bg-stone-800 p-3 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+          <div id="drawing-wrap" class="relative hidden rounded-xl bg-white dark:bg-stone-800 p-3 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <svg id="drawing-svg" class="w-full touch-none" style="touch-action:none"></svg>
+            <div class="cursor-readout pointer-events-none absolute hidden rounded bg-stone-900/80 px-1.5 py-0.5 font-mono text-[11px] text-white"></div>
+            <div class="basemap-attrib absolute bottom-3 right-3 hidden rounded-tl bg-white/80 px-1 text-[10px] text-stone-600"></div>
           </div>
           <div id="drawing-controls" class="hidden flex flex-wrap gap-2">
             <button id="btn-undo-point" data-i18n="btnUndoPoint" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-700">Letzten Punkt entfernen</button>
@@ -116,9 +135,11 @@ import Layout from '../layouts/Layout.astro';
 
       <div class="grid gap-6 lg:grid-cols-3">
         <div class="lg:col-span-2 space-y-2">
-          <div class="rounded-xl bg-white dark:bg-stone-800 p-3 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+          <div id="plan-wrap" class="relative rounded-xl bg-white dark:bg-stone-800 p-3 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <svg id="plan-svg" class="w-full touch-none" style="touch-action:none"></svg>
             <div id="plan-3d-container" hidden class="h-[480px] w-full touch-none" style="touch-action:none"></div>
+            <div class="cursor-readout pointer-events-none absolute hidden rounded bg-stone-900/80 px-1.5 py-0.5 font-mono text-[11px] text-white"></div>
+            <div class="basemap-attrib absolute bottom-3 right-3 hidden rounded-tl bg-white/80 px-1 text-[10px] text-stone-600"></div>
           </div>
           <div class="flex flex-wrap items-center gap-x-4 gap-y-1 px-1 text-xs text-stone-500 dark:text-stone-400">
             <span class="inline-flex items-center gap-1.5"><span class="inline-block h-2.5 w-2.5 rounded-full" style="background-color:#166534"></span><span data-i18n="layerTree">Baum</span></span>
@@ -160,7 +181,50 @@ import Layout from '../layouts/Layout.astro';
   </section>
 
   <div id="toast" class="fixed bottom-6 right-6 hidden rounded-lg bg-green-700 px-4 py-2.5 text-sm font-medium text-white shadow-lg"></div>
+
+  <!-- Standort & Ausrichtung (Leaflet, src/lib/gartenplan-locate.ts) -->
+  <dialog id="locate-dialog" class="m-auto w-[min(56rem,calc(100vw-2rem))] rounded-xl bg-white dark:bg-stone-800 p-0 text-stone-800 dark:text-stone-100 shadow-2xl backdrop:bg-black/50">
+    <div class="space-y-2 p-4">
+      <h2 class="text-base font-semibold" data-i18n="locateTitle">Standort &amp; Ausrichtung</h2>
+      <p class="text-xs text-stone-500 dark:text-stone-400" data-i18n="locateHint">Klicke auf die Karte, um die Ecke 0,0 (oben links im Plan) zu setzen. Ziehe den runden Griff an der Ecke oben rechts, um den Plan auszurichten – z. B. entlang eines Zauns.</p>
+      <div class="flex flex-wrap items-center gap-2">
+        <form id="locate-search-form" class="flex min-w-0 flex-1 gap-2">
+          <input id="locate-query" type="search" data-i18n-placeholder="locateSearchPlaceholder" placeholder="Adresse oder Ort suchen…" class="min-w-0 flex-1 rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none" />
+          <button id="locate-search-btn" type="submit" data-i18n="locateSearchBtn" class="rounded-md bg-green-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-800 disabled:opacity-50">Suchen</button>
+        </form>
+        <button id="locate-mypos" type="button" data-i18n="locateMyPosition" class="rounded-md bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Mein Standort</button>
+      </div>
+      <p id="locate-status" class="min-h-[1rem] truncate text-xs text-stone-500 dark:text-stone-400"></p>
+      <div id="locate-map" class="h-[55vh] w-full rounded-lg ring-1 ring-stone-200 dark:ring-stone-700"></div>
+      <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
+        <span class="inline-flex items-center gap-2">
+          <label class="inline-flex items-center gap-1"><input type="radio" name="locate-layer" value="osm" checked /> <span data-i18n="locateLayerOsm">Karte</span></label>
+          <label class="inline-flex items-center gap-1" data-i18n-title="locateSatNote" title="Satellitenbild nur zur groben Orientierung (10 m pro Pixel)."><input type="radio" name="locate-layer" value="sat" /> <span data-i18n="locateLayerSat">Satellit (grob, 10 m)</span></label>
+        </span>
+        <span class="inline-flex items-center gap-1.5">
+          <span data-i18n="locateRotation">Drehung</span>
+          <button type="button" data-rot-step="-15" class="rounded bg-stone-100 dark:bg-stone-700 px-1.5 py-0.5 ring-1 ring-stone-300 dark:ring-stone-600">−15°</button>
+          <button type="button" data-rot-step="-1" class="rounded bg-stone-100 dark:bg-stone-700 px-1.5 py-0.5 ring-1 ring-stone-300 dark:ring-stone-600">−1°</button>
+          <input id="locate-rot" type="range" min="0" max="359" step="1" value="0" class="w-32" />
+          <button type="button" data-rot-step="1" class="rounded bg-stone-100 dark:bg-stone-700 px-1.5 py-0.5 ring-1 ring-stone-300 dark:ring-stone-600">+1°</button>
+          <button type="button" data-rot-step="15" class="rounded bg-stone-100 dark:bg-stone-700 px-1.5 py-0.5 ring-1 ring-stone-300 dark:ring-stone-600">+15°</button>
+          <input id="locate-rot-num" type="number" min="0" max="359" step="1" value="0" class="w-16 rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-1.5 py-0.5" />°
+        </span>
+      </div>
+      <div class="flex flex-wrap justify-end gap-2 pt-1">
+        <button id="locate-remove" type="button" hidden data-i18n="locateRemove" class="mr-auto text-xs font-medium text-stone-500 dark:text-stone-400 hover:text-red-600 dark:hover:text-red-400">Standort entfernen</button>
+        <button id="locate-cancel" type="button" data-i18n="locateCancel" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Abbrechen</button>
+        <button id="locate-apply" type="button" data-i18n="locateApply" class="rounded-lg bg-green-700 px-4 py-1.5 text-sm font-medium text-white shadow hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-40">Übernehmen</button>
+      </div>
+    </div>
+  </dialog>
 </Layout>
+
+<style is:global>
+  .locate-handle { border-radius: 9999px; border: 3px solid #fff; box-shadow: 0 0 0 1px #1c1917, 0 1px 4px rgb(0 0 0 / 0.4); }
+  .locate-handle-origin { background: #15803d; cursor: move; }
+  .locate-handle-rot { background: #facc15; cursor: grab; }
+</style>
 
 <script>
   import { getAllPlants, getAllPolycultures, getAllGardenPlans, saveGardenPlan, deleteGardenPlan } from '../lib/db';
@@ -169,13 +233,14 @@ import Layout from '../layouts/Layout.astro';
   import { displayRadiusM } from '../lib/growth-model';
   import { deriveLayer, LAYER_STYLE, type PlantLayer } from '../lib/plant-layer';
   import { blobPathD } from '../lib/blob-shape';
-  import { pointInPolygon } from '../lib/gartenplan-geometry';
+  import { pointInPolygon, formatMeters } from '../lib/gartenplan-geometry';
+  import { basemapSvg, northArrowSvg, hasBasemap, OSM_TILES } from '../lib/gartenplan-background';
   import { plantDetailHtml } from '../lib/plant-detail';
   import { compatScore } from '../lib/compat';
   import { newId } from '../lib/id';
   import { escapeHtml, withButtonSpinner } from '../lib/html';
   import { exportGardenPlanPDF } from '../lib/pdf-export';
-  import { createT, applyStaticI18n } from '../lib/i18n/core';
+  import { createT, applyStaticI18n, getLang } from '../lib/i18n/core';
   import { gartenplanDict } from '../lib/i18n/dict-gartenplan';
   import { plantDetailDict } from '../lib/i18n/dict-plant-detail';
 
@@ -226,6 +291,11 @@ import Layout from '../layouts/Layout.astro';
   const suggestionsSection = document.getElementById('suggestions-section')!;
   const suggestionsListEl = document.getElementById('suggestions-list')!;
   const selectedPanel = document.getElementById('selected-panel')!;
+  const btnLocate = document.getElementById('btn-locate') as HTMLButtonElement;
+  const fBasemap = document.getElementById('g-basemap') as HTMLSelectElement;
+  const fBasemapOpacity = document.getElementById('g-basemap-opacity') as HTMLInputElement;
+  const mapStatus = document.getElementById('map-status')!;
+  const lang = getLang();
 
   // ── State ───────────────────────────────────────────────────────────────
   let plants: PlantData[] = [];
@@ -362,6 +432,7 @@ import Layout from '../layouts/Layout.astro';
     setViewToggleActive(true);
 
     editing = id ? (plans.find(p => p.id === id) ?? createEmptyGardenPlan()) : createEmptyGardenPlan();
+    editing.geo ??= null; // plans saved before the map feature have no geo field
     drawingPoints = [];
     armedPlantId = null;
     unplacedPlantIds = [];
@@ -374,6 +445,7 @@ import Layout from '../layouts/Layout.astro';
     fWidth.value = String(editing.areaWidthM);
     fHeight.value = String(editing.areaHeightM);
     fGridSpacing.value = String(editing.gridSpacingM);
+    syncMapBar();
     fPolyculture.innerHTML = `<option value="">${t('linkedPolycultureNone')}</option>` + polycultures
       .map(pc => `<option value="${pc.id}" ${pc.id === editing!.polycultureId ? 'selected' : ''}>${escapeHtml(pc.name || t('planUnnamed'))}</option>`)
       .join('');
@@ -406,6 +478,109 @@ import Layout from '../layouts/Layout.astro';
     try { localStorage.removeItem(LAST_PLAN_KEY); } catch {}
   }
 
+  // ── Karte: Standort, Ausrichtung, Hintergrund ───────────────────────────
+  // The map only sits *under* the plan: tiles are rendered into each SVG's
+  // .basemap-layer group (gartenplan-background.ts), rotated by geo.rotationDeg,
+  // while grid, boundary and placements stay in plain plan meters.
+  function screenMPerPx(svg: SVGSVGElement, widthM: number): number {
+    const px = svg.getBoundingClientRect().width;
+    return px > 0 ? widthM / px / (window.devicePixelRatio || 1) : 0.02;
+  }
+
+  function renderBasemap(svg: SVGSVGElement) {
+    if (!editing) return;
+    const layer = svg.querySelector('.basemap-layer');
+    if (!layer) return;
+    // Phase A draws with the (not yet committed) form dimensions.
+    const plan = svg === drawingSvg ? { ...editing, areaWidthM: areaWidthM(), areaHeightM: areaHeightM() } : editing;
+    layer.innerHTML = basemapSvg(plan, screenMPerPx(svg, plan.areaWidthM), `${svg.id}-basemap-clip`);
+    const arrow = svg.querySelector('.north-arrow-layer');
+    if (arrow) arrow.innerHTML = northArrowSvg(plan);
+    const attrib = svg.parentElement!.querySelector<HTMLElement>('.basemap-attrib')!;
+    attrib.innerHTML = hasBasemap(plan) ? OSM_TILES.attributionHtml : '';
+    attrib.classList.toggle('hidden', !hasBasemap(plan));
+  }
+
+  function refreshBasemaps() {
+    renderBasemap(planSvg);
+    renderBasemap(drawingSvg);
+  }
+
+  function syncMapBar() {
+    const geo = editing?.geo ?? null;
+    fBasemap.disabled = !geo;
+    fBasemapOpacity.disabled = !geo;
+    fBasemap.value = geo?.basemap ?? 'none';
+    fBasemapOpacity.value = String(geo?.opacity ?? 0.6);
+    mapStatus.textContent = geo ? t('mapStatusSet', { deg: Math.round(geo.rotationDeg) }) : t('mapStatusNone');
+  }
+
+  btnLocate.addEventListener('click', async () => {
+    if (!editing) return;
+    const { openLocateDialog } = await import('../lib/gartenplan-locate');
+    const inPhaseA = !phaseA.classList.contains('hidden');
+    const res = await openLocateDialog({
+      widthM: inPhaseA ? areaWidthM() : editing.areaWidthM,
+      heightM: inPhaseA ? areaHeightM() : editing.areaHeightM,
+      boundary: inPhaseA ? drawingPoints : editing.boundary,
+      geo: editing.geo,
+      lang,
+      t,
+    });
+    if (!res || !editing) return;
+    editing.geo = res.action === 'apply' ? res.geo : null;
+    syncMapBar();
+    refreshBasemaps();
+    scheduleAutosave();
+  });
+
+  fBasemap.addEventListener('change', () => {
+    if (!editing?.geo) return;
+    editing.geo.basemap = fBasemap.value === 'none' ? 'none' : 'osm';
+    refreshBasemaps();
+    scheduleAutosave();
+  });
+
+  fBasemapOpacity.addEventListener('input', () => {
+    if (!editing?.geo) return;
+    editing.geo.opacity = Number(fBasemapOpacity.value);
+    document.querySelectorAll('.basemap-layer > g').forEach(g => g.setAttribute('opacity', fBasemapOpacity.value));
+    scheduleAutosave();
+  });
+
+  // Tile zoom follows the on-screen size of the canvas.
+  let basemapResizeTimer: ReturnType<typeof setTimeout> | null = null;
+  new ResizeObserver(() => {
+    if (basemapResizeTimer) clearTimeout(basemapResizeTimer);
+    basemapResizeTimer = setTimeout(refreshBasemaps, 200);
+  }).observe(planSvg);
+
+  // ── Cursor position read-out (meters from 0,0) ─────────────────────────
+  // Pointer capture during a marker drag retargets moves to the marker group,
+  // which still bubble up to the SVG, so the read-out follows drags too.
+  function wireCursorReadout(svg: SVGSVGElement) {
+    const wrap = svg.parentElement!;
+    const label = wrap.querySelector<HTMLElement>('.cursor-readout')!;
+    const hide = () => label.classList.add('hidden');
+    svg.addEventListener('pointermove', (e: PointerEvent) => {
+      if (!svg.getScreenCTM()) return;
+      const p = clientToMeters(svg, e.clientX, e.clientY);
+      label.textContent = `x ${formatMeters(p.xM, lang)} · y ${formatMeters(p.yM, lang)}`;
+      label.classList.remove('hidden');
+      const r = wrap.getBoundingClientRect();
+      let left = e.clientX - r.left + 14, top = e.clientY - r.top + 14;
+      if (left + label.offsetWidth > r.width - 4) left = e.clientX - r.left - label.offsetWidth - 14;
+      if (top + label.offsetHeight > r.height - 4) top = e.clientY - r.top - label.offsetHeight - 14;
+      label.style.left = `${left}px`;
+      label.style.top = `${top}px`;
+    });
+    svg.addEventListener('pointerleave', hide);
+    svg.addEventListener('pointercancel', hide);
+    svg.addEventListener('pointerup', (e: PointerEvent) => { if (e.pointerType !== 'mouse') hide(); });
+  }
+  wireCursorReadout(drawingSvg);
+  wireCursorReadout(planSvg);
+
   // ── Phase A: Fläche zeichnen ────────────────────────────────────────────
   function areaWidthM(): number { return Math.max(2, Math.min(50, Number(fWidth.value) || 10)); }
   function areaHeightM(): number { return Math.max(2, Math.min(50, Number(fHeight.value) || 10)); }
@@ -419,10 +594,13 @@ import Layout from '../layouts/Layout.astro';
       `<circle cx="${p.xM * SVG_UNITS_PER_METER}" cy="${p.yM * SVG_UNITS_PER_METER}" r="6" fill="#15803d"/>`
     ).join('');
     drawingSvg.innerHTML = `
+      <g class="basemap-layer"></g>
       ${gridDefsAndBackground(w, h, spacing, 'drawing-grid')}
       ${drawingPoints.length >= 2 ? `<polyline points="${pointsAttr}" fill="none" stroke="#15803d" stroke-width="3"/>` : ''}
       ${drawingPoints.length >= 3 ? `<polygon points="${pointsAttr}" fill="#15803d" fill-opacity="0.12" stroke="none"/>` : ''}
-      ${markers}`;
+      ${markers}
+      <g class="north-arrow-layer"></g>`;
+    renderBasemap(drawingSvg);
     vertexCountEl.textContent = t('vertexCount', { count: drawingPoints.length });
     btnFinishBoundary.disabled = drawingPoints.length < 3;
   }
@@ -490,6 +668,7 @@ import Layout from '../layouts/Layout.astro';
     planSvg.classList.add('hidden');
     plan3dContainer.hidden = false;
     setViewToggleActive(false);
+    document.querySelector('#plan-wrap .basemap-attrib')!.classList.add('hidden');
     const { createGardenPlan3DView } = await import('../lib/gartenplan-3d');
     view3d?.dispose();
     view3d = createGardenPlan3DView(plan3dContainer, editing, plantsById, {
@@ -728,9 +907,12 @@ import Layout from '../layouts/Layout.astro';
     const pointsAttr = editing.boundary.map(p => `${p.xM * SVG_UNITS_PER_METER},${p.yM * SVG_UNITS_PER_METER}`).join(' ');
     planSvg.setAttribute('viewBox', `0 0 ${w * SVG_UNITS_PER_METER} ${h * SVG_UNITS_PER_METER}`);
     planSvg.innerHTML = `
+      <g class="basemap-layer"></g>
       ${gridDefsAndBackground(w, h, editing.gridSpacingM, 'plan-grid')}
       <polygon points="${pointsAttr}" fill="#15803d" fill-opacity="0.08" stroke="#15803d" stroke-width="2"/>
+      <g class="north-arrow-layer"></g>
       <g id="plan-markers"></g>`;
+    renderBasemap(planSvg);
     markerMap = new Map();
     const markersGroup = planSvg.querySelector('#plan-markers')!;
     for (const placement of editing.placements) {

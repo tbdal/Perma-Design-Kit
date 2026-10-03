@@ -52,6 +52,11 @@ export const datenschutzDict: Dict = {
   dsExtLi2Body2: { de: ') weitergeleitet, weil die Quelle keinen direkten Browser-Zugriff erlaubt.', en: ') because the source does not allow direct browser access.' },
   dsExtLi3Body: { de: 'Pflanzen­bilder werden bei Bedarf direkt von dort geladen.', en: 'plant images are loaded directly from there when needed.' },
   dsExtLi4Body1: { de: 'nur wenn du Gist-Sync aktiviert hast. Anfragen gehen mit deinem Personal Access Token direkt an', en: 'only if you have enabled Gist sync. Requests go with your personal access token directly to' },
+  dsExtLi5Body: { de: 'nur im Gartenplan, wenn du einen Standort festlegst: Kartenkacheln werden direkt von', en: 'only in the garden plan when you set a location: map tiles are loaded directly from' },
+  dsExtLi5Body2: { de: ', die Adresssuche von', en: ', the address search from' },
+  dsExtLi5Body3: { de: 'geladen. Die Suchanfrage enthält den eingegebenen Text.', en: '. The search request contains the text you entered.' },
+  dsExtLi6Body: { de: 'nur wenn du im Standort-Dialog die Satellitenebene einschaltest; die Bildkacheln werden direkt von', en: 'only if you switch on the satellite layer in the location dialog; the image tiles are loaded directly from' },
+  dsExtLi6Body2: { de: 'geladen.', en: '.' },
   dsExternalOutro: {
     de: 'Bei diesen Anfragen wird deine IP-Adresse vom jeweiligen Anbieter verarbeitet. Wir haben darauf keinen Einfluss.',
     en: 'Your IP address is processed by the respective provider for these requests. We have no influence over this.',

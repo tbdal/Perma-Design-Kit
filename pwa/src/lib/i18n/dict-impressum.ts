@@ -37,4 +37,8 @@ export const impressumDict: Dict = {
     de: 'angegebenen Lizenz. Pflanzendaten stammen aus den jeweils genannten Quellen unter deren Lizenzbedingungen (Wikidata: CC0, PFAF: CC BY 4.0, Wikimedia Commons: jeweilige Bildlizenz) sowie aus der Artentabelle in Dave Jacke & Eric Toensmeier, „Edible Forest Gardens", Bd. 2 (Chelsea Green 2005), aufbereitet von Lally Luck Farm.',
     en: '. Plant data comes from the respectively named sources under their license terms (Wikidata: CC0, PFAF: CC BY 4.0, Wikimedia Commons: respective image license) and from the species table in Dave Jacke & Eric Toensmeier, "Edible Forest Gardens", vol. 2 (Chelsea Green 2005), compiled by Lally Luck Farm.',
   },
+  imMapData: {
+    de: 'Kartenhintergrund im Gartenplan: © OpenStreetMap-Mitwirkende (ODbL), Adresssuche über Nominatim. Satellitenebene: Sentinel-2 cloudless – s2maps.eu by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2016 & 2017), CC BY 4.0.',
+    en: 'Garden plan map background: © OpenStreetMap contributors (ODbL), address search via Nominatim. Satellite layer: Sentinel-2 cloudless – s2maps.eu by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2016 & 2017), CC BY 4.0.',
+  },
 };

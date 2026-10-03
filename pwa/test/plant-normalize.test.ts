@@ -61,4 +61,12 @@ describe('normalizeGardenPlan', () => {
     expect(g.placements).toHaveLength(1);
     expect(g.placements[0].plantId).toBe('p');
   });
+
+  it('keeps a valid geo anchor and drops a broken one', () => {
+    const g = normalizeGardenPlan({ id: 'g', geo: { lat: 50, lon: 8, rotationDeg: -30, basemap: 'x', opacity: 3 } })!;
+    expect(g.geo).toEqual({ lat: 50, lon: 8, rotationDeg: 330, basemap: 'osm', opacity: 1 });
+    expect(normalizeGardenPlan({ id: 'g', geo: { lat: 'a', lon: 8 } })!.geo).toBeNull();
+    expect(normalizeGardenPlan({ id: 'g', geo: { lat: 89, lon: 8 } })!.geo).toBeNull();
+    expect(normalizeGardenPlan({ id: 'g' })!.geo).toBeNull();
+  });
 });

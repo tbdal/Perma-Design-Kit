@@ -1,4 +1,11 @@
 import type { GardenPlanPoint } from './types';
+import type { Lang } from './i18n/core';
+
+/** "3,25 m" (de) / "3.25 m" (en) — cursor read-out on the plan canvas. */
+export function formatMeters(v: number, lang: Lang): string {
+  const s = (Math.round(v * 100) / 100).toFixed(2);
+  return `${lang === 'de' ? s.replace('.', ',') : s} m`;
+}
 
 /** Ray-casting point-in-polygon test, coordinates in meters. Shared by the
  *  2D SVG editor and the 3D scene — geometry-agnostic (xM/yM only), works

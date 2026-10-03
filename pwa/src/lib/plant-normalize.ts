@@ -1,6 +1,6 @@
 import {
   createEmptyPlant, createEmptyPolyculture, createEmptyGardenPlan, parseHabit,
-  type PlantData, type Polyculture, type GardenPlan, type DataSource, type PolycultureRole,
+  type PlantData, type Polyculture, type GardenPlan, type GardenPlanGeo, type DataSource, type PolycultureRole,
 } from './types';
 import { newId } from './id';
 
@@ -125,8 +125,23 @@ export function normalizeGardenPlan(raw: unknown): GardenPlan | null {
       : [],
     yearsSincePlanting: clamp(finite(raw.yearsSincePlanting) ?? 0, 0, 100),
     notes: str(raw.notes, ''),
+    geo: normalizeGardenPlanGeo(raw.geo),
     createdAt: str(raw.createdAt, d.createdAt),
     updatedAt: str(raw.updatedAt, d.updatedAt),
+  };
+}
+
+function normalizeGardenPlanGeo(raw: unknown): GardenPlanGeo | null {
+  if (!isObject(raw)) return null;
+  const lat = finite(raw.lat), lon = finite(raw.lon);
+  if (lat == null || lon == null || Math.abs(lat) > 85 || Math.abs(lon) > 180) return null;
+  const rot = finite(raw.rotationDeg) ?? 0;
+  return {
+    lat,
+    lon,
+    rotationDeg: ((rot % 360) + 360) % 360,
+    basemap: raw.basemap === 'none' ? 'none' : 'osm',
+    opacity: clamp(finite(raw.opacity) ?? 0.6, 0, 1),
   };
 }
 

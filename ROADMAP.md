@@ -75,8 +75,11 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] eingeklappte Farblegende farblich mehr hervorheben
 
 ## Karten
-- [ ] auf Gartenplaner ermöglichen, dass frei verfügbare layer von osm.. und Satellit angezeigten werden können. Mapbox oder was ist die beste Foss Alternative?
-- [ ] beim Bewegen der Maus auf der Karte am Mauszeiger die Position relativ zu 0,0 in x m, y m anzeigen
+Runde 1 (Mauskoordinaten, OSM-Hintergrund mit Standort & Drehung, grobe Satellitenebene) ist erledigt → CHANGELOG. Offen (Runde 2):
+- [ ] eigenes Luftbild (Drohne, Foto, Screenshot) hochladen und per 2 Punkten kalibrieren (Maßstab + Drehung) — die einzige globale, lizenzfreie Lösung in Garten-Auflösung
+- [ ] offene amtliche Orthophotos (10–40 cm) unter dem Plan: kuratierte Whitelist aus dem OSM Editor Layer Index, nur Einträge mit echter offener Lizenz (nicht „nur für OSM-Editing“); zuerst DE-Länder, AT (basemap.at), CH (SWISSIMAGE), NL (PDOK), FR (IGN)
+- [ ] Kartenhintergrund im Gartenplan-PDF (Canvas → `embedJpg`, Attribution auf der Seite)
+- [ ] kommerzieller Satellit mit offiziellem Key (Esri Location Platform / MapTiler / Mapbox Raster) erst bei Bedarf außerhalb der Ortho-Länder — Esri *ohne* Key ist nur nicht-kommerziell nutzbar
 
 ## kurzfristig
 - [ ] Dokumentation in Hilfe verlinken
@@ -169,6 +172,8 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] **Lizenz-Metadaten ergänzen** — `pwa/package.json` fehlt `"license": "MIT"`. Optional: Copyright-Hinweis in `LICENSE`/README erweitern, da die PWA inzwischen eine vollständige Neuentwicklung ist (Original von Sebastian Schucht war die PowerShell-Tooling-Basis in `legacy/`); MIT erlaubt das Rewrite ohne Einschränkung, solange die bestehende Attribution erhalten bleibt
 
 ### Lizenz & Datenquellen (Launch-Blocker)
+- [ ] **EOX Sentinel-2 im Gartenplan-Standortdialog** — Daten 2016 sind CC BY 4.0, aber der gehostete EOX-WMTS ist nur für nicht-kommerzielle Nutzung frei. Vor Launch klären (Spenden/Newsletter?) oder auf NASA GIBS bzw. selbst gehostete Kacheln wechseln (`S2_TILES` in `gartenplan-background.ts`)
+- [ ] **OSM-Kachelserver** — `tile.openstreetmap.org` nur bei geringem Traffic erlaubt (Tile Usage Policy); bei mehr Nutzung auf OpenFreeMap o. ä. wechseln (`OSM_TILES`)
 - ⚠ Keine Rechtsberatung, nur technisch-praktische Einschätzung anhand der tatsächlichen Lizenztexte — vor öffentlichem/kommerziellem Launch ggf. kurz von einem Urheberrechtler gegenchecken lassen, insbesondere NaturaDB
 
 ### Sync (Feinschliff)

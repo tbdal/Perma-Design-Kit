@@ -79,6 +79,17 @@ export interface GardenPlanPlacement {
   notes: string;
 }
 
+/** Where the plan sits on Earth — only drives the map background, the plan
+ *  itself stays in local meters. `rotationDeg` is measured clockwise from
+ *  geographic north to the plan's "up" direction (−y); 0 = plan faces north. */
+export interface GardenPlanGeo {
+  lat: number;               // position of plan point 0,0
+  lon: number;
+  rotationDeg: number;
+  basemap: 'none' | 'osm';
+  opacity: number;           // 0..1
+}
+
 export interface GardenPlan {
   id: string;
   name: string;
@@ -91,6 +102,7 @@ export interface GardenPlan {
   placements: GardenPlanPlacement[];
   yearsSincePlanting: number;    // last slider position — persisted so reopening restores the view
   notes: string;
+  geo: GardenPlanGeo | null;     // null = not located, no map background
   createdAt: string;
   updatedAt: string;
 }
@@ -109,6 +121,7 @@ export function createEmptyGardenPlan(): GardenPlan {
     placements: [],
     yearsSincePlanting: 0,
     notes: '',
+    geo: null,
     createdAt: now,
     updatedAt: now,
   };
