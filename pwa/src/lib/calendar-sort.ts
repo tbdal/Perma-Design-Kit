@@ -25,3 +25,16 @@ export function sortCalendar(plants: PlantData[], sort: CalendarSort, lang: stri
     .sort((a, b) => (a.k === b.k ? 0 : a.k < b.k ? -1 : 1) || a.name.localeCompare(b.name, lang))
     .map(x => x.p);
 }
+
+/** Active months as ranges: "Jun–Jul, Sep" (names given per language). */
+export function monthRanges(months: boolean[] | undefined, names: string[]): string {
+  const out: string[] = [];
+  for (let i = 0; i < 12; i++) {
+    if (!months?.[i]) continue;
+    let j = i;
+    while (j + 1 < 12 && months[j + 1]) j++;
+    out.push(i === j ? names[i] : `${names[i]}–${names[j]}`);
+    i = j;
+  }
+  return out.join(', ');
+}

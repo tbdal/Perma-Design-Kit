@@ -459,14 +459,14 @@ import Layout from '../layouts/Layout.astro';
   import { importFromCSV, buildCSV, buildCSVTemplate } from '../lib/csv';
   import { parseBackup } from '../lib/sync';
   import { applyFilters, emptyFilters, sortPlants, allGroups, type ListFilters, type SortField } from '../lib/plant-list';
-  import { completenessPercent, badgeDefs, plantBadgesHtml, groupPillsHtml, type BadgeDef } from '../lib/plant-detail';
+  import { completenessPercent, badgeDefs, plantBadgesHtml, groupPillsHtml, dotHtml, type BadgeDef } from '../lib/plant-detail';
   import { BOOL_FIELD_KEYS, FORM_BOOL_FIELD_KEYS } from '../lib/plant-fields';
   import { searchPlants, needsImageCredit } from '../lib/plant-search';
   import { newId } from '../lib/id';
   import { enrichPlant, trackSources, createPlantFromSearch } from '../lib/enrich';
   import { announce, escapeHtml, withButtonSpinner, loadingPlaceholderHtml, imageCreditOverlayHtml } from '../lib/html';
   import { isSourceEnabled, loadSettings } from '../lib/settings';
-  import { deriveLayer, LAYER_STYLE, LAYER_I18N, PLANT_LAYERS } from '../lib/plant-layer';
+  import { deriveLayer, LAYER_STYLE, LAYER_I18N, LAYER_CODE, PLANT_LAYERS } from '../lib/plant-layer';
   import { exportPolyCardsPDF, exportStripeCardsPDF, exportSingleCardPDF, exportSingleStripeCardPDF, exportBaumscheibePDF, exportBaumscheibesPDF, exportBaumscheibeSheetPDF, exportBaumscheibeScaledPDF, type ScaledPaper } from '../lib/pdf-export';
   import { renderPolyCardHtml, renderStripeCardHtml, printStepperHtml } from '../lib/card-html';
   import { renderBaumscheibeCardHtml } from '../lib/baumscheibe-render';
@@ -493,6 +493,8 @@ import Layout from '../layouts/Layout.astro';
   let viewMode: 'grid' | 'list' | 'cards' =
     viewParam === 'grid' || viewParam === 'list' || viewParam === 'cards' ? viewParam : initialPrefs?.defaultView ?? 'grid';
   let cardViewMode: 'poly' | 'stripe' | 'baumscheibe' = initialPrefs?.defaultCardVariant ?? 'poly';
+  // Settings → "Kürzel statt Farbpunkte" (color-blind friendly table/legend).
+  const dotCodes = initialPrefs?.dotCodes ?? false;
   let selectedIds = new Set<string>();
   let editingPlant: PlantData | null = null;
   let cachedPlants: PlantData[] = [];
@@ -710,7 +712,7 @@ import Layout from '../layouts/Layout.astro';
   function dotGroup(p: PlantData, group: BadgeDef[]): string {
     return group
       .filter(([k]) => p[k])
-      .map(([,,dot,l]) => `<span class="inline-block h-2 w-2 rounded-full" style="background-color:${dot}" title="${escapeHtml(l)}"></span>`)
+      .map(([,,dot,l,code]) => dotHtml(dot, l, code, dotCodes))
       .join('');
   }
 
@@ -722,7 +724,7 @@ import Layout from '../layouts/Layout.astro';
   function layerDot(p: PlantData): string {
     const layer = deriveLayer(p);
     const label = t(LAYER_I18N[layer]);
-    return `<span class="inline-block h-2 w-2 rounded-full" style="background-color:${LAYER_STYLE[layer].fill}" title="${escapeHtml(label)}"></span>`;
+    return dotHtml(LAYER_STYLE[layer].fill, label, LAYER_CODE[layer], dotCodes);
   }
 
   /** Color-key for the table's dot columns — what each dot color/position
@@ -735,14 +737,15 @@ import Layout from '../layouts/Layout.astro';
   }, true);
 
   function legendHtml(): string {
-    const chip = (colorHex: string, label: string) =>
-      `<span class="inline-flex items-center gap-1"><span class="inline-block h-2 w-2 rounded-full" style="background-color:${colorHex}"></span>${escapeHtml(label)}</span>`;
-    const usageChips = USAGE_BADGES.map(([,,dot,l]) => chip(dot, l)).join(' ');
-    const functionChips = FUNCTION_BADGES.map(([,,dot,l]) => chip(dot, l)).join(' ');
-    const sunChips = SUN_BADGES.map(([,,dot,l]) => chip(dot, l)).join(' ');
-    const waterChips = WATER_BADGES.map(([,,dot,l]) => chip(dot, l)).join(' ');
-    const growthChips = GROWTH_BADGES.map(([,,dot,l]) => chip(dot, l)).join(' ');
-    const layerChips = PLANT_LAYERS.map(l => chip(LAYER_STYLE[l].fill, t(LAYER_I18N[l]))).join(' ');
+    // The visible label names the key, so the dot itself is decorative here.
+    const chip = (colorHex: string, label: string, code = '') =>
+      `<span class="inline-flex items-center gap-1">${dotHtml(colorHex, label, code, dotCodes && !!code).replace('role="img"', 'aria-hidden="true"')}${escapeHtml(label)}</span>`;
+    const usageChips = USAGE_BADGES.map(([,,dot,l,code]) => chip(dot, l, code)).join(' ');
+    const functionChips = FUNCTION_BADGES.map(([,,dot,l,code]) => chip(dot, l, code)).join(' ');
+    const sunChips = SUN_BADGES.map(([,,dot,l,code]) => chip(dot, l, code)).join(' ');
+    const waterChips = WATER_BADGES.map(([,,dot,l,code]) => chip(dot, l, code)).join(' ');
+    const growthChips = GROWTH_BADGES.map(([,,dot,l,code]) => chip(dot, l, code)).join(' ');
+    const layerChips = PLANT_LAYERS.map(l => chip(LAYER_STYLE[l].fill, t(LAYER_I18N[l]), LAYER_CODE[l])).join(' ');
     return `
       <details id="color-legend"${legendOpen ? ' open' : ''} class="mx-3 mb-2 sm:mx-0 rounded-lg bg-stone-50 dark:bg-stone-900 px-3 py-1.5 text-xs text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700">
         <summary class="cursor-pointer select-none font-medium text-stone-500 dark:text-stone-400">${escapeHtml(t('legendToggle'))}</summary>

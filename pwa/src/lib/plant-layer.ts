@@ -5,6 +5,11 @@ export type PlantLayer = Exclude<PlantHabit, ''>;
 /** All layers, top (canopy) to bottom — order for legends, filters, selects. */
 export const PLANT_LAYERS: readonly PlantLayer[] = ['tree', 'shrub', 'climber', 'herb', 'rhizo'];
 
+/** Short code per layer for the "Kürzel statt Farbpunkte" display. */
+export const LAYER_CODE: Record<PlantLayer, string> = {
+  tree: 'B', shrub: 'St', herb: 'K', climber: 'Kl', rhizo: 'R',
+};
+
 /** i18n key of each layer's name (dict-index / dict-gartenplan). */
 export const LAYER_I18N: Record<PlantLayer, string> = {
   tree: 'layerTree', shrub: 'layerShrub', herb: 'layerHerb', climber: 'layerClimber', rhizo: 'layerRhizo',

@@ -110,7 +110,7 @@ import Layout from '../layouts/Layout.astro';
   import { kalenderDict } from '../lib/i18n/dict-kalender';
   import { plantDetailDict } from '../lib/i18n/dict-plant-detail';
   import { withButtonSpinner } from '../lib/html';
-  import { sortCalendar, type CalendarSort } from '../lib/calendar-sort';
+  import { sortCalendar, monthRanges, type CalendarSort } from '../lib/calendar-sort';
 
   const t = createT(kalenderDict, plantDetailDict);
   applyStaticI18n(kalenderDict, plantDetailDict);
@@ -197,7 +197,8 @@ import Layout from '../layouts/Layout.astro';
           ? 'ring-2 ring-green-500 bg-green-50 dark:bg-green-900/20'
           : 'bg-stone-50 dark:bg-stone-900'}">
           <p class="text-xs font-semibold ${isNow ? 'text-green-700 dark:text-green-400' : 'text-stone-500 dark:text-stone-400'}">${m}</p>
-          <div class="mt-1 flex items-end justify-center gap-0.5" style="height:50px">
+          <span class="sr-only">${escapeHtml(t('overviewFloweringTitle', { count: fc }))}, ${escapeHtml(t('overviewRipeTitle', { count: rc }))}</span>
+          <div aria-hidden="true" class="mt-1 flex items-end justify-center gap-0.5" style="height:50px">
             <div class="w-3.5 rounded-t bg-amber-400 dark:bg-amber-500 transition-all" style="height:${fH}px" title="${t('overviewFloweringTitle', { count: fc })}"></div>
             <div class="w-3.5 rounded-t bg-green-500 dark:bg-green-400 transition-all" style="height:${rH}px" title="${t('overviewRipeTitle', { count: rc })}"></div>
           </div>
@@ -223,12 +224,17 @@ import Layout from '../layouts/Layout.astro';
     const rows = plants.map(p => {
       const name = escapeHtml(displayName(p));
       const sub  = displayCommonName(p) ? `<span class="block text-[10px] italic text-stone-500 dark:text-stone-400 truncate">${escapeHtml(p.latinName)}</span>` : '';
+      // The month cells are color only — screen readers get the ranges as text.
+      const spoken = [
+        showF && p.flowerMonths?.some(Boolean) ? `${t('legendFlower')}: ${monthRanges(p.flowerMonths, MONTHS)}` : '',
+        showR && p.fruitMonths?.some(Boolean) ? `${t('legendFruit')}: ${monthRanges(p.fruitMonths, MONTHS)}` : '',
+      ].filter(Boolean).join(' · ');
       const cells = MONTHS.map((_, i) => {
         const flower = showF && !!(p.flowerMonths?.[i]);
         const fruit  = showR && !!(p.fruitMonths?.[i]);
         const isNow = i === NOW_MONTH;
         return `
-          <div class="flex h-9 flex-col justify-center gap-px ${isNow ? 'ring-1 ring-inset ring-green-400/30' : ''}">
+          <div aria-hidden="true" class="flex h-9 flex-col justify-center gap-px ${isNow ? 'ring-1 ring-inset ring-green-400/30' : ''}">
             <div class="h-4 rounded-t ${flower ? 'bg-amber-300 dark:bg-amber-500' : ''}"></div>
             <div class="h-4 rounded-b ${fruit ? 'bg-green-500 dark:bg-green-400' : ''}"></div>
           </div>
@@ -239,6 +245,7 @@ import Layout from '../layouts/Layout.astro';
           <div class="border-r border-stone-200 dark:border-stone-700 px-3 py-1.5">
             <span class="block truncate text-sm font-medium text-stone-800 dark:text-stone-100">${name}</span>
             ${sub}
+            ${spoken ? `<span class="sr-only">${escapeHtml(spoken)}</span>` : ''}
           </div>
           ${cells}
         </div>

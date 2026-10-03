@@ -5,12 +5,34 @@ import { badgedFieldsOf, fieldsOf, fieldLabelKey, type FieldGroup } from './plan
 
 type Translate = (key: string, vars?: Record<string, string | number>) => string;
 
-/** [PlantData key, pill classes, dot hex, translated label] — the shape the
- *  tile/table renderers consume, derived from the central field table. */
-export type BadgeDef = [keyof PlantData, string, string, string];
+/** [PlantData key, pill classes, dot hex, translated label, short code] — the
+ *  shape the tile/table renderers consume, derived from the central field
+ *  table. The code is the table PDF's chip code (Es, Me, N, Mi …). */
+export type BadgeDef = [keyof PlantData, string, string, string, string];
 
 export function badgeDefs(group: FieldGroup, t: Translate): BadgeDef[] {
-  return badgedFieldsOf(group).map(f => [f.key, f.badge.pill, f.badge.hex, t(fieldLabelKey(f.key))]);
+  return badgedFieldsOf(group).map(f => [f.key, f.badge.pill, f.badge.hex, t(fieldLabelKey(f.key)), f.badge.pdfCode]);
+}
+
+/** Black or white, whichever reads better on the given #rrggbb background. */
+function inkOn(hex: string): string {
+  const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255)
+    .map(v => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+  const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return (lum + 0.05) / 0.05 >= 1.05 / (lum + 0.05) ? '#000' : '#fff';
+}
+
+/**
+ * One color key (dot) for the plant table and its legend. Always named for
+ * screen readers; with `showCode` (setting "Kürzel statt Farbpunkte") it
+ * carries its short code, so it doesn't rely on color alone.
+ */
+export function dotHtml(hex: string, label: string, code: string, showCode: boolean): string {
+  const name = escapeHtml(label);
+  if (!showCode) {
+    return `<span role="img" aria-label="${name}" title="${name}" class="inline-block h-2 w-2 rounded-full" style="background-color:${hex}"></span>`;
+  }
+  return `<span role="img" aria-label="${name}" title="${name}" class="inline-flex h-4 min-w-4 items-center justify-center rounded px-0.5 text-[9px] font-bold leading-none" style="background-color:${hex};color:${inkOn(hex)}">${escapeHtml(code)}</span>`;
 }
 
 /** Data-completeness score 0–100 — the single definition behind the tiles'
