@@ -30,6 +30,7 @@ Runde 1 (Mauskoordinaten, OSM-Hintergrund mit Standort & Drehung, grobe Satellit
 ## kurzfristig
 - [ ] eigenes Projekt einfach als Link teilbar machen?
 - [ ] Dokumentation in Hilfe verlinken
+- [ ] permament storage erklären bevor es vom browser abgrefragt wird?
 - [ ] zulip wieder starten: cd /opt/zulip && docker compose start
 - [x] barrierefreiheit - inklusivität mitdenken: Farbenblindheit..
 - [ ] Button: Gruppen als Polykultur einrichten
