@@ -223,11 +223,11 @@ import Layout from '../layouts/Layout.astro';
             <button id="btn-snapshot" type="button" data-i18n="snapshotBtn" data-i18n-title="snapshotTitle" title="Aktuelle 3D-Ansicht als Bild speichern (P)" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">📷 Bild</button>
             <span id="sun-info" class="basis-full text-sky-800 dark:text-sky-200 sm:basis-auto"></span>
           </div>
-          <div id="plan-wrap" class="relative rounded-xl bg-white dark:bg-stone-800 p-3 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
-            <svg id="plan-svg" class="w-full touch-none" style="touch-action:none"></svg>
+          <div id="plan-wrap" class="relative overflow-hidden rounded-xl bg-white dark:bg-stone-800 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+            <svg id="plan-svg" class="block w-full touch-none" style="touch-action:none"></svg>
             <div id="plan-3d-container" hidden class="h-[70vh] w-full touch-none" style="touch-action:none"></div>
-            <div id="measure-readout" hidden aria-live="polite" class="absolute left-1/2 top-5 z-10 -translate-x-1/2 rounded-md bg-orange-600/90 px-2.5 py-1 text-xs font-medium text-white shadow"></div>
-            <div id="zoom-controls" class="absolute left-5 top-5 flex flex-col gap-1">
+            <div id="measure-readout" hidden aria-live="polite" class="absolute left-1/2 top-3 z-10 -translate-x-1/2 rounded-md bg-orange-600/90 px-2.5 py-1 text-xs font-medium text-white shadow"></div>
+            <div id="zoom-controls" class="absolute left-3 top-3 flex flex-col gap-1">
               <button id="zoom-in" type="button" data-i18n-aria-label="zoomIn" data-i18n-title="zoomIn" aria-label="Hineinzoomen" title="Hineinzoomen" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700">+</button>
               <button id="zoom-out" type="button" data-i18n-aria-label="zoomOut" data-i18n-title="zoomOut" aria-label="Herauszoomen" title="Herauszoomen" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700">−</button>
               <button id="zoom-fit" type="button" data-i18n-aria-label="zoomFit" data-i18n-title="zoomFit" aria-label="Ganzen Plan zeigen" title="Ganzen Plan zeigen" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700 text-sm">⤢</button>
@@ -909,7 +909,17 @@ import Layout from '../layouts/Layout.astro';
 
   // Tile zoom follows the on-screen size of the canvas.
   let basemapResizeTimer: ReturnType<typeof setTimeout> | null = null;
+  // and the view follows the canvas shape, so a new width/height (sidebar
+  // folded, window resized) is filled with map instead of a blank strip.
   new ResizeObserver(() => {
+    if (editing && planView.w && !planSvg.hidden && planSvg.getBoundingClientRect().width > 0) {
+      const h = planView.w * canvasAspect();
+      if (Math.abs(h - planView.h) > 1e-6) {
+        planView = { ...planView, y: planView.y + planView.h / 2 - h / 2, h };
+        planSvg.setAttribute('viewBox', `${planView.x} ${planView.y} ${planView.w} ${planView.h}`);
+        if (!rescaleQueued) { rescaleQueued = true; requestAnimationFrame(rescaleUi); }
+      }
+    }
     if (basemapResizeTimer) clearTimeout(basemapResizeTimer);
     basemapResizeTimer = setTimeout(refreshBasemaps, 200);
   }).observe(planSvg);
@@ -1858,7 +1868,18 @@ import Layout from '../layouts/Layout.astro';
     const w = Math.max(W, H / a), h = w * a;
     planView = { x: (W - w) / 2, y: (H - h) / 2, w, h };
   }
+  /** Plan rectangle that is actually visible. The viewBox only matches the
+   *  canvas shape right after sizing; if the canvas changed since (sidebar
+   *  folded, window resized) the SVG letterboxes and shows more than the
+   *  viewBox — tiles must cover that, not just the viewBox. */
   function viewRectM(): PlanRect {
+    const r = planSvg.getBoundingClientRect();
+    if (r.width > 0 && r.height > 0 && planView.w > 0 && planView.h > 0) {
+      const s = Math.min(r.width / planView.w, r.height / planView.h);
+      const vw = r.width / s, vh = r.height / s;
+      const cx = planView.x + planView.w / 2, cy = planView.y + planView.h / 2;
+      return { minX: (cx - vw / 2) / U, minY: (cy - vh / 2) / U, maxX: (cx + vw / 2) / U, maxY: (cy + vh / 2) / U };
+    }
     return { minX: planView.x / U, minY: planView.y / U, maxX: (planView.x + planView.w) / U, maxY: (planView.y + planView.h) / U };
   }
   function applyPlanView() {
@@ -1890,8 +1911,8 @@ import Layout from '../layouts/Layout.astro';
     const headerH = header && getComputedStyle(header).position === 'sticky' ? header.getBoundingClientRect().height : 0;
     const legendH = document.getElementById('plan-legend')?.getBoundingClientRect().height ?? 0;
     const gripH = document.getElementById('plan-resize')?.getBoundingClientRect().height ?? 0;
-    // plan-wrap padding (2 × 12) + gaps + breathing room
-    return Math.max(MIN_PLAN_H, Math.round(window.innerHeight - headerH - legendH - gripH - 24 - 12 - 12));
+    // gaps + breathing room
+    return Math.max(MIN_PLAN_H, Math.round(window.innerHeight - headerH - legendH - gripH - 12 - 12));
   }
   function applyCanvasHeight(heightPx: number) {
     planSvg.style.height = `${heightPx}px`;
