@@ -1,0 +1,64 @@
+# Builds the PWA and rsyncs dist/ to the nginx web root on the VPS —
+# the CI equivalent of pwa/scripts/deploy.sh. Only the static site is
+# deployed; plant-proxy.service runs from the checkout on the VPS and is
+# updated there by hand (git pull + systemctl restart plant-proxy).
+#
+# Required repository secrets:
+#   VPS_SSH_KEY      private key (ed25519) whose public half is in the
+#                    deploy user's ~/.ssh/authorized_keys on the VPS
+#   VPS_HOST         hostname or IP of the VPS
+#   VPS_KNOWN_HOSTS  output of `ssh-keyscan -t ed25519 <host>`, verified
+# Optional:
+#   VPS_USER         SSH user (default: root)
+#   VPS_PORT         SSH port (default: 22)
+
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pwa
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: pwa/.nvmrc
+          cache: npm
+          cache-dependency-path: pwa/package-lock.json
+
+      - run: npm ci
+
+      - run: npm run build
+
+      - name: Configure SSH
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      - name: Rsync to web root
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER || 'root' }}
+          VPS_PORT: ${{ secrets.VPS_PORT || '22' }}
+        run: |
+          rsync -a --delete --chown=www-data:www-data \
+            -e "ssh -i ~/.ssh/deploy_key -p $VPS_PORT -o StrictHostKeyChecking=yes" \
+            dist/ "$VPS_USER@$VPS_HOST:/var/www/permadesignkit.org/"
+          echo "Deployed to https://permadesignkit.org"

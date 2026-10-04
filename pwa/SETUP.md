@@ -51,6 +51,27 @@ Zwei unabhängige Teile:
 
 Ohne den Proxy läuft die App weiter, aber PFAF-Anreicherung liefert keine Daten (siehe oben).
 
+### Automatisches Deployment (GitHub Actions)
+
+`.github/workflows/deploy.yml` baut bei jedem Push auf `main` (oder manuell über *Actions → Deploy →
+Run workflow*) und synct `dist/` per rsync über SSH nach `/var/www/permadesignkit.org/` — dasselbe wie
+`npm run deploy` auf dem VPS. Den Proxy deployt der Workflow nicht.
+
+Einmalige Einrichtung:
+
+1. Deploy-Key erzeugen (lokal): `ssh-keygen -t ed25519 -f deploy_key -N "" -C github-deploy`
+2. `deploy_key.pub` auf dem VPS an `~/.ssh/authorized_keys` des Deploy-Users anhängen.
+3. Host-Key holen und mit dem Fingerprint des Servers abgleichen: `ssh-keyscan -t ed25519 <host>`
+4. Repository-Secrets anlegen (*Settings → Secrets and variables → Actions*):
+   - `VPS_SSH_KEY` — Inhalt von `deploy_key` (privat)
+   - `VPS_HOST` — Hostname/IP des VPS
+   - `VPS_KNOWN_HOSTS` — Ausgabe von Schritt 3
+   - optional `VPS_USER` (Default `root`), `VPS_PORT` (Default `22`)
+5. `deploy_key` lokal löschen.
+
+Nicht parallel `npm run deploy` auf dem VPS nutzen — sonst überschreiben sich manueller und
+automatischer Deploy gegenseitig.
+
 ## Architektur
 
 - **Astro** — Static Site Generator, erzeugt reines HTML/CSS/JS
