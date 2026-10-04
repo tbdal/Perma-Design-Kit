@@ -1,5 +1,5 @@
 # Builds the PWA and rsyncs dist/ to the nginx web root on the VPS —
-# the CI equivalent of pwa/scripts/deploy.sh. Only the static site is
+# the CI equivalent of pwa/scripts/deploy.sh (same check/test/CSP gates). Only the static site is
 # deployed; plant-proxy.service runs from the checkout on the VPS and is
 # updated there by hand (git pull + systemctl restart plant-proxy).
 #
@@ -40,7 +40,11 @@ jobs:
 
       - run: npm ci
 
+      # Same gates as scripts/deploy.sh: the build itself doesn't type-check.
+      - run: npm run check
+      - run: npm test
       - run: npm run build
+      - run: node scripts/check-csp.mjs dist
 
       - name: Configure SSH
         env:
