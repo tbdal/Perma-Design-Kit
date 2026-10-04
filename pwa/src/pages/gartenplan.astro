@@ -2483,9 +2483,9 @@ import Layout from '../layouts/Layout.astro';
       case 'p': if (!in2d) void saveSnapshot(); break;
       case 'b': if (editing.geo) buildingsInput.click(); break;
       case 'j': case 'k':
-        // Time of day (3D sun): J later, K earlier; Shift = whole hours.
+        // Time of day (3D sun): K later, J earlier; Shift = whole hours.
         if (!in2d && !sunControls.hidden) {
-          const step = (e.shiftKey ? 60 : 15) * (key === 'j' ? 1 : -1);
+          const step = (e.shiftKey ? 60 : 15) * (key === 'k' ? 1 : -1);
           const v = (Number(sunTimeInput.value) + step + 1440) % 1440;
           stopSunPlay();
           sunTimeInput.value = String(Math.min(1435, v));
