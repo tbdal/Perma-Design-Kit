@@ -1,6 +1,6 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { OSM_TILES, S2_TILES, orthoTiles, tileUrl, type TileSource } from './gartenplan-background';
+import { OSM_TILES, S2_TILES, orthoTiles, tileUrl, fallbackTileUrl, FALLBACK_ATTRIBUTION, type TileSource } from './gartenplan-background';
 import { orthoFor } from './ortho-sources';
 import type { Lang } from './i18n/core';
 
@@ -25,6 +25,16 @@ export interface BaseMap {
 function sourceLayer(src: TileSource): L.TileLayer {
   const layer = L.tileLayer('', { maxZoom: 21, maxNativeZoom: src.maxZoom, attribution: src.attributionHtml });
   layer.getTileUrl = (c: L.Coords) => tileUrl(src, c.z, c.x, c.y);
+  // Aerial-photo service not answering → coarse satellite / OSM per tile.
+  let credited = false;
+  layer.on('tileerror', (e: L.TileErrorEvent) => {
+    const img = e.tile as HTMLImageElement;
+    const fb = fallbackTileUrl(src, e.coords.z, e.coords.x, e.coords.y);
+    if (!fb || img.dataset.fallback) return;
+    img.dataset.fallback = '1';
+    img.src = fb;
+    if (!credited) { credited = true; (layer as any)._map?.attributionControl?.addAttribution(FALLBACK_ATTRIBUTION); }
+  });
   return layer;
 }
 

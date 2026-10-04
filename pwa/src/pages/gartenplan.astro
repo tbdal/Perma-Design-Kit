@@ -387,7 +387,7 @@ import Layout from '../layouts/Layout.astro';
   import { areasSvg, AREA_PALETTE, uiScale, polygonCentroid } from '../lib/gartenplan-render';
   import { planFromLatLngPolygon, planToLatLon } from '../lib/gartenplan-geo';
   import type { MapDrawer } from '../lib/gartenplan-mapdraw';
-  import { basemapSvg, basemapAttribution } from '../lib/gartenplan-background';
+  import { basemapSvg, basemapAttribution, sourceForGeo, FALLBACK_ATTRIBUTION } from '../lib/gartenplan-background';
   import { growPlanToFit } from '../lib/gartenplan-extent';
   import type { PlanRect } from '../lib/gartenplan-geo';
   import { compassLabel, sunPosition } from '../lib/sun-position';
@@ -797,6 +797,30 @@ import Layout from '../layouts/Layout.astro';
     updateAttribution(svg);
   }
 
+  // An aerial-photo service that doesn't answer (e.g. 403/500): its tiles are
+  // swapped for coarse satellite / OSM (data-fallback, see basemapSvg) and the
+  // user is told once per plan.
+  let orthoFallbackUsed = false;
+  let orthoFallbackNotified = '';
+  function noteOrthoFallback() {
+    orthoFallbackUsed = true;
+    const src = sourceForGeo(editing?.geo);
+    const key = editing?.id ?? '';
+    if (orthoFallbackNotified !== key) {
+      orthoFallbackNotified = key;
+      showToast(t('orthoUnavailable', { region: src?.region?.[lang] ?? '' }));
+      updateAttribution(planSvg);
+    }
+  }
+  [planSvg, drawingSvg].forEach(svg => svg.addEventListener('error', e => {
+    const img = e.target as SVGImageElement;
+    const fb = img?.getAttribute?.('data-fallback');
+    if (!fb) return;
+    img.removeAttribute('data-fallback');
+    img.setAttribute('href', fb);
+    noteOrthoFallback();
+  }, true));
+
   /** Source credits (map / aerial photo / satellite, elevation) — required by
    *  the licenses, so shown whenever such data is on screen, in 2D and 3D. */
   function updateAttribution(svg: SVGSVGElement) {
@@ -806,7 +830,8 @@ import Layout from '../layouts/Layout.astro';
     const tilesAttr = terrain ? `${TERRAIN_ATTRIBUTION}${terrain.sources.length ? ` (${escapeHtml(terrain.sources.join(', '))})` : ''}` : '';
     const terrainAttr = isPlan && terrain ? [terrain.dgm?.attributionHtml, tilesAttr].filter(Boolean).join(' · ') : '';
     const bAttr = isPlan && showBuildings() && !basemapAttribution(editing).includes('OpenStreetMap') ? BUILDINGS_ATTRIBUTION : '';
-    attrib.innerHTML = [basemapAttribution(editing), bAttr, terrainAttr].filter(Boolean).join(' · ');
+    const fbAttr = orthoFallbackUsed ? FALLBACK_ATTRIBUTION : '';
+    attrib.innerHTML = [basemapAttribution(editing), fbAttr, bAttr, terrainAttr].filter(Boolean).join(' · ');
     attrib.classList.toggle('hidden', !attrib.innerHTML);
   }
 
@@ -1148,6 +1173,7 @@ import Layout from '../layouts/Layout.astro';
       rotationDeg: geo?.rotationDeg ?? 0,
       terrain: geo ? terrain : null,
       buildings: showBuildings() ? buildings : [],
+      onTileFallback: noteOrthoFallback,
     });
     view3d.setArmedPlant(armedPlantId);
     view3d.refreshAreas(selectedAreaId);

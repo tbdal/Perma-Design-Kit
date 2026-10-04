@@ -7,7 +7,7 @@ import { buildPlantModel, crownShape } from './plant-mesh-3d';
 import { pointInPolygon } from './gartenplan-geometry';
 import { polygonCentroid } from './gartenplan-render';
 import { enuToPlan, tilesForRect, planToLatLon } from './gartenplan-geo';
-import { OSM_TILES, sourceForGeo, tileUrl } from './gartenplan-background';
+import { OSM_TILES, sourceForGeo, tileUrl, fallbackTileUrl } from './gartenplan-background';
 import { sunPosition, sunDirectionEnu } from './sun-position';
 import { sampleGrid, terrainTiles, type ElevationGrid } from './terrain';
 
@@ -128,6 +128,8 @@ export interface View3DOptions {
   rotationDeg: number;
   /** Elevation grid (terrain.ts); null = flat ground. */
   terrain?: ElevationGrid | null;
+  /** Called once when an aerial-photo tile failed and a fallback was used. */
+  onTileFallback?: () => void;
   /** Building footprints (plan meters) with heights, e.g. from OSM. */
   buildings?: { pts: { xM: number; yM: number }[]; heightM: number }[];
 }
@@ -292,12 +294,18 @@ export function createGardenPlan3DView(
   scene.add(hemi);
   const sun = new THREE.DirectionalLight(0xfff1d6, 2.4);
   sun.castShadow = true;
-  sun.shadow.mapSize.set(2048, 2048);
-  // Shadow frustum just covers the plan; biases scale with the shadow-map
-  // texel size so big gardens don't get acne / striped shadow artifacts.
-  const shadowR = maxDim * 0.75;
-  const texel = (2 * shadowR) / 2048;
-  Object.assign(sun.shadow.camera, { left: -shadowR, right: shadowR, top: shadowR, bottom: -shadowR, near: 0.5, far: maxDim * 8 });
+  // Shadow frustum covers the plan and every building around it (OSM, up to
+  // ~150 m away) — otherwise buildings outside it cast no shadow while their
+  // neighbours do. A larger area gets a larger shadow map to stay sharp;
+  // biases scale with the texel size against acne / striped artifacts.
+  let shadowR = maxDim * 0.75;
+  for (const b of opts.buildings ?? []) for (const p of b.pts) shadowR = Math.max(shadowR, Math.hypot(p.xM - cx, p.yM - cz) + 5);
+  shadowR = Math.min(shadowR, 450);
+  const mapSize = shadowR > 60 ? Math.min(4096, renderer.capabilities.maxTextureSize) : 2048;
+  sun.shadow.mapSize.set(mapSize, mapSize);
+  const texel = (2 * shadowR) / mapSize;
+  const sunDist = Math.max(maxDim * 3, shadowR * 2);
+  Object.assign(sun.shadow.camera, { left: -shadowR, right: shadowR, top: shadowR, bottom: -shadowR, near: 0.5, far: sunDist + shadowR * 2 });
   sun.shadow.bias = -0.0002;
   sun.shadow.normalBias = texel * 1.5;
   sun.shadow.radius = 2; // soft edges (PCF)
@@ -422,7 +430,7 @@ export function createGardenPlan3DView(
       mesh.receiveShadow = true;
       if (!tileSrc) { next.add(mesh); settled(); continue; }
       mesh.visible = false; // until its texture has arrived
-      tileLoader.load(tileUrl(tileSrc, q.z, q.x, q.y), tex => {
+      const onTex = (tex: THREE.Texture) => {
         if (tileGroup !== next && oldTileGroup !== next) { tex.dispose(); return; }
         tex.colorSpace = THREE.SRGBColorSpace;
         tex.anisotropy = 4;
@@ -431,7 +439,14 @@ export function createGardenPlan3DView(
         mesh.visible = true;
         requestRender();
         settled();
-      }, undefined, settled);
+      };
+      // Aerial-photo service not answering → coarse satellite / OSM instead.
+      const fb = fallbackTileUrl(tileSrc, q.z, q.x, q.y);
+      tileLoader.load(tileUrl(tileSrc, q.z, q.x, q.y), onTex, undefined, () => {
+        if (!fb) { settled(); return; }
+        opts.onTileFallback?.();
+        tileLoader.load(fb, onTex, undefined, settled);
+      });
       next.add(mesh);
     }
     scene.add(next);
@@ -620,7 +635,7 @@ export function createGardenPlan3DView(
     const p = sunPosition(date, opts.latLon.lat, opts.latLon.lon);
     const dir = sunVector(p.bearingDeg, p.altitudeDeg);
     const up = p.altitudeDeg > 0;
-    sun.position.set(cx, 0, cz).add(dir.clone().multiplyScalar(maxDim * 3));
+    sun.position.set(cx, 0, cz).add(dir.clone().multiplyScalar(sunDist));
     sun.intensity = up ? 2.6 * Math.min(1, Math.max(0.2, Math.sin(p.altitudeDeg * RAD) * 2)) : 0;
     sun.castShadow = up;
     hemi.intensity = up ? 0.7 + 0.5 * Math.min(1, p.altitudeDeg / 35) : 0.3;

@@ -2,6 +2,10 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Fix: Gebäudeschatten, Luftbild-Ausfall (2026-10-04)
+- [x] **Gebäudeschatten:** Der Schattenbereich in 3D deckte nur den Garten ab — Gebäude weiter weg warfen keinen Schatten, während Schatten von Gebäuden außerhalb des Bildes hereinragten. Jetzt reicht er über alle geladenen Gebäude (bis ~150 m) mit höher aufgelöster Schattenkarte (4096 px, wo die Grafikkarte es kann).
+- [x] **Luftbild-Dienst antwortet nicht** (aktuell Sachsen-Anhalt: 403 auf alle Anfragen, auch der INSPIRE-Dienst gestört): statt leerer Fläche bzw. grünem 3D-Boden werden ausgefallene Kacheln durch das grobe Satellitenbild (Übersicht) bzw. die OSM-Karte ersetzt — in 2D, 3D und auf der Einzeichnen-Karte; einmaliger Hinweis und Quellenvermerk „Ersatz: © OpenStreetMap“. Läuft der Dienst wieder, kommen automatisch die Luftbilder.
+
 ## „Waldgartenplan“, Nachfrage bei offener Fläche (2026-10-04)
 - [x] **Umbenannt:** „Gartenplan“ heißt in der Oberfläche jetzt **„Waldgartenplan“** (EN: „Forest garden plan“) — Navigation, Seitentitel, Buttons, Meldungen, Hilfe, Einstellungen, Teilen, Datenschutz, Impressum, Standardname in PDF/GeoJSON. Die Adresse `/gartenplan` bleibt, damit Links und Lesezeichen weiter funktionieren.
 - [x] **Fläche noch offen beim Speichern:** Sind beim Anlegen schon Eckpunkte gesetzt, die Fläche aber nicht abgeschlossen, fragt „Waldgartenplan speichern“ nach — ab 3 Punkten „Jetzt abschließen und speichern?“, bei 1–2 Punkten „Ohne Fläche speichern?“; Abbrechen zeichnet weiter (vorher gingen die Punkte stillschweigend verloren).

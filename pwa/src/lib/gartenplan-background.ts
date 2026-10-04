@@ -14,6 +14,8 @@ export interface TileSource {
    *  nothing at overview scales). */
   minZoom?: number;
   fallback?: TileSource;
+  /** Region of an official aerial-photo service (for "service not answering"). */
+  region?: Record<'de' | 'en', string>;
 }
 
 export const OSM_TILES: TileSource = {
@@ -43,9 +45,18 @@ export function tileUrl(src: TileSource, z: number, x: number, y: number): strin
   return src.url.replace('{z}', String(z)).replace('{x}', String(x)).replace('{y}', String(y));
 }
 
+/** Replacement for a tile of an aerial-photo service that failed to load
+ *  (service down, 403 …): coarse satellite up to its zoom, OSM beyond. */
+export function fallbackTileUrl(src: TileSource, z: number, x: number, y: number): string | null {
+  if (!src.fallback) return null;
+  if (z <= S2_TILES.maxZoom) return tileUrl(S2_TILES, z, x, y);
+  return z <= OSM_TILES.maxZoom ? tileUrl(OSM_TILES, z, x, y) : null;
+}
+export const FALLBACK_ATTRIBUTION = 'Ersatz: ' + OSM_TILES.attributionHtml;
+
 export function orthoTiles(o: OrthoSource): TileSource {
   return {
-    url: o.url, maxZoom: o.maxZoom, minZoom: o.minZoom, fallback: S2_TILES,
+    url: o.url, maxZoom: o.maxZoom, minZoom: o.minZoom, fallback: S2_TILES, region: o.region,
     // Short credit for the overview fallback; the full one shows with 'sat'.
     attributionHtml: o.attributionHtml.replace('{YEAR}', String(new Date().getFullYear()))
       + ' · Übersicht: <a href="https://s2maps.eu" target="_blank" rel="noopener">Sentinel-2 cloudless</a> (EOX, Copernicus)',
@@ -91,7 +102,8 @@ export function basemapSvg(plan: GardenPlan, view: PlanRect, screenMPerPx: numbe
   // A hair of overlap hides the anti-aliasing seams between rotated tiles.
   const images = tiles.map(t => {
     const size = t.sizeM * u * 1.003;
-    return `<image href="${tileUrl(src, t.z, t.x, t.y)}" x="${t.eM * u}" y="${t.sM * u}" width="${size}" height="${size}" preserveAspectRatio="none"/>`;
+    const fb = fallbackTileUrl(src, t.z, t.x, t.y);
+    return `<image href="${tileUrl(src, t.z, t.x, t.y)}"${fb ? ` data-fallback="${fb}"` : ''} x="${t.eM * u}" y="${t.sM * u}" width="${size}" height="${size}" preserveAspectRatio="none"/>`;
   }).join('');
   return `<g opacity="${geo.opacity}" pointer-events="none"><g transform="rotate(${-geo.rotationDeg})">${images}</g></g>`;
 }
