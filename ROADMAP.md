@@ -91,7 +91,7 @@ Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann
 - [ ] contributor erwähnen: Jörn, Andi, Jens, Sebastian, pfaf
   - [ ] lizenz
   - [ ] bild
-- [ ] lizenz auf github: fair-use
+- [x] lizenz auf github: fair-use — FSL-1.1-MIT seit 2026-10-04 (Tag `fsl-start`), Lizenzgeber Andreas + Jörn; Sebastian & Jens nur verlinkt
   - [ ] Jens & Sebastian um Lizenzänderung bitten?
 - [ ] naturadb anrufen (Anfrage: Erlaubnis für gemeinnützige, nicht-kommerzielle Nutzung der Daten?)
 - [x] Toensmeier: können wir seine Daten dafür nutzen? Anfrage ist raus@Joern: US-Recht verbietet Nutzung der Tabellendaten nicht
@@ -137,7 +137,7 @@ Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann
 
 ### Launch-Blocker
 - [ ] **Plausible-Domain** — `data-domain` in `Layout.astro` auf Custom-Domain anpassen + im Plausible-Dashboard registrieren
-- [ ] **Lizenz-Metadaten ergänzen** — `pwa/package.json` fehlt `"license": "MIT"`. Optional: Copyright-Hinweis in `LICENSE`/README erweitern, da die PWA inzwischen eine vollständige Neuentwicklung ist (Original von Sebastian Schucht war die PowerShell-Tooling-Basis in `legacy/`); MIT erlaubt das Rewrite ohne Einschränkung, solange die bestehende Attribution erhalten bleibt
+- [x] **Lizenz-Metadaten ergänzen** (2026-10-04: `"license": "FSL-1.1-MIT"`, NOTICE mit MIT-Hinweis) — `pwa/package.json` fehlt `"license": "MIT"`. Optional: Copyright-Hinweis in `LICENSE`/README erweitern, da die PWA inzwischen eine vollständige Neuentwicklung ist (Original von Sebastian Schucht war die PowerShell-Tooling-Basis in `legacy/`); MIT erlaubt das Rewrite ohne Einschränkung, solange die bestehende Attribution erhalten bleibt
 
 ### Lizenz & Datenquellen (Launch-Blocker)
 - [ ] **EOX Sentinel-2 im Gartenplan-Standortdialog** — Daten 2016 sind CC BY 4.0, aber der gehostete EOX-WMTS ist nur für nicht-kommerzielle Nutzung frei. Vor Launch klären (Spenden/Newsletter?) oder auf NASA GIBS bzw. selbst gehostete Kacheln wechseln (`S2_TILES` in `gartenplan-background.ts`)
