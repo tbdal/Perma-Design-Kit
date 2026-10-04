@@ -7,6 +7,11 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 - [x] eingeklappte Farblegende farblich mehr hervorheben
 - [x] in der Produkttour beispieldaten und nachladen als letztes erwähnen: "Du kannst auch mit einem Beispiel starten und dafür die "Pflanzen für kleine Gärten" aus Martin Crawford's Buch "Einen Waldgarten erschaffen" (https://www.olv-verlag.eu/Einen-Waldgarten-erschaffen/) nutzen. Klicke dafür zuerst auf "Beispieldaten laden (Crawford)" und lade dann die Detailinformationen der Pflanzen mit "Lade alle fehlenden Daten"
 	- auf englisch:  "Plants for small gardens" & Link zum Buch: https://www.agroforestry.co.uk/product/creating-a-forest-garden-2/
+- [x] **zur Prüfung (2026-10-03, live):** Layout-Änderungen aus `horizon-en` übernommen — bitte ansehen und ggf. zurücknehmen:
+  - Kopf- und Fußzeile immer 1600 px breit (`barMaxW` in `Layout.astro`), damit das Menü beim Seitenwechsel nicht springt. Haken: auf schmalen Seiten (Gartenplan, Hilfe, Impressum, Datenschutz) steht das Logo deutlich links vom Inhalt.
+  - `scrollbar-gutter: stable` (`global.css`): Layout springt nicht mehr seitlich zwischen Seiten mit und ohne Scrollbalken.
+  - ~~Horizont-Design: aktiver Menüpunkt nicht mehr fett~~ — zurückgenommen, aktiver Punkt wieder fett (2026-10-03).
+  - **Horizont ist jetzt Standard-Design** (2026-10-03); das alte heißt in den Einstellungen „Klassisch“. Wer früher bewusst „Standard“ gewählt hatte, landet einmalig auch bei Horizont (war technisch nicht unterscheidbar).
 
 ## Luftbilder Bremen und Hamburg, Gebäude mit Innenhöfen, Gebäude-Schalter in 3D (2026-10-04)
 - [x] **Bremen:** amtliche Luftbilder 10 cm (Befliegung 2025) für Bremen und Bremerhaven vom Landesamt GeoInformation Bremen (CC BY). Bremen wurde bisher fälschlich Niedersachsen zugeordnet (dessen Umriss Bremen umschließt) — dort gibt es keine Bilder, daher blieb die Fläche leer.
