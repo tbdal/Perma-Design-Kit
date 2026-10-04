@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 ---
-<Layout title="Perma Design Kit — Waldgartenplan" wide>
+<Layout title="Perma Design Kit — Waldgartenplan" full>
   <!-- ── Listenansicht ─────────────────────────────────────────────────── -->
   <section id="plan-list-view">
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -26,6 +26,7 @@ import Layout from '../layouts/Layout.astro';
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
       <button id="btn-back-to-list" data-i18n="btnBackToList" class="text-sm font-medium text-stone-600 dark:text-stone-300 hover:text-green-700 dark:hover:text-green-400">← Zurück zur Liste</button>
       <div class="flex items-center gap-2">
+        <button id="btn-save-plan" data-i18n="btnSavePlan" class="rounded-lg bg-green-700 px-3 py-1.5 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">Waldgartenplan speichern</button>
         <button id="btn-delete-plan" data-i18n="btnDeletePlan" class="rounded-lg bg-red-100 dark:bg-red-900/40 px-3 py-1.5 text-sm font-medium text-red-700 dark:text-red-300 ring-1 ring-red-300 dark:ring-red-800 hover:bg-red-200 dark:hover:bg-red-900/60">Löschen</button>
       </div>
     </div>
@@ -239,6 +240,9 @@ import Layout from '../layouts/Layout.astro';
             <div aria-hidden="true" class="cursor-readout pointer-events-none absolute hidden rounded bg-stone-900/80 px-1.5 py-0.5 font-mono text-[11px] text-white"></div>
             <div class="basemap-attrib absolute bottom-3 right-3 z-10 hidden rounded-tl bg-white/80 px-1 text-[10px] text-stone-600"></div>
           </div>
+          <div id="plan-resize" role="separator" aria-orientation="horizontal" tabindex="0" data-i18n-aria-label="planResize" data-i18n-title="planResizeTitle" aria-label="Kartenhöhe ändern" title="Ziehen: Kartenhöhe ändern · Doppelklick: automatisch" class="group -mt-1 flex h-4 cursor-ns-resize touch-none items-center justify-center">
+            <span class="h-1.5 w-16 rounded-full bg-stone-300 transition group-hover:bg-green-600 group-focus-visible:bg-green-600 dark:bg-stone-600"></span>
+          </div>
           <div id="plan-legend" class="flex flex-wrap items-center gap-x-4 gap-y-1 px-1 text-xs text-stone-500 dark:text-stone-400">
             <span class="inline-flex items-center gap-1.5"><span class="inline-block h-2.5 w-2.5 rounded-full" style="background-color:#166534"></span><span data-i18n="layerTree">Baum</span></span>
             <span class="inline-flex items-center gap-1.5"><span class="inline-block h-2.5 w-2.5 rounded-full" style="background-color:#65a30d"></span><span data-i18n="layerShrub">Strauch</span></span>
@@ -249,12 +253,12 @@ import Layout from '../layouts/Layout.astro';
         </div>
 
         <aside class="space-y-4">
-          <div class="rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
-            <h2 class="mb-2 text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="selectedPanelHeading">Ausgewählt</h2>
+          <details data-panel="selected" open class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="selectedPanelHeading">Ausgewählt</h2><span aria-hidden="true" class="text-xs text-stone-400 transition group-open/panel:rotate-90">▸</span></summary>
             <div id="selected-panel"></div>
-          </div>
-          <div class="rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
-            <h2 class="mb-2 text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="pickerHeading">Pflanzen</h2>
+          </details>
+          <details data-panel="plants" open class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="pickerHeading">Pflanzen</h2><span aria-hidden="true" class="text-xs text-stone-400 transition group-open/panel:rotate-90">▸</span></summary>
             <input id="picker-filter" type="search" data-i18n-placeholder="pickerFilterPlaceholder" placeholder="Pflanze filtern…" class="mb-2 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-xs shadow-inner focus:border-green-500 focus:outline-none" />
             <div id="plant-picker" class="max-h-56 space-y-0.5 overflow-y-auto"></div>
             <div class="mt-2 flex gap-1.5 border-t border-stone-200 dark:border-stone-700 pt-2">
@@ -263,42 +267,41 @@ import Layout from '../layouts/Layout.astro';
             </div>
             <p id="pkg-hint" class="mt-2 hidden text-xs font-medium text-green-700 dark:text-green-400" data-i18n="pkgHint">Auf die Fläche tippen: der Anker kommt dorthin, die übrigen Pflanzen drumherum.</p>
             <p id="armed-hint" class="mt-2 hidden text-xs font-medium text-green-700 dark:text-green-400" data-i18n="hintArmed">Auf die Fläche tippen zum Platzieren.</p>
-          </div>
+          </details>
 
-          <div class="rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
-            <h2 class="mb-2 text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="areasHeading">Flächen</h2>
+          <details data-panel="areas" open class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="areasHeading">Flächen</h2><span aria-hidden="true" class="text-xs text-stone-400 transition group-open/panel:rotate-90">▸</span></summary>
             <p id="areas-empty" class="text-xs text-stone-400 dark:text-stone-500" data-i18n="areasEmpty">Noch keine Flächen. Mit „Fläche einzeichnen“ Beete, Teich, Wege … einzeichnen.</p>
             <ul id="areas-list" class="space-y-1.5"></ul>
             <p id="area-edit-hint" hidden class="mt-2 text-[11px] text-stone-500 dark:text-stone-400" data-i18n="areaEditHint">Ausgewählte Fläche: Eckpunkte ziehen (auch in 3D), ＋ auf einer Kante fügt einen Punkt ein, Doppelklick auf einen Punkt entfernt ihn. Esc hebt die Auswahl auf.</p>
-          </div>
+          </details>
 
-          <div id="coverage-section" hidden class="rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
-            <h2 id="coverage-heading" class="mb-1 text-sm font-semibold text-stone-800 dark:text-stone-100">Funktions-Abdeckung</h2>
+          <details data-panel="coverage" open id="coverage-section" hidden class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-1"><h2 id="coverage-heading" class="text-sm font-semibold text-stone-800 dark:text-stone-100">Funktions-Abdeckung</h2><span aria-hidden="true" class="text-xs text-stone-400 transition group-open/panel:rotate-90">▸</span></summary>
             <div id="coverage-body" class="space-y-2 text-xs"></div>
-          </div>
+          </details>
 
-          <details id="warnings-section" hidden open class="rounded-xl bg-red-50/60 dark:bg-red-950/30 p-4 shadow-sm ring-1 ring-red-200 dark:ring-red-900">
+          <details id="warnings-section" data-panel="warnings" hidden open class="rounded-xl bg-red-50/60 dark:bg-red-950/30 p-4 shadow-sm ring-1 ring-red-200 dark:ring-red-900">
             <summary class="cursor-pointer text-sm font-semibold text-red-900 dark:text-red-200"><span data-i18n="warningsHeading">Hinweise</span> (<span id="warnings-count">0</span>)</summary>
             <p class="mt-1 text-xs text-stone-500 dark:text-stone-400" data-i18n="warningsIntro">Mit Blick auf die ausgewachsenen Pflanzen (30 Jahre). Klick markiert die Pflanze(n).</p>
             <ul id="warnings-list" class="mt-1 space-y-0.5 text-xs text-stone-700 dark:text-stone-200"></ul>
           </details>
 
-          <div id="suggestions-section" class="hidden rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
-            <h2 class="mb-1 text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="suggestionsHeading">Vorschläge</h2>
+          <details data-panel="suggestions" open id="suggestions-section" class="group/panel hidden rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-1"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="suggestionsHeading">Vorschläge</h2><span aria-hidden="true" class="text-xs text-stone-400 transition group-open/panel:rotate-90">▸</span></summary>
             <p class="mb-2 text-[10px] text-stone-500 dark:text-stone-400" data-i18n="suggestionsIntro">Pflanzen aus deinem Bestand, die mit den bereits platzierten in Sonne/Wasser/pH überlappen.</p>
             <div id="suggestions-list" class="space-y-0.5"></div>
-          </div>
+          </details>
 
-          <div id="unplaced-section" class="hidden rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
-            <h2 class="mb-2 text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="unplacedHeading">Noch zu platzieren</h2>
+          <details data-panel="unplaced" open id="unplaced-section" class="group/panel hidden rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="unplacedHeading">Noch zu platzieren</h2><span aria-hidden="true" class="text-xs text-stone-400 transition group-open/panel:rotate-90">▸</span></summary>
             <div id="unplaced-list" class="space-y-0.5"></div>
-          </div>
+          </details>
 
         </aside>
       </div>
     </div>
 
-    <button id="btn-save-plan" data-i18n="btnSavePlan" class="mt-5 rounded-lg bg-green-700 px-5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">Waldgartenplan speichern</button>
   </section>
 
   <div id="toast" class="fixed bottom-6 right-6 hidden rounded-lg bg-green-700 px-4 py-2.5 text-sm font-medium text-white shadow-lg"></div>
@@ -363,13 +366,18 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <style is:global>
-  #plan-svg.area-drawing { cursor: crosshair; }
   #plan-svg.tool-pan { cursor: grab; }
   #plan-svg.tool-pan #plan-markers, #plan-svg.tool-pan #plan-areas-layer,
   #plan-svg.tool-lasso #plan-markers, #plan-svg.tool-lasso #plan-areas-layer { pointer-events: none; }
   #plan-svg.tool-lasso { cursor: crosshair; }
   #plan-svg.tool-measure #plan-markers, #plan-svg.tool-measure #plan-areas-layer { pointer-events: none; }
   #plan-svg.tool-measure { cursor: crosshair; }
+  /* Drawing an area wins over the pan tool's hand. */
+  #plan-svg.area-drawing, #plan-svg.area-drawing.tool-pan { cursor: crosshair; }
+  /* Drawing the outline on the map: arrow pointer instead of Leaflet's hand;
+     the grabbing hand only while the map is actually dragged. */
+  #mapdraw-map.leaflet-grab, #mapdraw-map .leaflet-grab, #mapdraw-map .leaflet-interactive { cursor: default; }
+  #mapdraw-map.leaflet-dragging, #mapdraw-map.leaflet-dragging .leaflet-grab { cursor: grabbing; }
   #plan-svg.area-drawing #plan-markers { pointer-events: none; }
   .locate-handle { border-radius: 9999px; border: 3px solid #fff; box-shadow: 0 0 0 1px #1c1917, 0 1px 4px rgb(0 0 0 / 0.4); }
   .locate-handle-origin { background: #15803d; cursor: move; }
@@ -1099,7 +1107,7 @@ import Layout from '../layouts/Layout.astro';
       // Keep the perspective: 2D shows what the 3D camera was looking at.
       last3dCamera = view3d.getCameraState();
       const r = view3d.getViewRect();
-      const aspect = editing.areaHeightM / editing.areaWidthM;
+      const aspect = canvasAspect();
       const w = Math.max((r.maxX - r.minX), (r.maxY - r.minY) / aspect) * U;
       const cxU = (r.minX + r.maxX) / 2 * U, cyU = (r.minY + r.maxY) / 2 * U;
       planView = { x: cxU - w / 2, y: cyU - w * aspect / 2, w, h: w * aspect };
@@ -1228,8 +1236,11 @@ import Layout from '../layouts/Layout.astro';
   }
   sunDateInput.addEventListener('input', () => { applySun(); if (coverageSelect.value === 'sun-day') scheduleCoverage(); });
   sunTimeInput.addEventListener('input', () => { stopSunPlay(); applySun(); });
-  document.getElementById('view-top')!.addEventListener('click', () => view3d?.setViewPreset('top'));
-  document.getElementById('view-oblique')!.addEventListener('click', () => view3d?.setViewPreset('oblique'));
+  // Last chosen 3D preset, so the T shortcut can toggle between both.
+  let lastPreset: 'top' | 'oblique' = 'oblique';
+  function setPreset(p: 'top' | 'oblique') { lastPreset = p; view3d?.setViewPreset(p); }
+  document.getElementById('view-top')!.addEventListener('click', () => setPreset('top'));
+  document.getElementById('view-oblique')!.addEventListener('click', () => setPreset('oblique'));
   document.getElementById('sun-now')!.addEventListener('click', () => { stopSunPlay(); setSunNow(); applySun(); });
   sunPlayBtn.addEventListener('click', () => {
     if (sunPlayTimer) { stopSunPlay(); return; }
@@ -1323,6 +1334,7 @@ import Layout from '../layouts/Layout.astro';
   /** Restores the saved 2D section (else the whole plan) and primes the 3D
    *  camera so switching to 3D lands where it was. */
   function restoreViewState(): SavedView | null {
+    applyCanvasHeight(storedPlanHeight() ?? autoPlanHeight()); // view aspect needs the final canvas shape
     resetPlanViewState();
     last3dCamera = null;
     last2dView = null;
@@ -1331,8 +1343,9 @@ import Layout from '../layouts/Layout.astro';
     try { saved = JSON.parse(localStorage.getItem(viewKey(editing.id)) || 'null'); } catch {}
     const v = saved?.view2d;
     if (v && [v.x, v.y, v.w, v.h].every(Number.isFinite) && v.w > 0) {
-      // The plan may have grown since: keep the width, fix the aspect ratio.
-      planView = { x: v.x, y: v.y, w: v.w, h: v.w * editing.areaHeightM / editing.areaWidthM };
+      // The canvas may have another shape now: same center and width, new aspect.
+      const h = v.w * canvasAspect();
+      planView = { x: v.x, y: v.y + v.h / 2 - h / 2, w: v.w, h };
     }
     const c = saved?.cam3d;
     if (c && Array.isArray(c.position) && Array.isArray(c.target) && [...c.position, ...c.target].every(Number.isFinite)) {
@@ -1831,9 +1844,19 @@ import Layout from '../layouts/Layout.astro';
   let planView = { x: 0, y: 0, w: 0, h: 0 };
   let basemapViewTimer: ReturnType<typeof setTimeout> | null = null;
 
+  /** Height/width of the 2D canvas; the view (viewBox) always has this
+   *  shape, so the map fills the canvas instead of being letterboxed. */
+  function canvasAspect(): number {
+    const r = planSvg.getBoundingClientRect();
+    if (r.width > 0 && r.height > 0) return r.height / r.width;
+    return editing ? editing.areaHeightM / editing.areaWidthM : 1;
+  }
+  /** Whole plan in view, centered; the rest of the canvas shows surroundings. */
   function resetPlanViewState() {
     if (!editing) return;
-    planView = { x: 0, y: 0, w: editing.areaWidthM * U, h: editing.areaHeightM * U };
+    const W = editing.areaWidthM * U, H = editing.areaHeightM * U, a = canvasAspect();
+    const w = Math.max(W, H / a), h = w * a;
+    planView = { x: (W - w) / 2, y: (H - h) / 2, w, h };
   }
   function viewRectM(): PlanRect {
     return { minX: planView.x / U, minY: planView.y / U, maxX: (planView.x + planView.w) / U, maxY: (planView.y + planView.h) / U };
@@ -1850,24 +1873,78 @@ import Layout from '../layouts/Layout.astro';
     const r = planSvg.getBoundingClientRect();
     const w = r.width || 700;
     if (!planView.w) return w / ((editing?.areaWidthM ?? 10) * U);
-    // The canvas can be height-capped (fitPlanHeight): the viewBox is then
-    // letterboxed, so the smaller of both ratios is the real scale.
     return r.height && planView.h ? Math.min(w / planView.w, r.height / planView.h) : w / planView.w;
   }
 
-  /** Cap the 2D canvas and the 3D view to the window height, so the layer
-   *  legend below the map stays visible without scrolling. */
-  function fitPlanHeight() {
+  // ── Canvas size ──────────────────────────────────────────────────────
+  // Width = the map column (grows with the window). Height = the window minus
+  // header and legend (so the legend stays visible), or what the user dragged
+  // with the grip under the map (remembered per device; double-click resets).
+  const PLAN_H_KEY = 'pdk-plan-height';
+  const MIN_PLAN_H = 240;
+  function storedPlanHeight(): number | null {
+    try { const v = Number(localStorage.getItem(PLAN_H_KEY)); return v >= MIN_PLAN_H ? v : null; } catch { return null; }
+  }
+  function autoPlanHeight(): number {
     const header = document.querySelector<HTMLElement>('.site-header');
     const headerH = header && getComputedStyle(header).position === 'sticky' ? header.getBoundingClientRect().height : 0;
     const legendH = document.getElementById('plan-legend')?.getBoundingClientRect().height ?? 0;
-    // plan-wrap padding (2 × 12) + gap to the legend + breathing room
-    const avail = window.innerHeight - headerH - legendH - 24 - 12 - 16;
-    const px = Math.max(280, Math.round(avail));
-    planSvg.style.maxHeight = `${px}px`;
-    plan3dContainer.style.height = `${px}px`;
+    const gripH = document.getElementById('plan-resize')?.getBoundingClientRect().height ?? 0;
+    // plan-wrap padding (2 × 12) + gaps + breathing room
+    return Math.max(MIN_PLAN_H, Math.round(window.innerHeight - headerH - legendH - gripH - 24 - 12 - 12));
   }
+  function applyCanvasHeight(heightPx: number) {
+    planSvg.style.height = `${heightPx}px`;
+    plan3dContainer.style.height = `${heightPx}px`;
+  }
+  /** Apply a canvas height; keeps the view's center (or the whole plan, if it
+   *  was fully in view) and adapts the view to the new canvas shape. */
+  function sizePlanCanvas(heightPx = storedPlanHeight() ?? autoPlanHeight()) {
+    const wasFit = !!editing && planView.w > 0 && planView.x <= 0.5 && planView.y <= 0.5
+      && planView.x + planView.w >= editing.areaWidthM * U - 0.5 && planView.y + planView.h >= editing.areaHeightM * U - 0.5;
+    applyCanvasHeight(heightPx);
+    if (!editing || !planView.w) return;
+    if (wasFit) resetPlanViewState();
+    else {
+      const cy = planView.y + planView.h / 2;
+      const h = planView.w * canvasAspect();
+      planView = { ...planView, y: cy - h / 2, h };
+    }
+    applyPlanView();
+  }
+  const fitPlanHeight = () => sizePlanCanvas();
   window.addEventListener('resize', fitPlanHeight);
+
+  const planResize = document.getElementById('plan-resize')!;
+  let resizeDrag: { id: number; y0: number; h0: number } | null = null;
+  planResize.addEventListener('pointerdown', (e: PointerEvent) => {
+    resizeDrag = { id: e.pointerId, y0: e.clientY, h0: (plan3dContainer.hidden ? planSvg : plan3dContainer).getBoundingClientRect().height };
+    planResize.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+  planResize.addEventListener('pointermove', (e: PointerEvent) => {
+    if (!resizeDrag || e.pointerId !== resizeDrag.id) return;
+    sizePlanCanvas(Math.max(MIN_PLAN_H, Math.round(resizeDrag.h0 + e.clientY - resizeDrag.y0)));
+  });
+  const endResize = (e: PointerEvent) => {
+    if (!resizeDrag || e.pointerId !== resizeDrag.id) return;
+    resizeDrag = null;
+    try { localStorage.setItem(PLAN_H_KEY, String(Math.round(planSvg.getBoundingClientRect().height || plan3dContainer.getBoundingClientRect().height))); } catch {}
+  };
+  planResize.addEventListener('pointerup', endResize);
+  planResize.addEventListener('pointercancel', endResize);
+  planResize.addEventListener('dblclick', () => {
+    try { localStorage.removeItem(PLAN_H_KEY); } catch {}
+    sizePlanCanvas();
+  });
+  planResize.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+    e.preventDefault();
+    const cur = (plan3dContainer.hidden ? planSvg : plan3dContainer).getBoundingClientRect().height;
+    const next = Math.max(MIN_PLAN_H, Math.round(cur + (e.key === 'ArrowDown' ? 40 : -40)));
+    try { localStorage.setItem(PLAN_H_KEY, String(next)); } catch {}
+    sizePlanCanvas(next);
+  });
 
   /** Scale for labels, strokes and handles: tied to the *visible* width, so
    *  text stays ~13 px on screen at any zoom (PDF export uses uiScale()). */
@@ -2012,8 +2089,7 @@ import Layout from '../layouts/Layout.astro';
       planView = { ...planView, x: planView.x + shift.dx * U, y: planView.y + shift.dy * U };
       fWidth.value = String(editing.areaWidthM);
       fHeight.value = String(editing.areaHeightM);
-      // Scale the view with the plan so the canvas keeps its aspect ratio.
-      planView.h = planView.w * editing.areaHeightM / editing.areaWidthM;
+      planView.h = planView.w * canvasAspect();
       renderPlanSvg();
       if (!plan3dContainer.hidden) btnView3d.click();
       void loadTerrain();
@@ -2352,6 +2428,19 @@ import Layout from '../layouts/Layout.astro';
     renderSelectedPanel();
   }
 
+  // Sidebar panels: collapsible, open/closed state remembered per device.
+  const PANELS_KEY = 'pdk-gp-panels';
+  let panelState: Record<string, boolean> = {};
+  try { panelState = JSON.parse(localStorage.getItem(PANELS_KEY) || '{}'); } catch {}
+  document.querySelectorAll<HTMLDetailsElement>('details[data-panel]').forEach(d => {
+    const k = d.dataset.panel!;
+    if (k in panelState) d.open = panelState[k];
+    d.addEventListener('toggle', () => {
+      panelState[k] = d.open;
+      try { localStorage.setItem(PANELS_KEY, JSON.stringify(panelState)); } catch {}
+    });
+  });
+
   // ── Tastenkürzel (Übersicht mit „?“, siehe Layout) ─────────────────────
   document.addEventListener('keydown', (e: KeyboardEvent) => {
     const tgt = e.target as HTMLElement | null;
@@ -2383,10 +2472,26 @@ import Layout from '../layouts/Layout.astro';
       case 'r': click('btn-draw-row'); break;
       case 'u': btnEditBoundary.click(); break;
       case 'g': gridInput.click(); break;
-      case 't': if (!in2d) view3d?.setViewPreset('top'); break;
-      case 'o': if (!in2d) view3d?.setViewPreset('oblique'); break;
+      case 't': if (!in2d) setPreset(lastPreset === 'top' ? 'oblique' : 'top'); break;
+      case 'i': case 'o': {
+        // Years since planting: I fewer, O more (2D and 3D).
+        const v = Math.min(Number(yearsInput.max), Math.max(Number(yearsInput.min), Number(yearsInput.value) + (key === 'o' ? 1 : -1)));
+        stopGrowth();
+        setYears(v);
+        break;
+      }
       case 'p': if (!in2d) void saveSnapshot(); break;
       case 'b': if (editing.geo) buildingsInput.click(); break;
+      case 'j': case 'k':
+        // Time of day (3D sun): J later, K earlier; Shift = whole hours.
+        if (!in2d && !sunControls.hidden) {
+          const step = (e.shiftKey ? 60 : 15) * (key === 'j' ? 1 : -1);
+          const v = (Number(sunTimeInput.value) + step + 1440) % 1440;
+          stopSunPlay();
+          sunTimeInput.value = String(Math.min(1435, v));
+          applySun();
+        } else handled = false;
+        break;
       case 'Delete': case 'Backspace':
         if (multiSel.size) click('btn-multi-remove');
         else if (selectedPlacementId) click('btn-remove-placement');

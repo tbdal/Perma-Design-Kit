@@ -6,9 +6,11 @@ interface Props {
    *  for pages whose content (e.g. the plant table's many dot/filter
    *  columns) needs more horizontal room than prose pages do. */
   wide?: boolean;
+  /** No max width at all — the Gartenplan map grows with the window. */
+  full?: boolean;
 }
-const { title, wide = false } = Astro.props;
-const containerMaxW = wide ? 'max-w-[1600px]' : 'max-w-6xl';
+const { title, wide = false, full = false } = Astro.props;
+const containerMaxW = full ? 'max-w-none' : wide ? 'max-w-[1600px]' : 'max-w-6xl';
 // Header and footer always use the wide container, so the menu doesn't
 // shift sideways when switching between wide and narrow pages.
 const barMaxW = 'max-w-[1600px]';
@@ -222,8 +224,10 @@ const barMaxW = 'max-w-[1600px]';
             <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">G</kbd></td><td data-i18n="scGpGrid">Meterlinien ein-/ausblenden</td></tr>
             <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Strg</kbd>/<kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">⌘</kbd>+<kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Z</kbd></td><td data-i18n="scGpUndo">Rückgängig</td></tr>
             <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Strg</kbd>/<kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">⌘</kbd>+<kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Shift</kbd>+<kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Z</kbd>, <kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Strg</kbd>+<kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Y</kbd></td><td data-i18n="scGpRedo">Wiederholen</td></tr>
-            <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">T</kbd> / <kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">O</kbd></td><td data-i18n="scGp3dViews">3D: Draufsicht / Schrägansicht</td></tr>
+            <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">T</kbd></td><td data-i18n="scGp3dViews">3D: Draufsicht ↔ Schrägansicht</td></tr>
+            <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">I</kbd> / <kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">O</kbd></td><td data-i18n="scGpYears">Weniger / mehr Jahre seit Pflanzung</td></tr>
             <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">P</kbd></td><td data-i18n="scGpSnapshot">3D: Ansicht als Bild speichern</td></tr>
+            <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">J</kbd> / <kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">K</kbd></td><td data-i18n="scGpSunTime">3D-Sonne: Tageszeit vor / zurück (15 min, mit Shift 1 h)</td></tr>
             <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">B</kbd></td><td data-i18n="scGpBuildings">Gebäude ein-/ausblenden</td></tr>
             <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Entf</kbd></td><td data-i18n="scGpDelete">Markierte Pflanze(n) bzw. Fläche entfernen</td></tr>
             <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Esc</kbd></td><td data-i18n="scGpEsc">Abbrechen / Markierung aufheben</td></tr>

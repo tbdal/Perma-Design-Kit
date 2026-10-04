@@ -343,3 +343,6 @@ html[data-font="130"] { font-size: 130%; }
   #plant-list [class*="bg-"]:empty { forced-color-adjust: none; }
   [aria-pressed="true"] { outline: 2px solid Highlight; outline-offset: -2px; }
 }
+
+/* Gartenplan sidebar panels draw their own chevron (Safari would add a marker). */
+details[data-panel] > summary::-webkit-details-marker { display: none; }
