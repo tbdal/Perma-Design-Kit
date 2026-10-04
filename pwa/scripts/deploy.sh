@@ -31,6 +31,8 @@ fi
 # Incremental install (not `npm ci`): keeps a dev server running from this
 # checkout alive while still picking up dependency changes from the lockfile.
 npm install --no-audit --no-fund --silent
+# The build itself doesn't type-check, so a type error would otherwise ship.
+npm run check
 npm test
 npm run build
 node scripts/check-csp.mjs dist

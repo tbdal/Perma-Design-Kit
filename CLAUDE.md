@@ -23,7 +23,7 @@ npm test
 # Production build
 npm run build
 
-# Deploy (VPS only): refuses unless on a clean main == origin/main, runs tests + build
+# Deploy (VPS only): refuses unless on a clean main == origin/main, runs check + tests + build
 npm run deploy
 ```
 
