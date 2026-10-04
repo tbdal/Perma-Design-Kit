@@ -7,17 +7,36 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] Lizenz s.u.
 - [ ] Newsletter button: Jetzt Jörn's Newsletter auf brevo nutzen mit api?
 - [ ] spendenbutton
-- [ ] impressum: Jörn aufnehmenn
 
+## kurzfristig
+- [ ] **zur Prüfung (2026-10-03, live):** Layout-Änderungen aus `horizon-en` übernommen — bitte ansehen und ggf. zurücknehmen:
+  - Kopf- und Fußzeile immer 1600 px breit (`barMaxW` in `Layout.astro`), damit das Menü beim Seitenwechsel nicht springt. Haken: auf schmalen Seiten (Gartenplan, Hilfe, Impressum, Datenschutz) steht das Logo deutlich links vom Inhalt.
+  - `scrollbar-gutter: stable` (`global.css`): Layout springt nicht mehr seitlich zwischen Seiten mit und ohne Scrollbalken.
+  - ~~Horizont-Design: aktiver Menüpunkt nicht mehr fett~~ — zurückgenommen, aktiver Punkt wieder fett (2026-10-03).
+  - **Horizont ist jetzt Standard-Design** (2026-10-03); das alte heißt in den Einstellungen „Klassisch“. Wer früher bewusst „Standard“ gewählt hatte, landet einmalig auch bei Horizont (war technisch nicht unterscheidbar).
+- [ ] Dokumentation in Hilfe verlinken
+- [ ] permament storage erklären bevor es vom browser abgrefragt wird?
+- [ ] zulip wieder starten: cd /opt/zulip && docker compose start
 
-## AP 2
-- [x] eingeklappte Farblegende farblich mehr hervorheben
-- [x] in der Produkttour beispieldaten und nachladen als letztes erwähnen: "Du kannst auch mit einem Beispiel starten und dafür die "Pflanzen für kleine Gärten" aus Martin Crawford's Buch "Einen Waldgarten erschaffen" (https://www.olv-verlag.eu/Einen-Waldgarten-erschaffen/) nutzen. Klicke dafür zuerst auf "Beispieldaten laden (Crawford)" und lade dann die Detailinformationen der Pflanzen mit "Lade alle fehlenden Daten"
-	- auf englisch:  "Plants for small gardens" & Link zum Buch: https://www.agroforestry.co.uk/product/creating-a-forest-garden-2/
+- [ ] Tabelle kleiner machen für kleinere Bildschirme
+- [ ] warum gibt's für diese Pflanzen keine Daten?
+  Gemeiner Rhabarber	Rheum rhabarbarum	—
+	Haferschlehe	Prunus domestica insititia
+	Jostabeere	Ribes x nidigrolaria
+	Rubus pentalobus	Rubus pentalobus
+	--> bot. Name nicht korrekt --> über PFAF-Suche finden & eintragen, dann Daten nachladen
+- [ ] golden master umbenennen oder in Daten-Menü integrieren. Testen welche Pflanzen das sind
+
+## bis 1.11./Symposium
+- [ ] bug reporting aufsetzen (mit Formular vorstrukturieren)
+- [ ] Github aktualisieren (help.md, ...)
+- [ ] Dokumentation fertig (readme.md; Help.md)
+- [ ] optional: Logo/CI für Startpage
+
 
 ## APs
-### AP3
-Erledigt (2026-10-03) → CHANGELOG: Projekt als Link teilen, „M“ für manuell geänderte Werte, Gruppe als Polykultur anlegen.
+### AP4
+- [ ]
 
 
 ## Karten
@@ -45,33 +64,7 @@ Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann
 - [ ] **1-m-Gelände für weitere Länder:** bisher NRW, BB/BE, BW, HE, NI, NL. Bayern nur kostenpflichtiger WCS (DGM1 als Download offen), Sachsen/Sachsen-Anhalt lehnen ab (403), TH/SH/MV/RP/SL kein offener WCS gefunden — erneut prüfen oder Kacheln selbst bereitstellen
 - [ ] **Luftbild Sachsen-Anhalt beobachten:** `ST_LVermGeo_DOP_WMS_OpenData` antwortet seit 2026-10-04 vormittags mit 403 (auch Capabilities; INSPIRE-OI mit 500) — bei anhaltendem Ausfall beim LVermGeo nachfragen (service.lvermgeo@sachsen-anhalt.de) bzw. neue Adresse eintragen
 
-## kurzfristig
-- [ ] **zur Prüfung (2026-10-03, live):** Layout-Änderungen aus `horizon-en` übernommen — bitte ansehen und ggf. zurücknehmen:
-  - Kopf- und Fußzeile immer 1600 px breit (`barMaxW` in `Layout.astro`), damit das Menü beim Seitenwechsel nicht springt. Haken: auf schmalen Seiten (Gartenplan, Hilfe, Impressum, Datenschutz) steht das Logo deutlich links vom Inhalt.
-  - `scrollbar-gutter: stable` (`global.css`): Layout springt nicht mehr seitlich zwischen Seiten mit und ohne Scrollbalken.
-  - ~~Horizont-Design: aktiver Menüpunkt nicht mehr fett~~ — zurückgenommen, aktiver Punkt wieder fett (2026-10-03).
-  - **Horizont ist jetzt Standard-Design** (2026-10-03); das alte heißt in den Einstellungen „Klassisch“. Wer früher bewusst „Standard“ gewählt hatte, landet einmalig auch bei Horizont (war technisch nicht unterscheidbar).
-- [ ] Dokumentation in Hilfe verlinken
-- [ ] permament storage erklären bevor es vom browser abgrefragt wird?
-- [ ] zulip wieder starten: cd /opt/zulip && docker compose start
-- [x] barrierefreiheit - inklusivität mitdenken: Farbenblindheit..
-- [ ] Tabelle kleiner machen für kleinere Bildschirme
-- [ ] warum gibt's für diese Pflanzen keine Daten?
-  Gemeiner Rhabarber	Rheum rhabarbarum	—
-	Haferschlehe	Prunus domestica insititia
-	Jostabeere	Ribes x nidigrolaria
-	Rubus pentalobus	Rubus pentalobus
-	--> bot. Name nicht korrekt --> über PFAF-Suche finden & eintragen, dann Daten nachladen
-- [ ] golden master umbenennen oder in Daten-Menü integrieren. Testen welche Pflanzen das sind
 
-### bugs
-- [x] Pinus spp. ohne daten → erledigt (Gattungs-Einträge, s. CHANGELOG)
-
-## bis 1.11./Symposium
-- [ ] bug reporting aufsetzen (mit Formular vorstrukturieren)
-- [ ] Github aktualisieren (help.md, ...)
-- [ ] Dokumentation fertig (readme.md; Help.md)
-- [ ] optional: Logo/CI für Startpage
 
 ### Re: FUNKTIONALITÄT
 - [x] Durchmesser auf Baumscheibe etwas runterschieben
