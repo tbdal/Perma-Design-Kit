@@ -1223,14 +1223,13 @@ import Layout from '../layouts/Layout.astro';
     listEl.querySelectorAll('.btn-del').forEach(btn => {
       btn.addEventListener('click', async () => {
         const id = (btn.closest('[data-id]') as HTMLElement).dataset.id!;
-        if (confirm(t('confirmDeletePlant'))) {
-          const removed = cachedPlants.find(p => p.id === id);
-          selectedIds.delete(id);
-          await deletePlant(id);
-          updateBulkBar();
-          renderList();
-          if (removed) offerUndo([removed]);
-        }
+        // No confirm dialog: the undo bar right after covers mistakes.
+        const removed = cachedPlants.find(p => p.id === id);
+        selectedIds.delete(id);
+        await deletePlant(id);
+        updateBulkBar();
+        renderList();
+        if (removed) offerUndo([removed]);
       });
     });
 
@@ -1370,7 +1369,6 @@ import Layout from '../layouts/Layout.astro';
 
   document.getElementById('btn-bulk-delete')!.addEventListener('click', async () => {
     if (!selectedIds.size) return;
-    if (!confirm(t('confirmBulkDelete', { n: selectedIds.size }))) return;
     const removed = cachedPlants.filter(p => selectedIds.has(p.id));
     for (const id of selectedIds) await deletePlant(id);
     selectedIds.clear(); updateBulkBar(); renderList();

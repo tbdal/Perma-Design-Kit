@@ -228,8 +228,6 @@ export const indexDict: Dict = {
 
   // ── Alerts / confirms ────────────────────────────────────────────────
   alertMissingLatinName: { de: 'Lateinischer Name fehlt.', en: 'Latin name is missing.' },
-  confirmDeletePlant: { de: 'Pflanze löschen?', en: 'Delete plant?' },
-  confirmBulkDelete: { de: '{n} Pflanze(n) löschen?', en: 'Delete {n} plant(s)?' },
   undoDeletedOne: { de: '„{name}“ gelöscht', en: '“{name}” deleted' },
   undoDeletedMany: { de: '{n} Pflanzen gelöscht', en: '{n} plants deleted' },
   undoAction: { de: 'Rückgängig', en: 'Undo' },
