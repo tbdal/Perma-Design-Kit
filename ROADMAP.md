@@ -22,6 +22,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] Flyer
 - [ ] Lizenz check alle quellen
 - [ ] In allen pdfs Lizenz und link auf permadesignkit.org einstellen
+- [ ] satellitenbilder im browser speichern statt jeweils abzurufen?
 
 ## bis 1.11./Symposium
 - [ ] bug reporting aufsetzen (mit Formular vorstrukturieren)
