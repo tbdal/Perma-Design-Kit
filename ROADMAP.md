@@ -31,6 +31,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 
 ## bugs
 - [ ] Homo erectus etc nicht auswählbar machen?
+- [ ] gartenplan: Hinweise in Karte highlighten
 - [ ] Malus domestica -> 10,7m (von 35’ aus Toensmeier Malus Pumila?)
 - [ ] Buildings temporarily unavailable
 - [ ] warum gibt's für diese Pflanzen keine Daten?
