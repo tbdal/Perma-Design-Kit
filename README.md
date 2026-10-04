@@ -41,17 +41,22 @@ It is no longer actively developed. See [`legacy/README.md`](legacy/README.md) f
 3. Commit with descriptive messages
 4. Open a pull request
 
+By submitting a contribution, you agree that it is published under this repository's license (FSL-1.1-MIT, see below).
+
 ## License
 
-Copyright (c) 2024 Sebastian Schucht
+The Perma Design Kit is **fair source**: published under the [Functional Source License 1.1, MIT Future License](LICENSE.md) (FSL-1.1-MIT).
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+- You may use, copy, modify and redistribute the code for any purpose **except a competing commercial product or service**, i.e. offering it (or something substantially similar built from it) to others for money.
+- Internal use, non-commercial education and research, and consulting are explicitly allowed; so is hosting a free, non-commercial instance.
+- Plant cards, PDFs and garden plans you create with the app are yours, including for commercial use.
+- Every version automatically becomes **MIT-licensed two years after it was published**.
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+Versions published before the switch (the commit tagged `fsl-start`) remain MIT-licensed, and `legacy/` stays MIT. Details and the retained MIT notice are in [`NOTICE`](NOTICE). Data sources, fonts and dependencies keep their own licenses.
 
 ## Authors
 
 - Sebastian Schucht <sebastian@schucht.eu>
 - Jörn Müller <post@permagruen.de> — [permagruen.de](https://www.permagruen.de)
+- Jens [NACHNAME] (js32)
+- [DEIN NAME] (tbdal)

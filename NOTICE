@@ -1,0 +1,63 @@
+Perma Design Kit
+Copyright 2026 [DEIN NAME] (tbdal) and Jens [NACHNAME] (js32)
+
+LICENSING OVERVIEW
+
+1. Current code: Functional Source License 1.1, MIT Future License
+   (FSL-1.1-MIT), see LICENSE.md.
+
+   Starting with the commit tagged `fsl-start` ([DATUM]), this repository
+   is published under FSL-1.1-MIT. Every published version becomes
+   available under the MIT license on the second anniversary of the date
+   it was made available. For this repository, the date a version was made
+   available is the date its commit was pushed to the public repository.
+
+2. Earlier code: MIT
+
+   All versions published before `fsl-start` were released under the MIT
+   license and remain available under it. Parts of the current code are
+   derived from those versions; the original MIT notice is retained below
+   as that license requires.
+
+   ------------------------------------------------------------------------
+   MIT License
+
+   Copyright (c) 2024 Sebastian Schucht
+
+   Permission is hereby granted, free of charge, to any person obtaining a
+   copy of this software and associated documentation files (the
+   "Software"), to deal in the Software without restriction, including
+   without limitation the rights to use, copy, modify, merge, publish,
+   distribute, sublicense, and/or sell copies of the Software, and to
+   permit persons to whom the Software is furnished to do so, subject to
+   the following conditions:
+
+   The above copyright notice and this permission notice shall be included
+   in all copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+   ------------------------------------------------------------------------
+
+3. legacy/: MIT
+
+   The PowerShell tooling in legacy/ is not covered by LICENSE.md. It
+   remains under the MIT license, see legacy/LICENSE.
+
+4. Third-party material
+
+   Dependencies, fonts, plant data (Wikidata, PFAF, Edible Forest Gardens)
+   and map data keep their own licenses. Sources and terms are listed in
+   the app (Impressum, data credits on cards and maps).
+
+5. Output
+
+   Plant cards, PDFs, garden plans and other files you create with the
+   app are yours to use, including commercially. The license of the code
+   places no restrictions on them. Data sources may require attribution
+   (e.g. PFAF, CC BY 4.0); the app prints those credits on the output.
