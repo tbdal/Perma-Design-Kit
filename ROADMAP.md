@@ -61,6 +61,7 @@ Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann
 	Jostabeere	Ribes x nidigrolaria
 	Rubus pentalobus	Rubus pentalobus
 	--> bot. Name nicht korrekt --> über PFAF-Suche finden & eintragen, dann Daten nachladen
+- [ ] golden master umbenennen oder in Daten-Menü integrieren. Testen welche Pflanzen das sind
 
 ### bugs
 - [x] Pinus spp. ohne daten → erledigt (Gattungs-Einträge, s. CHANGELOG)
