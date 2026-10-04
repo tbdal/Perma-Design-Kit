@@ -1,23 +1,23 @@
 ---
 import Layout from '../layouts/Layout.astro';
 ---
-<Layout title="Perma Design Kit — Gartenplan" wide>
+<Layout title="Perma Design Kit — Waldgartenplan" wide>
   <!-- ── Listenansicht ─────────────────────────────────────────────────── -->
   <section id="plan-list-view">
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-      <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-100" data-i18n="pageTitle">Gartenplan</h1>
-      <label class="cursor-pointer rounded-lg bg-stone-100 dark:bg-stone-800 px-3.5 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700" data-i18n-title="importGeojsonTitle" title="GeoJSON aus QGIS & Co. als Gartenplan übernehmen">
+      <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-100" data-i18n="pageTitle">Waldgartenplan</h1>
+      <label class="cursor-pointer rounded-lg bg-stone-100 dark:bg-stone-800 px-3.5 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700" data-i18n-title="importGeojsonTitle" title="GeoJSON aus QGIS & Co. als Waldgartenplan übernehmen">
         <span data-i18n="btnImportGeojson">⤒ GeoJSON importieren</span>
         <input id="geojson-input" type="file" accept=".geojson,.json,application/geo+json,application/json" class="hidden" />
       </label>
-      <button id="btn-new-plan" data-i18n="btnNewPlan" class="rounded-lg bg-green-700 px-3.5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">+ Neuer Gartenplan</button>
+      <button id="btn-new-plan" data-i18n="btnNewPlan" class="rounded-lg bg-green-700 px-3.5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">+ Neuer Waldgartenplan</button>
     </div>
     <p class="mb-4 text-sm text-stone-500 dark:text-stone-400" data-i18n="introText">Zeichne eine Fläche, platziere Pflanzen darauf und sieh mit dem Schieberegler, wie groß sie nach x Jahren ungefähr werden.</p>
     <p class="mb-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 px-3 py-2 text-sm text-amber-800 dark:text-amber-200 ring-1 ring-amber-200 dark:ring-amber-800" data-i18n="experimentalNotice">Experimentell — diese Funktion befindet sich noch in der Entwicklung.</p>
     <div id="plan-list" class="grid gap-4 sm:grid-cols-2"></div>
     <div id="plan-empty" class="hidden rounded-xl border-2 border-dashed border-stone-300 dark:border-stone-600 py-16 text-center">
-      <p class="text-stone-500 dark:text-stone-400" data-i18n="emptyStateText">Noch keine Gartenpläne angelegt.</p>
-      <button id="btn-empty-new" data-i18n="btnEmptyNew" class="mt-3 inline-block rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white shadow hover:bg-green-800">Ersten Gartenplan anlegen</button>
+      <p class="text-stone-500 dark:text-stone-400" data-i18n="emptyStateText">Noch keine Waldgartenpläne angelegt.</p>
+      <button id="btn-empty-new" data-i18n="btnEmptyNew" class="mt-3 inline-block rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white shadow hover:bg-green-800">Ersten Waldgartenplan anlegen</button>
     </div>
   </section>
 
@@ -297,7 +297,7 @@ import Layout from '../layouts/Layout.astro';
       </div>
     </div>
 
-    <button id="btn-save-plan" data-i18n="btnSavePlan" class="mt-5 rounded-lg bg-green-700 px-5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">Gartenplan speichern</button>
+    <button id="btn-save-plan" data-i18n="btnSavePlan" class="mt-5 rounded-lg bg-green-700 px-5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">Waldgartenplan speichern</button>
   </section>
 
   <div id="toast" class="fixed bottom-6 right-6 hidden rounded-lg bg-green-700 px-4 py-2.5 text-sm font-medium text-white shadow-lg"></div>
@@ -3068,6 +3068,17 @@ import Layout from '../layouts/Layout.astro';
   document.getElementById('btn-save-plan')!.addEventListener('click', async () => {
     if (!editing) return;
     if (!fName.value.trim()) { alert(t('alertEnterName')); return; }
+    // Corners set but the outline not closed yet (still drawing a new plan):
+    // ask before saving instead of silently dropping the drawn points.
+    const pending = editing.boundary.length === 0 && phaseB.classList.contains('hidden')
+      ? (mapDrawer ? mapDrawer.points().length : drawingPoints.length) : 0;
+    if (pending >= 3) {
+      if (!confirm(t('confirmCloseAreaBeforeSave', { n: pending }))) return; // keep drawing
+      finishBoundary();
+      if (editing.boundary.length < 3) return; // e.g. area too large — finishBoundary told why
+    } else if (pending > 0) {
+      if (!confirm(t('confirmSaveWithoutArea', { n: pending }))) return;
+    }
     syncFormIntoEditing();
     await saveGardenPlan(editing);
     plans = await getAllGardenPlans();

@@ -591,7 +591,7 @@ export async function exportGardenPlanPDF(plan: GardenPlan, plantsById: Map<stri
   const { w: pageWmm, h: pageHmm } = gardenPlanPageSizeMm(plan);
   const page = pdfDoc.addPage([pt(pageWmm), pt(pageHmm)]);
 
-  const title = plan.name || 'Gartenplan';
+  const title = plan.name || 'Waldgartenplan';
   const caption = `${plan.yearsSincePlanting} Jahre seit Pflanzung · ${plan.areaWidthM}×${plan.areaHeightM} m · exportiert ${new Date().toLocaleDateString('de-DE')}`;
 
   page.drawText(title, { x: pt(GARDENPLAN_MARGIN_MM.side), y: pt(pageHmm - 14), size: 16, font: fontBold });

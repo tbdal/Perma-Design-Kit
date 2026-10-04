@@ -2,13 +2,13 @@ import type { Dict } from './core';
 
 export const gartenplanDict: Dict = {
   // ── List view ──────────────────────────────────────────────────────────
-  pageTitle: { de: 'Gartenplan', en: 'Garden plan' },
-  btnNewPlan: { de: '+ Neuer Gartenplan', en: '+ New garden plan' },
+  pageTitle: { de: 'Waldgartenplan', en: 'Forest garden plan' },
+  btnNewPlan: { de: '+ Neuer Waldgartenplan', en: '+ New forest garden plan' },
   introText: { de: 'Zeichne eine Fläche, platziere Pflanzen darauf und sieh mit dem Schieberegler, wie groß sie nach x Jahren ungefähr werden.', en: 'Draw an area, place plants on it, and use the slider to see roughly how large they’ll be after x years.' },
   experimentalNotice: { de: 'Experimentell — diese Funktion befindet sich noch in der Entwicklung.', en: 'Experimental — this feature is still under development.' },
-  emptyStateText: { de: 'Noch keine Gartenpläne angelegt.', en: 'No garden plans created yet.' },
-  btnEmptyNew: { de: 'Ersten Gartenplan anlegen', en: 'Create your first garden plan' },
-  planUnnamed: { de: 'Unbenannter Gartenplan', en: 'Unnamed garden plan' },
+  emptyStateText: { de: 'Noch keine Waldgartenpläne angelegt.', en: 'No forest garden plans created yet.' },
+  btnEmptyNew: { de: 'Ersten Waldgartenplan anlegen', en: 'Create your first forest garden plan' },
+  planUnnamed: { de: 'Unbenannter Waldgartenplan', en: 'Unnamed forest garden plan' },
   linkedPolycultureLabel: { de: 'Polykultur:', en: 'Polyculture:' },
   placementCount: { de: '{count} Pflanze(n) platziert', en: '{count} plant(s) placed' },
   areaSizeLabel: { de: '{w}×{h} m', en: '{w}×{h} m' },
@@ -16,10 +16,10 @@ export const gartenplanDict: Dict = {
   // ── Editor shared ─────────────────────────────────────────────────────
   btnBackToList: { de: '← Zurück zur Liste', en: '← Back to list' },
   btnDeletePlan: { de: 'Löschen', en: 'Delete' },
-  btnSavePlan: { de: 'Gartenplan speichern', en: 'Save garden plan' },
-  confirmDeletePlan: { de: 'Gartenplan „{name}" wirklich löschen?', en: 'Really delete garden plan "{name}"?' },
-  toastPlanSaved: { de: 'Gartenplan gespeichert', en: 'Garden plan saved' },
-  toastPlanDeleted: { de: 'Gartenplan gelöscht', en: 'Garden plan deleted' },
+  btnSavePlan: { de: 'Waldgartenplan speichern', en: 'Save forest garden plan' },
+  confirmDeletePlan: { de: 'Waldgartenplan „{name}" wirklich löschen?', en: 'Really delete forest garden plan "{name}"?' },
+  toastPlanSaved: { de: 'Waldgartenplan gespeichert', en: 'Forest garden plan saved' },
+  toastPlanDeleted: { de: 'Waldgartenplan gelöscht', en: 'Forest garden plan deleted' },
   alertEnterName: { de: 'Bitte einen Namen eingeben.', en: 'Please enter a name.' },
 
   // ── Map: location, orientation, background ───────────────────────────
@@ -75,6 +75,8 @@ export const gartenplanDict: Dict = {
   shopEmpty: { de: 'Noch keine Pflanzen im Plan.', en: 'No plants in the plan yet.' },
   terrainDgmLabel: { de: 'Geländemodell {region}, {res} m', en: 'terrain model {region}, {res} m' },
   terrainLoadingDgm: { de: 'Lade Geländemodell {region} (1 m)…', en: 'Loading terrain model {region} (1 m)…' },
+  confirmCloseAreaBeforeSave: { de: 'Die Fläche ist noch nicht abgeschlossen ({n} Eckpunkte gesetzt). Jetzt abschließen und speichern?\n\nAbbrechen: weiter zeichnen.', en: 'The area isn’t closed yet ({n} corners set). Close it now and save?\n\nCancel: keep drawing.' },
+  confirmSaveWithoutArea: { de: 'Erst {n} Eckpunkt(e) gesetzt — für eine Fläche braucht es mindestens 3. Ohne Fläche speichern?\n\nAbbrechen: weiter zeichnen.', en: 'Only {n} corner(s) set — an area needs at least 3. Save without an area?\n\nCancel: keep drawing.' },
   coverageLabel: { de: 'Einfärben', en: 'Colour by' },
   covGroupFunctions: { de: 'Funktionen', en: 'Functions' },
   covGroupSun: { de: 'Besonnung', en: 'Sunlight' },
@@ -149,7 +151,7 @@ export const gartenplanDict: Dict = {
   exportGeojsonTitle: { de: 'Für QGIS & Co.: Umriss, Flächen und Pflanzen als GeoJSON (WGS84)', en: 'For QGIS & co.: outline, areas and plants as GeoJSON (WGS84)' },
   geojsonNeedsLocation: { de: 'Für den GeoJSON-Export braucht der Plan einen Standort – zeichne ihn auf der Karte oder lege ihn über „Standort festlegen…“ fest.', en: 'The GeoJSON export needs a location – draw the plan on the map or use “Set location…”.' },
   btnImportGeojson: { de: '⤒ GeoJSON importieren', en: '⤒ Import GeoJSON' },
-  importGeojsonTitle: { de: 'GeoJSON aus QGIS & Co. als Gartenplan übernehmen', en: 'Turn a GeoJSON from QGIS & co. into a garden plan' },
+  importGeojsonTitle: { de: 'GeoJSON aus QGIS & Co. als Waldgartenplan übernehmen', en: 'Turn a GeoJSON from QGIS & co. into a forest garden plan' },
   confirmGeojsonUpdate: { de: 'Diese Datei stammt aus dem Plan „{name}“. Plan damit aktualisieren? (Abbrechen = als neuen Plan anlegen)', en: 'This file comes from plan “{name}”. Update that plan? (Cancel = create a new plan)' },
   toastGeojsonImported: { de: 'Importiert: {areas} Flächen, {plants} Pflanzen ({created} neu angelegt)', en: 'Imported: {areas} areas, {plants} plants ({created} newly created)' },
   alertGeojsonFailed: { de: 'Import fehlgeschlagen: {msg}', en: 'Import failed: {msg}' },

@@ -3,7 +3,7 @@ import type { Dict } from './core';
 export const kalenderDict: Dict = {
   scopeLabel: { de: 'Pflanzen aus', en: 'Plants from' },
   scopeAll: { de: 'Allen Pflanzen', en: 'All plants' },
-  scopePlans: { de: 'Gartenplan', en: 'Garden plan' },
+  scopePlans: { de: 'Waldgartenplan', en: 'Forest garden plan' },
   scopePolys: { de: 'Polykultur', en: 'Polyculture' },
   scopeUnnamed: { de: '(ohne Namen)', en: '(unnamed)' },
   pageTitle: { de: 'Blüh- & Erntekalender', en: 'Flowering & Harvest Calendars' },

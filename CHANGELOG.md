@@ -2,6 +2,10 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## „Waldgartenplan“, Nachfrage bei offener Fläche (2026-10-04)
+- [x] **Umbenannt:** „Gartenplan“ heißt in der Oberfläche jetzt **„Waldgartenplan“** (EN: „Forest garden plan“) — Navigation, Seitentitel, Buttons, Meldungen, Hilfe, Einstellungen, Teilen, Datenschutz, Impressum, Standardname in PDF/GeoJSON. Die Adresse `/gartenplan` bleibt, damit Links und Lesezeichen weiter funktionieren.
+- [x] **Fläche noch offen beim Speichern:** Sind beim Anlegen schon Eckpunkte gesetzt, die Fläche aber nicht abgeschlossen, fragt „Waldgartenplan speichern“ nach — ab 3 Punkten „Jetzt abschließen und speichern?“, bei 1–2 Punkten „Ohne Fläche speichern?“; Abbrechen zeichnet weiter (vorher gingen die Punkte stillschweigend verloren).
+
 ## Doku: Gartenplan in Hilfe und Infobox (2026-10-04)
 - [x] **Hilfe** hat einen neuen Abschnitt „Gartenplan“ (`/hilfe#gartenplan`): Anlegen und Bepflanzen, Karte/Luftbild/Gelände/Gebäude, Funktions-Abdeckung, Besonnung, Hinweise, Werkzeuge und Ausgaben, Grenzen der Schätzungen. Tastenkürzel-Tabelle um Alt+1–4 und den Verweis auf die Gartenplan-Kürzel ergänzt.
 - [x] **„ℹ️ Wie funktioniert das?“** im Gartenplan auf den aktuellen Stand gebracht (Ablauf, Karte & Gelände, Auswertungen, Werkzeuge, 3D; Schicht aus der Wuchsform statt nur aus der Höhe) mit Link zur Hilfe.

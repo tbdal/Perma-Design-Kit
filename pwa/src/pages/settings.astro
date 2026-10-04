@@ -244,12 +244,12 @@ import Layout from '../layouts/Layout.astro';
   <dialog id="share-dialog" aria-labelledby="share-title" class="m-auto w-[min(36rem,calc(100vw-2rem))] rounded-xl bg-white dark:bg-stone-800 p-0 text-stone-800 dark:text-stone-100 shadow-2xl backdrop:bg-black/50">
     <div class="space-y-3 p-5">
       <h2 id="share-title" class="text-base font-semibold" data-i18n="shareTitle">Projekt als Link teilen</h2>
-      <p class="text-xs text-stone-600 dark:text-stone-300" data-i18n="shareIntro">Pflanzen, Polykulturen und Gartenpläne werden komprimiert in den Link gepackt. Es wird nichts auf einem Server gespeichert. Wer den Link hat, kann das Projekt in die eigene App übernehmen.</p>
+      <p class="text-xs text-stone-600 dark:text-stone-300" data-i18n="shareIntro">Pflanzen, Polykulturen und Waldgartenpläne werden komprimiert in den Link gepackt. Es wird nichts auf einem Server gespeichert. Wer den Link hat, kann das Projekt in die eigene App übernehmen.</p>
       <fieldset class="space-y-1.5 text-sm">
         <label class="flex items-center gap-2"><input id="share-polycultures" type="checkbox" checked class="accent-green-600" /> <span data-i18n="shareIncludePolycultures">Polykulturen mitteilen</span></label>
-        <label class="flex items-center gap-2"><input id="share-gardenplans" type="checkbox" checked class="accent-green-600" /> <span data-i18n="shareIncludeGardenPlans">Gartenpläne mitteilen</span></label>
+        <label class="flex items-center gap-2"><input id="share-gardenplans" type="checkbox" checked class="accent-green-600" /> <span data-i18n="shareIncludeGardenPlans">Waldgartenpläne mitteilen</span></label>
         <label class="flex items-center gap-2"><input id="share-notes" type="checkbox" checked class="accent-green-600" /> <span data-i18n="shareIncludeNotes">Notizen mitteilen</span></label>
-        <label class="flex items-start gap-2"><input id="share-location" type="checkbox" class="mt-1 accent-green-600" /> <span><span data-i18n="shareIncludeLocation">Standort der Gartenpläne mitteilen</span><br /><span class="text-xs text-stone-500 dark:text-stone-400" data-i18n="shareLocationHint">Zeigt, wo dein Garten liegt – oft deine Adresse. Ohne Standort kommen die Pläne ohne Kartenhintergrund an.</span></span></label>
+        <label class="flex items-start gap-2"><input id="share-location" type="checkbox" class="mt-1 accent-green-600" /> <span><span data-i18n="shareIncludeLocation">Standort der Waldgartenpläne mitteilen</span><br /><span class="text-xs text-stone-500 dark:text-stone-400" data-i18n="shareLocationHint">Zeigt, wo dein Garten liegt – oft deine Adresse. Ohne Standort kommen die Pläne ohne Kartenhintergrund an.</span></span></label>
       </fieldset>
       <div id="share-result" hidden class="space-y-2">
         <textarea id="share-url" readonly rows="3" data-i18n-aria-label="shareTitle" aria-label="Projekt als Link teilen" class="block w-full resize-none break-all rounded-md border border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-900 px-2.5 py-1.5 font-mono text-[11px]"></textarea>

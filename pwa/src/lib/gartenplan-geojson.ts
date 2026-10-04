@@ -43,7 +43,7 @@ export function planToGeoJson(plan: GardenPlan, plantsById: Map<string, PlantDat
       } });
   }
   return {
-    type: 'FeatureCollection', name: plan.name || 'Gartenplan', features,
+    type: 'FeatureCollection', name: plan.name || 'Waldgartenplan', features,
     pdk: { version: 1, planId: plan.id, gridSpacingM: plan.gridSpacingM, yearsSincePlanting: plan.yearsSincePlanting },
   };
 }
