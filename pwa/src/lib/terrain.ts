@@ -23,6 +23,8 @@ export interface ElevationGrid {
   nx: number; ny: number;      // samples per row / column
   heights: Float32Array;       // row-major, ny rows of nx values
   sources: string[];
+  /** Set when an official 1 m model refined the grid (dgm.ts). */
+  dgm?: { region: Record<'de' | 'en', string>; resolutionM: number; attributionHtml: string };
 }
 
 /** Bilinear height at a plan point; clamped at the grid edge. */

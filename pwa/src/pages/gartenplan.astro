@@ -395,6 +395,7 @@ import Layout from '../layouts/Layout.astro';
   import { sunSamples, sunHoursAt, sunClass, planOccluders, planCells, SEASON_DATES, type SunScene, type SunSample, type SunClass, type Occluder } from '../lib/sun-hours';
   import { BOOL_FIELDS } from '../lib/plant-fields';
   import { orthoFor } from '../lib/ortho-sources';
+  import { dgmFor, refineWithDgm } from '../lib/dgm';
   import { fetchElevationGrid, sampleGrid, slopeInfo, contourSegments, contourInterval, TERRAIN_ATTRIBUTION, type ElevationGrid } from '../lib/terrain';
   import { plantDetailHtml } from '../lib/plant-detail';
   import { compatScore } from '../lib/compat';
@@ -798,7 +799,8 @@ import Layout from '../layouts/Layout.astro';
     if (!editing) return;
     const isPlan = svg === planSvg;
     const attrib = svg.parentElement!.querySelector<HTMLElement>('.basemap-attrib')!;
-    const terrainAttr = isPlan && terrain ? `${TERRAIN_ATTRIBUTION}${terrain.sources.length ? ` (${escapeHtml(terrain.sources.join(', '))})` : ''}` : '';
+    const tilesAttr = terrain ? `${TERRAIN_ATTRIBUTION}${terrain.sources.length ? ` (${escapeHtml(terrain.sources.join(', '))})` : ''}` : '';
+    const terrainAttr = isPlan && terrain ? [terrain.dgm?.attributionHtml, tilesAttr].filter(Boolean).join(' · ') : '';
     const bAttr = isPlan && showBuildings() && !basemapAttribution(editing).includes('OpenStreetMap') ? BUILDINGS_ATTRIBUTION : '';
     attrib.innerHTML = [basemapAttribution(editing), bAttr, terrainAttr].filter(Boolean).join(' · ');
     attrib.classList.toggle('hidden', !attrib.innerHTML);
@@ -2371,8 +2373,16 @@ import Layout from '../layouts/Layout.astro';
     // Margin covers the OSM buildings (150 m) so they stand on the same
     // ground as the 3D terrain around them.
     const m = Math.max(160, maxDim);
+    // With an official 1 m model (dgm.ts) the grid gets finer and is refined
+    // with its heights; elsewhere the Terrain Tiles alone (≈ 25–30 m data).
+    const dgm = dgmFor(geo.lat, geo.lon);
+    const span = maxDim + 2 * m;
     try {
-      const grid = await fetchElevationGrid(geo, { minX: -m, minY: -m, maxX: plan.areaWidthM + m, maxY: plan.areaHeightM + m }, Math.min(4, Math.max(1, (maxDim + 2 * m) / 100)));
+      let grid = await fetchElevationGrid(geo, { minX: -m, minY: -m, maxX: plan.areaWidthM + m, maxY: plan.areaHeightM + m }, Math.min(4, Math.max(1, span / (dgm ? 300 : 100))));
+      if (dgm && terrainKey === key) {
+        terrainInfo.textContent = t('terrainLoadingDgm', { region: dgm.region[lang] });
+        try { grid = (await refineWithDgm(grid, geo)) ?? grid; } catch { /* keep the coarse grid */ }
+      }
       if (terrainKey !== key || editing !== plan) return; // plan changed meanwhile
       terrain = grid;
     } catch {
@@ -2396,9 +2406,10 @@ import Layout from '../layouts/Layout.astro';
     const s = slopeInfo(terrain, (x, y) => boundary.length >= 3 ? pointInPolygon({ xM: x, yM: y }, boundary) : true, editing.geo?.rotationDeg ?? 0);
     if (!s) { terrainInfo.textContent = ''; return; }
     const fmt = (v: number, d = 1) => new Intl.NumberFormat(lang, { maximumFractionDigits: d }).format(v);
-    terrainInfo.textContent = s.aspectDeg === null
+    terrainInfo.textContent = (s.aspectDeg === null
       ? t('terrainFlat', { elev: fmt(s.meanM, 0), range: fmt(s.maxM - s.minM) })
-      : t('terrainInfo', { elev: fmt(s.meanM, 0), slope: fmt(s.slopeDeg), dir: compassLabel(s.aspectDeg, lang), range: fmt(s.maxM - s.minM) });
+      : t('terrainInfo', { elev: fmt(s.meanM, 0), slope: fmt(s.slopeDeg), dir: compassLabel(s.aspectDeg, lang), range: fmt(s.maxM - s.minM) }))
+      + (terrain.dgm ? ` · ${t('terrainDgmLabel', { region: terrain.dgm.region[lang], res: fmt(terrain.dgm.resolutionM) })}` : '');
   }
 
   function renderContours() {

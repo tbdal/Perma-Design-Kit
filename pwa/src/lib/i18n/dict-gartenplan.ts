@@ -73,6 +73,8 @@ export const gartenplanDict: Dict = {
   shopCountShort: { de: 'Anz.', en: 'Qty' },
   shopSpacingShort: { de: 'Abst. m', en: 'Sp. m' },
   shopEmpty: { de: 'Noch keine Pflanzen im Plan.', en: 'No plants in the plan yet.' },
+  terrainDgmLabel: { de: 'Geländemodell {region}, {res} m', en: 'terrain model {region}, {res} m' },
+  terrainLoadingDgm: { de: 'Lade Geländemodell {region} (1 m)…', en: 'Loading terrain model {region} (1 m)…' },
   coverageLabel: { de: 'Einfärben', en: 'Colour by' },
   covGroupFunctions: { de: 'Funktionen', en: 'Functions' },
   covGroupSun: { de: 'Besonnung', en: 'Sunlight' },
