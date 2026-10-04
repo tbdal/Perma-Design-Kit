@@ -31,7 +31,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 ## APs
 ### AP4
 - [ ] Sorte (in Klammern bei Namen) in Tabelle anzeigen
-- [ ] Amazon aws raus
+- [ ] Amazon aws raus, gibt es eine alternative dafür?
 - [ ] Tabelle kleiner machen bzw. so, dass nicht gescrollt werden muss? auch für kleinere Bildschirme
 - [ ] Lizenz check alle quellen
 - [ ] In allen pdfs Lizenz und link auf permadesignkit.org einstellen
