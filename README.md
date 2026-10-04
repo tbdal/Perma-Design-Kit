@@ -52,11 +52,11 @@ The Perma Design Kit is **fair source**: published under the [Functional Source 
 - Plant cards, PDFs and garden plans you create with the app are yours, including for commercial use.
 - Every version automatically becomes **MIT-licensed two years after it was published**.
 
-Versions published before the switch (the commit tagged `fsl-start`) remain MIT-licensed, and `legacy/` stays MIT. Details and the retained MIT notice are in [`NOTICE`](NOTICE). Data sources, fonts and dependencies keep their own licenses.
+This applies to the whole repository, including `legacy/`. Versions published before the switch (the commit tagged `fsl-start`) remain MIT-licensed. The upstream repositories by Sebastian Schucht and Jens switch to the same license. Details are in [`NOTICE`](NOTICE). Data sources, fonts and dependencies keep their own licenses.
 
 ## Authors
 
-- Sebastian Schucht <sebastian@schucht.eu>
-- Jörn Müller <post@permagruen.de> — [permagruen.de](https://www.permagruen.de)
-- Jens [NACHNAME] (js32)
-- [DEIN NAME] (tbdal)
+- **Andreas Linder** ([@tbdal](https://github.com/tbdal)) — Perma Design Kit PWA
+- **Jens [NACHNAME]** ([@js32](https://github.com/js32)) — [Perma-Guild-Forge](https://github.com/js32/Perma-Guild-Forge), PWA foundations
+- **Sebastian Schucht** ([@SZzip](https://github.com/SZzip)) — original [PermacultureTreeGuildsDesigner](https://github.com/SZzip/PermacultureTreeGuildsDesigner) (PowerShell, `legacy/`)
+- Co-author: **Jörn Müller** ([permagruen.de](https://www.permagruen.de)) — plant lists, help texts, roadmap

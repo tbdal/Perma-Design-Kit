@@ -6,7 +6,7 @@ FSL-1.1-MIT
 
 ## Notice
 
-Copyright 2026 [DEIN NAME] (tbdal) and Jens [NACHNAME] (js32)
+Copyright 2024-2026 Andreas Linder, Jens [NACHNAME] and Sebastian Schucht
 
 ## Terms and Conditions
 

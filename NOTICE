@@ -1,61 +1,48 @@
 Perma Design Kit
-Copyright 2026 [DEIN NAME] (tbdal) and Jens [NACHNAME] (js32)
+Copyright 2024-2026 Andreas Linder, Jens [NACHNAME] and Sebastian Schucht
 
-LICENSING OVERVIEW
+AUTHORS
 
-1. Current code: Functional Source License 1.1, MIT Future License
-   (FSL-1.1-MIT), see LICENSE.md.
+  Andreas Linder        https://github.com/tbdal
+  Jens [NACHNAME]       https://github.com/js32
+  Sebastian Schucht     https://github.com/SZzip
+  Co-author: Jörn Müller, https://www.permagruen.de
 
-   Starting with the commit tagged `fsl-start` ([DATUM]), this repository
-   is published under FSL-1.1-MIT. Every published version becomes
-   available under the MIT license on the second anniversary of the date
-   it was made available. For this repository, the date a version was made
-   available is the date its commit was pushed to the public repository.
+HISTORY
 
-2. Earlier code: MIT
+  The project started as PermacultureTreeGuildsDesigner by Sebastian
+  Schucht (https://github.com/SZzip/PermacultureTreeGuildsDesigner), was
+  continued by Jens as Perma-Guild-Forge
+  (https://github.com/js32/Perma-Guild-Forge) and is developed here as the
+  Perma Design Kit (https://github.com/tbdal/Perma-Design-Kit).
 
-   All versions published before `fsl-start` were released under the MIT
-   license and remain available under it. Parts of the current code are
-   derived from those versions; the original MIT notice is retained below
-   as that license requires.
+LICENSING
 
-   ------------------------------------------------------------------------
-   MIT License
+1. Functional Source License 1.1, MIT Future License (FSL-1.1-MIT)
 
-   Copyright (c) 2024 Sebastian Schucht
+   Starting with the commit tagged `fsl-start` ([DATUM]), the entire
+   repository, including legacy/, is published under FSL-1.1-MIT, see
+   LICENSE.md. The copyright holders named above jointly agreed to this
+   change; the upstream repositories switch to the same license.
 
-   Permission is hereby granted, free of charge, to any person obtaining a
-   copy of this software and associated documentation files (the
-   "Software"), to deal in the Software without restriction, including
-   without limitation the rights to use, copy, modify, merge, publish,
-   distribute, sublicense, and/or sell copies of the Software, and to
-   permit persons to whom the Software is furnished to do so, subject to
-   the following conditions:
+   Every published version becomes available under the MIT license on the
+   second anniversary of the date it was made available. For this
+   repository, that is the date its commit was pushed to the public
+   repository.
 
-   The above copyright notice and this permission notice shall be included
-   in all copies or substantial portions of the Software.
+2. Earlier versions: MIT
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-   IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-   CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-   TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-   SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-   ------------------------------------------------------------------------
+   Versions published before `fsl-start`, here and in the upstream
+   repositories, were released under the MIT license. That grant cannot be
+   withdrawn: those versions remain available under MIT.
 
-3. legacy/: MIT
-
-   The PowerShell tooling in legacy/ is not covered by LICENSE.md. It
-   remains under the MIT license, see legacy/LICENSE.
-
-4. Third-party material
+3. Third-party material
 
    Dependencies, fonts, plant data (Wikidata, PFAF, Edible Forest Gardens)
    and map data keep their own licenses. Sources and terms are listed in
    the app (Impressum, data credits on cards and maps).
 
-5. Output
+4. Output
 
    Plant cards, PDFs, garden plans and other files you create with the
    app are yours to use, including commercially. The license of the code
