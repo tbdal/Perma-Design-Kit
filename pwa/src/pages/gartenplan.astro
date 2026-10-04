@@ -912,7 +912,7 @@ import Layout from '../layouts/Layout.astro';
   // and the view follows the canvas shape, so a new width/height (sidebar
   // folded, window resized) is filled with map instead of a blank strip.
   new ResizeObserver(() => {
-    if (editing && planView.w && !planSvg.hidden && planSvg.getBoundingClientRect().width > 0) {
+    if (editing && planView.w && planSvg.getBoundingClientRect().width > 0) {
       const h = planView.w * canvasAspect();
       if (Math.abs(h - planView.h) > 1e-6) {
         planView = { ...planView, y: planView.y + planView.h / 2 - h / 2, h };
