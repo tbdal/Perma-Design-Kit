@@ -6,7 +6,7 @@ FSL-1.1-MIT
 
 ## Notice
 
-Copyright 2024-2026 Andreas Linder, Jens [NACHNAME] and Sebastian Schucht
+Copyright 2024-2026 Andreas Linder, Jens [NACHNAME], Jörn Müller and Sebastian Schucht
 
 ## Terms and Conditions
 

@@ -39,7 +39,6 @@ export const impressumDict: Dict = {
   },
   imCreditsBy: { de: 'Entwickelt von', en: 'Developed by' },
   imCreditsAnd: { de: 'und', en: 'and' },
-  imCreditsCoauthor: { de: ', Co-Autor: ', en: ', co-author: ' },
   imCreditsOrigin: { de: 'Hervorgegangen aus', en: 'Based on' },
   imMapData: {
     de: 'Kartenhintergrund im Waldgartenplan: © OpenStreetMap-Mitwirkende (ODbL), Adresssuche über Nominatim. Satellitenebene: Sentinel-2 cloudless – s2maps.eu by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2016 & 2017), CC BY 4.0. Höhendaten: Terrain Tiles (Mapzen/Tilezen, bereitgestellt über AWS Open Data) aus u. a. SRTM (NASA), EU-DEM (produziert mit Copernicus-Daten, gefördert von der EU) und nationalen Geländemodellen. Luftbilder: Bayerische Vermessungsverwaltung (CC BY 4.0), LGL-BW, GeoBasis-DE/LGB und Geoportal Berlin, LVermGeoRP, LVermGeo ST, LVGL Saarland, GeoSN (je dl-de/by-2-0), Geobasis NRW (dl-de/zero-2-0), HVBG, LGLN, GeoBasis-DE/M-V, GeoBasis-DE/LVermGeo SH, GDI-Th (je CC BY 4.0 bzw. frei), basemap.at (CC BY 4.0), swisstopo, Kadaster/Beeldmateriaal.nl (PDOK, CC BY 4.0) — der jeweilige Quellenvermerk steht in der Karte. Geländemodelle (1 m): Geobasis NRW (dl-de/zero-2-0), GeoBasis-DE/LGB (dl-de/by-2-0), LGL-BW (dl-de/by-2-0), HVBG (dl-de/zero-2-0), LGLN (CC BY 4.0), AHN/Rijkswaterstaat (PDOK, CC0).',
