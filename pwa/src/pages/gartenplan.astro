@@ -150,6 +150,7 @@ import Layout from '../layouts/Layout.astro';
           <label class="text-sm font-medium text-stone-600 dark:text-stone-300" for="g-years" data-i18n="labelYearsSincePlanting">Jahre seit Pflanzung</label>
           <input id="g-years" type="range" min="0" max="30" step="1" value="0" class="w-48" />
           <span id="years-label" class="w-20 text-sm font-medium text-stone-700 dark:text-stone-200"></span>
+          <button id="growth-play" type="button" data-i18n="growthPlay" data-i18n-title="growthPlayTitle" title="Zeitraffer: den Garten über die Jahre wachsen lassen" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700 text-xs">▶ Wachstum</button>
         </div>
         <div class="flex items-center gap-3">
           <div class="flex items-center gap-1">
@@ -164,6 +165,7 @@ import Layout from '../layouts/Layout.astro';
           <button id="btn-draw-area" type="button" data-i18n="btnDrawArea" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">▱ Fläche einzeichnen</button>
           <button id="btn-draw-row" type="button" data-i18n="btnDrawRow" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">⋯ Reihe pflanzen</button>
           <button id="btn-export-geojson" type="button" data-i18n="btnExportGeojson" data-i18n-title="exportGeojsonTitle" title="Für QGIS & Co.: Umriss, Flächen und Pflanzen als GeoJSON (WGS84)" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">⤓ GeoJSON (QGIS)</button>
+          <a id="btn-plan-calendar" href="/kalender" data-i18n="btnPlanCalendar" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">Kalender</a>
           <button id="btn-shopping" type="button" data-i18n="btnShopping" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">Pflanzliste</button>
           <button id="btn-export-pdf" data-i18n="btnExportPdf" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">PDF exportieren</button>
           <button id="btn-redraw-area" data-i18n="btnRedrawArea" class="text-xs font-medium text-stone-500 dark:text-stone-400 hover:text-red-600 dark:hover:text-red-400">Fläche neu zeichnen</button>
@@ -212,6 +214,7 @@ import Layout from '../layouts/Layout.astro';
               <button id="view-top" type="button" data-i18n="viewTop" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">Draufsicht</button>
               <button id="view-oblique" type="button" data-i18n="viewOblique" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">Schrägansicht</button>
             </span>
+            <button id="btn-snapshot" type="button" data-i18n="snapshotBtn" data-i18n-title="snapshotTitle" title="Aktuelle 3D-Ansicht als Bild speichern (P)" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">📷 Bild</button>
             <span id="sun-info" class="basis-full text-sky-800 dark:text-sky-200 sm:basis-auto"></span>
           </div>
           <div id="plan-wrap" class="relative rounded-xl bg-white dark:bg-stone-800 p-3 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
@@ -2330,6 +2333,7 @@ import Layout from '../layouts/Layout.astro';
       case 'g': gridInput.click(); break;
       case 't': if (!in2d) view3d?.setViewPreset('top'); break;
       case 'o': if (!in2d) view3d?.setViewPreset('oblique'); break;
+      case 'p': if (!in2d) void saveSnapshot(); break;
       case 'Delete': case 'Backspace':
         if (multiSel.size) click('btn-multi-remove');
         else if (selectedPlacementId) click('btn-remove-placement');
@@ -2860,6 +2864,12 @@ import Layout from '../layouts/Layout.astro';
   }
   const shopFile = (ext: string) => `${(editing?.name || t('planUnnamed')).replace(/[\\/:*?"<>|]+/g, '_')} – ${t('shopTitle')}.${ext}`;
   document.getElementById('btn-shopping')!.addEventListener('click', () => { renderShopping(); shoppingDialog.showModal(); });
+  // "Kalender": the calendar page filtered to this plan's plants.
+  document.getElementById('btn-plan-calendar')!.addEventListener('click', e => {
+    if (!editing) return;
+    e.preventDefault();
+    location.href = `/kalender?plan=${encodeURIComponent(editing.id)}`;
+  });
   document.getElementById('shopping-close')!.addEventListener('click', () => shoppingDialog.close());
   shoppingDialog.addEventListener('click', e => { if (e.target === shoppingDialog) shoppingDialog.close(); });
   document.getElementById('shopping-csv')!.addEventListener('click', () => {
@@ -2872,6 +2882,83 @@ import Layout from '../layouts/Layout.astro';
     await withButtonSpinner(e.currentTarget as HTMLButtonElement, () =>
       exportShoppingPDF(`${plan.name || t('planUnnamed')} – ${t('shopTitle')}`, currentShoppingRows(), plan.plantPrices, shopLabels(), lang, shopFile('pdf')));
   });
+
+  // ── 3D-Bild ────────────────────────────────────────────────────────────
+  // PNG of the current 3D view with plan name, date and the source credits
+  // burnt in (the licenses of map, aerial photo and elevation data ask for it).
+  async function saveSnapshot() {
+    if (!view3d || !editing) return;
+    const c = view3d.snapshot();
+    const ctx = c.getContext('2d')!;
+    const dpr = Math.max(1, c.width / Math.max(1, plan3dContainer.clientWidth));
+    const credits = (document.querySelector('#plan-wrap .basemap-attrib')?.textContent ?? '').trim();
+    const font = (px: number, w = 400) => `${w} ${Math.round(px * dpr)}px system-ui, sans-serif`;
+    // title
+    const title = `${editing.name || t('planUnnamed')} · ${new Intl.DateTimeFormat(lang, { dateStyle: 'medium' }).format(new Date())}`;
+    ctx.font = font(15, 600);
+    const tw = ctx.measureText(title).width;
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.fillRect(8 * dpr, 8 * dpr, tw + 16 * dpr, 26 * dpr);
+    ctx.fillStyle = '#1c1917';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(title, 16 * dpr, 21 * dpr);
+    // credits, wrapped to the width
+    if (credits) {
+      ctx.font = font(10);
+      const maxW = c.width - 16 * dpr;
+      const lines: string[] = [];
+      let line = '';
+      for (const w of credits.split(' ')) {
+        const next = line ? `${line} ${w}` : w;
+        if (ctx.measureText(next).width > maxW && line) { lines.push(line); line = w; } else line = next;
+      }
+      if (line) lines.push(line);
+      const lh = 13 * dpr;
+      ctx.fillStyle = 'rgba(255,255,255,0.8)';
+      ctx.fillRect(0, c.height - lines.length * lh - 6 * dpr, c.width, lines.length * lh + 6 * dpr);
+      ctx.fillStyle = '#44403c';
+      lines.forEach((l, i) => ctx.fillText(l, 8 * dpr, c.height - (lines.length - i) * lh + lh / 2 - 3 * dpr));
+    }
+    const blob = await new Promise<Blob | null>(r => c.toBlob(r, 'image/png'));
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${(editing.name || t('planUnnamed')).replace(/[\\/:*?"<>|]+/g, '_')} – 3D.png`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+  document.getElementById('btn-snapshot')!.addEventListener('click', () => void saveSnapshot());
+
+  // ── Zeitraffer (Wachstum) ──────────────────────────────────────────────
+  // Plays the years slider from 0 to its end (one year per 0.35 s — shorter
+  // than the undo debounce, so a whole run is one undo step). At the end a
+  // click starts over; moving the slider by hand stops it.
+  const growthBtn = document.getElementById('growth-play') as HTMLButtonElement;
+  let growthTimer: ReturnType<typeof setInterval> | null = null;
+  function stopGrowth() {
+    if (growthTimer) clearInterval(growthTimer);
+    growthTimer = null;
+    growthBtn.textContent = t('growthPlay');
+  }
+  function setYears(v: number) {
+    yearsInput.value = String(v);
+    yearsInput.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  growthBtn.addEventListener('click', () => {
+    if (growthTimer) { stopGrowth(); return; }
+    const max = Number(yearsInput.max);
+    if (Number(yearsInput.value) >= max) setYears(0);
+    growthBtn.textContent = t('growthStop');
+    growthTimer = setInterval(() => {
+      const next = Number(yearsInput.value) + 1;
+      if (next > max) { stopGrowth(); return; }
+      setYears(next);
+      if (next >= max) stopGrowth();
+    }, 350);
+  });
+  yearsInput.addEventListener('pointerdown', stopGrowth);
+  yearsInput.addEventListener('keydown', stopGrowth);
 
   // ── Polykultur als Paket ───────────────────────────────────────────────
   const pcPackage = document.getElementById('pc-package') as HTMLSelectElement;

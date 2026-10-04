@@ -1,6 +1,11 @@
 import type { Dict } from './core';
 
 export const kalenderDict: Dict = {
+  scopeLabel: { de: 'Pflanzen aus', en: 'Plants from' },
+  scopeAll: { de: 'Allen Pflanzen', en: 'All plants' },
+  scopePlans: { de: 'Gartenplan', en: 'Garden plan' },
+  scopePolys: { de: 'Polykultur', en: 'Polyculture' },
+  scopeUnnamed: { de: '(ohne Namen)', en: '(unnamed)' },
   pageTitle: { de: 'Blüh- & Erntekalender', en: 'Flowering & Harvest Calendars' },
   pageSubtitle: { de: 'Wann blüht was, wann ist was erntereif — aus deinen Pflanzendaten.', en: 'What blooms when, what ripens when — from your plant data.' },
   legendFlower: { de: 'Blüte', en: 'Bloom' },

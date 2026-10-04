@@ -2,6 +2,11 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Kalender aus dem Plan, 3D-Bild, Zeitraffer (2026-10-04)
+- [x] **Kalender nach Plan:** Auswahl „Pflanzen aus“ auf der Kalender-Seite — alle Pflanzen, ein Gartenplan (mit Stückzahl, z. B. „Apfel ×2“) oder eine Polykultur; wird gemerkt. Im Gartenplan führt der neue Button „Kalender“ direkt zum Kalender dieses Plans (`/kalender?plan=…`).
+- [x] **3D-Bild speichern** (📷 bzw. Taste **P** in 3D): PNG der aktuellen Ansicht mit Planname, Datum und den Quellenvermerken der Karten-, Luftbild- und Höhendaten.
+- [x] **Zeitraffer** „▶ Wachstum“ neben dem Jahre-Regler: lässt den Garten von 0 bis 30 Jahre wachsen (2D und 3D); am Ende startet ein Klick neu, ein ganzer Durchlauf ist ein Rückgängig-Schritt.
+
 ## Gartenplan: Pflanzliste / Einkaufszettel (2026-10-04)
 - [x] **Pflanzliste** (Button neben „PDF exportieren“): alle Pflanzen des Plans nach Schicht mit Stückzahl, Pflanzabstand (ausgewachsene Breite) und Höhe; optional Preis pro Stück (wird mit dem Plan gespeichert, auch im Teilen-Link) mit Summe. Export als **CSV** (Excel-tauglich, deutsche Dezimalkommas) und **PDF**.
 

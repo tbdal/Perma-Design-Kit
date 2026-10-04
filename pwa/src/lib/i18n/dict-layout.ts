@@ -80,6 +80,7 @@ export const layoutDict: Dict = {
   scGpBoundary: { de: 'Umriss bearbeiten', en: 'Edit outline' },
   shortcutsNav: { de: 'Pflanzen / Kalender / Polykulturen / Gartenplan', en: 'Plants / Calendar / Polycultures / Garden plan' },
   scGpMeasure: { de: 'Messen (Enter schließt Fläche, ⌫ letzter Punkt weg)', en: 'Measure (Enter closes the area, ⌫ removes last point)' },
+  scGpSnapshot: { de: '3D: Ansicht als Bild speichern', en: '3D: save the view as an image' },
   scGpGrid: { de: 'Meterlinien ein-/ausblenden', en: 'Show / hide grid lines' },
   scGpUndo: { de: 'Rückgängig', en: 'Undo' },
   scGpRedo: { de: 'Wiederholen', en: 'Redo' },

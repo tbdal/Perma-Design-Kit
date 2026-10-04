@@ -65,6 +65,11 @@ import Layout from '../layouts/Layout.astro';
     </details>
     <span class="h-4 w-px bg-stone-300 dark:bg-stone-700"></span>
     <label class="inline-flex items-center gap-2">
+      <span class="text-sm font-medium text-stone-500 dark:text-stone-400" data-i18n="scopeLabel">Pflanzen aus</span>
+      <select id="kalender-scope" class="rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2 py-1.5 text-sm shadow-sm focus:border-green-500 focus:outline-none max-w-[14rem]"><option value="" data-i18n="scopeAll">Allen Pflanzen</option></select>
+    </label>
+    <span class="h-4 w-px bg-stone-300 dark:bg-stone-700"></span>
+    <label class="inline-flex items-center gap-2">
       <span class="text-sm font-medium text-stone-500 dark:text-stone-400" data-i18n="sortLabel">Sortieren</span>
       <select id="kalender-sort" class="rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2 py-1.5 text-sm shadow-sm focus:border-green-500 focus:outline-none">
         <option value="name" data-i18n="sortName">Name (A-Z)</option>
@@ -100,7 +105,7 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <script>
-  import { getAllPlants } from '../lib/db';
+  import { getAllPlants, getAllGardenPlans, getAllPolycultures } from '../lib/db';
   import { displayName, displayCommonName } from '../lib/plant-name';
   import type { PlantData } from '../lib/types';
   import { escapeHtml } from '../lib/html';
@@ -152,6 +157,48 @@ import Layout from '../layouts/Layout.astro';
 
   let allPlants: PlantData[] = [];
 
+  // "Pflanzen aus": all plants, or only those of one garden plan (with the
+  // number placed) or polyculture. Remembered; ?plan=<id> preselects a plan.
+  const scopeSelect = document.getElementById('kalender-scope') as HTMLSelectElement;
+  const SCOPE_KEY = 'pgd-kalender-scope';
+  let scopeCounts: Map<string, number> | null = null;
+  const scopeSources = new Map<string, Map<string, number>>();
+  scopeSelect.addEventListener('change', () => {
+    try { localStorage.setItem(SCOPE_KEY, scopeSelect.value); } catch {}
+    scopeCounts = scopeSources.get(scopeSelect.value) ?? null;
+    render();
+  });
+  async function initScope() {
+    const [plans, polys] = await Promise.all([getAllGardenPlans(), getAllPolycultures()]);
+    const opt = (v: string, label: string) => `<option value="${escapeHtml(v)}">${escapeHtml(label)}</option>`;
+    let html = '';
+    if (plans.length) {
+      html += `<optgroup label="${escapeHtml(t('scopePlans'))}">` + plans.map(g => {
+        const m = new Map<string, number>();
+        for (const pl of g.placements) m.set(pl.plantId, (m.get(pl.plantId) ?? 0) + 1);
+        scopeSources.set('plan:' + g.id, m);
+        return opt('plan:' + g.id, g.name || t('scopeUnnamed'));
+      }).join('') + '</optgroup>';
+    }
+    if (polys.length) {
+      html += `<optgroup label="${escapeHtml(t('scopePolys'))}">` + polys.map(pc => {
+        const m = new Map<string, number>();
+        if (pc.anchorPlantId) m.set(pc.anchorPlantId, 0);
+        for (const mem of pc.members) m.set(mem.plantId, 0);
+        scopeSources.set('poly:' + pc.id, m);
+        return opt('poly:' + pc.id, pc.name || t('scopeUnnamed'));
+      }).join('') + '</optgroup>';
+    }
+    scopeSelect.insertAdjacentHTML('beforeend', html);
+    const fromUrl = new URLSearchParams(location.search).get('plan');
+    let want = fromUrl ? 'plan:' + fromUrl : '';
+    if (!want) { try { want = localStorage.getItem(SCOPE_KEY) ?? ''; } catch {} }
+    if (want && scopeSources.has(want)) {
+      scopeSelect.value = want;
+      scopeCounts = scopeSources.get(want)!;
+    }
+  }
+
   function hasActivity(p: PlantData): boolean {
     return !!(p.flowerMonths?.some(Boolean) || p.fruitMonths?.some(Boolean));
   }
@@ -162,6 +209,7 @@ import Layout from '../layouts/Layout.astro';
     const showR = filterFruit.checked;
     const showNoData = filterNoData.checked;
     const filtered = allPlants.filter(p => {
+      if (scopeCounts && !scopeCounts.has(p.id)) return false;
       if (q && !p.latinName.toLowerCase().includes(q) && ![p.commonName, p.commonNameEn].some(n => (n || '').toLowerCase().includes(q))) return false;
       if (usageFilter.size > 0 && ![...usageFilter].some(f => Boolean((p as any)[f]))) return false;
       if (functionFilter.size > 0 && ![...functionFilter].some(f => Boolean((p as any)[f]))) return false;
@@ -220,7 +268,8 @@ import Layout from '../layouts/Layout.astro';
     // ("Blüte: obere Reihe, Frucht: untere Reihe"), and avoids a third
     // "both" color that no longer has anywhere to go once split.
     const rows = plants.map(p => {
-      const name = escapeHtml(displayName(p));
+      const n = scopeCounts?.get(p.id) ?? 0;
+      const name = escapeHtml(displayName(p)) + (n > 1 ? ` <span class="font-mono text-[10px] text-stone-500 dark:text-stone-400">×${n}</span>` : '');
       const sub  = displayCommonName(p) ? `<span class="block text-[10px] italic text-stone-500 dark:text-stone-400 truncate">${escapeHtml(p.latinName)}</span>` : '';
       // The month cells are color only — screen readers get the ranges as text.
       const spoken = [
@@ -300,7 +349,7 @@ import Layout from '../layouts/Layout.astro';
     });
   }
 
-  getAllPlants().then(plants => {
+  Promise.all([getAllPlants(), initScope()]).then(([plants]) => {
     // No hasActivity() filter here anymore — kept in full so the
     // "Pflanzen ohne Kalenderdaten anzeigen" checkbox has something to
     // reveal; getFiltered()/render() apply hasActivity() as needed instead.

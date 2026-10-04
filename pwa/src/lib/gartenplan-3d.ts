@@ -92,6 +92,8 @@ export interface SuggestionPreview3D {
 }
 
 export interface GardenPlan3DView {
+  /** Renders the current view and returns a copy of the image. */
+  snapshot(): HTMLCanvasElement;
   /** Ghost of a suggested plant at a gap with its reach (null hides it). */
   setPreview(preview: SuggestionPreview3D | null): void;
   /** Shows (or with null hides) the function-coverage colouring. */
@@ -938,7 +940,19 @@ export function createGardenPlan3DView(
     requestRender();
   }
 
+  function snapshot(): HTMLCanvasElement {
+    // Render and copy in the same task: without preserveDrawingBuffer the
+    // WebGL buffer is only valid until the next frame.
+    renderer.render(scene, camera);
+    const src = renderer.domElement;
+    const c = document.createElement('canvas');
+    c.width = src.width; c.height = src.height;
+    c.getContext('2d')!.drawImage(src, 0, 0);
+    return c;
+  }
+
   return {
+    snapshot,
     setPreview,
     setCoverage,
     updateYears(newYears: number) {
