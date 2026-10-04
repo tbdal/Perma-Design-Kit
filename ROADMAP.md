@@ -44,14 +44,13 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 	Haferschlehe	Prunus domestica insititia
 	Jostabeere	Ribes x nidigrolaria
 	Rubus pentalobus	Rubus pentalobus
+- [ ] Dropdown Sortierung: H -> höhe, B -> Breite
+- [ ] 3d: laub+nadelgehölz in Form unterscheiden
+- [ ] Stammdicke mitwachsen lassen
 
 
 ## Karten
 - [ ] Sukzessive Pflanzung
-Runde 1 und 1b (Fläche direkt auf der Karte zeichnen, benannte farbige Flächen) sind erledigt → CHANGELOG. Offen (Runde 2):
-- [x] OSM-Kacheln gehen nur bis Zoom 19 (≈ 20 cm/px) und wirken auf kleinen Plänen unscharf → Orthophotos (s. u.) würden das lösen — erledigt in den Ortho-Ländern
-- [ ] eigenes Luftbild (Drohne, Foto, Screenshot) hochladen und per 2 Punkten kalibrieren (Maßstab + Drehung) — die einzige globale, lizenzfreie Lösung in Garten-Auflösung
-- [x] offene amtliche Orthophotos (8–40 cm) unter dem Plan (2026-10-04): 15 Bundesländer (inkl. Bremen, Hamburg), AT (basemap.at), CH (SWISSIMAGE), NL (PDOK), Lizenz je Dienst aus den Capabilities geprüft (`src/lib/ortho-sources.ts`). Offen: FR (IGN), Bayern nur DOP40 (DOP20 kostenpflichtig)
 - [ ] Kartenhintergrund im Gartenplan-PDF (Canvas → `embedJpg`, Attribution auf der Seite)
 - [ ] kommerzieller Satellit mit offiziellem Key (Esri Location Platform / MapTiler / Mapbox Raster) erst bei Bedarf außerhalb der Ortho-Länder — Esri *ohne* Key ist nur nicht-kommerziell nutzbar
 
