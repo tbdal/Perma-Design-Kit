@@ -3,35 +3,43 @@
 Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Prios
-- [ ] präsentation check auf dropbox (Andi)
-- [ ] Lizenz s.u.
+- [ ] präsentation 
+- [ ] Lizenz siehe artifact
 - [ ] Newsletter button: Jetzt Jörn's Newsletter auf brevo nutzen mit api?
 - [ ] spendenbutton
 
 ## kurzfristig
-- [ ] **zur Prüfung (2026-10-03, live):** Layout-Änderungen aus `horizon-en` übernommen — bitte ansehen und ggf. zurücknehmen:
-  - Kopf- und Fußzeile immer 1600 px breit (`barMaxW` in `Layout.astro`), damit das Menü beim Seitenwechsel nicht springt. Haken: auf schmalen Seiten (Gartenplan, Hilfe, Impressum, Datenschutz) steht das Logo deutlich links vom Inhalt.
-  - `scrollbar-gutter: stable` (`global.css`): Layout springt nicht mehr seitlich zwischen Seiten mit und ohne Scrollbalken.
-  - ~~Horizont-Design: aktiver Menüpunkt nicht mehr fett~~ — zurückgenommen, aktiver Punkt wieder fett (2026-10-03).
-  - **Horizont ist jetzt Standard-Design** (2026-10-03); das alte heißt in den Einstellungen „Klassisch“. Wer früher bewusst „Standard“ gewählt hatte, landet einmalig auch bei Horizont (war technisch nicht unterscheidbar).
-- [ ] Dokumentation in Hilfe verlinken
-- [ ] permament storage erklären bevor es vom browser abgrefragt wird?
-- [ ] zulip wieder starten: cd /opt/zulip && docker compose start
 
+- [ ] Dokumentation in Hilfe verlinken
+- [ ] Sorte (in Klammern bei Namen) in Tabelle anzeigen
+- [ ] Amazon aws raus
+- [ ] permanent storage erklären bevor es vom browser abgrefragt wird?
 - [ ] Tabelle kleiner machen für kleinere Bildschirme
-- [ ] warum gibt's für diese Pflanzen keine Daten?
-  Gemeiner Rhabarber	Rheum rhabarbarum	—
-	Haferschlehe	Prunus domestica insititia
-	Jostabeere	Ribes x nidigrolaria
-	Rubus pentalobus	Rubus pentalobus
-	--> bot. Name nicht korrekt --> über PFAF-Suche finden & eintragen, dann Daten nachladen
 - [ ] golden master umbenennen oder in Daten-Menü integrieren. Testen welche Pflanzen das sind
+- [ ] Import von geteiltem link: wird altes überschrieben oder ergänzt?
+- [ ] zulip wieder starten: cd /opt/zulip && docker compose start
+- [ ] Team-Seite
+- [ ] Flyer
+- [ ] Lizenz check alle quellen
+- [ ] In allen pdfs Lizenz und link auf permadesignkit.org einstellen
 
 ## bis 1.11./Symposium
 - [ ] bug reporting aufsetzen (mit Formular vorstrukturieren)
 - [ ] Github aktualisieren (help.md, ...)
 - [ ] Dokumentation fertig (readme.md; Help.md)
 - [ ] optional: Logo/CI für Startpage
+
+## bugs
+- [ ] Homo erectus etc nicht auswählbar machen?
+- [ ] Malus domestica -> 10,7m (von 35’ aus Toensmeier Malus Pumila?)
+- [ ] Buildings temporarily unavailable
+- [ ] warum gibt's für diese Pflanzen keine Daten?
+  Gemeiner Rhabarber	Rheum rhabarbarum	—
+	Haferschlehe	Prunus domestica insititia
+	Jostabeere	Ribes x nidigrolaria
+	Rubus pentalobus	Rubus pentalobus
+	--> bot. Name nicht korrekt --> über PFAF-Suche finden & eintragen, dann Daten nachladen
+
 
 
 ## APs
@@ -40,6 +48,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 
 
 ## Karten
+- [ ] Sukzessive Pflanzung
 Runde 1 und 1b (Fläche direkt auf der Karte zeichnen, benannte farbige Flächen) sind erledigt → CHANGELOG. Offen (Runde 2):
 - [x] OSM-Kacheln gehen nur bis Zoom 19 (≈ 20 cm/px) und wirken auf kleinen Plänen unscharf → Orthophotos (s. u.) würden das lösen — erledigt in den Ortho-Ländern
 - [ ] eigenes Luftbild (Drohne, Foto, Screenshot) hochladen und per 2 Punkten kalibrieren (Maßstab + Drehung) — die einzige globale, lizenzfreie Lösung in Garten-Auflösung
