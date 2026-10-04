@@ -8,19 +8,21 @@ import Layout from '../layouts/Layout.astro';
 
     <section class="space-y-1">
       <h2 class="text-base font-semibold" data-i18n="imProviderTitle">Anbieter</h2>
-      <p class="leading-relaxed">
-        <span data-i18n="imPlaceholderName">Andreas Linder</span><br>
-        <span data-i18n="imPlaceholderStreet">Achterschlag 83</span><br>
-        <span data-i18n="imPlaceholderCity">21039 Hamburg</span><br>
-        <span data-i18n="imPlaceholderCountry">Deutschland</span>
-      </p>
-      <p class="leading-relaxed">
-        <span data-i18n="imName2">Jörn Müller</span><br>
-        <span data-i18n="imStreet2">Talstraße 91</span><br>
-        <span data-i18n="imCity2">69198 Schriesheim</span><br>
-        <span data-i18n="imPlaceholderCountry">Deutschland</span><br>
-        <a class="text-green-700 dark:text-green-400 underline underline-offset-2 hover:no-underline" href="https://www.permagruen.de" target="_blank" rel="noopener">www.permagruen.de</a>
-      </p>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <p class="leading-relaxed">
+          <span data-i18n="imPlaceholderName">Andreas Linder</span><br>
+          <span data-i18n="imPlaceholderStreet">Achterschlag 83</span><br>
+          <span data-i18n="imPlaceholderCity">21039 Hamburg</span><br>
+          <span data-i18n="imPlaceholderCountry">Deutschland</span>
+        </p>
+        <p class="leading-relaxed">
+          <span data-i18n="imName2">Jörn Müller</span><br>
+          <span data-i18n="imStreet2">Talstraße 91</span><br>
+          <span data-i18n="imCity2">69198 Schriesheim</span><br>
+          <span data-i18n="imPlaceholderCountry">Deutschland</span><br>
+          <a class="text-green-700 dark:text-green-400 underline underline-offset-2 hover:no-underline" href="https://www.permagruen.de" target="_blank" rel="noopener">www.permagruen.de</a>
+        </p>
+      </div>
     </section>
 
     <section class="space-y-1">
