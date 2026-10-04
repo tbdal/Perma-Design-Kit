@@ -224,7 +224,7 @@ import Layout from '../layouts/Layout.astro';
           </div>
           <div id="plan-wrap" class="relative rounded-xl bg-white dark:bg-stone-800 p-3 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <svg id="plan-svg" class="w-full touch-none" style="touch-action:none"></svg>
-            <div id="plan-3d-container" hidden class="h-[960px] max-h-[85vh] w-full touch-none" style="touch-action:none"></div>
+            <div id="plan-3d-container" hidden class="h-[70vh] w-full touch-none" style="touch-action:none"></div>
             <div id="measure-readout" hidden aria-live="polite" class="absolute left-1/2 top-5 z-10 -translate-x-1/2 rounded-md bg-orange-600/90 px-2.5 py-1 text-xs font-medium text-white shadow"></div>
             <div id="zoom-controls" class="absolute left-5 top-5 flex flex-col gap-1">
               <button id="zoom-in" type="button" data-i18n-aria-label="zoomIn" data-i18n-title="zoomIn" aria-label="Hineinzoomen" title="Hineinzoomen" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700">+</button>
@@ -239,7 +239,7 @@ import Layout from '../layouts/Layout.astro';
             <div aria-hidden="true" class="cursor-readout pointer-events-none absolute hidden rounded bg-stone-900/80 px-1.5 py-0.5 font-mono text-[11px] text-white"></div>
             <div class="basemap-attrib absolute bottom-3 right-3 z-10 hidden rounded-tl bg-white/80 px-1 text-[10px] text-stone-600"></div>
           </div>
-          <div class="flex flex-wrap items-center gap-x-4 gap-y-1 px-1 text-xs text-stone-500 dark:text-stone-400">
+          <div id="plan-legend" class="flex flex-wrap items-center gap-x-4 gap-y-1 px-1 text-xs text-stone-500 dark:text-stone-400">
             <span class="inline-flex items-center gap-1.5"><span class="inline-block h-2.5 w-2.5 rounded-full" style="background-color:#166534"></span><span data-i18n="layerTree">Baum</span></span>
             <span class="inline-flex items-center gap-1.5"><span class="inline-block h-2.5 w-2.5 rounded-full" style="background-color:#65a30d"></span><span data-i18n="layerShrub">Strauch</span></span>
             <span class="inline-flex items-center gap-1.5"><span class="inline-block h-2.5 w-2.5 rounded-full" style="background-color:#a3e635"></span><span data-i18n="layerHerb">Kraut/Bodendecker</span></span>
@@ -249,6 +249,10 @@ import Layout from '../layouts/Layout.astro';
         </div>
 
         <aside class="space-y-4">
+          <div class="rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+            <h2 class="mb-2 text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="selectedPanelHeading">Ausgewählt</h2>
+            <div id="selected-panel"></div>
+          </div>
           <div class="rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <h2 class="mb-2 text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="pickerHeading">Pflanzen</h2>
             <input id="picker-filter" type="search" data-i18n-placeholder="pickerFilterPlaceholder" placeholder="Pflanze filtern…" class="mb-2 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-xs shadow-inner focus:border-green-500 focus:outline-none" />
@@ -290,10 +294,6 @@ import Layout from '../layouts/Layout.astro';
             <div id="unplaced-list" class="space-y-0.5"></div>
           </div>
 
-          <div class="rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
-            <h2 class="mb-2 text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="selectedPanelHeading">Ausgewählt</h2>
-            <div id="selected-panel"></div>
-          </div>
         </aside>
       </div>
     </div>
@@ -755,6 +755,7 @@ import Layout from '../layouts/Layout.astro';
 
     listView.hidden = true;
     editorView.hidden = false;
+    requestAnimationFrame(fitPlanHeight);
     if (editing.boundary.length > 0) {
       enterPhaseB();
     } else {
@@ -1846,9 +1847,27 @@ import Layout from '../layouts/Layout.astro';
 
   /** Screen pixels per SVG unit at the current zoom. */
   function pxPerUnit(): number {
-    const w = planSvg.getBoundingClientRect().width || 700;
-    return planView.w ? w / planView.w : w / ((editing?.areaWidthM ?? 10) * U);
+    const r = planSvg.getBoundingClientRect();
+    const w = r.width || 700;
+    if (!planView.w) return w / ((editing?.areaWidthM ?? 10) * U);
+    // The canvas can be height-capped (fitPlanHeight): the viewBox is then
+    // letterboxed, so the smaller of both ratios is the real scale.
+    return r.height && planView.h ? Math.min(w / planView.w, r.height / planView.h) : w / planView.w;
   }
+
+  /** Cap the 2D canvas and the 3D view to the window height, so the layer
+   *  legend below the map stays visible without scrolling. */
+  function fitPlanHeight() {
+    const header = document.querySelector<HTMLElement>('.site-header');
+    const headerH = header && getComputedStyle(header).position === 'sticky' ? header.getBoundingClientRect().height : 0;
+    const legendH = document.getElementById('plan-legend')?.getBoundingClientRect().height ?? 0;
+    // plan-wrap padding (2 × 12) + gap to the legend + breathing room
+    const avail = window.innerHeight - headerH - legendH - 24 - 12 - 16;
+    const px = Math.max(280, Math.round(avail));
+    planSvg.style.maxHeight = `${px}px`;
+    plan3dContainer.style.height = `${px}px`;
+  }
+  window.addEventListener('resize', fitPlanHeight);
 
   /** Scale for labels, strokes and handles: tied to the *visible* width, so
    *  text stays ~13 px on screen at any zoom (PDF export uses uiScale()). */
@@ -1932,7 +1951,7 @@ import Layout from '../layouts/Layout.astro';
       planSvg.setPointerCapture(e.pointerId);
     }
     if (!pan.moved) return;
-    const unitsPerPx = pan.view.w / planSvg.getBoundingClientRect().width;
+    const unitsPerPx = 1 / pxPerUnit();
     planView = { ...pan.view, x: pan.view.x - (e.clientX - pan.sx) * unitsPerPx, y: pan.view.y - (e.clientY - pan.sy) * unitsPerPx };
     applyPlanView();
   });
