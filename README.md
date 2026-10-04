@@ -56,8 +56,8 @@ Versions published before the switch (the commit tagged `fsl-start`, 2026-10-04)
 
 ## Authors
 
-- **Andreas Linder** ([@tbdal](https://github.com/tbdal)) — Perma Design Kit PWA
-- **Jörn Müller** ([@permagruen](https://github.com/permagruen), [permagruen.de](https://www.permagruen.de)) — plant lists, help texts, roadmap
+- **Jörn Müller** ([@permagruen](https://github.com/permagruen), [permagruen.de](https://www.permagruen.de)) — original idea, plant lists, help texts, roadmap, ..
+- **Andreas Linder** ([@tbdal](https://github.com/tbdal)) — Perma Design Kit PWA, ..
 
 ## Based on
 
