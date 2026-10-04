@@ -2,6 +2,9 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Impressum: Jörn Müller (2026-10-04)
+- [x] **Impressum** nennt jetzt neben Andreas Linder auch **Jörn Müller** (Talstraße 91, 69198 Schriesheim, www.permagruen.de) als Anbieter und Verantwortlichen für den Inhalt nach § 18 Abs. 2 MStV.
+
 ## Fix: Gebäudeschatten, Luftbild-Ausfall (2026-10-04)
 - [x] **Gebäudeschatten:** Der Schattenbereich in 3D deckte nur den Garten ab — Gebäude weiter weg warfen keinen Schatten, während Schatten von Gebäuden außerhalb des Bildes hereinragten. Jetzt reicht er über alle geladenen Gebäude (bis ~150 m) mit höher aufgelöster Schattenkarte (4096 px, wo die Grafikkarte es kann).
 - [x] **Luftbild-Dienst antwortet nicht** (aktuell Sachsen-Anhalt: 403 auf alle Anfragen, auch der INSPIRE-Dienst gestört): statt leerer Fläche bzw. grünem 3D-Boden werden ausgefallene Kacheln durch das grobe Satellitenbild (Übersicht) bzw. die OSM-Karte ersetzt — in 2D, 3D und auf der Einzeichnen-Karte; einmaliger Hinweis und Quellenvermerk „Ersatz: © OpenStreetMap“. Läuft der Dienst wieder, kommen automatisch die Luftbilder.

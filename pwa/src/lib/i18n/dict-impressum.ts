@@ -9,6 +9,9 @@ export const impressumDict: Dict = {
   imPlaceholderStreet: { de: 'Achterschlag 83', en: 'Achterschlag 83' },
   imPlaceholderCity: { de: '21039 Hamburg', en: '21039 Hamburg' },
   imPlaceholderCountry: { de: 'Deutschland', en: 'Germany' },
+  imName2: { de: 'Jörn Müller', en: 'Jörn Müller' },
+  imStreet2: { de: 'Talstraße 91', en: 'Talstraße 91' },
+  imCity2: { de: '69198 Schriesheim', en: '69198 Schriesheim' },
   imContactTitle: { de: 'Kontakt', en: 'Contact' },
   imEmailLabel: { de: 'E-Mail:', en: 'Email:' },
   imPlaceholderEmail: { de: 'info@permadesignkit.org', en: 'info@permadesignkit.org' },
@@ -16,7 +19,7 @@ export const impressumDict: Dict = {
   imPlaceholderPhone: { de: '[Telefonnummer]', en: '[phone number]' },
 
   imContentResponsibleTitle: { de: 'Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV', en: 'Responsible for content pursuant to Sec. 18 (2) MStV (German Interstate Media Treaty)' },
-  imContentResponsibleBody: { de: 'Andreas Linder, Anschrift wie oben', en: 'Andreas Linder, address as above' },
+  imContentResponsibleBody: { de: 'Andreas Linder und Jörn Müller, Anschriften wie oben', en: 'Andreas Linder and Jörn Müller, addresses as above' },
 
   imLiabilityContentTitle: { de: 'Haftung für Inhalte', en: 'Liability for Content' },
   imLiabilityContentBody: {
