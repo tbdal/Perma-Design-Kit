@@ -129,6 +129,8 @@ export function normalizeGardenPlan(raw: unknown): GardenPlan | null {
     areas: Array.isArray(raw.areas)
       ? raw.areas.map(a => normalizeGardenPlanArea(a, point)).filter((a): a is GardenPlanArea => a !== null)
       : [],
+    ...(isObject(raw.plantPrices) ? { plantPrices: Object.fromEntries(Object.entries(raw.plantPrices)
+      .filter(([, v]) => typeof v === 'number' && Number.isFinite(v) && v >= 0) as [string, number][]) } : {}),
     createdAt: str(raw.createdAt, d.createdAt),
     updatedAt: str(raw.updatedAt, d.updatedAt),
   };

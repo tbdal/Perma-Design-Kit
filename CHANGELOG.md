@@ -2,6 +2,9 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Gartenplan: Pflanzliste / Einkaufszettel (2026-10-04)
+- [x] **Pflanzliste** (Button neben „PDF exportieren“): alle Pflanzen des Plans nach Schicht mit Stückzahl, Pflanzabstand (ausgewachsene Breite) und Höhe; optional Preis pro Stück (wird mit dem Plan gespeichert, auch im Teilen-Link) mit Summe. Export als **CSV** (Excel-tauglich, deutsche Dezimalkommas) und **PDF**.
+
 ## Gartenplan: Gebäude aus OpenStreetMap (2026-10-04)
 - [x] **Gebäude** im Umkreis von ~150 m aus OpenStreetMap (Overpass API): in 3D als Baukörper auf dem Gelände mit Schattenwurf, und als Schattenwerfer in Besonnungskarte und Licht-Hinweisen. Höhe aus `height`/Geschosszahl, sonst nach Gebäudetyp geschätzt. Schalter „Gebäude“ in der Kartenleiste (bei Plänen mit Standort); Quellenvermerk „Gebäude: © OpenStreetMap“, Datenschutz ergänzt.
 - [x] Höhenraster reicht jetzt ≥ 160 m um den Garten, damit Gebäude und Umfeld auf demselben Gelände stehen.

@@ -164,6 +164,7 @@ import Layout from '../layouts/Layout.astro';
           <button id="btn-draw-area" type="button" data-i18n="btnDrawArea" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">▱ Fläche einzeichnen</button>
           <button id="btn-draw-row" type="button" data-i18n="btnDrawRow" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">⋯ Reihe pflanzen</button>
           <button id="btn-export-geojson" type="button" data-i18n="btnExportGeojson" data-i18n-title="exportGeojsonTitle" title="Für QGIS & Co.: Umriss, Flächen und Pflanzen als GeoJSON (WGS84)" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">⤓ GeoJSON (QGIS)</button>
+          <button id="btn-shopping" type="button" data-i18n="btnShopping" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">Pflanzliste</button>
           <button id="btn-export-pdf" data-i18n="btnExportPdf" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">PDF exportieren</button>
           <button id="btn-redraw-area" data-i18n="btnRedrawArea" class="text-xs font-medium text-stone-500 dark:text-stone-400 hover:text-red-600 dark:hover:text-red-400">Fläche neu zeichnen</button>
         </div>
@@ -295,6 +296,26 @@ import Layout from '../layouts/Layout.astro';
   <div id="toast" class="fixed bottom-6 right-6 hidden rounded-lg bg-green-700 px-4 py-2.5 text-sm font-medium text-white shadow-lg"></div>
 
   <!-- Standort & Ausrichtung (Leaflet, src/lib/gartenplan-locate.ts) -->
+  <dialog id="shopping-dialog" aria-labelledby="shopping-title" class="m-auto w-[min(48rem,calc(100vw-2rem))] rounded-xl bg-white dark:bg-stone-800 p-0 text-stone-800 dark:text-stone-100 shadow-2xl backdrop:bg-black/50">
+    <div class="flex items-center justify-between border-b border-stone-200 dark:border-stone-700 px-4 py-3">
+      <h2 id="shopping-title" class="text-base font-semibold" data-i18n="shopTitle">Pflanzliste</h2>
+      <button id="shopping-close" type="button" data-i18n-aria-label="closeBtn" aria-label="Schließen" class="text-2xl leading-none text-stone-500 hover:text-stone-700 dark:hover:text-stone-200">×</button>
+    </div>
+    <div class="max-h-[65vh] overflow-auto px-4 py-3">
+      <p class="mb-2 text-xs text-stone-500 dark:text-stone-400" data-i18n="shopIntro">Alle Pflanzen des Plans mit Stückzahl. Abstand = ausgewachsene Breite. Preise sind optional und werden mit dem Plan gespeichert.</p>
+      <table class="w-full text-sm">
+        <thead class="text-left text-xs text-stone-500 dark:text-stone-400">
+          <tr><th class="py-1 pr-2" data-i18n="shopPlant">Pflanze</th><th class="py-1 pr-2" data-i18n="shopLayer">Schicht</th><th class="py-1 pr-2 text-right" data-i18n="shopCount">Anzahl</th><th class="py-1 pr-2 text-right" data-i18n="shopSpacing">Abstand</th><th class="py-1 pr-2 text-right" data-i18n="shopPrice">Preis/Stk</th><th class="py-1 text-right" data-i18n="shopSum">Summe</th></tr>
+        </thead>
+        <tbody id="shopping-body" class="divide-y divide-stone-100 dark:divide-stone-700"></tbody>
+        <tfoot id="shopping-foot" class="font-semibold"></tfoot>
+      </table>
+    </div>
+    <div class="flex justify-end gap-2 border-t border-stone-200 dark:border-stone-700 px-4 py-3">
+      <button id="shopping-csv" type="button" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">CSV</button>
+      <button id="shopping-pdf" type="button" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">PDF</button>
+    </div>
+  </dialog>
   <dialog id="locate-dialog" aria-labelledby="locate-title" class="m-auto w-[min(56rem,calc(100vw-2rem))] rounded-xl bg-white dark:bg-stone-800 p-0 text-stone-800 dark:text-stone-100 shadow-2xl backdrop:bg-black/50">
     <div class="space-y-2 p-4">
       <h2 id="locate-title" class="text-base font-semibold" data-i18n="locateTitle">Standort &amp; Ausrichtung</h2>
@@ -353,7 +374,7 @@ import Layout from '../layouts/Layout.astro';
   import { displayName, displayCommonName } from '../lib/plant-name';
   import { createEmptyGardenPlan, type GardenPlan, type GardenPlanPlacement, type GardenPlanPoint, type GardenPlanArea, type Polyculture, type PlantData } from '../lib/types';
   import { displayRadiusM } from '../lib/growth-model';
-  import { deriveLayer, LAYER_STYLE, type PlantLayer } from '../lib/plant-layer';
+  import { deriveLayer, LAYER_STYLE, LAYER_I18N, type PlantLayer } from '../lib/plant-layer';
   import { blobPathD } from '../lib/blob-shape';
   import { pointInPolygon, formatMeters, polygonAreaM2, polygonPerimeterM, pointsAlongPolyline } from '../lib/gartenplan-geometry';
   import { areasSvg, AREA_PALETTE, uiScale, polygonCentroid } from '../lib/gartenplan-render';
@@ -365,6 +386,7 @@ import Layout from '../layouts/Layout.astro';
   import { compassLabel, sunPosition } from '../lib/sun-position';
   import { COVER_FUNCS, coverageGrid, coverageSummary, findGaps, suggestPlants, hasFunc, funcCount, influenceRadius, type CoverFunc } from '../lib/function-coverage';
   import { layoutPolyculture } from '../lib/polyculture-layout';
+  import { shoppingRows, shoppingTotal, shoppingCsv, exportShoppingPDF, downloadText, type ShoppingLabels } from '../lib/plan-shopping';
   import { crowdingWarnings, shadeWarnings, grownOccluders } from '../lib/plan-warnings';
   import { fetchBuildings, BUILDINGS_ATTRIBUTION, type Building } from '../lib/osm-buildings';
   import { sunSamples, sunHoursAt, sunClass, planOccluders, planCells, SEASON_DATES, type SunScene, type SunSample, type SunClass, type Occluder } from '../lib/sun-hours';
@@ -2796,6 +2818,60 @@ import Layout from '../layouts/Layout.astro';
     if (e.key === 'Enter' && measurePts.length >= 3) { measureClosed = true; renderMeasure(); e.preventDefault(); }
     else if (e.key === 'Backspace' || e.key === 'Delete') { if (measureClosed) measureClosed = false; else measurePts.pop(); renderMeasure(); e.preventDefault(); e.stopImmediatePropagation(); }
   }, true);
+
+
+  // ── Pflanzliste / Einkaufszettel ───────────────────────────────────────
+  const shoppingDialog = document.getElementById('shopping-dialog') as HTMLDialogElement;
+  const shoppingBody = document.getElementById('shopping-body')!;
+  const shoppingFoot = document.getElementById('shopping-foot')!;
+  const money = (v: number) => new Intl.NumberFormat(lang, { style: 'currency', currency: 'EUR' }).format(v);
+  const shopLabels = (): ShoppingLabels => ({
+    plant: t('shopPlant'), latin: t('shopLatin'), layer: t('shopLayer'), count: t('shopCount'), spacing: t('shopSpacingM'),
+    height: t('shopHeightM'), price: t('shopPriceEur'), sum: t('shopSumEur'), total: t('shopTotal'), layerName: l => t(LAYER_I18N[l]),
+    countShort: t('shopCountShort'), spacingShort: t('shopSpacingShort'), priceShort: '€/Stk', sumShort: '€',
+  });
+  function currentShoppingRows() { return editing ? shoppingRows(editing, plantsById, displayName) : []; }
+  function renderShopping() {
+    if (!editing) return;
+    const rows = currentShoppingRows();
+    const prices = editing.plantPrices ?? {};
+    const m1 = (v: number) => v ? formatMeters(v, lang).replace(/,00 m$|\.00 m$/, ' m') : '—';
+    shoppingBody.innerHTML = rows.length ? rows.map(r => `
+      <tr>
+        <td class="py-1.5 pr-2"><span class="block">${escapeHtml(r.name)}</span><span class="block text-xs italic text-stone-500 dark:text-stone-400">${escapeHtml(r.latinName)}</span></td>
+        <td class="py-1.5 pr-2 text-xs">${escapeHtml(t(LAYER_I18N[r.layer]))}</td>
+        <td class="py-1.5 pr-2 text-right font-mono">${r.count}</td>
+        <td class="py-1.5 pr-2 text-right font-mono text-xs">${m1(r.widthM)}</td>
+        <td class="py-1.5 pr-2 text-right"><input type="text" inputmode="decimal" autocomplete="off" data-price="${escapeHtml(r.plantId)}" value="${prices[r.plantId] != null ? new Intl.NumberFormat(lang, { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: false }).format(prices[r.plantId]) : ''}" aria-label="${escapeHtml(t('shopPrice'))} ${escapeHtml(r.name)}" class="w-20 rounded border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-1.5 py-0.5 text-right text-xs" /></td>
+        <td class="py-1.5 text-right font-mono text-xs">${prices[r.plantId] ? money(prices[r.plantId] * r.count) : '—'}</td>
+      </tr>`).join('') : `<tr><td colspan="6" class="py-3 text-center text-stone-500">${escapeHtml(t('shopEmpty'))}</td></tr>`;
+    const tot = shoppingTotal(rows, prices);
+    shoppingFoot.innerHTML = `<tr><td class="pt-2" colspan="2">${escapeHtml(t('shopTotal'))}</td><td class="pt-2 text-right font-mono">${tot.count}</td><td></td><td></td><td class="pt-2 text-right font-mono">${tot.priced ? money(tot.cost) : '—'}</td></tr>`;
+    shoppingBody.querySelectorAll<HTMLInputElement>('[data-price]').forEach(inp => inp.addEventListener('change', () => {
+      if (!editing) return;
+      const v = Number(inp.value.replace(',', '.'));
+      const next = { ...(editing.plantPrices ?? {}) };
+      if (inp.value.trim() === '' || !Number.isFinite(v) || v < 0) delete next[inp.dataset.price!];
+      else next[inp.dataset.price!] = Math.round(v * 100) / 100;
+      editing.plantPrices = next;
+      scheduleAutosave();
+      renderShopping();
+    }));
+  }
+  const shopFile = (ext: string) => `${(editing?.name || t('planUnnamed')).replace(/[\\/:*?"<>|]+/g, '_')} – ${t('shopTitle')}.${ext}`;
+  document.getElementById('btn-shopping')!.addEventListener('click', () => { renderShopping(); shoppingDialog.showModal(); });
+  document.getElementById('shopping-close')!.addEventListener('click', () => shoppingDialog.close());
+  shoppingDialog.addEventListener('click', e => { if (e.target === shoppingDialog) shoppingDialog.close(); });
+  document.getElementById('shopping-csv')!.addEventListener('click', () => {
+    if (!editing) return;
+    downloadText(shoppingCsv(currentShoppingRows(), editing.plantPrices, shopLabels(), lang), shopFile('csv'), 'text/csv;charset=utf-8');
+  });
+  document.getElementById('shopping-pdf')!.addEventListener('click', async e => {
+    if (!editing) return;
+    const plan = editing;
+    await withButtonSpinner(e.currentTarget as HTMLButtonElement, () =>
+      exportShoppingPDF(`${plan.name || t('planUnnamed')} – ${t('shopTitle')}`, currentShoppingRows(), plan.plantPrices, shopLabels(), lang, shopFile('pdf')));
+  });
 
   // ── Polykultur als Paket ───────────────────────────────────────────────
   const pcPackage = document.getElementById('pc-package') as HTMLSelectElement;

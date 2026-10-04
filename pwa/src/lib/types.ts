@@ -112,6 +112,8 @@ export interface GardenPlan {
   notes: string;
   geo: GardenPlanGeo | null;     // null = not located, no map background
   areas: GardenPlanArea[];
+  /** Price per piece (EUR) per plantId, for the shopping list. */
+  plantPrices?: Record<string, number>;
   createdAt: string;
   updatedAt: string;
 }

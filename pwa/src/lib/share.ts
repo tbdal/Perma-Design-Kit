@@ -122,6 +122,7 @@ export function mergeShared(incoming: ShareContent, existing: PlantData[]): Merg
   const gardenPlans = incoming.gardenPlans.map(g => ({
     ...g,
     placements: g.placements.map(pl => ({ ...pl, plantId: map(pl.plantId) })),
+    ...(g.plantPrices ? { plantPrices: Object.fromEntries(Object.entries(g.plantPrices).map(([id, v]) => [map(id), v])) } : {}),
   }));
   return { plants, polycultures, gardenPlans, reusedPlants: incoming.plants.length - plants.length };
 }
