@@ -81,6 +81,7 @@ export const layoutDict: Dict = {
   shortcutsNav: { de: 'Pflanzen / Kalender / Polykulturen / Waldgartenplan', en: 'Plants / Calendar / Polycultures / Forest garden plan' },
   scGpMeasure: { de: 'Messen (Enter schließt Fläche, ⌫ letzter Punkt weg)', en: 'Measure (Enter closes the area, ⌫ removes last point)' },
   scGpSnapshot: { de: '3D: Ansicht als Bild speichern', en: '3D: save the view as an image' },
+  scGpBuildings: { de: 'Gebäude ein-/ausblenden', en: 'Show / hide buildings' },
   scGpGrid: { de: 'Meterlinien ein-/ausblenden', en: 'Show / hide grid lines' },
   scGpUndo: { de: 'Rückgängig', en: 'Undo' },
   scGpRedo: { de: 'Wiederholen', en: 'Redo' },

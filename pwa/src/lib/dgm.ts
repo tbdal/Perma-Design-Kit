@@ -56,6 +56,8 @@ function inRing(lon: number, lat: number, ring: [number, number][]): boolean {
 
 /** The 1 m terrain model covering a location, or null. */
 export function dgmFor(lat: number, lon: number): DgmSource | null {
+  // Bremen lies inside the Niedersachsen outline but isn't in its model.
+  if (ORTHO_SOURCES.find(s => s.id === 'hb')?.coverage.some(r => inRing(lon, lat, r))) return null;
   for (const d of DGM_SOURCES) {
     const o = ORTHO_SOURCES.find(s => s.id === d.coverage);
     if (o?.coverage.some(r => inRing(lon, lat, r))) return d;

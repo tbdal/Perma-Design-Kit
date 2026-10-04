@@ -131,7 +131,7 @@ export interface View3DOptions {
   /** Called once when an aerial-photo tile failed and a fallback was used. */
   onTileFallback?: () => void;
   /** Building footprints (plan meters) with heights, e.g. from OSM. */
-  buildings?: { pts: { xM: number; yM: number }[]; heightM: number }[];
+  buildings?: { pts: { xM: number; yM: number }[]; heightM: number; holes?: { xM: number; yM: number }[][] }[];
 }
 
 const DRAG_THRESHOLD_PX = 4;
@@ -469,6 +469,7 @@ export function createGardenPlan3DView(
       // Shape in the XY plane with y = −plan y; rotateX(−90°) maps the
       // extrusion (+z) to world up and shape y to world z = plan y.
       const shape = new THREE.Shape(b.pts.map(p => new THREE.Vector2(p.xM, -p.yM)));
+      for (const h of b.holes ?? []) shape.holes.push(new THREE.Path(h.map(p => new THREE.Vector2(p.xM, -p.yM))));
       const geom = new THREE.ExtrudeGeometry(shape, { depth: Math.max(1, top - base), bevelEnabled: false });
       geom.rotateX(-Math.PI / 2);
       const mesh = new THREE.Mesh(geom, [roofMat, mat]); // groups: 0 = caps (roof/floor), 1 = walls

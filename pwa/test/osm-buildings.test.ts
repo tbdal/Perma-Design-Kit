@@ -28,6 +28,22 @@ describe('OSM buildings', () => {
     expect(b[0].heightM).toBe(8);
   });
 
+  it('joins split multipolygon ways into rings and keeps courtyards as holes', () => {
+    const a = { lat: 50, lon: 10 }, b = { lat: 50, lon: 10.0004 }, c = { lat: 49.9997, lon: 10.0004 }, d = { lat: 49.9997, lon: 10 };
+    const ia = { lat: 49.9999, lon: 10.0001 }, ib = { lat: 49.9999, lon: 10.0003 }, ic = { lat: 49.99985, lon: 10.0003 }, id = { lat: 49.99985, lon: 10.0001 };
+    const res = parseBuildings({ elements: [{ type: 'relation', tags: { building: 'yes', type: 'multipolygon' }, members: [
+      { role: 'outer', geometry: [a, b] },          // the outer ring in three pieces,
+      { role: 'outer', geometry: [d, c] },          // one of them reversed
+      { role: 'outer', geometry: [b, c] },
+      { role: 'outer', geometry: [d, a] },
+      { role: 'inner', geometry: [ia, ib, ic, id, ia] },
+    ] }] }, geo);
+    expect(res).toHaveLength(1);
+    expect(res[0].pts).toHaveLength(4);
+    expect(res[0].holes).toHaveLength(1);
+    expect(res[0].holes![0]).toHaveLength(4);
+  });
+
   it('builds a bbox query around a plan rectangle', () => {
     const q = buildingsQuery(geo, { minX: -100, minY: -100, maxX: 100, maxY: 100 });
     expect(q).toContain('way["building"](49.99');

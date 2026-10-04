@@ -218,6 +218,7 @@ import Layout from '../layouts/Layout.astro';
               <button id="view-top" type="button" data-i18n="viewTop" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">Draufsicht</button>
               <button id="view-oblique" type="button" data-i18n="viewOblique" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">Schrägansicht</button>
             </span>
+            <button id="btn-buildings-3d" type="button" hidden aria-pressed="true" data-i18n-title="buildings3dTitle" title="Gebäude ein-/ausblenden (B)" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700 aria-pressed:bg-stone-200 dark:aria-pressed:bg-stone-600">🏠 <span data-i18n="buildings3dBtn">Gebäude</span></button>
             <button id="btn-snapshot" type="button" data-i18n="snapshotBtn" data-i18n-title="snapshotTitle" title="Aktuelle 3D-Ansicht als Bild speichern (P)" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">📷 Bild</button>
             <span id="sun-info" class="basis-full text-sky-800 dark:text-sky-200 sm:basis-auto"></span>
           </div>
@@ -2366,6 +2367,7 @@ import Layout from '../layouts/Layout.astro';
       case 't': if (!in2d) view3d?.setViewPreset('top'); break;
       case 'o': if (!in2d) view3d?.setViewPreset('oblique'); break;
       case 'p': if (!in2d) void saveSnapshot(); break;
+      case 'b': if (editing.geo) buildingsInput.click(); break;
       case 'Delete': case 'Backspace':
         if (multiSel.size) click('btn-multi-remove');
         else if (selectedPlacementId) click('btn-remove-placement');
@@ -2626,10 +2628,19 @@ import Layout from '../layouts/Layout.astro';
     void loadBuildings();
     afterBuildingsChanged();
   });
+  // Same setting from the 3D bar (🏠) and the B key.
+  const buildings3dBtn = document.getElementById('btn-buildings-3d') as HTMLButtonElement;
+  function syncBuildingsButton() {
+    buildings3dBtn.hidden = !editing?.geo;
+    buildings3dBtn.setAttribute('aria-pressed', String(buildingsInput.checked));
+  }
+  buildings3dBtn.addEventListener('click', () => buildingsInput.click());
+  buildingsInput.addEventListener('change', syncBuildingsButton);
   async function loadBuildings() {
     const plan = editing;
     const geo = plan?.geo;
     buildingsToggle.hidden = !geo;
+    syncBuildingsButton();
     if (!plan || !geo || !buildingsInput.checked) return;
     const m = 150;
     const key = `${geo.lat}|${geo.lon}|${geo.rotationDeg}|${plan.areaWidthM}|${plan.areaHeightM}`;

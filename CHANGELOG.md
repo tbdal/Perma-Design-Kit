@@ -2,6 +2,12 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Luftbilder Bremen und Hamburg, Gebäude mit Innenhöfen, Gebäude-Schalter in 3D (2026-10-04)
+- [x] **Bremen:** amtliche Luftbilder 10 cm (Befliegung 2025) für Bremen und Bremerhaven vom Landesamt GeoInformation Bremen (CC BY). Bremen wurde bisher fälschlich Niedersachsen zugeordnet (dessen Umriss Bremen umschließt) — dort gibt es keine Bilder, daher blieb die Fläche leer.
+- [x] **Hamburg:** amtliche Luftbilder 20 cm vom LGV (dl-de/by), fest auf die eigene Befliegung 2026 gesetzt — andere Jahrgänge des Hamburger Dienstes enthalten Satellitenbilder unter geschlossener Lizenz (Maxar 2023, Pléiades 2022).
+- [x] **Gebäude mit Innenhof** (OSM-Multipolygone): Außenkanten aus mehreren Wegstücken werden zu geschlossenen Ringen zusammengesetzt und Innenhöfe ausgespart — vorher entstanden Splitter oder große Blöcke fehlten (z. B. in Berlin).
+- [x] **Gebäude ein-/ausblenden direkt in 3D:** Button „🏠 Gebäude“ in der 3D-Leiste und Taste **B** (gleiche Einstellung wie die Checkbox in der Kartenleiste).
+
 ## Impressum: Jörn Müller (2026-10-04)
 - [x] **Impressum** nennt jetzt neben Andreas Linder auch **Jörn Müller** (Talstraße 91, 69198 Schriesheim, www.permagruen.de) als Anbieter und Verantwortlichen für den Inhalt nach § 18 Abs. 2 MStV.
 

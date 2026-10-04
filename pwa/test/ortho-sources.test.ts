@@ -16,7 +16,10 @@ describe('orthophoto sources', () => {
       [48.2082, 16.3738, 'at'],  // Wien
       [46.948, 7.4474, 'ch'],    // Bern
       [52.3676, 4.9041, 'nl'],   // Amsterdam
-      [53.5511, 9.9937, null],   // Hamburg: left out on purpose
+      [53.0758, 8.8072, 'hb'],   // Bremen (inside the Niedersachsen outline)
+      [53.5396, 8.5809, 'hb'],   // Bremerhaven
+      [52.3759, 9.732, 'ni'],    // Hannover
+      [53.5511, 9.9937, 'hh'],   // Hamburg (pinned to the LGV's 2026 flight)
       [48.8566, 2.3522, null],   // Paris
     ];
     for (const [lat, lon, id] of cases) expect(orthoFor(lat, lon)?.id ?? null, `${lat},${lon}`).toBe(id);

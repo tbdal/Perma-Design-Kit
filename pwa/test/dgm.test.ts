@@ -35,6 +35,7 @@ describe('DGM sources', () => {
     expect(dgmFor(52.3759, 9.732)?.id).toBe('ni');    // Hannover
     expect(dgmFor(52.3676, 4.9041)?.id).toBe('nl');   // Amsterdam
     expect(dgmFor(49.8105, 9.9195)).toBeNull();       // Würzburg (Bayern: no open WCS)
+    expect(dgmFor(53.0758, 8.8072)).toBeNull();       // Bremen (enclave in the NI outline)
   });
 
   it('builds GetCoverage URLs with the service axis names', () => {

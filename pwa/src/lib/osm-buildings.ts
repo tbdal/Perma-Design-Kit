@@ -12,7 +12,45 @@ export const OVERPASS_ENDPOINTS = [
 ];
 export const BUILDINGS_ATTRIBUTION = 'Gebäude: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>';
 
-export interface Building { pts: GardenPlanPoint[]; heightM: number; }
+export interface Building { pts: GardenPlanPoint[]; heightM: number; holes?: GardenPlanPoint[][]; }
+
+type LL = { lat: number; lon: number };
+const same = (a: LL, b: LL) => Math.abs(a.lat - b.lat) < 1e-9 && Math.abs(a.lon - b.lon) < 1e-9;
+
+/** Joins multipolygon member ways (often split into several pieces) into
+ *  closed rings by matching their end points; open leftovers are dropped. */
+export function assembleRings(parts: LL[][]): LL[][] {
+  const pool = parts.filter(p => p.length >= 2).map(p => p.slice());
+  const rings: LL[][] = [];
+  while (pool.length) {
+    let ring = pool.shift()!;
+    let grown = true;
+    while (!same(ring[0], ring[ring.length - 1]) && grown) {
+      grown = false;
+      const end = ring[ring.length - 1];
+      for (let i = 0; i < pool.length; i++) {
+        const p = pool[i];
+        if (same(p[0], end)) ring = ring.concat(p.slice(1));
+        else if (same(p[p.length - 1], end)) ring = ring.concat(p.slice(0, -1).reverse());
+        else continue;
+        pool.splice(i, 1);
+        grown = true;
+        break;
+      }
+    }
+    if (ring.length >= 4 && same(ring[0], ring[ring.length - 1])) rings.push(ring);
+  }
+  return rings;
+}
+
+function inside(pt: GardenPlanPoint, poly: GardenPlanPoint[]): boolean {
+  let r = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const a = poly[i], b = poly[j];
+    if ((a.yM > pt.yM) !== (b.yM > pt.yM) && pt.xM < ((b.xM - a.xM) * (pt.yM - a.yM)) / (b.yM - a.yM) + a.xM) r = !r;
+  }
+  return r;
+}
 
 const LEVEL_M = 3;
 const TYPE_HEIGHT: Record<string, number> = {
@@ -58,8 +96,13 @@ export function parseBuildings(json: { elements?: OverpassElement[] }, geo: Gard
     const heightM = buildingHeight(tags);
     if (el.type === 'way' && el.geometry && el.geometry.length >= 3) out.push({ pts: ring(el.geometry), heightM });
     if (el.type === 'relation') {
-      for (const m of el.members ?? []) {
-        if (m.role === 'outer' && m.geometry && m.geometry.length >= 3) out.push({ pts: ring(m.geometry), heightM });
+      // Outer and inner (courtyard) rings, each possibly split across ways.
+      const outers = assembleRings((el.members ?? []).filter(m => m.role === 'outer' && m.geometry).map(m => m.geometry!)).map(ring);
+      const inners = assembleRings((el.members ?? []).filter(m => m.role === 'inner' && m.geometry).map(m => m.geometry!)).map(ring);
+      for (const o of outers) {
+        if (o.length < 3) continue;
+        const holes = inners.filter(h => h.length >= 3 && inside(h[0], o));
+        out.push(holes.length ? { pts: o, heightM, holes } : { pts: o, heightM });
       }
     }
   }
