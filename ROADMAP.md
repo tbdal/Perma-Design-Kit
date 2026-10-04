@@ -28,6 +28,18 @@ Runde 1 und 1b (Fläche direkt auf der Karte zeichnen, benannte farbige Flächen
 - [ ] Kartenhintergrund im Gartenplan-PDF (Canvas → `embedJpg`, Attribution auf der Seite)
 - [ ] kommerzieller Satellit mit offiziellem Key (Esri Location Platform / MapTiler / Mapbox Raster) erst bei Bedarf außerhalb der Ortho-Länder — Esri *ohne* Key ist nur nicht-kommerziell nutzbar
 
+## Gartenplan Ideen
+Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann 2 + 3 als Paket „Standortanalyse“.
+- [ ] **1. Wasser im Gelände:** aus dem 1-m-DGM Abflusswege und Senken berechnen (wohin fließt Regen, wo sammelt er sich), Swales/Mulden entlang der Höhenlinien vorschlagen, Regenertrag von Dachflächen schätzen (OSM-Dachfläche × Jahresniederschlag)
+- [ ] **2. Standort-Klima automatisch:** Winterhärtezone, Frosttermine, Niederschlag (Open-Meteo / DWD) → Hinweise „nicht winterhart hier“, „Blüte vor letztem Frost“; Pflanzvorschläge passender
+- [ ] **3. Zonen & Sektoren:** Permakultur-Zonen 0–5 um das Haus als Ebene; Sektoren für Hauptwind (Windrose), Sommer-/Wintersonnenbogen, Kaltluft
+- [ ] **4. Plan-PDF mit Luftbild, Maßstab und Nordpfeil** zum Abstecken, auch großformatig (A3/A2, 1:100 / 1:200) — vgl. „Kartenhintergrund im Gartenplan-PDF“ unter Karten
+- [ ] **5. Feldmodus (Handy):** eigene GPS-Position im Plan, Absteckhilfe („noch 2,3 m nach NO zum Apfel“), Pflanzen vor Ort per GPS setzen/korrigieren
+- [ ] **6. Nachbarschaften / Allelopathie:** Hinweise auf gute und schlechte Nachbarn (z. B. Walnuss neben Apfel, Fenchel) im Abschnitt „Hinweise“
+- [ ] **7. Ertrag & Pflegekalender:** grobe Ertragsschätzung (kg/Jahr, nach Alter gestaffelt); Pflegetermine (Schnitt, Mulch, Ernte) als iCal-Export
+- [ ] **8. Bauabschnitte:** Pflanzjahr pro Pflanze („2027 Bäume, 2028 Unterpflanzung“); Zeitraffer und Pflanzliste berücksichtigen die Abschnitte
+- [ ] **9. Browser-Tests ins Repo:** die Playwright-Tests (bisher nur lokal beim Entwickeln) ins Repo und in `npm run deploy` aufnehmen, damit Rückschritte automatisch auffallen
+
 ## kurzfristig
 - [ ] **zur Prüfung (2026-10-03, live):** Layout-Änderungen aus `horizon-en` übernommen — bitte ansehen und ggf. zurücknehmen:
   - Kopf- und Fußzeile immer 1600 px breit (`barMaxW` in `Layout.astro`), damit das Menü beim Seitenwechsel nicht springt. Haken: auf schmalen Seiten (Gartenplan, Hilfe, Impressum, Datenschutz) steht das Logo deutlich links vom Inhalt.
