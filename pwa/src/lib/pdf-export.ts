@@ -121,7 +121,7 @@ async function plantImageDataUrl(plant: PlantData): Promise<string | undefined> 
 // (single cards, single Baumscheibe) only get the metadata.
 
 export const PDK_URL = 'https://permadesignkit.org';
-const PDK_FOOTER = 'Perma Design Kit · permadesignkit.org · FSL-1.1-MIT';
+const PDK_FOOTER = 'Perma Design Kit · permadesignkit.org · Software: FSL-1.1-MIT';
 
 export interface PdfFinishOptions {
   title: string;
@@ -151,7 +151,7 @@ export async function finishPdf(pdfDoc: PDFDocument, o: PdfFinishOptions): Promi
   pdfDoc.setKeywords(['permadesignkit.org', 'permaculture']);
   if (o.footerMm != null) {
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const text = credits ? `${PDK_FOOTER} · Daten: ${credits}` : PDK_FOOTER;
+    const text = credits ? `${PDK_FOOTER} · ${credits}` : PDK_FOOTER;
     for (const page of pdfDoc.getPages()) {
       const { width } = page.getSize();
       let size = o.size ?? 6;

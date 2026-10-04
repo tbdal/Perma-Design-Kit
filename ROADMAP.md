@@ -31,7 +31,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 
 ## APs
 ### AP4
-- [ ] Offene Folgepunkte aus dem Lizenz-Check: EOX-Sentinel (nur nicht-kommerziell), OSM-Kachelserver (geringer Traffic), Edible-Forest-Gardens-Tabelle (keine ausdrückliche Lizenz, schriftliche Erlaubnis einholen) — Details siehe „Lizenz & Datenquellen" unten
+- [ ] Offene Folgepunkte aus dem Lizenz-Check: EOX-Sentinel (nur nicht-kommerziell), OSM-Kachelserver (geringer Traffic), Edible-Forest-Gardens-Tabelle (keine ausdrückliche Lizenz, schriftliche Erlaubnis einholen), Lizenztext der Schriften Archivo/Raleway (OFL) in `NOTICE` ergänzen — Details siehe „Lizenz & Datenquellen" unten
 - [ ] Beim nächsten Deploy: `mkdir -p /var/cache/nginx`, nginx-Konfig übernehmen (`/geo/terrain/` für Höhenkacheln) + `nginx -t` + reload, `plant-proxy` neu starten (Synonyme)
 - [ ] Dropdown Sortierung: H -> höhe, B -> Breite
 - [ ] 3d: laub+nadelgehölz in Form unterscheiden
