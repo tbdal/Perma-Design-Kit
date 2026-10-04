@@ -17,7 +17,7 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 ## Lizenz: Fair Source (FSL-1.1-MIT) (2026-10-04)
 - [x] **Neue Lizenz:** Ab dem Tag `fsl-start` steht das Repo unter der **Functional Source License 1.1, MIT Future License** (`LICENSE.md`). Erlaubt ist alles außer einem kommerziellen Konkurrenzangebot; jede Version wird zwei Jahre nach Veröffentlichung automatisch MIT. Lizenzgeber: Andreas Linder und Jörn Müller.
-- [x] Ältere Versionen bleiben MIT, `legacy/` bleibt MIT (`legacy/LICENSE`); der MIT-Hinweis steht in `NOTICE`. README, `pwa/package.json` und Impressum nennen die Lizenz, die Autoren und die Ursprungsprojekte von Sebastian Schucht und Jens mit Links.
+- [x] Ältere Versionen bleiben MIT, `legacy/` bleibt MIT (`legacy/LICENSE`); der MIT-Hinweis steht in `NOTICE`. README, `pwa/package.json` und Impressum nennen die Lizenz, die Autoren und die Ursprungsprojekte von Sebastian Schucht und Jens Steger mit Links.
 
 ## „Waldgartenplan“, Nachfrage bei offener Fläche (2026-10-04)
 - [x] **Umbenannt:** „Gartenplan“ heißt in der Oberfläche jetzt **„Waldgartenplan“** (EN: „Forest garden plan“) — Navigation, Seitentitel, Buttons, Meldungen, Hilfe, Einstellungen, Teilen, Datenschutz, Impressum, Standardname in PDF/GeoJSON. Die Adresse `/gartenplan` bleibt, damit Links und Lesezeichen weiter funktionieren.

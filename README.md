@@ -62,4 +62,4 @@ Versions published before the switch (the commit tagged `fsl-start`, 2026-10-04)
 ## Based on
 
 - [PermacultureTreeGuildsDesigner](https://github.com/SZzip/PermacultureTreeGuildsDesigner) by Sebastian Schucht ([@SZzip](https://github.com/SZzip)) — the original PowerShell tooling, preserved in `legacy/`
-- [Perma-Guild-Forge](https://github.com/js32/Perma-Guild-Forge) by Jens ([@js32](https://github.com/js32)) — PWA foundations
+- [Perma-Guild-Forge](https://github.com/js32/Perma-Guild-Forge) by Jens Steger ([@js32](https://github.com/js32)) — PWA foundations
