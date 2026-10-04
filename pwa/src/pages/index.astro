@@ -447,6 +447,7 @@ import Layout from '../layouts/Layout.astro';
 
 <script>
   import { getAllPlants, savePlant, deletePlant, importPlants } from '../lib/db';
+  import { showUndoToast } from '../lib/undo-toast';
   import { displayName } from '../lib/plant-name';
   import { createEmptyPlant, type PlantData, type DataSource, SOURCE_LABEL, SOURCE_COLOR } from '../lib/types';
   import { samplePlants } from '../lib/sample-data';
@@ -1223,10 +1224,12 @@ import Layout from '../layouts/Layout.astro';
       btn.addEventListener('click', async () => {
         const id = (btn.closest('[data-id]') as HTMLElement).dataset.id!;
         if (confirm(t('confirmDeletePlant'))) {
+          const removed = cachedPlants.find(p => p.id === id);
           selectedIds.delete(id);
           await deletePlant(id);
           updateBulkBar();
           renderList();
+          if (removed) offerUndo([removed]);
         }
       });
     });
@@ -1350,11 +1353,28 @@ import Layout from '../layouts/Layout.astro';
   document.getElementById('btn-deselect')!.addEventListener('click', () => {
     selectedIds.clear(); updateBulkBar(); renderList();
   });
+  /** After deleting: "… gelöscht – Rückgängig" puts the exact records back
+   *  (same ids, so polyculture and garden plan references work again). */
+  function offerUndo(removed: PlantData[]) {
+    if (!removed.length) return;
+    const snapshot = structuredClone(removed);
+    const msg = snapshot.length === 1
+      ? t('undoDeletedOne', { name: displayName(snapshot[0]) })
+      : t('undoDeletedMany', { n: snapshot.length });
+    showUndoToast(msg, { undo: t('undoAction'), close: t('undoClose') }, async () => {
+      await importPlants(snapshot);
+      renderList();
+      announce(snapshot.length === 1 ? t('undoRestoredOne', { name: displayName(snapshot[0]) }) : t('undoRestoredMany', { n: snapshot.length }));
+    });
+  }
+
   document.getElementById('btn-bulk-delete')!.addEventListener('click', async () => {
     if (!selectedIds.size) return;
     if (!confirm(t('confirmBulkDelete', { n: selectedIds.size }))) return;
+    const removed = cachedPlants.filter(p => selectedIds.has(p.id));
     for (const id of selectedIds) await deletePlant(id);
     selectedIds.clear(); updateBulkBar(); renderList();
+    offerUndo(removed);
   });
   document.getElementById('btn-bulk-json')!.addEventListener('click', () => {
     const plants = cachedPlants.filter(p => selectedIds.has(p.id));
