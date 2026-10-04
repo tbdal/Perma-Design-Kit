@@ -25,7 +25,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] satellitenbilder, gebäudedaten bzw. weitere geodaten im browser speichern statt jeweils abzurufen?
 
 ## bis 1.11./Symposium
-- [ ] bug reporting aufsetzen (mit Formular vorstrukturieren)
+- [ ] bug reporting aufsetzen --> bitte github issues nutzen oder Mail senden
 - [ ] Github aktualisieren (help.md, ...)
 - [ ] Dokumentation fertig (readme.md; Help.md)
 - [ ] optional: Logo/CI für Startpage
