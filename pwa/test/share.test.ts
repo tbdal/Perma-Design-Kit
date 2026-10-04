@@ -80,4 +80,24 @@ describe('mergeShared', () => {
     expect(m.plants.map(p => p.id)).toEqual(['p2']);
     expect(m.reusedPlants).toBe(1);
   });
+
+  it('stores a plan / polyculture with an id the recipient already uses as a copy, never overwriting', () => {
+    const m = mergeShared(content, [], { polycultureIds: ['g1'], gardenPlanIds: ['gp1'] }, ' (importiert)');
+    expect(m.copiedPolycultures).toBe(1);
+    expect(m.copiedGardenPlans).toBe(1);
+    expect(m.polycultures[0].id).not.toBe('g1');
+    expect(m.polycultures[0].name).toBe('Gilde (importiert)');
+    expect(m.gardenPlans[0].id).not.toBe('gp1');
+    expect(m.gardenPlans[0].name).toBe('Garten (importiert)');
+  });
+
+  it('keeps ids when there is no clash and points a copied polyculture reference at the copy', () => {
+    const plain = mergeShared(content, [], { polycultureIds: [], gardenPlanIds: [] });
+    expect(plain.polycultures[0].id).toBe('g1');
+    expect(plain.gardenPlans[0].id).toBe('gp1');
+    expect(plain.copiedGardenPlans + plain.copiedPolycultures).toBe(0);
+    const linked = { ...content, gardenPlans: [{ ...plan, polycultureId: 'g1' }] };
+    const m = mergeShared(linked, [], { polycultureIds: ['g1'] });
+    expect(m.gardenPlans[0].polycultureId).toBe(m.polycultures[0].id);
+  });
 });

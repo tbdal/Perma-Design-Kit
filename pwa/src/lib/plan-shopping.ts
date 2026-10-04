@@ -1,7 +1,7 @@
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import type { GardenPlan, PlantData } from './types';
 import { deriveLayer, PLANT_LAYERS, type PlantLayer } from './plant-layer';
-import { downloadPdf } from './pdf-export';
+import { downloadPdf, finishPdf } from './pdf-export';
 
 // "Pflanzliste / Einkaufszettel": what to buy for a garden plan — one row per
 // plant with the number placed, planting distance (full-grown width) and
@@ -111,5 +111,5 @@ export async function exportShoppingPDF(title: string, rows: ShoppingRow[], pric
   const t = shoppingTotal(rows, prices);
   y -= 4;
   drawRow([L.total, '', '', String(t.count), '', '', money(t.cost, lang)], bold, true);
-  downloadPdf(await doc.save(), filename);
+  downloadPdf(await finishPdf(doc, { title, footerMm: 10, footerXMm: 40 * 25.4 / 72, size: 7 }), filename);
 }

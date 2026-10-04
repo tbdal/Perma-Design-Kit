@@ -41,6 +41,13 @@ export default defineConfig({
           changeOrigin: true,
           xfwd: true,
         },
+        // Terrain tiles come via our own server in production (nginx cache,
+        // see server/nginx/permadesignkit.org.conf); in dev go straight to the bucket.
+        '/geo/terrain': {
+          target: 'https://s3.amazonaws.com',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/geo\/terrain/, '/elevation-tiles-prod/terrarium'),
+        },
       },
     },
   },

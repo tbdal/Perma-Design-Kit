@@ -2,7 +2,7 @@ import { PDFDocument, PDFFont, PDFPage, StandardFonts, rgb } from 'pdf-lib';
 import type { PlantData } from './types';
 import { deriveLayer, type PlantLayer } from './plant-layer';
 import { displayCommonName } from './plant-name';
-import { downloadPdf } from './pdf-export';
+import { downloadPdf, finishPdf } from './pdf-export';
 import { badgedFieldsOf, type FieldGroup } from './plant-fields';
 
 /** Printable plant table (landscape A4). Every criterion has a fixed slot per
@@ -162,5 +162,5 @@ export async function exportPlantTablePDF(plants: PlantData[], grayscale: boolea
     });
     drawLegend(page);
   }
-  downloadPdf(await pdf.save(), grayscale ? 'pflanzentabelle-sw.pdf' : 'pflanzentabelle.pdf');
+  downloadPdf(await finishPdf(pdf, { title: 'Perma Design Kit – Pflanzentabelle', plants, footerMm: 2.5, footerXMm: MARGIN }), grayscale ? 'pflanzentabelle-sw.pdf' : 'pflanzentabelle.pdf');
 }

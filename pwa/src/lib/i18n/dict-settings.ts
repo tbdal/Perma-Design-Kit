@@ -72,7 +72,7 @@ export const settingsDict: Dict = {
   shareSize: { de: '{plants} Pflanzen · Link {kb} KB', en: '{plants} plants · link {kb} KB' },
   shareSizeLong: { de: '{plants} Pflanzen · Link {kb} KB – sehr lang; manche Messenger kürzen so lange Links. Dann lieber per E-Mail schicken oder „Backup teilen“ nutzen.', en: '{plants} plants · link {kb} KB – very long; some messengers cut links this long. Send it by e-mail instead or use “Share backup”.' },
   btnRestoreLabel: { de: 'Backup einlesen…', en: 'Restore backup…' },
-  btnReloadMaster: { de: 'Golden Master neu laden', en: 'Reload golden master' },
+  btnReloadMaster: { de: 'Standard-Artenliste laden (≈190 Arten)', en: 'Load default species list (≈190 species)' },
   dangerZoneTitle: { de: 'Danger Zone', en: 'Danger Zone' },
   dangerZoneDesc: { de: 'Löscht alle Pflanzendatensätze und deine Einstellungen unwiderruflich.', en: 'Permanently deletes all plant records and your settings.' },
   btnClearAll: { de: 'Alle Daten löschen', en: 'Delete all data' },
@@ -153,7 +153,7 @@ export const settingsDict: Dict = {
   restoreToast: { de: '{plants} Pflanzen{guildPart}{gardenPlanPart} wiederhergestellt', en: '{plants} plants{guildPart}{gardenPlanPart} restored' },
   restoreFailed: { de: 'Backup-Import fehlgeschlagen: {msg}', en: 'Backup import failed: {msg}' },
 
-  reloadMasterConfirm: { de: 'Golden-Master-Pflanzen importieren? Pflanzen, die schon in deiner Liste sind, werden übersprungen.', en: 'Import golden-master plants? Plants already in your list are skipped.' },
+  reloadMasterConfirm: { de: 'Die Standard-Artenliste (≈190 Obst-, Nuss-, Beeren- und Wildgehölze, nur Namen) importieren? Arten, die schon in deiner Liste sind, werden übersprungen. Details lädst du danach mit „Lade alle fehlenden Daten“.', en: 'Import the default species list (≈190 fruit, nut, berry and wild woody species, names only)? Species already in your list are skipped. Load their details afterwards with “Load all missing data”.' },
   reloadMasterToast: { de: '{n} Pflanzen importiert', en: '{n} plants imported' },
   reloadMasterFailed: { de: 'Import fehlgeschlagen: {msg}', en: 'Import failed: {msg}' },
 

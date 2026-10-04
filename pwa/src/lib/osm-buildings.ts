@@ -1,5 +1,6 @@
 import type { GardenPlanGeo, GardenPlanPoint } from './types';
 import { latLonToPlan, planToLatLon, type PlanRect } from './gartenplan-geo';
+import { cachedFetch, hashKey, DAY_MS } from './geo-cache';
 
 // Buildings around the garden from OpenStreetMap (Overpass API): footprints
 // in plan meters plus a height from `height`, `building:levels` or a guess
@@ -9,6 +10,7 @@ import { latLonToPlan, planToLatLon, type PlanRect } from './gartenplan-geo';
 export const OVERPASS_ENDPOINTS = [
   'https://overpass-api.de/api/interpreter',
   'https://overpass.private.coffee/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
 ];
 export const BUILDINGS_ATTRIBUTION = 'Gebäude: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>';
 
@@ -128,18 +130,30 @@ export async function fetchBuildings(geo: GardenPlanGeo, rect: PlanRect): Promis
   const q = buildingsQuery(geo, rect);
   const hit = cache.get(q);
   if (hit) return hit;
+  // Persisted in the browser (30 days) — an unchanged plan never asks
+  // Overpass again, and an expired copy still serves if every mirror is down.
+  const res = await cachedFetch(`overpass:${hashKey(q)}`, 30 * DAY_MS, () => overpass(q));
+  const list = parseBuildings(await res.json(), geo);
+  cache.set(q, list);
+  return list;
+}
+
+/** Tries each mirror in turn (a second round after a short pause, the public
+ *  instances are often just briefly overloaded); first success wins. */
+async function overpass(q: string): Promise<Response> {
   let lastErr: unknown = null;
-  for (const url of OVERPASS_ENDPOINTS) {
-    try {
+  for (let round = 0; round < 2; round++) {
+    for (const url of OVERPASS_ENDPOINTS) {
       const ctl = new AbortController();
       const timer = setTimeout(() => ctl.abort(), 20000);
-      const res = await fetch(url, { method: 'POST', body: new URLSearchParams({ data: q }), signal: ctl.signal });
-      clearTimeout(timer);
-      if (!res.ok) throw new Error(`overpass ${res.status}`);
-      const list = parseBuildings(await res.json(), geo);
-      cache.set(q, list);
-      return list;
-    } catch (e) { lastErr = e; }
+      try {
+        const res = await fetch(url, { method: 'POST', body: new URLSearchParams({ data: q }), signal: ctl.signal });
+        if (!res.ok) throw new Error(`overpass ${res.status}`);
+        return res;
+      } catch (e) { lastErr = e; }
+      finally { clearTimeout(timer); }
+    }
+    if (round === 0) await new Promise(r => setTimeout(r, 1500));
   }
   throw lastErr ?? new Error('overpass unavailable');
 }

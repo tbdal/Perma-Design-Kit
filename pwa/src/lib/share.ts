@@ -1,5 +1,6 @@
 import { createEmptyPlant, type PlantData, type Polyculture, type GardenPlan } from './types';
 import { parseBackup, type ParsedBackup } from './sync';
+import { newId } from './id';
 
 // "Projekt als Link teilen": the whole project travels inside the link's
 // #fragment — deflate-compressed JSON, base64url-encoded. Nothing is stored
@@ -93,13 +94,20 @@ function plantKey(p: PlantData): string | null {
 
 export interface MergedShare extends ShareContent {
   reusedPlants: number;   // incoming plants already present (same id or latin name + variety)
+  /** Polycultures / plans that arrived with an id the recipient already uses
+   *  and were stored as copies (new id, name marked) instead of overwriting. */
+  copiedPolycultures: number;
+  copiedGardenPlans: number;
 }
+
+/** Ids already used in the recipient's collection. */
+export interface TakenIds { polycultureIds?: Iterable<string>; gardenPlanIds?: Iterable<string>; }
 
 /** Prepares a decoded share for import into an existing collection: plants
  *  the recipient already has (same id, or same latin name + variety) are not
  *  imported again — the recipient's own record wins — and polycultures /
  *  garden plans are re-pointed at the existing plant ids. */
-export function mergeShared(incoming: ShareContent, existing: PlantData[]): MergedShare {
+export function mergeShared(incoming: ShareContent, existing: PlantData[], taken: TakenIds = {}, copySuffix = ' (importiert)'): MergedShare {
   const byId = new Set(existing.map(p => p.id));
   const byKey = new Map<string, string>();
   for (const p of existing) { const k = plantKey(p); if (k && !byKey.has(k)) byKey.set(k, p.id); }
@@ -114,15 +122,36 @@ export function mergeShared(incoming: ShareContent, existing: PlantData[]): Merg
     plants.push(p);
   }
   const map = (id: string) => idMap.get(id) ?? id;
-  const polycultures = incoming.polycultures.map(pc => ({
-    ...pc,
-    anchorPlantId: pc.anchorPlantId ? map(pc.anchorPlantId) : null,
-    members: pc.members.map(m => ({ ...m, plantId: map(m.plantId) })),
-  }));
-  const gardenPlans = incoming.gardenPlans.map(g => ({
-    ...g,
-    placements: g.placements.map(pl => ({ ...pl, plantId: map(pl.plantId) })),
-    ...(g.plantPrices ? { plantPrices: Object.fromEntries(Object.entries(g.plantPrices).map(([id, v]) => [map(id), v])) } : {}),
-  }));
-  return { plants, polycultures, gardenPlans, reusedPlants: incoming.plants.length - plants.length };
+  // Nothing of the recipient's own is ever overwritten: a polyculture / plan
+  // whose id exists already (e.g. the link of one's own project, opened again
+  // after editing) comes in as a copy with a new id.
+  const takenPc = new Set(taken.polycultureIds ?? []);
+  const takenPlans = new Set(taken.gardenPlanIds ?? []);
+  const pcIdMap = new Map<string, string>();
+  let copiedPolycultures = 0, copiedGardenPlans = 0;
+  const polycultures = incoming.polycultures.map(pc => {
+    const clash = takenPc.has(pc.id);
+    const id = clash ? newId() : pc.id;
+    if (clash) { copiedPolycultures++; pcIdMap.set(pc.id, id); }
+    return {
+      ...pc,
+      id,
+      ...(clash ? { name: `${pc.name}${copySuffix}` } : {}),
+      anchorPlantId: pc.anchorPlantId ? map(pc.anchorPlantId) : null,
+      members: pc.members.map(m => ({ ...m, plantId: map(m.plantId) })),
+    };
+  });
+  const gardenPlans = incoming.gardenPlans.map(g => {
+    const clash = takenPlans.has(g.id);
+    if (clash) copiedGardenPlans++;
+    return {
+      ...g,
+      id: clash ? newId() : g.id,
+      ...(clash ? { name: `${g.name}${copySuffix}` } : {}),
+      polycultureId: g.polycultureId ? (pcIdMap.get(g.polycultureId) ?? g.polycultureId) : null,
+      placements: g.placements.map(pl => ({ ...pl, plantId: map(pl.plantId) })),
+      ...(g.plantPrices ? { plantPrices: Object.fromEntries(Object.entries(g.plantPrices).map(([id, v]) => [map(id), v])) } : {}),
+    };
+  });
+  return { plants, polycultures, gardenPlans, reusedPlants: incoming.plants.length - plants.length, copiedPolycultures, copiedGardenPlans };
 }

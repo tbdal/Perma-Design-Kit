@@ -179,3 +179,40 @@ export function parsePfafHtml(html) {
     || result.materialScore != null || result.climateZone || phys;
   return hasData ? result : {};
 }
+
+/** Names PFAF files a plant under when it differs from the usual / Wikidata
+ *  name (checked against pfaf.org, 2026-10-04). Keys lower-case, "x" for ×. */
+export const PFAF_SYNONYMS = {
+  'rheum rhabarbarum': ['Rheum x cultorum', 'Rheum rhaponticum'],
+  'rheum x hybridum': ['Rheum x cultorum'],
+  'prunus domestica insititia': ['Prunus insititia'],
+  'prunus domestica subsp. insititia': ['Prunus insititia'],
+  'ribes x nidigrolaria': ['Ribes x culverwellii'],
+  'rubus pentalobus': ['Rubus rolfei'],
+  'rubus hayata-koidzumii': ['Rubus rolfei'],
+  'carya illinoiensis': ['Carya illinoinensis'],       // PFAF keeps the original spelling
+  'juglans ailantifolia': ['Juglans ailanthifolia'],
+  'prunus italica': ['Prunus domestica italica'],
+  'prunus persica var. nucipersica': ['Prunus persica nucipersica'],
+  'rosa x dumalis': ['Rosa dumalis'],
+  'vaccinium oxycoccus': ['Vaccinium oxycoccos'],
+};
+
+/** Latin names to try at PFAF, best first: the name as given, then known
+ *  synonyms, then spelling variants (× → x, infraspecific rank dropped so a
+ *  third epithet is promoted: "Prunus domestica insititia" → "Prunus insititia"). */
+export function pfafNameCandidates(name) {
+  const out = [];
+  const add = (n) => { const t = n.replace(/\s+/g, ' ').trim(); if (t && !out.some((o) => o.toLowerCase() === t.toLowerCase())) out.push(t); };
+  const clean = name.replace(/[×✕]/g, ' x ').replace(/\s+/g, ' ').trim();
+  add(name);
+  add(clean);
+  for (const syn of PFAF_SYNONYMS[clean.toLowerCase()] ?? []) add(syn);
+  const words = clean.split(' ');
+  const rank = words.findIndex((w, i) => i >= 2 && /^(subsp|ssp|var|f|forma|convar)\.?$/i.test(w));
+  const parts = rank >= 0 ? [...words.slice(0, rank), ...words.slice(rank + 1)] : words;
+  if (rank >= 0) add(parts.join(' ')); // rank word dropped: "Prunus persica nucipersica"
+  // genus [x] species infraspecific  →  genus infraspecific
+  if (parts.length >= 3 && parts[1].toLowerCase() !== 'x') add(`${parts[0]} ${parts[parts.length - 1]}`);
+  return out;
+}

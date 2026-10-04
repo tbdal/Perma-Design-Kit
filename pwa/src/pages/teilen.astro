@@ -48,7 +48,7 @@ import Layout from '../layouts/Layout.astro';
     import { applyStaticI18n, createT } from '../lib/i18n/core';
     import { teilenDict } from '../lib/i18n/dict-teilen';
     import { decodeShare, mergeShared, shareDataFromHash } from '../lib/share';
-    import { getAllPlants, importPlants, importPolycultures, importGardenPlans, savePlant } from '../lib/db';
+    import { getAllPlants, getAllPolycultures, getAllGardenPlans, importPlants, importPolycultures, importGardenPlans, savePlant } from '../lib/db';
     import { enrichPlant, needsEnrichment } from '../lib/enrich';
     import { getLang } from '../lib/i18n/core';
     import type { PlantData } from '../lib/types';
@@ -92,7 +92,12 @@ import Layout from '../layouts/Layout.astro';
       document.getElementById('sh-import')!.addEventListener('click', async (e) => {
         await withButtonSpinner(e.currentTarget as HTMLButtonElement, async () => {
           try {
-            const merged = mergeShared(shared, await getAllPlants());
+            // Never overwrites: plants you have win, plans/polycultures with an id you
+            // already use come in as copies (see mergeShared).
+            const merged = mergeShared(shared, await getAllPlants(), {
+              polycultureIds: (await getAllPolycultures()).map(x => x.id),
+              gardenPlanIds: (await getAllGardenPlans()).map(x => x.id),
+            }, t('shCopySuffix'));
             await importPlants(merged.plants);
             if (merged.polycultures.length) await importPolycultures(merged.polycultures);
             if (merged.gardenPlans.length) await importGardenPlans(merged.gardenPlans);
@@ -103,7 +108,7 @@ import Layout from '../layouts/Layout.astro';
             document.getElementById('sh-done-text')!.textContent = t('shDone', {
               plants: merged.plants.length, reused: merged.reusedPlants,
               polycultures: merged.polycultures.length, plans: merged.gardenPlans.length,
-            });
+            }) + (merged.copiedPolycultures + merged.copiedGardenPlans ? ' ' + t('shCopies', { n: merged.copiedPolycultures + merged.copiedGardenPlans }) : '');
             offerEnrichment(merged.plants.filter(p => needsEnrichment(p, getLang())));
           } catch (err) {
             alert(t('shFailed', { msg: err instanceof Error ? err.message : String(err) }));

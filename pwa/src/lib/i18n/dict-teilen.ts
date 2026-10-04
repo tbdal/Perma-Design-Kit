@@ -13,6 +13,8 @@ export const teilenDict: Dict = {
   shPrivacy: { de: 'Die Daten werden nur in deinem Browser gespeichert, wie alles in dieser App. Pflanzen, die du schon hast (gleicher lateinischer Name und Sorte), werden nicht doppelt angelegt – deine eigenen Einträge bleiben unverändert.', en: 'The data is stored only in your browser, like everything in this app. Plants you already have (same Latin name and variety) are not added twice – your own entries stay unchanged.' },
   shImport: { de: 'In meine App übernehmen', en: 'Add to my app' },
   shCancel: { de: 'Abbrechen', en: 'Cancel' },
+  shCopySuffix: { de: ' (importiert)', en: ' (imported)' },
+  shCopies: { de: '{n} davon als Kopie, weil du schon einen Eintrag mit derselben Kennung hast – deine eigenen wurden nicht verändert.', en: '{n} of them as copies because you already have an entry with the same id – yours were not changed.' },
   shDone: { de: 'Übernommen: {plants} neue Pflanzen ({reused} schon vorhanden), {polycultures} Polykulturen, {plans} Waldgartenpläne.', en: 'Added: {plants} new plants ({reused} already present), {polycultures} polycultures, {plans} forest garden plans.' },
   shToPlants: { de: 'Zu den Pflanzen', en: 'Go to plants' },
   shToPlans: { de: 'Zu den Waldgartenplänen', en: 'Go to forest garden plans' },

@@ -2,6 +2,18 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## AP4 2026-10-04
+- [x] Gartenplan-Karte: kein weißer Rand mehr um das abgerundete Rechteck; die Hintergrundkarte wird für die tatsächlich sichtbare Fläche nachgeladen (auch wenn sich Breite/Höhe ändern)
+- [x] Sorte (in Klammern) in der Tabelle; Name und Lateinisch teilen sich eine Spalte, die Tabelle passt ab 1024 px ohne Scrollen (unter 1280 px sind Wuchs, Gruppen und Quellen ausgeblendet)
+- [x] Amazon AWS raus: Höhenkacheln laufen über den eigenen Server (nginx-Cache `/geo/terrain/`); der Browser verbindet sich nicht mehr mit Amazon. Datenschutzerklärung angepasst
+- [x] Geodaten im Browser gespeichert statt jedes Mal abgerufen: Höhenkacheln (90 Tage) und Gebäudeumrisse (30 Tage) in der Cache API (`geo-cache.ts`); abgelaufene Einträge dienen als Notnagel, wenn der Dienst nicht antwortet
+- [x] „Buildings temporarily unavailable": Overpass mit drittem Mirror, zweiter Versuchsrunde und Browser-Cache
+- [x] In allen PDFs Lizenz und Link auf permadesignkit.org: PDF-Metadaten überall, sichtbare Fußzeile mit klickbarem Link (und Quellenlizenzen wie PFAF CC BY 4.0) auf Karten-, Tabellen-, Plan-, Einkaufslisten- und Maßstabs-PDFs. Einzelkarten und Einzel-Baumscheibe (Zuschnitt auf exakte Größe) und der Firefox-Druckdialog nur mit Metadaten bzw. ohne
+- [x] Hinweise in der Karte hervorgehoben: kräftigerer roter Rand, beim Überfahren/Fokussieren eines Hinweises rote Ringe (bei Abstand mit Verbindungslinie), Klick schwenkt die Ansicht auf die Pflanzen
+- [x] Keine Daten bei Rhabarber, Haferschlehe, Jostabeere, Rubus pentalobus: PFAF-Proxy probiert Synonyme und Schreibvarianten (`pfafNameCandidates`); ebenso Carya illinoiensis, Juglans ailantifolia, Prunus italica, Nektarine, Rosa x dumalis, Vaccinium oxycoccus. Doppelter Eintrag „Ribes phoenicolasius" (= Rubus) aus der Standardliste entfernt
+- [x] Teilen-Link: Pläne/Polykulturen mit schon vorhandener ID überschreiben nichts mehr, sie kommen als Kopie „(importiert)" herein
+- [x] „Golden Master neu laden" heißt jetzt „Standard-Artenliste laden (≈190 Arten)"
+
 ## manuell / AP2 2026-10-04
 - [x] barrierefreiheit - inklusivität mitdenken: Farbenblindheit..
 - [x] eingeklappte Farblegende farblich mehr hervorheben

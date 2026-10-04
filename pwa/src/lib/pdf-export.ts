@@ -1,8 +1,8 @@
-import { PDFDocument, PDFPage, PDFRef, StandardFonts, degrees, rgb, drawImage as pdfDrawImage, pushGraphicsState, popGraphicsState, moveTo, appendBezierCurve, closePath, clip, endPath } from 'pdf-lib';
+import { PDFDocument, PDFPage, PDFRef, PDFName, PDFString, StandardFonts, degrees, rgb, drawImage as pdfDrawImage, pushGraphicsState, popGraphicsState, moveTo, appendBezierCurve, closePath, clip, endPath } from 'pdf-lib';
 import { renderPolyCardToCanvas, renderStripeCardToCanvas } from './card-canvas';
 import { renderBaumscheibeSvg } from './baumscheibe-render';
 import { renderGardenPlanFullSvg } from './gartenplan-render';
-import type { GardenPlan, PlantData } from './types';
+import { dataCredits, type GardenPlan, type PlantData } from './types';
 import { escapeHtml } from './html';
 import { packCircles } from './circle-pack';
 
@@ -114,6 +114,67 @@ async function plantImageDataUrl(plant: PlantData): Promise<string | undefined> 
   return (await imageUrlToDataUrl(plant.imageUrl)) ?? undefined;
 }
 
+// ── Licence + link on every PDF ──────────────────────────────────────────────
+// Every export carries the app's URL and licence: always in the PDF metadata,
+// and as a small footer line (with a clickable link) wherever the layout has
+// a page margin to hold it. Cards that are cut out at their exact size
+// (single cards, single Baumscheibe) only get the metadata.
+
+export const PDK_URL = 'https://permadesignkit.org';
+const PDK_FOOTER = 'Perma Design Kit · permadesignkit.org · FSL-1.1-MIT';
+
+export interface PdfFinishOptions {
+  title: string;
+  /** Plants whose data ends up in the PDF — their source licences (PFAF CC BY …) are named. */
+  plants?: PlantData[];
+  /** Footer baseline from the page bottom in mm; omit = metadata only. */
+  footerMm?: number;
+  /** Footer alignment (default left, at `footerX` mm). */
+  footerAlign?: 'left' | 'right';
+  footerXMm?: number;
+  size?: number;
+}
+
+function creditLine(plants: PlantData[] | undefined): string {
+  const set = new Set<string>();
+  for (const p of plants ?? []) for (const c of dataCredits(p)) set.add(c);
+  return [...set].join(', ');
+}
+
+/** Stamps metadata + footer and serializes. Use instead of `pdfDoc.save()`. */
+export async function finishPdf(pdfDoc: PDFDocument, o: PdfFinishOptions): Promise<Uint8Array> {
+  const credits = creditLine(o.plants);
+  pdfDoc.setTitle(o.title);
+  pdfDoc.setCreator('Perma Design Kit');
+  pdfDoc.setProducer('Perma Design Kit – permadesignkit.org');
+  pdfDoc.setSubject(`Created with Perma Design Kit, ${PDK_URL} (software: FSL-1.1-MIT${credits ? `; data: ${credits}` : ''})`);
+  pdfDoc.setKeywords(['permadesignkit.org', 'permaculture']);
+  if (o.footerMm != null) {
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const text = credits ? `${PDK_FOOTER} · Daten: ${credits}` : PDK_FOOTER;
+    for (const page of pdfDoc.getPages()) {
+      const { width } = page.getSize();
+      let size = o.size ?? 6;
+      const avail = width - 2 * pt(o.footerXMm ?? 5);
+      while (size > 3.5 && font.widthOfTextAtSize(text, size) > avail) size -= 0.25;
+      const w = font.widthOfTextAtSize(text, size);
+      const x = o.footerAlign === 'right' ? width - pt(o.footerXMm ?? 5) - w : pt(o.footerXMm ?? 5);
+      const y = pt(o.footerMm);
+      page.drawText(text, { x, y, size, font, color: rgb(0.45, 0.45, 0.45) });
+      // clickable link over the "permadesignkit.org" part of the line
+      const pre = font.widthOfTextAtSize('Perma Design Kit · ', size);
+      const len = font.widthOfTextAtSize('permadesignkit.org', size);
+      const link = pdfDoc.context.register(pdfDoc.context.obj({
+        Type: 'Annot', Subtype: 'Link', Border: [0, 0, 0],
+        Rect: [x + pre, y - size * 0.25, x + pre + len, y + size],
+        A: { Type: 'Action', S: 'URI', URI: PDFString.of(PDK_URL) },
+      }));
+      page.node.addAnnot(link);
+    }
+  }
+  return pdfDoc.save();
+}
+
 // ── Download helper ──────────────────────────────────────────────────────────
 
 export function downloadPdf(bytes: Uint8Array, filename: string) {
@@ -166,7 +227,7 @@ export async function exportPolyCardsPDF(plants: PlantData[]): Promise<void> {
     }
   }
 
-  downloadPdf(await pdfDoc.save(), 'perma-design-kit-poly-cards.pdf');
+  downloadPdf(await finishPdf(pdfDoc, { title: 'Perma Design Kit – Polykarten', plants, footerMm: 1.8 }), 'perma-design-kit-poly-cards.pdf');
 }
 
 export async function exportStripeCardsPDF(plants: PlantData[]): Promise<void> {
@@ -194,7 +255,7 @@ export async function exportStripeCardsPDF(plants: PlantData[]): Promise<void> {
     sy += sCardH + pt(2);
   }
 
-  downloadPdf(await pdfDoc.save(), 'perma-design-kit-stripe-cards.pdf');
+  downloadPdf(await finishPdf(pdfDoc, { title: 'Perma Design Kit – Streifenkarten', plants, footerMm: 0.8, size: 5 }), 'perma-design-kit-stripe-cards.pdf');
 }
 
 export async function exportSingleCardPDF(plant: PlantData): Promise<void> {
@@ -207,7 +268,7 @@ export async function exportSingleCardPDF(plant: PlantData): Promise<void> {
   const imageRef   = embedCanvasRgb(pdfDoc, canvas);
   drawCanvasOnPage(page, imageRef, 0, 0, cardW, cardH);
 
-  downloadPdf(await pdfDoc.save(), `${plant.latinName || 'plant'}-card.pdf`);
+  downloadPdf(await finishPdf(pdfDoc, { title: `${plant.latinName || 'Pflanze'} – Karte`, plants: [plant] }), `${plant.latinName || 'plant'}-card.pdf`);
 }
 
 export async function exportSingleStripeCardPDF(plant: PlantData): Promise<void> {
@@ -220,7 +281,7 @@ export async function exportSingleStripeCardPDF(plant: PlantData): Promise<void>
   const imageRef   = embedCanvasRgb(pdfDoc, canvas);
   drawCanvasOnPage(page, imageRef, 0, 0, cardW, cardH);
 
-  downloadPdf(await pdfDoc.save(), `${plant.latinName || 'plant'}-stripe.pdf`);
+  downloadPdf(await finishPdf(pdfDoc, { title: `${plant.latinName || 'Pflanze'} – Streifenkarte`, plants: [plant] }), `${plant.latinName || 'plant'}-stripe.pdf`);
 }
 
 // ── Baumscheibe (SVG template) export ────────────────────────────────────────
@@ -317,7 +378,7 @@ export async function exportBaumscheibePDF(plant: PlantData): Promise<void> {
   }
   const pdfDoc = await PDFDocument.create();
   await embedBaumscheibePage(pdfDoc, plant);
-  downloadPdf(await pdfDoc.save(), `${plant.latinName || 'plant'}-baumscheibe.pdf`);
+  downloadPdf(await finishPdf(pdfDoc, { title: `${plant.latinName || 'Pflanze'} – Baumscheibe`, plants: [plant] }), `${plant.latinName || 'plant'}-baumscheibe.pdf`);
 }
 
 export async function exportBaumscheibesPDF(plants: PlantData[]): Promise<void> {
@@ -330,7 +391,7 @@ export async function exportBaumscheibesPDF(plants: PlantData[]): Promise<void> 
   }
   const pdfDoc = await PDFDocument.create();
   for (const plant of plants) await embedBaumscheibePage(pdfDoc, plant);
-  downloadPdf(await pdfDoc.save(), 'permaculture-baumscheiben.pdf');
+  downloadPdf(await finishPdf(pdfDoc, { title: 'Perma Design Kit – Baumscheiben', plants }), 'permaculture-baumscheiben.pdf');
 }
 
 // ── Baumscheibe sheet: 6 discs per A4 page, 9cm diameter each ───────────────
@@ -472,7 +533,7 @@ export async function exportBaumscheibeSheetPDF(plants: PlantData[]): Promise<vo
   }
   const pdfDoc = await PDFDocument.create();
   for (const group of groups) await embedBaumscheibeSheetPage(pdfDoc, group);
-  downloadPdf(await pdfDoc.save(), 'baumscheiben-9cm-sheet.pdf');
+  downloadPdf(await finishPdf(pdfDoc, { title: 'Perma Design Kit – Baumscheiben (9 cm)', plants }), 'baumscheiben-9cm-sheet.pdf');
 }
 
 // ── Maßstabsgetreue Baumscheiben ─────────────────────────────────────────────
@@ -564,7 +625,7 @@ export async function exportBaumscheibeScaledPDF(plants: PlantData[], scale: num
     page.drawImage(img, { x: cxPt - pt(sideMm) / 2, y: cyPt - pt(sideMm) / 2, width: pt(sideMm), height: pt(sideMm) });
     page.pushOperators(popGraphicsState());
   }
-  downloadPdf(await pdfDoc.save(), `baumscheiben-1zu${scale}-${paper}.pdf`);
+  downloadPdf(await finishPdf(pdfDoc, { title: `Perma Design Kit – Baumscheiben 1:${scale}`, plants, footerMm: 1.2, footerAlign: 'right' }), `baumscheiben-1zu${scale}-${paper}.pdf`);
   return { pages: pageCount, shrunk, discarded };
 }
 
@@ -632,5 +693,5 @@ export async function exportGardenPlanPDF(plan: GardenPlan, plantsById: Map<stri
   }
 
   const filename = `${(plan.name || 'gartenplan').toLowerCase().replace(/[^a-z0-9]+/g, '-')}.pdf`;
-  downloadPdf(await pdfDoc.save(), filename);
+  downloadPdf(await finishPdf(pdfDoc, { title, plants: [...plantsById.values()], footerMm: 6, footerXMm: GARDENPLAN_MARGIN_MM.side }), filename);
 }

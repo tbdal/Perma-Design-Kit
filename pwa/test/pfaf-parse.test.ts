@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { parsePfafHtml } from '../server/pfaf-parse.mjs';
+import { parsePfafHtml, pfafNameCandidates } from '../server/pfaf-parse.mjs';
 
 // Real PFAF pages saved on 2026-09-29. When PFAF changes its markup, refresh a
 // fixture with curl (browser User-Agent, see plant-proxy-server.mjs) and see
@@ -53,5 +53,36 @@ describe('parsePfafHtml', () => {
 
   it('returns an empty result for a name PFAF does not know', () => {
     expect(page('Nonexistus_plantus')).toEqual({});
+  });
+});
+
+describe('pfafNameCandidates', () => {
+  it('keeps the given name first', () => {
+    expect(pfafNameCandidates('Sambucus nigra')[0]).toBe('Sambucus nigra');
+  });
+  it('knows names PFAF files differently', () => {
+    expect(pfafNameCandidates('Rheum rhabarbarum')).toContain('Rheum x cultorum');
+    expect(pfafNameCandidates('Ribes x nidigrolaria')).toContain('Ribes x culverwellii');
+    expect(pfafNameCandidates('Rubus pentalobus')).toContain('Rubus rolfei');
+  });
+  it('promotes a third epithet and drops the rank', () => {
+    expect(pfafNameCandidates('Prunus domestica insititia')).toContain('Prunus insititia');
+    expect(pfafNameCandidates('Prunus domestica subsp. insititia')).toContain('Prunus insititia');
+    expect(pfafNameCandidates('Malus domestica var. pumila')).toContain('Malus pumila');
+  });
+  it('keeps the species when only the rank word is dropped', () => {
+    expect(pfafNameCandidates('Prunus persica var. nucipersica')).toContain('Prunus persica nucipersica');
+  });
+  it('knows spelling variants', () => {
+    expect(pfafNameCandidates('Carya illinoiensis')).toContain('Carya illinoinensis');
+    expect(pfafNameCandidates('Vaccinium oxycoccus')).toContain('Vaccinium oxycoccos');
+  });
+  it('normalizes the multiplication sign and does not treat a hybrid x as an epithet', () => {
+    expect(pfafNameCandidates('Ribes × nidigrolaria')).toContain('Ribes x nidigrolaria');
+    expect(pfafNameCandidates('Rheum x cultorum')).toEqual(['Rheum x cultorum']);
+  });
+  it('has no duplicates', () => {
+    const c = pfafNameCandidates('Prunus insititia').map((n) => n.toLowerCase());
+    expect(new Set(c).size).toBe(c.length);
   });
 });

@@ -31,22 +31,11 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 
 ## APs
 ### AP4
-- [ ] Sorte (in Klammern bei Namen) in Tabelle anzeigen
-- [ ] Amazon aws raus, gibt es eine alternative dafür?
-- [ ] Tabelle kleiner machen bzw. so, dass nicht gescrollt werden muss? auch für kleinere Bildschirme
-- [ ] Lizenz check alle quellen
-- [ ] In allen pdfs Lizenz und link auf permadesignkit.org einstellen
-- [ ] satellitenbilder, gebäudedaten bzw. weitere geodaten im browser speichern statt jeweils abzurufen
-- [ ] gartenplan: Hinweise in Karte highlighten
-- [ ] Buildings temporarily unavailable
-- [ ] warum gibt's für diese Pflanzen keine Daten? --> probier's mal mit synonym bei PFAF
-  Gemeiner Rhabarber	Rheum rhabarbarum	—
-	Haferschlehe	Prunus domestica insititia
-	Jostabeere	Ribes x nidigrolaria
-	Rubus pentalobus	Rubus pentalobus
-- [ ] Dropdown Sortierung: H -> höhe, B -> Breite
-- [ ] 3d: laub+nadelgehölz in Form unterscheiden
-- [ ] Stammdicke mitwachsen lassen
+- [ ] Offene Folgepunkte aus dem Lizenz-Check: EOX-Sentinel (nur nicht-kommerziell), OSM-Kachelserver (geringer Traffic), Edible-Forest-Gardens-Tabelle (keine ausdrückliche Lizenz, schriftliche Erlaubnis einholen) — Details siehe „Lizenz & Datenquellen" unten
+- [ ] Beim nächsten Deploy: `mkdir -p /var/cache/nginx`, nginx-Konfig übernehmen (`/geo/terrain/` für Höhenkacheln) + `nginx -t` + reload, `plant-proxy` neu starten (Synonyme)
+- [ ] Dropdown Sortierung: H -> höhe, B -> Breite
+- [ ] 3d: laub+nadelgehölz in Form unterscheiden
+- [ ] Stammdicke mitwachsen lassen
 
 
 ## Karten

@@ -1,14 +1,17 @@
 import type { GardenPlanGeo } from './types';
 import { planToLatLon, type PlanRect } from './gartenplan-geo';
+import { cachedFetch, DAY_MS } from './geo-cache';
 
-// Terrain for the garden plan: elevation from the open "Terrain Tiles" on AWS
-// (Mapzen/Tilezen, terrarium PNG encoding; sources per tile — SRTM, EU-DEM,
+// Terrain for the garden plan: elevation from the open "Terrain Tiles"
+// (Mapzen/Tilezen, hosted in the AWS open-data bucket, terrarium PNG encoding;
+// our own server fetches and caches them, so the visitor's browser never talks
+// to Amazon — see /geo/terrain/ in server/nginx/permadesignkit.org.conf; sources per tile — SRTM, EU-DEM,
 // national models …). A regular grid of heights in plan meters is sampled
 // once per plan and drives the 3D ground, contour lines and the slope /
 // aspect read-out. Data is coarse (≈ 3–30 m), so it shows the lie of the
 // land — slope and exposure — not individual bumps.
 
-export const TERRAIN_URL = 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png';
+export const TERRAIN_URL = '/geo/terrain/{z}/{x}/{y}.png';
 export const TERRAIN_ATTRIBUTION = 'Höhen: Terrain Tiles (Mapzen/AWS)';
 const TERRAIN_MAX_ZOOM = 15;
 
@@ -123,8 +126,8 @@ function lonLatToTileFloat(lat: number, lon: number, z: number): { x: number; y:
 /** Loads terrain tiles covering `rect` (plan meters around the garden) and
  *  samples them on a grid with roughly `cellM` spacing. */
 async function fetchTerrainTile(z: number, x: number, y: number): Promise<{ img: ImageData; sources: string[] }> {
-  const res = await fetch(TERRAIN_URL.replace('{z}', String(z)).replace('{x}', String(x)).replace('{y}', String(y)));
-  if (!res.ok) throw new Error(`terrain tile ${res.status}`);
+  const url = TERRAIN_URL.replace('{z}', String(z)).replace('{x}', String(x)).replace('{y}', String(y));
+  const res = await cachedFetch(url, 90 * DAY_MS, () => fetch(url));
   const sources = (res.headers.get('x-amz-meta-x-imagery-sources') ?? '').split(',').map(s => s.split('/')[0].trim()).filter(Boolean);
   const bmp = await createImageBitmap(await res.blob());
   const c = document.createElement('canvas');

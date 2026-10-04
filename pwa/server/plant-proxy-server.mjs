@@ -7,7 +7,7 @@
 // deployment — the frontend (src/lib/plant-search.ts) always calls the relative path and
 // has no knowledge of where this process runs.
 import { createServer } from 'node:http';
-import { parsePfafHtml } from './pfaf-parse.mjs';
+import { parsePfafHtml, pfafNameCandidates } from './pfaf-parse.mjs';
 import { lookupEfg, efgIndex } from './efg.mjs';
 
 const PORT = process.env.PLANT_PROXY_PORT || 8787;
@@ -137,7 +137,7 @@ function emptyResult(latinName) {
 }
 
 /** Returns parsed fields, {} when PFAF has no data for the name, or null on an upstream failure. */
-async function fetchPfaf(name) {
+async function fetchPfafExact(name) {
   // PFAF's canonical URL form uses '+' for spaces; encode first, then swap %20 for '+'
   // (the reverse order double-encodes the '+' into %2B and PFAF finds nothing).
   const url = `https://pfaf.org/user/Plant.aspx?LatinName=${encodeURIComponent(name).replace(/%20/g, '+')}`;
@@ -151,6 +151,18 @@ async function fetchPfaf(name) {
   } catch {
     return null;
   }
+}
+
+/** Tries the name, then PFAF's synonyms / spelling variants for it (see
+ *  pfafNameCandidates). `matched` says under which name PFAF had the plant. */
+async function fetchPfaf(name) {
+  let failed = false;
+  for (const candidate of pfafNameCandidates(name)) {
+    const r = await fetchPfafExact(candidate);
+    if (r === null) { failed = true; continue; }
+    if (Object.keys(r).length > 1) return Object.assign(r, candidate.toLowerCase() === name.toLowerCase() ? {} : { matchedName: candidate });
+  }
+  return failed ? null : {};
 }
 
 // --- NaturaDB ---
@@ -242,6 +254,9 @@ async function lookup(name) {
   // merge (first source wins, the others fill gaps) for older clients.
   const bySource = {};
   if (pfaf && Object.keys(pfaf).length > 1) bySource.pfaf = fieldsOf(pfaf);
+  // Set when PFAF had the plant only under a synonym (shown as a note, not merged).
+  const pfafMatchedName = pfaf?.matchedName;
+  if (bySource.pfaf) delete bySource.pfaf.matchedName;
   if (Object.keys(efg).length > 1) bySource.efg = fieldsOf(efg);
   if (naturaDb && Object.keys(naturaDb).length > 1) bySource.naturadb = fieldsOf(naturaDb);
 
@@ -257,6 +272,7 @@ async function lookup(name) {
   const sources = Object.keys(bySource);
   result.source = sources.join('+');
   result.sources = bySource;
+  if (pfafMatchedName) result.pfafMatchedName = pfafMatchedName;
   const upstreamFailed = pfaf === null || naturaDb === null;
   return { body: JSON.stringify(result), found: sources.length > 0, upstreamFailed };
 }
