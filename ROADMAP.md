@@ -11,6 +11,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 ## kurzfristig
 
 - [ ] Dokumentation schreiben (Jörn) und in Hilfe verlinken
+- [ ] GitHub release fsl
 - [ ] Flyer
 - [ ] Team-Seite / Kooperationen
 - [ ] zulip wieder starten: cd /opt/zulip && docker compose start
