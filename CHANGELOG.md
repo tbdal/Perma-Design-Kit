@@ -2,6 +2,12 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## manuell / AP2 2026-10-04
+- [x] barrierefreiheit - inklusivität mitdenken: Farbenblindheit..
+- [x] eingeklappte Farblegende farblich mehr hervorheben
+- [x] in der Produkttour beispieldaten und nachladen als letztes erwähnen: "Du kannst auch mit einem Beispiel starten und dafür die "Pflanzen für kleine Gärten" aus Martin Crawford's Buch "Einen Waldgarten erschaffen" (https://www.olv-verlag.eu/Einen-Waldgarten-erschaffen/) nutzen. Klicke dafür zuerst auf "Beispieldaten laden (Crawford)" und lade dann die Detailinformationen der Pflanzen mit "Lade alle fehlenden Daten"
+	- auf englisch:  "Plants for small gardens" & Link zum Buch: https://www.agroforestry.co.uk/product/creating-a-forest-garden-2/
+
 ## Luftbilder Bremen und Hamburg, Gebäude mit Innenhöfen, Gebäude-Schalter in 3D (2026-10-04)
 - [x] **Bremen:** amtliche Luftbilder 10 cm (Befliegung 2025) für Bremen und Bremerhaven vom Landesamt GeoInformation Bremen (CC BY). Bremen wurde bisher fälschlich Niedersachsen zugeordnet (dessen Umriss Bremen umschließt) — dort gibt es keine Bilder, daher blieb die Fläche leer.
 - [x] **Hamburg:** amtliche Luftbilder 20 cm vom LGV (dl-de/by), fest auf die eigene Befliegung 2026 gesetzt — andere Jahrgänge des Hamburger Dienstes enthalten Satellitenbilder unter geschlossener Lizenz (Maxar 2023, Pléiades 2022).
