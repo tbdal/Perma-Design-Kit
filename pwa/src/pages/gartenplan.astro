@@ -254,11 +254,11 @@ import Layout from '../layouts/Layout.astro';
 
         <aside class="space-y-4">
           <details data-panel="selected" open class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
-            <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="selectedPanelHeading">Ausgewählt</h2><span aria-hidden="true" class="text-xs text-stone-400 transition group-open/panel:rotate-90">▸</span></summary>
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="selectedPanelHeading">Ausgewählt</h2><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-stone-500 dark:text-stone-400 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
             <div id="selected-panel"></div>
           </details>
           <details data-panel="plants" open class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
-            <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="pickerHeading">Pflanzen</h2><span aria-hidden="true" class="text-xs text-stone-400 transition group-open/panel:rotate-90">▸</span></summary>
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="pickerHeading">Pflanzen</h2><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-stone-500 dark:text-stone-400 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
             <input id="picker-filter" type="search" data-i18n-placeholder="pickerFilterPlaceholder" placeholder="Pflanze filtern…" class="mb-2 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-xs shadow-inner focus:border-green-500 focus:outline-none" />
             <div id="plant-picker" class="max-h-56 space-y-0.5 overflow-y-auto"></div>
             <div class="mt-2 flex gap-1.5 border-t border-stone-200 dark:border-stone-700 pt-2">
@@ -270,31 +270,31 @@ import Layout from '../layouts/Layout.astro';
           </details>
 
           <details data-panel="areas" open class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
-            <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="areasHeading">Flächen</h2><span aria-hidden="true" class="text-xs text-stone-400 transition group-open/panel:rotate-90">▸</span></summary>
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="areasHeading">Flächen</h2><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-stone-500 dark:text-stone-400 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
             <p id="areas-empty" class="text-xs text-stone-400 dark:text-stone-500" data-i18n="areasEmpty">Noch keine Flächen. Mit „Fläche einzeichnen“ Beete, Teich, Wege … einzeichnen.</p>
             <ul id="areas-list" class="space-y-1.5"></ul>
             <p id="area-edit-hint" hidden class="mt-2 text-[11px] text-stone-500 dark:text-stone-400" data-i18n="areaEditHint">Ausgewählte Fläche: Eckpunkte ziehen (auch in 3D), ＋ auf einer Kante fügt einen Punkt ein, Doppelklick auf einen Punkt entfernt ihn. Esc hebt die Auswahl auf.</p>
           </details>
 
           <details data-panel="coverage" open id="coverage-section" hidden class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
-            <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-1"><h2 id="coverage-heading" class="text-sm font-semibold text-stone-800 dark:text-stone-100">Funktions-Abdeckung</h2><span aria-hidden="true" class="text-xs text-stone-400 transition group-open/panel:rotate-90">▸</span></summary>
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-1"><h2 id="coverage-heading" class="text-sm font-semibold text-stone-800 dark:text-stone-100">Funktions-Abdeckung</h2><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-stone-500 dark:text-stone-400 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
             <div id="coverage-body" class="space-y-2 text-xs"></div>
           </details>
 
-          <details id="warnings-section" data-panel="warnings" hidden open class="rounded-xl bg-red-50/60 dark:bg-red-950/30 p-4 shadow-sm ring-1 ring-red-200 dark:ring-red-900">
-            <summary class="cursor-pointer text-sm font-semibold text-red-900 dark:text-red-200"><span data-i18n="warningsHeading">Hinweise</span> (<span id="warnings-count">0</span>)</summary>
+          <details id="warnings-section" data-panel="warnings" hidden open class="group/panel rounded-xl bg-red-50/60 dark:bg-red-950/30 p-4 shadow-sm ring-1 ring-red-200 dark:ring-red-900">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-2 text-sm font-semibold text-red-900 dark:text-red-200"><span><span data-i18n="warningsHeading">Hinweise</span> (<span id="warnings-count">0</span>)</span><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-red-700 dark:text-red-300 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
             <p class="mt-1 text-xs text-stone-500 dark:text-stone-400" data-i18n="warningsIntro">Mit Blick auf die ausgewachsenen Pflanzen (30 Jahre). Klick markiert die Pflanze(n).</p>
             <ul id="warnings-list" class="mt-1 space-y-0.5 text-xs text-stone-700 dark:text-stone-200"></ul>
           </details>
 
           <details data-panel="suggestions" open id="suggestions-section" class="group/panel hidden rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
-            <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-1"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="suggestionsHeading">Vorschläge</h2><span aria-hidden="true" class="text-xs text-stone-400 transition group-open/panel:rotate-90">▸</span></summary>
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-1"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="suggestionsHeading">Vorschläge</h2><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-stone-500 dark:text-stone-400 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
             <p class="mb-2 text-[10px] text-stone-500 dark:text-stone-400" data-i18n="suggestionsIntro">Pflanzen aus deinem Bestand, die mit den bereits platzierten in Sonne/Wasser/pH überlappen.</p>
             <div id="suggestions-list" class="space-y-0.5"></div>
           </details>
 
           <details data-panel="unplaced" open id="unplaced-section" class="group/panel hidden rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
-            <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="unplacedHeading">Noch zu platzieren</h2><span aria-hidden="true" class="text-xs text-stone-400 transition group-open/panel:rotate-90">▸</span></summary>
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="unplacedHeading">Noch zu platzieren</h2><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-stone-500 dark:text-stone-400 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
             <div id="unplaced-list" class="space-y-0.5"></div>
           </details>
 
