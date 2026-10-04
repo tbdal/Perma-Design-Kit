@@ -39,6 +39,10 @@ Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann
 - [ ] **7. Ertrag & Pflegekalender:** grobe Ertragsschätzung (kg/Jahr, nach Alter gestaffelt); Pflegetermine (Schnitt, Mulch, Ernte) als iCal-Export
 - [ ] **8. Bauabschnitte:** Pflanzjahr pro Pflanze („2027 Bäume, 2028 Unterpflanzung“); Zeitraffer und Pflanzliste berücksichtigen die Abschnitte
 - [ ] **9. Browser-Tests ins Repo:** die Playwright-Tests (bisher nur lokal beim Entwickeln) ins Repo und in `npm run deploy` aufnehmen, damit Rückschritte automatisch auffallen
+- [ ] **Performance großer Pläne prüfen:** Besonnungskarte, 1-m-Gelände (feineres Raster) und viele OSM-Gebäude nur an ~40-m-Gärten getestet; bei Plänen bis 500 m messen und ggf. Raster/Abtastung vergröbern oder in einen Worker auslagern
+- [ ] **Gebäudehöhen/-formen:** ohne OSM-Höhe nach Typ geschätzt (Standard 7 m), alle Dächer flach — Höhen kalibrieren (z. B. `roof:shape`, 3D-Gebäudedaten der Länder/LoD2), Satteldächer
+- [ ] **Overpass-Ausweichserver unzuverlässig:** overpass.private.coffee antwortete im Test mit 504; fällt overpass-api.de aus, fehlen die Gebäude (nur Hinweis) — weiteren datenschutzfreundlichen Spiegel suchen oder Gebäude cachen
+- [ ] **1-m-Gelände für weitere Länder:** bisher NRW, BB/BE, BW, HE, NI, NL. Bayern nur kostenpflichtiger WCS (DGM1 als Download offen), Sachsen/Sachsen-Anhalt lehnen ab (403), TH/SH/MV/RP/SL kein offener WCS gefunden — erneut prüfen oder Kacheln selbst bereitstellen
 
 ## kurzfristig
 - [ ] **zur Prüfung (2026-10-03, live):** Layout-Änderungen aus `horizon-en` übernommen — bitte ansehen und ggf. zurücknehmen:

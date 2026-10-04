@@ -125,6 +125,38 @@ import Layout from '../layouts/Layout.astro';
       </ul>
     </section>
 
+    <section id="gartenplan" class="space-y-2">
+      <h2 class="text-xl font-semibold" data-i18n="gpHeading">Gartenplan</h2>
+      <p data-i18n="gpIntro">Im Gartenplan entsteht aus deinen Pflanzen ein maßstäblicher Plan des Gartens.</p>
+      <h3 class="pt-1 font-semibold" data-i18n="gpStartHeading">Anlegen und bepflanzen</h3>
+      <ul class="list-disc space-y-1 pl-5">
+        <li data-i18n="gpStart1">Neuer Gartenplan → Garten auf der Karte umranden.</li>
+        <li data-i18n="gpStart2">Pflanzen platzieren.</li>
+        <li data-i18n="gpStart3">Flächen, Reihe, Paket.</li>
+        <li data-i18n="gpStart4">Jahre-Regler.</li>
+      </ul>
+      <h3 class="pt-1 font-semibold" data-i18n="gpMapHeading">Karte, Luftbild und Gelände</h3>
+      <ul class="list-disc space-y-1 pl-5">
+        <li data-i18n="gpMap1">Hintergrund.</li>
+        <li data-i18n="gpMap2">Gelände.</li>
+        <li data-i18n="gpMap3">Gebäude.</li>
+      </ul>
+      <h3 class="pt-1 font-semibold" data-i18n="gpAnalysisHeading">Auswertungen</h3>
+      <ul class="list-disc space-y-1 pl-5">
+        <li data-i18n="gpAna1">Funktions-Abdeckung.</li>
+        <li data-i18n="gpAna2">Besonnung.</li>
+        <li data-i18n="gpAna3">Hinweise.</li>
+      </ul>
+      <h3 class="pt-1 font-semibold" data-i18n="gpToolsHeading">Werkzeuge und Ausgaben</h3>
+      <ul class="list-disc space-y-1 pl-5">
+        <li data-i18n="gpTool1">3D.</li>
+        <li data-i18n="gpTool2">Messen, Rückgängig.</li>
+        <li data-i18n="gpTool3">Pflanzliste, Kalender.</li>
+        <li data-i18n="gpTool4">Export, Teilen.</li>
+      </ul>
+      <p data-i18n="gpLimits">Grenzen.</p>
+    </section>
+
     <section class="space-y-2">
       <h2 class="text-xl font-semibold" data-i18n="shortcutsHeading">Tastatur-Shortcuts</h2>
       <p class="text-sm text-stone-600 dark:text-stone-300"><span data-i18n="shortcutsIntro">Greifen auf der Hauptseite — nicht
@@ -138,6 +170,8 @@ import Layout from '../layouts/Layout.astro';
           <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">l</kbd></td><td data-i18n="shortcutList">Listenansicht</td></tr>
           <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">c</kbd></td><td data-i18n="shortcutCards">Kartenansicht</td></tr>
           <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Shift</kbd>+Klick</td><td data-i18n="shortcutShiftClick">In der Liste: Bereich von letzter bis aktueller Checkbox auswählen</td></tr>
+          <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Alt</kbd>+<kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">1</kbd>…<kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">4</kbd></td><td data-i18n="shortcutNav">Auf allen Seiten: Pflanzen / Kalender / Polykulturen / Gartenplan</td></tr>
+          <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">?</kbd></td><td data-i18n="shortcutOverview">Übersicht der Kürzel der aktuellen Seite — im Gartenplan dessen eigene (2/3, H/V/L/M, F/R/U, G, P, Strg+Z …)</td></tr>
         </tbody>
       </table>
     </section>

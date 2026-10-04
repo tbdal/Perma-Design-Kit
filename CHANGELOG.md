@@ -2,6 +2,10 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Doku: Gartenplan in Hilfe und Infobox (2026-10-04)
+- [x] **Hilfe** hat einen neuen Abschnitt „Gartenplan“ (`/hilfe#gartenplan`): Anlegen und Bepflanzen, Karte/Luftbild/Gelände/Gebäude, Funktions-Abdeckung, Besonnung, Hinweise, Werkzeuge und Ausgaben, Grenzen der Schätzungen. Tastenkürzel-Tabelle um Alt+1–4 und den Verweis auf die Gartenplan-Kürzel ergänzt.
+- [x] **„ℹ️ Wie funktioniert das?“** im Gartenplan auf den aktuellen Stand gebracht (Ablauf, Karte & Gelände, Auswertungen, Werkzeuge, 3D; Schicht aus der Wuchsform statt nur aus der Höhe) mit Link zur Hilfe.
+
 ## Gartenplan: Gelände in 1 m Auflösung (2026-10-04)
 - [x] **Amtliche Geländemodelle (DGM1)** statt der groben Terrain Tiles, wo verfügbar: NRW, Brandenburg/Berlin, Baden-Württemberg, Hessen, Niedersachsen (je 1 m) und Niederlande (AHN, 0,5 m) — direkt per WCS von den Vermessungsämtern, offene Lizenzen (dl-de/zero, dl-de/by, CC BY, CC0). Höhenlinien, Neigung/Ausrichtung, 3D-Boden und Besonnung zeigen damit Mulden, Böschungen und Wälle. Lücken im Modell (z. B. unter Gebäuden) werden mit den groben Werten höhengleich gefüllt. Die Geländeanzeige nennt die Quelle („Geländemodell NRW, 1 m“), Quellenvermerk, Datenschutz und Impressum ergänzt.
 - [x] Noch ohne: Bayern (nur kostenpflichtiger WCS), Sachsen, Sachsen-Anhalt (Dienst lehnt ab), übrige Länder ohne gefundenen offenen WCS — dort weiter Terrain Tiles.
