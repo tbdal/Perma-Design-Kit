@@ -11,42 +11,38 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 ## kurzfristig
 
 - [ ] Dokumentation schreiben (Jörn) und in Hilfe verlinken
-- [ ] Sorte (in Klammern bei Namen) in Tabelle anzeigen
-- [ ] Amazon aws raus
-- [ ] permanent storage erklären bevor es vom browser abgrefragt wird?
-- [ ] Tabelle kleiner machen für kleinere Bildschirme
-- [ ] golden master umbenennen oder in Daten-Menü integrieren. Testen welche Pflanzen das sind
-- [ ] Import von geteiltem link: wird altes überschrieben oder ergänzt?
 - [ ] Flyer
-- [ ] Lizenz check alle quellen
-- [ ] In allen pdfs Lizenz und link auf permadesignkit.org einstellen
-- [ ] satellitenbilder, gebäudedaten bzw. weitere geodaten im browser speichern statt jeweils abzurufen?
 - [ ] Team-Seite / Kooperationen
-
 - [ ] zulip wieder starten: cd /opt/zulip && docker compose start
 
-
-## bis 1.11./Symposium
+  ## Fragen
+- [ ] permanent storage erklären bevor es vom browser abgrefragt wird?
+- [ ] Import von geteiltem link: wird altes überschrieben oder ergänzt?
+- [ ] golden master umbenennen oder in Daten-Menü integrieren. Testen welche Pflanzen das sind
 - [ ] bug reporting aufsetzen --> bitte github issues nutzen oder Mail senden (& bitte genau angeben, auf welcher Seite der Fehler entstanden ist..)
   - [ ] wäre es möglich das per reporting funktion auf der seite zu lösen? (debugging file bzw. projektddatei anhängen, screenshot..?)
 
 ## bugs
-- [ ] Homo erectus etc nicht auswählbar machen?
-- [ ] gartenplan: Hinweise in Karte highlighten
 - [ ] Malus domestica -> 10,7m (von 35’ aus Toensmeier Malus Pumila?)
+- [ ] baumscheibe 2.6: richtige schriftart & position von höhe und breite (Jörn)
+- [ ] Homo erectus etc nicht auswählbar machen?
+
+
+## APs
+### AP4
+- [ ] Sorte (in Klammern bei Namen) in Tabelle anzeigen
+- [ ] Amazon aws raus
+- [ ] Tabelle kleiner machen bzw. so, dass nicht gescrollt werden muss? auch für kleinere Bildschirme
+- [ ] Lizenz check alle quellen
+- [ ] In allen pdfs Lizenz und link auf permadesignkit.org einstellen
+- [ ] satellitenbilder, gebäudedaten bzw. weitere geodaten im browser speichern statt jeweils abzurufen
+- [ ] gartenplan: Hinweise in Karte highlighten
 - [ ] Buildings temporarily unavailable
 - [ ] warum gibt's für diese Pflanzen keine Daten? --> probier's mal mit synonym bei PFAF
   Gemeiner Rhabarber	Rheum rhabarbarum	—
 	Haferschlehe	Prunus domestica insititia
 	Jostabeere	Ribes x nidigrolaria
 	Rubus pentalobus	Rubus pentalobus
-- [ ] baumscheibe 2.6: richtige schriftart & position von höhe und breite (Jörn)
-
-
-
-## APs
-### AP4
-- [ ]
 
 
 ## Karten
