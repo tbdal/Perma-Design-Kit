@@ -2,6 +2,19 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Fragen, Sorten, AP4 2026-10-05
+- [x] Sortenauswahl beim Bearbeiten einer Pflanze: Knopf im Sortenfeld zeigt eigene Sorten, aktive Sortenlisten und – ohne Liste – Wikidata live für die Art
+- [x] Sortenlisten in Einstellungen: Obstsorten aus Wikidata laden (rund 3800, CC0), CSV importieren, umbenennen, an/aus, exportieren, durchsuchen, Einträge hinzufügen/entfernen, löschen
+- [x] Wikidata-Sorten (z. B. „Conference“) erscheinen in der Suche nicht mehr als eigene Pflanze, sondern als „Sorte von Pyrus communis“ und werden mit Sorte angelegt
+- [x] Übersicht Sortendatenbanken Kern-/Steinobst im Doc „Antworten auf die offenen Fragen“
+- [x] Dauerhafter Speicher wird erst erklärt (Banner, sobald Daten da sind), dann angefragt; Status und Knopf in Einstellungen → Daten
+- [x] Import von geteiltem Link: ergänzt, überschreibt nichts (Pläne/Polykulturen mit gleicher Kennung als Kopie) — beantwortet im Doc
+- [x] Standard-Artenliste (ehem. Golden Master) auch im Menü „Daten ⋮“; 11 Gattungseinträge (spp.) durch konkrete Arten mit PFAF-Daten ersetzt
+- [x] Fehler melden (Footer → /fehler-melden/): Seite automatisch eingetragen, GitHub-Issue oder E-Mail vorausgefüllt, Debug-Datei ohne Zugangsdaten (Projekt nur auf Wunsch), Fehlerprotokoll des Tabs; Issue-Formular in `.github/ISSUE_TEMPLATE`
+- [x] Sortier-Dropdown: „Höhe“, „Breite“, „Vollständigkeit“ statt H, B, Vollst.
+- [x] 3D: Nadelgehölze (erweiterte Gattungsliste) als Kegel, Laubgehölze rund; Schirmkrone nur bei Pinie, Waldkiefer & Co.
+- [x] 3D: Stammdicke wächst mit der Höhe und auch nach Erreichen der Endgröße noch (bis +80 % in 40 Jahren)
+
 ## AP4 2026-10-04 - noch testen
 - [x] Gartenplan-Karte: kein weißer Rand mehr um das abgerundete Rechteck; die Hintergrundkarte wird für die tatsächlich sichtbare Fläche nachgeladen (auch wenn sich Breite/Höhe ändern)
 - [x] Sorte (in Klammern) in der Tabelle; Name und Lateinisch teilen sich eine Spalte, die Tabelle passt ab 1024 px ohne Scrollen (unter 1280 px sind Wuchs, Gruppen und Quellen ausgeblendet)

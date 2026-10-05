@@ -29,6 +29,22 @@ export function growthFraction(years: number, pace: GrowthPace): number {
   return 1 / (1 + Math.exp(-k * (Math.max(0, years) - tMid)));
 }
 
+/** Years until a plant of this pace is (nearly) full size. */
+export function maturityYears(pace: GrowthPace): number {
+  return MATURITY_AGE_YEARS[pace];
+}
+
+/**
+ * Trunk radius for the 3D view, from the current height (stem/height ratio of
+ * roughly 1:45 in diameter for a mature tree) — and, unlike the crown, the
+ * trunk keeps thickening after the plant is full size: up to +80 % over the
+ * following 40 years. Same caveat as above: an illustrative heuristic.
+ */
+export function trunkRadiusM(currentHeightM: number, years: number, pace: GrowthPace): number {
+  const extra = Math.min(1, Math.max(0, (years - MATURITY_AGE_YEARS[pace]) / 40));
+  return Math.max(0.012, (currentHeightM / 90) * (1 + 0.8 * extra));
+}
+
 export function displayRadiusM(
   p: Pick<PlantData, 'widthM' | 'growSpeedLow' | 'growSpeedMid' | 'growSpeedHigh'>,
   years: number

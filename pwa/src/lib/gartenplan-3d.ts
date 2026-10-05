@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import type { GardenPlan, GardenPlanArea, GardenPlanPlacement, PlantData } from './types';
-import { displayRadiusM } from './growth-model';
+import { displayRadiusM, resolveGrowthPace, trunkRadiusM } from './growth-model';
 import { deriveLayer, LAYER_STYLE, type PlantLayer } from './plant-layer';
 import { buildPlantModel, crownShape } from './plant-mesh-3d';
 import { pointInPolygon } from './gartenplan-geometry';
@@ -147,13 +147,15 @@ function plantDims(plant: PlantData | undefined, years: number) {
   const frac = Math.min(1, radiusM / finalRadius);
   const fallbackH = layer === 'tree' ? radiusM * 2.6 : layer === 'shrub' ? radiusM * 1.6 : layer === 'rhizo' ? 0.15 : radiusM * 1.2;
   const heightM = plant?.heightM && plant.heightM > 0 ? Math.max(0.1, plant.heightM * frac) : fallbackH;
-  return { radiusM, heightM, layer };
+  // Trunk follows height and keeps thickening after the crown is full size.
+  const trunkM = trunkRadiusM(heightM, years, plant ? resolveGrowthPace(plant) : 'mid');
+  return { radiusM, heightM, layer, trunkM };
 }
 
 function buildPlantMesh(placement: GardenPlanPlacement, plant: PlantData | undefined, years: number): THREE.Group {
-  const { radiusM, heightM, layer } = plantDims(plant, years);
+  const { radiusM, heightM, layer, trunkM } = plantDims(plant, years);
   const style = LAYER_STYLE[layer];
-  const group = buildPlantModel(placement.id, crownShape(plant, layer), radiusM, heightM, style.fill);
+  const group = buildPlantModel(placement.id, crownShape(plant, layer), radiusM, heightM, style.fill, trunkM);
 
   const ring = new THREE.Mesh(
     new THREE.RingGeometry(radiusM * 1.05, radiusM * 1.2, 24),
@@ -921,8 +923,8 @@ export function createGardenPlan3DView(
     }
     if (pv) {
       const g = new THREE.Group();
-      const { radiusM, heightM, layer } = plantDims(pv.plant, years);
-      const model = buildPlantModel('preview-' + pv.plant.id, crownShape(pv.plant, layer), radiusM, heightM, LAYER_STYLE[layer].fill);
+      const { radiusM, heightM, layer, trunkM } = plantDims(pv.plant, years);
+      const model = buildPlantModel('preview-' + pv.plant.id, crownShape(pv.plant, layer), radiusM, heightM, LAYER_STYLE[layer].fill, trunkM);
       model.traverse(obj => {
         const m = obj as THREE.Mesh;
         if (!m.isMesh) return;

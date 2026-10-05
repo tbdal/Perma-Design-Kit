@@ -17,11 +17,8 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] zulip wieder starten: cd /opt/zulip && docker compose start
 
   ## Fragen
-- [ ] permanent storage erklären bevor es vom browser abgrefragt wird?
-- [ ] Import von geteiltem link: wird altes überschrieben oder ergänzt?
-- [ ] golden master umbenennen oder in Daten-Menü integrieren. Testen welche Pflanzen das sind
-- [ ] bug reporting aufsetzen --> bitte github issues nutzen oder Mail senden (& bitte genau angeben, auf welcher Seite der Fehler entstanden ist..)
-  - [ ] wäre es möglich das per reporting funktion auf der seite zu lösen? (debugging file bzw. projektddatei anhängen, screenshot..?)
+- [ ] GitHub-Issues im Repository einschalten, damit „Fehler melden → Auf GitHub melden“ funktioniert: `gh repo edit tbdal/Perma-Design-Kit --enable-issues` (bis dahin führt der Knopf auf eine 404-Seite; E-Mail geht)
+- [ ] Bundessortenamt anfragen, ob die „Gesamtliste Obst“ als Namensliste für die Sortenauswahl übernommen werden darf (vollständigste deutsche Liste, nur als PDF)
 
 ## bugs
 - [ ] Malus domestica -> 10,7m (von 35’ aus Toensmeier Malus Pumila?)
@@ -32,10 +29,6 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 ## APs
 ### AP4
 - [ ] Offene Folgepunkte aus dem Lizenz-Check: EOX-Sentinel (nur nicht-kommerziell), OSM-Kachelserver (geringer Traffic), Edible-Forest-Gardens-Tabelle (keine ausdrückliche Lizenz, schriftliche Erlaubnis einholen), Lizenztext der Schriften Archivo/Raleway (OFL) in `NOTICE` ergänzen — Details siehe „Lizenz & Datenquellen" unten
-- [ ] Beim nächsten Deploy: `mkdir -p /var/cache/nginx`, nginx-Konfig übernehmen (`/geo/terrain/` für Höhenkacheln) + `nginx -t` + reload, `plant-proxy` neu starten (Synonyme)
-- [ ] Dropdown Sortierung: H -> höhe, B -> Breite
-- [ ] 3d: laub+nadelgehölz in Form unterscheiden
-- [ ] Stammdicke mitwachsen lassen
 
 
 ## Karten

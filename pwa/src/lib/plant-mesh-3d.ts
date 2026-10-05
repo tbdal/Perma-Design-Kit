@@ -15,17 +15,28 @@ import { seededRandom } from './blob-shape';
 
 export type CrownShape = 'round' | 'cone' | 'pine' | 'shrub' | 'herb' | 'climber' | 'mat';
 
-const CONE_GENERA = ['picea', 'abies', 'larix', 'pseudotsuga', 'thuja', 'juniperus', 'cedrus', 'taxus', 'chamaecyparis', 'cupressus', 'metasequoia', 'sequoiadendron'];
+/** Conifer genera (needle or scale leaves) — drawn as a cone with needles,
+ *  broadleaf woody plants get a rounded leafy crown instead. */
+export const CONIFER_GENERA = [
+  'abies', 'araucaria', 'calocedrus', 'cedrus', 'cephalotaxus', 'chamaecyparis', 'cryptomeria', 'cunninghamia', 'cupressus',
+  'juniperus', 'keteleeria', 'larix', 'metasequoia', 'picea', 'pinus', 'platycladus', 'podocarpus', 'pseudolarix', 'pseudotsuga',
+  'sciadopitys', 'sequoia', 'sequoiadendron', 'taxodium', 'taxus', 'thuja', 'thujopsis', 'torreya', 'tsuga', 'xanthocyparis',
+];
+/** Pines whose old crown is a flat umbrella; other pines stay conical. */
+const UMBRELLA_PINES = ['pinus pinea', 'pinus sylvestris', 'pinus nigra', 'pinus halepensis', 'pinus densiflora', 'pinus thunbergii', 'pinus radiata'];
 
-/** Crown type from layer + genus. */
+/** Crown type from layer + genus: conifers as cones (umbrella pines flat on
+ *  a tall stem), broadleaf trees round, shrubs as stems with leaves. */
 export function crownShape(plant: Pick<PlantData, 'latinName'> | undefined, layer: PlantLayer): CrownShape {
-  const genus = (plant?.latinName ?? '').trim().split(/\s+/)[0].toLowerCase();
+  const words = (plant?.latinName ?? '').trim().toLowerCase().replace(/[×✕]/g, 'x').split(/\s+/);
+  const genus = words[0] === 'x' ? words[1] ?? '' : words[0];
+  const species = words.slice(0, 2).join(' ');
+  const conifer = CONIFER_GENERA.includes(genus);
   if (layer === 'tree') {
-    if (genus === 'pinus') return 'pine';
-    if (CONE_GENERA.includes(genus)) return 'cone';
-    return 'round';
+    if (UMBRELLA_PINES.includes(species)) return 'pine';
+    return conifer ? 'cone' : 'round';
   }
-  if (layer === 'shrub') return CONE_GENERA.includes(genus) ? 'cone' : 'shrub';
+  if (layer === 'shrub') return conifer ? 'cone' : 'shrub';
   if (layer === 'climber') return 'climber';
   if (layer === 'rhizo') return 'mat';
   return 'herb';
@@ -168,8 +179,9 @@ function addWood(group: THREE.Group, geos: THREE.BufferGeometry[], mat = barkMat
 }
 
 /** Builds the plant model; `radiusM` is the current crown radius, `heightM`
- *  the current height (both already scaled by the growth model). */
-export function buildPlantModel(seed: string, shape: CrownShape, radiusM: number, heightM: number, baseColor: string): THREE.Group {
+ *  the current height (both already scaled by the growth model), `trunkM`
+ *  the trunk radius (growth-model trunkRadiusM; default from the crown). */
+export function buildPlantModel(seed: string, shape: CrownShape, radiusM: number, heightM: number, baseColor: string, trunkM?: number): THREE.Group {
   const rand = seededRandom(seed);
   const group = new THREE.Group();
   // Mats are leafy ground cover, not the earthy rhizome-layer colour.
@@ -183,7 +195,7 @@ export function buildPlantModel(seed: string, shape: CrownShape, radiusM: number
     const crownH = h - crownBottom;
     const rx = r, ry = crownH / 2, rz = r * (0.85 + rand() * 0.3);
     const cy = crownBottom + ry;
-    const trunkR = Math.max(0.03, r * 0.07);
+    const trunkR = trunkM ?? Math.max(0.03, r * 0.07);
     wood.push(branch(new THREE.Vector3(0, 0, 0), new THREE.Vector3((rand() - 0.5) * r * 0.1, cy, (rand() - 0.5) * r * 0.1), trunkR, trunkR * 0.6));
     const nb = 4 + Math.floor(rand() * 3);
     for (let i = 0; i < nb; i++) {
@@ -204,7 +216,7 @@ export function buildPlantModel(seed: string, shape: CrownShape, radiusM: number
     }
     addMesh(group, cards, kind);
   } else if (shape === 'cone') {
-    const trunkR = Math.max(0.03, r * 0.08);
+    const trunkR = trunkM ?? Math.max(0.03, r * 0.08);
     wood.push(branch(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, h * 0.78, 0), trunkR, trunkR * 0.3));
     const tiers = Math.max(5, Math.round(h * 2.2));
     for (let t = 0; t < tiers; t++) {
