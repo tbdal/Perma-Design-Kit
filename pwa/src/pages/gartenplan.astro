@@ -2,6 +2,24 @@
 import Layout from '../layouts/Layout.astro';
 ---
 <Layout title="Perma Design Kit — Waldgartenplan" full>
+  <!-- Search hero (same as on the plant page; logic in lib/plant-search-ui.ts).
+       Only shown while placing plants (phase B), not in the plan list or
+       while the outline is drawn. -->
+  <section id="plan-search-hero" hidden class="relative mb-8" data-hz-sky>
+    <p class="hz-only hz-hero-title" data-i18n="searchHeroPlan">Pflanze für deinen Waldgarten finden</p>
+    <p class="mb-3 text-center text-xs font-medium uppercase tracking-widest text-stone-500 dark:text-stone-400" data-i18n="searchSubtitle">Pflanzendatenbank durchsuchen</p>
+    <div class="relative flex items-center gap-0 overflow-hidden rounded-2xl bg-white dark:bg-stone-800 shadow-md ring-1 ring-stone-200 dark:ring-stone-700 focus-within:ring-2 focus-within:ring-green-400 transition">
+      <svg class="ml-4 h-5 w-5 shrink-0 text-stone-500 dark:text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/>
+      </svg>
+      <input type="text" id="plant-search" role="combobox" aria-controls="search-results" aria-autocomplete="list" data-i18n-placeholder="searchPlaceholder" placeholder="Pflanze suchen — lat. oder dt. Name, z.B. Sambucus nigra"
+        class="min-w-0 flex-1 bg-transparent py-3.5 pl-3 pr-2 text-sm text-stone-800 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:outline-none" autocomplete="off" />
+      <button id="btn-search" data-i18n="searchBtn" class="shrink-0 rounded-xl m-1.5 bg-green-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-green-800 active:scale-95">Suchen</button>
+    </div>
+    <!-- Floating dropdown -->
+    <div id="search-results" role="listbox" class="absolute left-0 right-0 top-full z-50 mt-1 hidden max-h-80 overflow-y-auto rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 shadow-xl"></div>
+  </section>
+
   <!-- ── Listenansicht ─────────────────────────────────────────────────── -->
   <section id="plan-list-view">
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -417,11 +435,13 @@ import Layout from '../layouts/Layout.astro';
   import { escapeHtml, withButtonSpinner } from '../lib/html';
   import { exportGardenPlanPDF } from '../lib/pdf-export';
   import { createT, applyStaticI18n, getLang } from '../lib/i18n/core';
+  import { searchDict } from '../lib/i18n/dict-search';
+  import { initPlantSearchUi } from '../lib/plant-search-ui';
   import { gartenplanDict } from '../lib/i18n/dict-gartenplan';
   import { plantDetailDict } from '../lib/i18n/dict-plant-detail';
 
   const t = createT(gartenplanDict, plantDetailDict);
-  applyStaticI18n(gartenplanDict, plantDetailDict);
+  applyStaticI18n(gartenplanDict, plantDetailDict, searchDict);
 
   const SVG_NS = 'http://www.w3.org/2000/svg';
   const SVG_UNITS_PER_METER = 100;
@@ -3268,6 +3288,36 @@ import Layout from '../layouts/Layout.astro';
     afterGeometryEdit();
     showToast(t('toastPkgPlaced', { name: pc.name || t('planUnnamed'), n: spots.length }));
   }
+
+  // ── Pflanzensuche (wie auf der Pflanzenseite) ─────────────────────────────
+  // Visible only in the placement view: follows the editor / phase B state.
+  const searchHero = document.getElementById('plan-search-hero')!;
+  const syncSearchHero = () => { searchHero.hidden = editorView.hidden || phaseB.classList.contains('hidden'); };
+  const heroObserver = new MutationObserver(syncSearchHero);
+  heroObserver.observe(editorView, { attributes: true, attributeFilter: ['hidden'] });
+  heroObserver.observe(phaseB, { attributes: true, attributeFilter: ['class'] });
+  syncSearchHero();
+  // A found plant goes into the collection; with a plan open it is armed
+  // right away, so the next click on the map places it.
+  initPlantSearchUi({
+    input: document.getElementById('plant-search') as HTMLInputElement,
+    button: document.getElementById('btn-search') as HTMLButtonElement,
+    results: document.getElementById('search-results')!,
+    plants: () => plants,
+    onAdded: async (plant) => {
+      plants = await getAllPlants();
+      plantsById = new Map(plants.map(p => [p.id, p]));
+      if (editing && !phaseB.classList.contains('hidden')) {
+        armedPlantId = plant.id;
+        armedHint.classList.remove('hidden');
+        view3d?.setArmedPlant(armedPlantId);
+        renderPlantPicker();
+        renderSuggestions();
+        showToast(tSearch('searchAddedArmed', { name: displayName(plant) || plant.latinName }));
+      }
+    },
+  });
+  const tSearch = createT(searchDict);
 
   // ── Init + save/delete ──────────────────────────────────────────────────
   async function init() {

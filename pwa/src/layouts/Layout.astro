@@ -406,7 +406,8 @@ const barMaxW = 'max-w-[1600px]';
         anchor.appendChild(probe);
         const trees = probe.getBoundingClientRect().height;
         probe.remove();
-        const ground = (sky ? sky.getBoundingClientRect().bottom + scrollY : pageY(main)) + trees;
+        const skyShown = sky && sky.offsetParent !== null ? sky : null; // e.g. the plan page's search, only while placing
+        const ground = (skyShown ? skyShown.getBoundingClientRect().bottom + scrollY : pageY(main)) + trees;
         root.style.setProperty('--hz-band-h', `${Math.round(ground - pageY(anchor))}px`);
         root.style.setProperty('--hz-ground', `${Math.round(ground - pageY(main))}px`);
       }

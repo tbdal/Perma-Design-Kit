@@ -2,14 +2,7 @@ import type { Dict } from './core';
 
 export const indexDict: Dict = {
   // ── Search hero ──────────────────────────────────────────────────────
-  heroTitle: { de: 'Was wächst in deinem Waldgarten?', en: 'What grows in your forest garden?' },
-  searchSubtitle: { de: 'Pflanzendatenbank durchsuchen', en: 'Search the plant database' },
-  searchPlaceholder: { de: 'Pflanze suchen — lat. oder dt. Name, z.B. Sambucus nigra', en: 'Search for a plant — Latin or English name, e.g. Sambucus nigra' },
-  searchBtn: { de: 'Suchen', en: 'Search' },
-  searchLoading: { de: 'Suche…', en: 'Searching…' },
   loadingCards: { de: 'Karten werden erstellt…', en: 'Generating cards…' },
-  searchNoResults: { de: 'Keine Ergebnisse.', en: 'No results.' },
-  searchResultsCount: { de: '{count} Treffer', en: '{count} results' },
   a11yEdit: { de: '{name} bearbeiten', en: 'Edit {name}' },
   a11yDelete: { de: '{name} löschen', en: 'Delete {name}' },
   a11yEnrich: { de: '{name}: Daten ergänzen', en: '{name}: enrich data' },
@@ -17,14 +10,6 @@ export const indexDict: Dict = {
   a11ySelectAll: { de: 'Alle auswählen', en: 'Select all' },
   a11yFilterHeight: { de: 'Filter Höhe', en: 'Filter by height' },
   a11yFilterCompleteness: { de: 'Filter Vollständigkeit', en: 'Filter by completeness' },
-  searchError: { de: 'Fehler: {error}', en: 'Error: {error}' },
-  searchAlreadyAdded: { de: 'Bereits in deiner Liste (gleicher lateinischer Name)', en: 'Already in your list (same Latin name)' },
-  searchAddAnyway: { de: 'Trotzdem hinzufügen', en: 'Add anyway' },
-  searchAddAnywayConfirm: { de: '„{name}" ist bereits in deiner Liste (gleicher lateinischer Name). Trotzdem als weitere Pflanze hinzufügen?', en: '“{name}” is already in your list (same Latin name). Add it again as a separate plant anyway?' },
-  searchAddResult: { de: '+ Hinzuf.', en: '+ Add' },
-  searchAdding: { de: 'Wird hinzugefügt…', en: 'Adding…' },
-  searchAdded: { de: '✓ Hinzugefügt', en: '✓ Added' },
-  searchAddFailed: { de: 'Fehler', en: 'Error' },
 
   // ── View toggle + heading ────────────────────────────────────────────
   viewLabel: { de: 'Ansicht', en: 'View' },
@@ -189,8 +174,6 @@ export const indexDict: Dict = {
   fieldCommonNameEn: { de: 'Englischer Name', en: 'English name' },
   fieldVarietyName: { de: 'Sorte (aus Liste wählen oder selbst eintragen)', en: 'Variety (pick from a list or type your own)' },
   varietyNamePlaceholder: { de: 'z. B. Boskoop', en: 'e.g. Boskoop' },
-  searchVarietyOf: { de: 'Sorte von', en: 'Variety of' },
-  searchAddVariety: { de: '+ Mit Sorte', en: '+ With variety' },
   varietyPickTitle: { de: 'Sorte aus Liste wählen', en: 'Pick a variety from a list' },
   varietyFilter: { de: 'Sorte suchen …', en: 'Search variety …' },
   varietyOwn: { de: 'Eigene', en: 'Your own' },
