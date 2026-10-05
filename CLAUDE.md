@@ -20,6 +20,9 @@ npm run check
 # Unit tests (vitest, test/*.test.ts)
 npm test
 
+# Browser tests (Playwright, e2e/*.e2e.ts) against dist/ — build first; external services are stubbed
+npm run build && npm run e2e
+
 # Production build
 npm run build
 
@@ -27,7 +30,7 @@ npm run build
 npm run deploy
 ```
 
-Run `npm run check` and `npm test` before committing. `test/fixtures/pfaf/*.html` are saved PFAF pages for the parser tests — refresh them when PFAF changes its markup.
+Run `npm run check` and `npm test` before committing (check the summary for `1 error` too, not only `errors`). `npm run deploy` also runs the browser tests. `test/fixtures/pfaf/*.html` are saved PFAF pages for the parser tests — refresh them when PFAF changes its markup.
 
 ## Architecture
 

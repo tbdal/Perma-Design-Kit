@@ -36,6 +36,9 @@ npm run check
 npm test
 npm run build
 node scripts/check-csp.mjs dist
+# Browser tests against the fresh build (offline, external services stubbed).
+# Needs Playwright's Chromium once: npx playwright install chromium
+npx playwright test --reporter=line
 
 rsync -a --delete dist/ /var/www/permadesignkit.org/
 chown -R www-data:www-data /var/www/permadesignkit.org
