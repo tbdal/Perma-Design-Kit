@@ -15,20 +15,8 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
     <div id="admin-body" hidden class="grid gap-6 xl:grid-cols-3">
       <section class="space-y-3 xl:col-span-2">
         <p class="max-w-3xl text-sm text-stone-600 dark:text-stone-300" data-i18n="adIntro">Hier legst du fest, in welchen Modi eine Funktion erscheint.</p>
-        <div class="overflow-x-auto rounded-xl bg-white dark:bg-stone-800 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
-          <table class="w-full min-w-[36rem] text-sm">
-            <thead class="text-left text-xs uppercase tracking-wide text-stone-500 dark:text-stone-400">
-              <tr class="border-b border-stone-200 dark:border-stone-700">
-                <th class="px-3 py-2 font-semibold" data-i18n="adFeature">Funktion</th>
-                <th class="px-2 py-2 text-center font-semibold" data-mode-head="simple"></th>
-                <th class="px-2 py-2 text-center font-semibold" data-mode-head="classic"></th>
-                <th class="px-2 py-2 text-center font-semibold" data-mode-head="expert"></th>
-                <th class="px-2 py-2 text-center font-semibold" data-i18n="adOff">Aus</th>
-              </tr>
-            </thead>
-            <tbody id="feature-rows" class="divide-y divide-stone-100 dark:divide-stone-700"></tbody>
-          </table>
-        </div>
+        <!-- One collapsible box per feature group (FEATURE_GROUPS in lib/features.ts). -->
+        <div id="feature-groups" class="space-y-3"></div>
         <div class="flex flex-wrap items-center gap-2">
           <button id="features-save" type="button" data-i18n="adSave" class={`${btn} bg-green-700 text-white hover:bg-green-800 disabled:opacity-50`}>Übernehmen</button>
           <button id="features-reset" type="button" data-i18n="adReset" class={`${btn} bg-white dark:bg-stone-800 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700`}>Alles auf Standard</button>
@@ -50,9 +38,11 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
           <label class="block text-xs font-medium"><span data-i18n="adRole">Rolle</span>
             <select id="new-role" class={`mt-1 ${field}`}>
               <option value="expert" data-i18n="adRoleExpert">Experte</option>
+              <option value="team" data-i18n="adRoleTeam">Team</option>
               <option value="admin" data-i18n="adRoleAdmin">Admin</option>
             </select>
           </label>
+          <p class="text-[11px] text-stone-500 dark:text-stone-400" data-i18n="adRolesHint">Experte: Funktionen wie oben eingestellt. Team: im Experten-Modus alle Funktionen, auch ausgeschaltete. Admin: wie Experte, dazu diese Seite.</p>
           <button type="submit" data-i18n="adAddUser" class={`${btn} bg-green-700 text-white hover:bg-green-800`}>Zugang anlegen</button>
           <p id="user-status" role="status" class="text-sm text-stone-600 dark:text-stone-300"></p>
         </form>
@@ -64,7 +54,7 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
     import { applyStaticI18n, createT, getLang } from '../lib/i18n/core';
     import { accessDict } from '../lib/i18n/dict-access';
     import { layoutDict } from '../lib/i18n/dict-layout';
-    import { FEATURES, UI_MODES, sanitizeFeatureConfig, type FeatureConfig, type FeatureDef, type UiMode } from '../lib/features';
+    import { FEATURES, FEATURE_GROUPS, UI_MODES, sanitizeFeatureConfig, type FeatureConfig, type FeatureDef, type UiMode } from '../lib/features';
     import { refreshAuth } from '../lib/ui-mode';
     import { loadExpertModule } from '../lib/expert-loader';
     import { escapeHtml } from '../lib/html';
@@ -73,9 +63,12 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
     const t = createT(layoutDict, accessDict);
     const lang = getLang();
     const MODE_KEY: Record<UiMode, string> = { simple: 'modeSimple', classic: 'modeClassic', expert: 'modeExpert' };
-    document.querySelectorAll<HTMLElement>('[data-mode-head]').forEach(th => { th.textContent = t(MODE_KEY[th.dataset.modeHead as UiMode]); });
 
-    const rows = document.getElementById('feature-rows')!;
+    const rows = document.getElementById('feature-groups')!;
+    /** Groups the admin folded away (kept on this device). */
+    const CLOSED_KEY = 'pdk-admin-closed-groups';
+    let closedGroups = new Set<string>();
+    try { closedGroups = new Set(JSON.parse(localStorage.getItem(CLOSED_KEY) || '[]')); } catch { /* ignore */ }
     const status = document.getElementById('features-status')!;
     const saveBtn = document.getElementById('features-save') as HTMLButtonElement;
     let defs: FeatureDef[] = [...FEATURES];
@@ -113,8 +106,59 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
       status.textContent = msg ?? (n ? t('adUnsaved', { n }) : t('adNoChanges'));
     }
 
+    const groupOf = (d: FeatureDef) => d.group || 'other';
+    const groupLabel = (g: string) => FEATURE_GROUPS[g]?.[lang] ?? g;
+    const settable = (d: FeatureDef, mode: UiMode) => !d.private || mode === 'expert';
+
+    function setModes(def: FeatureDef, modes: UiMode[]) {
+      modes = UI_MODES.filter(m => modes.includes(m) && settable(def, m));
+      // Only differences from the default are stored.
+      if (same(modes, def.modes)) delete draft[def.id];
+      else draft[def.id] = modes;
+    }
+
     function renderRows() {
-      rows.innerHTML = defs.map(d => {
+      const order = [...Object.keys(FEATURE_GROUPS).filter(g => g !== 'other'),
+        ...new Set(defs.map(groupOf).filter(g => !(g in FEATURE_GROUPS))), 'other'];
+      const head = `<thead class="text-left text-xs uppercase tracking-wide text-stone-500 dark:text-stone-400">
+          <tr class="border-b border-stone-200 dark:border-stone-700">
+            <th class="px-3 py-2 font-semibold">${escapeHtml(t('adFeature'))}</th>
+            ${UI_MODES.map(m => `<th class="px-2 py-2 text-center font-semibold">${escapeHtml(t(MODE_KEY[m]))}</th>`).join('')}
+            <th class="px-2 py-2 text-center font-semibold">${escapeHtml(t('adOff'))}</th>
+          </tr></thead>`;
+      rows.innerHTML = order.map(g => {
+        const members = defs.filter(d => groupOf(d) === g);
+        if (!members.length) return '';
+        const changedN = members.filter(d => !same(modesOf(d, draft), d.modes)).length;
+        // "Alle": checked when every feature of the group is on in that mode, mixed otherwise.
+        const allCell = (mode: UiMode) => {
+          const able = members.filter(d => settable(d, mode));
+          const n = able.filter(d => modesOf(d, draft).includes(mode)).length;
+          return `<td class="px-2 py-2 text-center"><input type="checkbox" data-group="${g}" data-mode="${mode}" ${able.length && n === able.length ? 'checked' : ''} ${n > 0 && n < able.length ? 'data-mixed' : ''} ${able.length ? '' : 'disabled'}
+            aria-label="${escapeHtml(`${groupLabel(g)}, ${t('adAll')}: ${t(MODE_KEY[mode])}`)}" class="h-4 w-4 accent-green-700 disabled:opacity-30" /></td>`;
+        };
+        const offAll = members.every(d => !modesOf(d, draft).length);
+        return `<details data-group-box="${g}" ${closedGroups.has(g) ? '' : 'open'} class="group/fg overflow-hidden rounded-xl bg-white dark:bg-stone-800 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+          <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2.5">
+            <span class="font-semibold">${escapeHtml(groupLabel(g))}</span>
+            <span class="flex items-center gap-2 text-xs text-stone-500 dark:text-stone-400">${escapeHtml(t('adGroupCount', { n: members.length }))}${changedN ? ` · ${escapeHtml(t('adGroupChanged', { n: changedN }))}` : ''}
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="h-4 w-4 transition-transform group-open/fg:rotate-180"><path d="M5 7.5l5 5 5-5"/></svg></span>
+          </summary>
+          <div class="overflow-x-auto border-t border-stone-200 dark:border-stone-700"><table class="w-full min-w-[36rem] text-sm">${head}
+            <tbody class="divide-y divide-stone-100 dark:divide-stone-700">
+              <tr class="bg-stone-50 dark:bg-stone-900/40"><td class="px-3 py-2 text-xs font-semibold">${escapeHtml(t('adAll'))}</td>
+                ${UI_MODES.map(allCell).join('')}
+                <td class="px-2 py-2 text-center"><input type="checkbox" data-group="${g}" data-off ${offAll ? 'checked' : ''}
+                  aria-label="${escapeHtml(`${groupLabel(g)}, ${t('adAll')}: ${t('adOff')}`)}" class="h-4 w-4 accent-red-700" /></td></tr>
+              ${members.map(featureRow).join('')}
+            </tbody></table></div>
+        </details>`;
+      }).join('');
+      rows.querySelectorAll<HTMLInputElement>('input[data-mixed]').forEach(b => { b.indeterminate = true; });
+      syncStatus();
+    }
+
+    function featureRow(d: FeatureDef): string {
         const on = modesOf(d, draft);
         const changed = !same(on, d.modes);
         const cell = (mode: UiMode) => {
@@ -131,23 +175,28 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
           <td class="px-2 py-2 text-center"><input type="checkbox" data-id="${d.id}" data-off ${on.length ? '' : 'checked'}
             aria-label="${escapeHtml(`${d[lang]}: ${t('adOff')}`)}" class="h-4 w-4 accent-red-700" /></td>
         </tr>`;
-      }).join('');
-      syncStatus();
     }
+
+    rows.addEventListener('toggle', e => {
+      const box = e.target as HTMLDetailsElement;
+      const g = box.dataset.groupBox;
+      if (!g) return;
+      if (box.open) closedGroups.delete(g); else closedGroups.add(g);
+      try { localStorage.setItem(CLOSED_KEY, JSON.stringify([...closedGroups])); } catch { /* ignore */ }
+    }, true);
 
     rows.addEventListener('change', e => {
       const box = e.target as HTMLInputElement;
-      const def = defs.find(d => d.id === box.dataset.id);
-      if (!def) return;
-      let modes = modesOf(def, draft);
-      if (box.hasAttribute('data-off')) modes = box.checked ? [] : [...def.modes].filter(m => !def.private || m === 'expert');
-      else {
-        const m = box.dataset.mode as UiMode;
-        modes = box.checked ? UI_MODES.filter(x => x === m || modes.includes(x)) : modes.filter(x => x !== m);
+      const targets = box.dataset.group ? defs.filter(d => groupOf(d) === box.dataset.group) : defs.filter(d => d.id === box.dataset.id);
+      for (const def of targets) {
+        let modes = modesOf(def, draft);
+        if (box.hasAttribute('data-off')) modes = box.checked ? [] : [...def.modes];
+        else {
+          const m = box.dataset.mode as UiMode;
+          modes = box.checked ? [...modes, m] : modes.filter(x => x !== m);
+        }
+        setModes(def, modes);
       }
-      // Only differences from the default are stored.
-      if (same(modes, def.modes)) delete draft[def.id];
-      else draft[def.id] = modes;
       renderRows();
     });
 
@@ -165,7 +214,7 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
     // ── Accounts ─────────────────────────────────────────────────────────
     const userList = document.getElementById('user-list')!;
     const userStatus = document.getElementById('user-status')!;
-    type User = { name: string; role: 'expert' | 'admin'; created: string | null };
+    type User = { name: string; role: 'expert' | 'team' | 'admin'; created: string | null };
 
     async function loadUsers() {
       const res = await api('GET', '/api/admin/users');
@@ -179,6 +228,7 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
           <div class="flex flex-wrap items-center gap-2">
             <select data-act="role" aria-label="${escapeHtml(`${u.name}: ${t('adRole')}`)}" class="rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2 py-1 text-xs">
               <option value="expert" ${u.role === 'expert' ? 'selected' : ''}>${escapeHtml(t('adRoleExpert'))}</option>
+              <option value="team" ${u.role === 'team' ? 'selected' : ''}>${escapeHtml(t('adRoleTeam'))}</option>
               <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>${escapeHtml(t('adRoleAdmin'))}</option>
             </select>
             <input data-act="pw" id="pw-${i}" type="password" minlength="10" autocomplete="new-password" placeholder="${escapeHtml(t('adSetPassword'))}" aria-label="${escapeHtml(`${u.name}: ${t('adSetPassword')}`)}" class="w-36 rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2 py-1 text-xs" />

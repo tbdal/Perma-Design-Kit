@@ -2,6 +2,11 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Rolle „Team“, Funktionsgruppen 2026-10-05
+- [x] **Rolle „Team“:** neben „Experte“ und „Admin“; Team-Zugänge sehen im Experten-Modus alle Funktionen, auch die auf der Admin-Seite ausgeschalteten und alle privaten (nur der Einstieg des einfachen Modus bleibt weg). In „Einfach“ und „Klassisch“ sehen sie, was alle sehen. Vergeben auf `/admin/` oder mit `npm run user -- add <name> --team`
+- [x] **Admin-Seite in Gruppen:** Funktionen stehen in einklappbaren Gruppen (zuerst „Waldgartenplan“), jede mit einer Zeile „Alle“, die die ganze Gruppe in einem Modus ein- oder ausschaltet; zugeklappte Gruppen bleiben zugeklappt
+- [x] Kein Willkommens-Rundgang auf `/anmelden/` und `/admin/`
+
 ## Einfach / Klassisch / Experte, privates Experten-Repo 2026-10-05
 - [x] **Ansicht wählen:** Menü in der Kopfzeile (alle Seiten) mit „Einfach“, „Klassisch“ (die bisherige Oberfläche) und „Experte“ (mit Zugang). Neue Besucher starten einfach, wer schon da war, klassisch. Gespeichert pro Gerät, vor dem ersten Zeichnen angewandt (`boot.js`), kein Aufflackern
 - [x] **Funktionsliste:** `src/lib/features.ts` listet jede schaltbare Funktion einmal mit ihren Standard-Modi; Markup hängt sich mit `data-feature` daran, Logik fragt `featureOn()`. Ein Test prüft, dass jedes `data-feature` in der Liste steht

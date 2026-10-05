@@ -47,6 +47,17 @@ describe('admin overrides', () => {
     expect(offFeatures('classic', {}, defs)).toContain('waldrand');
   });
 
+  it('team accounts see every feature in expert mode, also ones switched off', () => {
+    const defs: FeatureDef[] = [...FEATURES, { id: 'waldrand', de: 'W', en: 'W', modes: [], private: true }];
+    expect(offFeatures('expert', { water: [], zones: [] }, defs, true)).toEqual(['simple-guide']);
+    // in simple/classic, team sees what everyone sees
+    expect(offFeatures('classic', { water: [] }, defs, true)).toContain('water');
+  });
+
+  it('every feature has a known group', () => {
+    for (const f of FEATURES) expect(f.group, f.id).toBe('gartenplan');
+  });
+
   it('ids only the config knows are off in modes it does not list', () => {
     expect(offFeatures('classic', { 'secret-thing': ['expert'] })).toContain('secret-thing');
   });

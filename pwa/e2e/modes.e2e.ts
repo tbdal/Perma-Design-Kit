@@ -97,11 +97,21 @@ test('admin overrides from the server apply; admin page edits them', async ({ pa
   await expect(page.locator('#admin-body')).toBeVisible();
   await expect(page.locator('#user-list')).toContainText('Ann');
   // water: also on in simple mode; zones: off everywhere ("Aus")
-  await page.check('input[data-id="water"][data-mode="simple"]');
   await page.check('input[data-id="zones"][data-off]');
   await expect(page.locator('input[data-id="zones"][data-mode="classic"]')).not.toBeChecked();
+  // the planner group folds, and "Alle" switches the whole group
+  await expect(page.locator('[data-group-box="gartenplan"] summary')).toContainText('Waldgartenplan');
+  await page.check('input[data-group="gartenplan"][data-mode="simple"]');
+  await expect(page.locator('input[data-id="lasso"][data-mode="simple"]')).toBeChecked();
+  await page.uncheck('input[data-group="gartenplan"][data-mode="simple"]');
+  await expect(page.locator('input[data-id="lasso"][data-mode="simple"]')).not.toBeChecked();
+  await page.check('input[data-id="water"][data-mode="simple"]');
+  await page.click('[data-group-box="gartenplan"] summary');
+  await expect(page.locator('input[data-id="water"][data-mode="simple"]')).toBeHidden();
+  await page.click('[data-group-box="gartenplan"] summary');
   await page.click('#features-save');
   await expect(page.locator('#features-status')).toContainText('Übernommen');
-  expect(saved).toEqual({ features: { areas: ['simple', 'classic', 'expert'], water: ['simple', 'classic', 'expert'], zones: [] } });
+  // "Alle" off in simple also took the guide and the server's "areas" override out of simple mode
+  expect(saved).toEqual({ features: { 'simple-guide': [], water: ['simple', 'classic', 'expert'], zones: [] } });
   void errors;
 });

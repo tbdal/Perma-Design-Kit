@@ -418,7 +418,7 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
         document.getElementById('open-welcome')?.addEventListener('click', open);
         let seen = false;
         try { seen = !!localStorage.getItem(WELCOME_KEY); } catch {}
-        const legal = /^\/(impressum|datenschutz|hilfe)\/?$/.test(location.pathname);
+        const legal = /^\/(impressum|datenschutz|hilfe|anmelden|admin)\/?$/.test(location.pathname);
         if (!seen && !legal) open();
       }
     </script>

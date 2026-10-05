@@ -43,6 +43,8 @@
     root.dataset.mode = mode;
     var defaults = parse(root.getAttribute('data-feature-defaults')) || {};
     var config = parse(get('pdk-feature-config')) || {};
+    // Role 'team' sees every feature in expert mode (TEAM_HIDDEN in features.ts aside).
+    var team = mode === 'expert' && !!auth && auth.role === 'team';
     var css = '';
     var seen = {};
     var ids = Object.keys(defaults).concat(Object.keys(config));
@@ -51,7 +53,7 @@
       if (seen[id] || !/^[a-z0-9][a-z0-9-]{0,39}$/.test(id)) continue;
       seen[id] = 1;
       var modes = Array.isArray(config[id]) ? config[id] : (defaults[id] || []);
-      if (modes.indexOf(mode) < 0) css += '[data-feature~="' + id + '"]{display:none!important}\n';
+      if (team ? id === 'simple-guide' : modes.indexOf(mode) < 0) css += '[data-feature~="' + id + '"]{display:none!important}\n';
     }
     var sheet = new CSSStyleSheet();
     sheet.replaceSync(css);

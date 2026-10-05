@@ -46,6 +46,8 @@ describe('accounts', () => {
     users = upsertUser(users, { name: 'gast', password: 'anderes-passwort' });
     expect(users[1].v).toBe(v1 + 1);
     expect(removeUser(users, 'GAST')).toHaveLength(1);
+    expect(upsertUser(users, { name: 'Team', role: 'team', password: 'zehn-zeichen' }).at(-1).role).toBe('team');
+    expect(() => upsertUser(users, { name: 'X', role: 'root', password: 'zehn-zeichen' })).toThrow('bad-role');
   });
 
   it('feature table keeps only known modes and valid ids', () => {

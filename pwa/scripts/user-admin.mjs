@@ -1,9 +1,9 @@
 // Accounts for expert mode, from the shell (on the VPS):
 //
 //   npm run user -- list
-//   npm run user -- add <name> [--admin]     asks for the password
+//   npm run user -- add <name> [--team|--admin]  asks for the password
 //   npm run user -- passwd <name>            new password, ends open sessions
-//   npm run user -- role <name> expert|admin
+//   npm run user -- role <name> expert|team|admin
 //   npm run user -- remove <name>
 //
 // Writes server/data/private/users.json (or $PDK_PRIVATE_DIR); the running
@@ -16,7 +16,7 @@ const [cmd, name, ...rest] = process.argv.slice(2);
 const store = createStore();
 
 function usage() {
-  console.error('Usage: npm run user -- list | add <name> [--admin] | passwd <name> | role <name> expert|admin | remove <name>');
+  console.error('Usage: npm run user -- list | add <name> [--team|--admin] | passwd <name> | role <name> expert|team|admin | remove <name>');
   process.exit(1);
 }
 
@@ -39,7 +39,7 @@ async function askPassword(prompt) {
 
 const MESSAGES = {
   'bad-name': 'Name: 1–40 Zeichen, Buchstaben, Ziffern, Leerzeichen, . _ -',
-  'bad-role': 'Rolle: expert oder admin',
+  'bad-role': 'Rolle: expert, team oder admin',
   'short-password': `Passwort: mindestens ${MIN_PASSWORD} Zeichen`,
   'last-admin': 'Der letzte Admin kann nicht entfernt oder herabgestuft werden.',
   'not-found': 'Diesen Zugang gibt es nicht.',
@@ -56,7 +56,7 @@ try {
       if (!name) usage();
       if (findUser(users, name)) throw new Error('Diesen Zugang gibt es schon (passwd/role zum Ändern).');
       const password = await askPassword(`Passwort für ${name}: `);
-      store.saveUsers(upsertUser(users, { name, role: rest.includes('--admin') ? 'admin' : 'expert', password }));
+      store.saveUsers(upsertUser(users, { name, role: rest.includes('--admin') ? 'admin' : rest.includes('--team') ? 'team' : 'expert', password }));
       console.log(`Angelegt: ${name}`);
       break;
     }

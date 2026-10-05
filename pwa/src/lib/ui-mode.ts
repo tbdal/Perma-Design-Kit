@@ -3,12 +3,12 @@
 // the pure rules live in features.ts; public/boot.js already applied the
 // stored mode before first paint, this module keeps it up to date.
 import {
-  AUTH_KEY, FEATURE_CONFIG_KEY, FEATURES, MODE_KEY,
+  AUTH_KEY, FEATURE_CONFIG_KEY, FEATURES, MODE_KEY, TEAM_HIDDEN,
   effectiveMode, featureCss, initialMode, isUiMode, modesFor, offFeatures, sanitizeFeatureConfig,
   type FeatureConfig, type FeatureDef, type UiMode,
 } from './features';
 
-export interface AuthInfo { name: string; role: 'expert' | 'admin' }
+export interface AuthInfo { name: string; role: 'expert' | 'team' | 'admin' }
 
 const CHANGE_EVENT = 'pdk-features-change';
 
@@ -25,7 +25,7 @@ function writeJson(key: string, value: unknown): void {
 function parseAuth(raw: unknown): AuthInfo | null {
   if (!raw || typeof raw !== 'object') return null;
   const { name, role } = raw as Record<string, unknown>;
-  return typeof name === 'string' && (role === 'expert' || role === 'admin') ? { name, role } : null;
+  return typeof name === 'string' && (role === 'expert' || role === 'team' || role === 'admin') ? { name, role } : null;
 }
 
 let config: FeatureConfig = sanitizeFeatureConfig(readJson(FEATURE_CONFIG_KEY));
@@ -51,7 +51,10 @@ export function currentMode(): UiMode {
   return effectiveMode(chosenMode(), !!auth);
 }
 
+const isTeam = () => auth?.role === 'team';
+
 export function featureOn(id: string): boolean {
+  if (isTeam() && currentMode() === 'expert') return !TEAM_HIDDEN.includes(id);
   return modesFor(id, config, allDefs()).includes(currentMode());
 }
 
@@ -78,7 +81,7 @@ function featureSheet(): CSSStyleSheet | null {
 export function applyFeatures(): void {
   const mode = currentMode();
   document.documentElement.dataset.mode = mode;
-  featureSheet()?.replaceSync(featureCss(offFeatures(mode, config, allDefs())));
+  featureSheet()?.replaceSync(featureCss(offFeatures(mode, config, allDefs(), isTeam())));
   document.dispatchEvent(new CustomEvent(CHANGE_EVENT, { detail: { mode } }));
 }
 
