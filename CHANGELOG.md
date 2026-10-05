@@ -2,7 +2,7 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
-## AP4 2026-10-04
+## AP4 2026-10-04 - noch testen
 - [x] Gartenplan-Karte: kein weißer Rand mehr um das abgerundete Rechteck; die Hintergrundkarte wird für die tatsächlich sichtbare Fläche nachgeladen (auch wenn sich Breite/Höhe ändern)
 - [x] Sorte (in Klammern) in der Tabelle; Name und Lateinisch teilen sich eine Spalte, die Tabelle passt ab 1024 px ohne Scrollen (unter 1280 px sind Wuchs, Gruppen und Quellen ausgeblendet)
 - [x] Amazon AWS raus: Höhenkacheln laufen über den eigenen Server (nginx-Cache `/geo/terrain/`); der Browser verbindet sich nicht mehr mit Amazon. Datenschutzerklärung angepasst
