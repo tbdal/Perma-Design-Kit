@@ -458,6 +458,7 @@ import Layout from '../layouts/Layout.astro';
   import { completenessPercent, badgeDefs, plantBadgesHtml, groupPillsHtml, dotHtml, type BadgeDef } from '../lib/plant-detail';
   import { BOOL_FIELD_KEYS, FORM_BOOL_FIELD_KEYS } from '../lib/plant-fields';
   import { searchPlants } from '../lib/plant-search';
+  import { initVarietyPicker } from '../lib/variety-picker';
   import { newId } from '../lib/id';
   import { enrichPlant, needsEnrichment, trackSources, createPlantFromSearch } from '../lib/enrich';
   import { announce, escapeHtml, withButtonSpinner, loadingPlaceholderHtml, imageCreditOverlayHtml } from '../lib/html';
@@ -543,6 +544,14 @@ import Layout from '../layouts/Layout.astro';
   const boolFields = FORM_BOOL_FIELD_KEYS;
 
   function el(id: string) { return document.getElementById(`f-${id}`) as HTMLInputElement; }
+
+  const varietyPicker = initVarietyPicker({
+    input: el('varietyName'),
+    latinInput: el('latinName'),
+    plants: () => cachedPlants,
+    wikidataEnabled: () => isSourceEnabled('wikidata'),
+    t,
+  });
 
   // ── Source helpers ────────────────────────────────────────────────────────────
 
@@ -640,6 +649,7 @@ import Layout from '../layouts/Layout.astro';
     el('groups').value = (p.groups ?? []).join(', ');
     for (let i = 0; i < 12; i++) { el(`fruit-${i}`).checked = p.fruitMonths[i]; el(`flower-${i}`).checked = p.flowerMonths[i]; }
     updateFormBadges(p);
+    varietyPicker.reset();
   }
 
   function readForm(): PlantData {
@@ -1555,7 +1565,22 @@ import Layout from '../layouts/Layout.astro';
       // as a hint, not a hard block, since a second entry can be legitimate
       // (e.g. a different cultivar tracked separately via varietyName).
       const existingLatin = new Set(cachedPlants.map(p => p.latinName.trim().toLowerCase()));
+      const existingVariety = new Set(cachedPlants.map(p => `${p.latinName.trim().toLowerCase()}|${(p.varietyName ?? '').trim().toLowerCase()}`));
       searchResults.innerHTML = results.map((r, i) => {
+        if (r.variety) {
+          // Cultivar hit: added as its species with the variety filled in.
+          const dupe = existingVariety.has(`${r.latinName.trim().toLowerCase()}|${r.variety.trim().toLowerCase()}`);
+          return `
+        <div id="search-result-${i}" role="option" aria-selected="false" class="flex items-center justify-between gap-2 px-4 py-2.5 hover:bg-stone-50 dark:hover:bg-stone-800 transition" data-idx="${i}">
+          <div class="min-w-0">
+            <p class="truncate text-sm font-medium text-stone-800 dark:text-stone-100">${escapeHtml(r.variety)}</p>
+            <p class="truncate text-xs text-stone-500 dark:text-stone-400">${escapeHtml(t('searchVarietyOf'))} <span class="italic">${escapeHtml(r.latinName)}</span></p>
+            ${dupe ? `<p class="text-xs font-medium text-amber-600 dark:text-amber-400">${escapeHtml(t('searchAlreadyAdded'))}</p>` : ''}
+            <p class="import-status text-xs text-green-600"></p>
+          </div>
+          <button data-dupe="${dupe ? '1' : ''}" class="btn-add-result shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium shadow transition active:scale-95 ${dupe ? 'bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-600' : 'bg-green-700 text-white hover:bg-green-800'}">${escapeHtml(dupe ? t('searchAddAnyway') : t('searchAddVariety'))}</button>
+        </div>`;
+        }
         const dupe = !!r.latinName && existingLatin.has(r.latinName.trim().toLowerCase());
         return `
         <div id="search-result-${i}" role="option" aria-selected="false" class="flex items-center justify-between gap-2 px-4 py-2.5 hover:bg-stone-50 dark:hover:bg-stone-800 transition" data-idx="${i}">
@@ -1575,11 +1600,15 @@ import Layout from '../layouts/Layout.astro';
         btn.addEventListener('click', async () => {
           const b = btn as HTMLButtonElement;
           const statusEl = b.closest('[data-idx]')?.querySelector('.import-status') as HTMLElement | null;
-          if (b.dataset.dupe && !confirm(t('searchAddAnywayConfirm', { name: results[idx].commonName || results[idx].latinName }))) return;
+          if (b.dataset.dupe && !confirm(t('searchAddAnywayConfirm', { name: results[idx].variety || results[idx].commonName || results[idx].latinName }))) return;
           b.disabled = true;
           try {
             b.textContent = t('enrichSourcesStatus');
             const { plant, sourceLabels } = await createPlantFromSearch(results[idx]);
+            if (results[idx].variety) {
+              plant.varietyName = results[idx].variety!;
+              plant._sources = { ...plant._sources, varietyName: 'manual' };
+            }
             await savePlant(plant);
             renderList();
             b.textContent = t('searchAdded');

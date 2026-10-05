@@ -1,5 +1,6 @@
 import { parseHabit, type PlantData } from './types';
 import { isSourceEnabled } from './settings';
+import { cultivarOf, isCultivarEntity } from './varieties';
 
 // ── Local plant database ─────────────────────────────────────────────────────
 
@@ -37,6 +38,9 @@ export interface SearchResult {
   commonName: string;
   wikidataId?: string;
   description?: string;
+  /** Set for a Wikidata cultivar hit (e.g. "Conference"): the result then
+   *  stands for its species, added with this variety name. */
+  variety?: string;
 }
 
 // Whole-word match, not substring: bare .includes() flagged "species of
@@ -171,9 +175,20 @@ export async function searchPlants(query: string): Promise<SearchResult[]> {
           const detailRes = await fetch(detailUrl.toString(), { signal });
           if (detailRes.ok) {
             const detailData = await detailRes.json();
+            // Cultivars ("Conference", "Gravensteiner") are not plants of their
+            // own here: they are listed after the species hits as "variety of
+            // <species>" and added as that species with the variety set.
+            const varietyHits: SearchResult[] = [];
             for (const item of items) {
               const entity = detailData.entities?.[item.title];
               if (!entity) continue;
+              if (isCultivarEntity(entity)) {
+                const cv = cultivarOf(entity);
+                if (cv && !varietyHits.some(v => v.latinName === cv.species && v.variety === cv.name)) {
+                  varietyHits.push({ latinName: cv.species, commonName: '', variety: cv.name });
+                }
+                continue;
+              }
               const taxonClaim = entity.claims?.P225?.[0]?.mainsnak?.datavalue?.value;
               const descDe = entity.descriptions?.de?.value;
               const descEn = entity.descriptions?.en?.value;
@@ -189,6 +204,7 @@ export async function searchPlants(query: string): Promise<SearchResult[]> {
                 description: descDe || descEn || '',
               });
             }
+            results.push(...varietyHits);
           }
         }
       }

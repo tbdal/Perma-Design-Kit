@@ -1,5 +1,6 @@
 import { openDB, type DBSchema } from 'idb';
 import type { PlantData, Polyculture, GardenPlan } from './types';
+import type { VarietyList } from './varieties';
 
 interface PlantDB extends DBSchema {
   plants: {
@@ -14,6 +15,10 @@ interface PlantDB extends DBSchema {
   gardenPlans: {
     key: string;
     value: GardenPlan;
+  };
+  varietyLists: {
+    key: string;
+    value: VarietyList;
   };
 }
 
@@ -30,7 +35,8 @@ const DB_NAME = 'permaculture-guilds';
 // store is dropped, so nobody's saved polycultures disappear.
 // v5: adds the 'gardenPlans' store for the Gartenplan feature. Additive/
 // idempotent, same self-healing pattern as prior bumps.
-const DB_VERSION = 5;
+// v6: adds 'varietyLists' (imported cultivar lists for the Sorte picker).
+const DB_VERSION = 6;
 
 // One shared connection per page instead of opening a fresh one on every call.
 // Dropped (and re-opened on next use) if another tab upgrades the schema or
@@ -71,6 +77,9 @@ function openPlantDB() {
       }
       if (!db.objectStoreNames.contains('gardenPlans')) {
         db.createObjectStore('gardenPlans', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('varietyLists')) {
+        db.createObjectStore('varietyLists', { keyPath: 'id' });
       }
     },
   });
@@ -176,4 +185,21 @@ export async function importGardenPlans(plans: GardenPlan[]): Promise<void> {
     await tx.store.put(plan);
   }
   await tx.done;
+}
+
+// ── Variety lists (Sortenlisten) ────────────────────────────────────────────
+
+export async function getVarietyLists(): Promise<VarietyList[]> {
+  const db = await getDB();
+  return (await db.getAll('varietyLists')).sort((a, b) => a.name.localeCompare(b.name, 'de'));
+}
+
+export async function saveVarietyList(list: VarietyList): Promise<void> {
+  const db = await getDB();
+  await db.put('varietyLists', list);
+}
+
+export async function deleteVarietyList(id: string): Promise<void> {
+  const db = await getDB();
+  await db.delete('varietyLists', id);
 }

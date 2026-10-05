@@ -141,6 +141,22 @@ import Layout from '../layouts/Layout.astro';
     </div>
   </section>
 
+  <!-- Sortenlisten -->
+  <section id="sortenlisten" class="mb-8 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+    <h2 class="text-lg font-semibold text-stone-800 dark:text-stone-100" data-i18n="sectionVarieties">Sortenlisten</h2>
+    <p class="mt-1 text-sm text-stone-500 dark:text-stone-400" data-i18n="varietiesIntro">Sortenlisten füllen die Auswahl „Sorte“ beim Bearbeiten einer Pflanze. Obstsorten aus Wikidata (frei, CC0) lädst du mit einem Klick; eigene Listen kommen als CSV mit den Spalten „Art“ und „Sorte“.</p>
+    <div class="mt-4 flex flex-wrap gap-2">
+      <button id="btn-variety-wikidata" type="button" data-i18n="btnVarietyWikidata" class="rounded-lg bg-green-700 px-3 py-1.5 text-sm font-medium text-white shadow hover:bg-green-800">Obstsorten aus Wikidata laden</button>
+      <label class="cursor-pointer rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">
+        <span data-i18n="btnVarietyCsv">CSV-Liste importieren…</span>
+        <input type="file" id="variety-csv-input" accept=".csv,text/csv,text/plain" class="hidden" />
+      </label>
+      <button id="btn-variety-template" type="button" data-i18n="btnVarietyTemplate" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">CSV-Vorlage ↓</button>
+    </div>
+    <p id="variety-status" aria-live="polite" class="mt-2 min-h-4 text-xs text-stone-500 dark:text-stone-400"></p>
+    <ul id="variety-lists" class="mt-3 space-y-3"></ul>
+  </section>
+
   <!-- Sync -->
   <section class="mb-8 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
     <h2 class="text-lg font-semibold text-stone-800 dark:text-stone-100" data-i18n="sectionSync">Sync</h2>
@@ -275,7 +291,9 @@ import Layout from '../layouts/Layout.astro';
     isAnalyticsOptedOut, setAnalyticsOptOut,
     type AppSettings, type ViewMode, type CardVariant, type ThemePref, type DesignPref,
   } from '../lib/settings';
-  import { getAllPlants, importPlants, clearAllPlants, importPolycultures, importGardenPlans } from '../lib/db';
+  import { getAllPlants, importPlants, clearAllPlants, importPolycultures, importGardenPlans, getVarietyLists, saveVarietyList, deleteVarietyList } from '../lib/db';
+  import { fetchWikidataVarieties, parseVarietyCsv, varietyListToCsv, dedupeEntries, speciesKey, VARIETY_CSV_TEMPLATE, WIKIDATA_LIST_ID, type VarietyList } from '../lib/varieties';
+  import { newId } from '../lib/id';
   import { buildBackupJson, parseBackup, rememberSyncAt, isAutoSyncEnabled, GIST_FILENAME, GIST_FILENAME_LEGACY } from '../lib/sync';
   import { escapeHtml, withButtonSpinner } from '../lib/html';
   import { createT, applyStaticI18n, getLang } from '../lib/i18n/core';
@@ -900,11 +918,164 @@ import Layout from '../layouts/Layout.astro';
     }
   });
 
+  // ── Sortenlisten ────────────────────────────────────────────────────────
+  // Lists for the "Sorte" picker in the plant editor (lib/varieties.ts):
+  // load Wikidata's fruit cultivars, import CSV lists, then rename, switch
+  // off, refresh, export, browse, add or remove single entries, or delete.
+  const varietyListsEl = document.getElementById('variety-lists')!;
+  const varietyStatus = document.getElementById('variety-status')!;
+  const fmtNum = (n: number) => new Intl.NumberFormat(getLang()).format(n);
+  const speciesLabel = (k: string) => k ? k[0].toUpperCase() + k.slice(1) : '—';
+  const VARIETY_SHOWN = 300;
+  const openVarietyLists = new Set<string>();
+
+  function downloadText(text: string, filename: string, type: string) {
+    const url = URL.createObjectURL(new Blob(['\ufeff' + text], { type }));
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  async function renderVarietyLists() {
+    const lists = await getVarietyLists().catch(() => [] as VarietyList[]);
+    if (lists.length === 0) {
+      varietyListsEl.innerHTML = `<li class="rounded-lg border border-dashed border-stone-300 dark:border-stone-600 p-4 text-sm text-stone-500 dark:text-stone-400">${escapeHtml(t('varietiesEmpty'))}</li>`;
+      return;
+    }
+    varietyListsEl.innerHTML = lists.map(l => {
+      const species = new Map<string, number>();
+      for (const e of l.entries) species.set(e.species, (species.get(e.species) ?? 0) + 1);
+      const top = [...species.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([k, n]) => `${speciesLabel(k)} ${fmtNum(n)}`).join(' · ');
+      const date = new Date(l.importedAt).toLocaleDateString(getLang());
+      const btn = 'rounded-md bg-stone-100 dark:bg-stone-700 px-2 py-1 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600';
+      return `
+      <li data-list="${escapeHtml(l.id)}" class="rounded-lg p-3 ring-1 ring-stone-200 dark:ring-stone-700 ${l.enabled ? '' : 'opacity-60'}">
+        <div class="flex flex-wrap items-start justify-between gap-2">
+          <div class="min-w-0">
+            <p class="font-medium text-stone-800 dark:text-stone-100">${escapeHtml(l.name)}</p>
+            <p class="text-xs text-stone-500 dark:text-stone-400">${escapeHtml(t('varietyListMeta', { n: fmtNum(l.entries.length), s: fmtNum(species.size), src: l.license, date }))}</p>
+            <p class="text-xs text-stone-400">${escapeHtml(top)}</p>
+          </div>
+          <label class="inline-flex items-center gap-1.5 text-xs text-stone-600 dark:text-stone-300"><input type="checkbox" class="vl-enabled accent-green-600" ${l.enabled ? 'checked' : ''} /> ${escapeHtml(t('varietyListActive'))}</label>
+        </div>
+        <div class="mt-2 flex flex-wrap gap-1.5">
+          <button type="button" class="vl-rename ${btn}">${escapeHtml(t('varietyListRename'))}</button>
+          ${l.source === 'wikidata' ? `<button type="button" class="vl-refresh ${btn}">${escapeHtml(t('varietyListRefresh'))}</button>` : ''}
+          <button type="button" class="vl-export ${btn}">${escapeHtml(t('varietyListExport'))}</button>
+          <button type="button" class="vl-delete rounded-md bg-red-50 dark:bg-red-900/30 px-2 py-1 text-xs font-medium text-red-700 dark:text-red-300 ring-1 ring-red-200 dark:ring-red-800 hover:bg-red-100">${escapeHtml(t('varietyListDelete'))}</button>
+        </div>
+        <details class="vl-details mt-2" ${openVarietyLists.has(l.id) ? 'open' : ''}>
+          <summary class="cursor-pointer text-xs font-medium text-green-700 dark:text-green-400">${escapeHtml(t('varietyListBrowse'))}</summary>
+          <div class="mt-2 flex flex-wrap gap-1.5">
+            <input type="search" class="vl-filter min-w-0 flex-1 rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2 py-1 text-xs" placeholder="${escapeHtml(t('varietyListFilter'))}" aria-label="${escapeHtml(t('varietyListFilter'))}" />
+          </div>
+          <ul class="vl-entries mt-2 max-h-64 overflow-y-auto divide-y divide-stone-100 dark:divide-stone-700 text-xs"></ul>
+          <form class="vl-add mt-2 flex flex-wrap items-center gap-1.5">
+            <input name="species" required class="w-40 rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2 py-1 text-xs" placeholder="${escapeHtml(t('varietyAddSpecies'))}" aria-label="${escapeHtml(t('varietyAddSpecies'))}" />
+            <input name="name" required class="w-40 rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2 py-1 text-xs" placeholder="${escapeHtml(t('varietyAddName'))}" aria-label="${escapeHtml(t('varietyAddName'))}" />
+            <button type="submit" class="${btn}">${escapeHtml(t('varietyAdd'))}</button>
+          </form>
+        </details>
+      </li>`;
+    }).join('');
+
+    for (const li of varietyListsEl.querySelectorAll<HTMLElement>('[data-list]')) {
+      const list = lists.find(l => l.id === li.dataset.list)!;
+      const save = async (msg?: string) => { await saveVarietyList(list); if (msg) varietyStatus.textContent = msg; await renderVarietyLists(); };
+      li.querySelector<HTMLInputElement>('.vl-enabled')!.addEventListener('change', e => { list.enabled = (e.target as HTMLInputElement).checked; void save(); });
+      li.querySelector('.vl-rename')!.addEventListener('click', () => {
+        const name = prompt(t('varietyListRenamePrompt'), list.name)?.trim();
+        if (name) { list.name = name; void save(); }
+      });
+      li.querySelector('.vl-refresh')?.addEventListener('click', e => loadWikidataList(e.currentTarget as HTMLButtonElement));
+      li.querySelector('.vl-export')!.addEventListener('click', () => downloadText(varietyListToCsv(list), `${list.name.replace(/[^\p{L}\p{N}]+/gu, '-').toLowerCase()}.csv`, 'text/csv'));
+      li.querySelector('.vl-delete')!.addEventListener('click', async () => {
+        if (!confirm(t('varietyListDeleteConfirm', { name: list.name }))) return;
+        await deleteVarietyList(list.id);
+        varietyStatus.textContent = t('varietyListDeleted', { name: list.name });
+        await renderVarietyLists();
+      });
+      const details = li.querySelector<HTMLDetailsElement>('.vl-details')!;
+      const filter = li.querySelector<HTMLInputElement>('.vl-filter')!;
+      const entriesEl = li.querySelector<HTMLUListElement>('.vl-entries')!;
+      const renderEntries = () => {
+        const q = filter.value.trim().toLowerCase();
+        const hits = list.entries.filter(e => !q || e.name.toLowerCase().includes(q) || e.species.includes(q) || e.synonyms?.some(s => s.toLowerCase().includes(q)));
+        entriesEl.innerHTML = hits.slice(0, VARIETY_SHOWN).map(e => `
+          <li class="flex items-center justify-between gap-2 py-1" data-entry="${escapeHtml(e.species + '|' + e.name)}">
+            <span class="min-w-0"><span class="text-stone-800 dark:text-stone-100">${escapeHtml(e.name)}</span> <span class="italic text-stone-400">${escapeHtml(speciesLabel(e.species))}</span>${e.synonyms?.length ? ` <span class="text-stone-400">(${escapeHtml(e.synonyms.join(', '))})</span>` : ''}</span>
+            <button type="button" class="vl-remove shrink-0 rounded px-1.5 text-stone-400 hover:bg-red-50 hover:text-red-600" aria-label="${escapeHtml(t('varietyRemove', { name: e.name }))}" title="${escapeHtml(t('varietyRemove', { name: e.name }))}">×</button>
+          </li>`).join('') + (hits.length > VARIETY_SHOWN ? `<li class="py-1 text-stone-500">${escapeHtml(t('varietyListMore', { n: fmtNum(hits.length - VARIETY_SHOWN) }))}</li>` : '')
+          + (hits.length === 0 ? `<li class="py-1 text-stone-500">${escapeHtml(t('varietyListNoHits'))}</li>` : '');
+        entriesEl.querySelectorAll<HTMLElement>('.vl-remove').forEach(b => b.addEventListener('click', async () => {
+          const key = (b.closest('[data-entry]') as HTMLElement).dataset.entry!;
+          list.entries = list.entries.filter(e => `${e.species}|${e.name}` !== key);
+          await saveVarietyList(list);
+          b.closest('li')!.remove();
+          li.querySelector('.text-xs')!.textContent = t('varietyListMeta', { n: fmtNum(list.entries.length), s: fmtNum(new Set(list.entries.map(e => e.species)).size), src: list.license, date: new Date(list.importedAt).toLocaleDateString(getLang()) });
+        }));
+      };
+      details.addEventListener('toggle', () => {
+        if (details.open) { openVarietyLists.add(list.id); renderEntries(); } else openVarietyLists.delete(list.id);
+      });
+      if (details.open) renderEntries();
+      filter.addEventListener('input', renderEntries);
+      li.querySelector<HTMLFormElement>('.vl-add')!.addEventListener('submit', async e => {
+        e.preventDefault();
+        const f = e.currentTarget as HTMLFormElement;
+        const species = speciesKey(String(new FormData(f).get('species') ?? ''));
+        const name = String(new FormData(f).get('name') ?? '').trim();
+        if (!species || !name) return;
+        list.entries = dedupeEntries([...list.entries, { species, name }]);
+        await save(t('varietyAdded', { name, list: list.name }));
+      });
+    }
+  }
+
+  async function loadWikidataList(btn: HTMLButtonElement) {
+    await withButtonSpinner(btn, async () => {
+      varietyStatus.textContent = t('varietyWikidataLoading');
+      try {
+        const entries = await fetchWikidataVarieties(null);
+        const old = (await getVarietyLists()).find(l => l.id === WIKIDATA_LIST_ID);
+        await saveVarietyList({
+          id: WIKIDATA_LIST_ID, name: old?.name ?? t('varietyWikidataName'), source: 'wikidata', license: 'Wikidata, CC0',
+          importedAt: new Date().toISOString(), enabled: old?.enabled ?? true, entries,
+        });
+        varietyStatus.textContent = t('varietyWikidataDone', { n: fmtNum(entries.length) });
+      } catch (err) {
+        varietyStatus.textContent = t('varietyWikidataFailed', { msg: err instanceof Error ? err.message : String(err) });
+      }
+      await renderVarietyLists();
+    });
+  }
+
+  document.getElementById('btn-variety-wikidata')!.addEventListener('click', e => loadWikidataList(e.currentTarget as HTMLButtonElement));
+  document.getElementById('btn-variety-template')!.addEventListener('click', () => downloadText(VARIETY_CSV_TEMPLATE, 'sortenliste-vorlage.csv', 'text/csv'));
+  document.getElementById('variety-csv-input')!.addEventListener('change', async e => {
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    try {
+      const entries = parseVarietyCsv(await file.text());
+      if (entries.length === 0) throw new Error(t('varietyCsvEmpty'));
+      const name = file.name.replace(/\.[^.]+$/, '');
+      await saveVarietyList({ id: newId(), name, source: 'csv', license: t('varietyCsvLicense', { file: file.name }), importedAt: new Date().toISOString(), enabled: true, entries });
+      varietyStatus.textContent = t('varietyCsvDone', { n: fmtNum(entries.length), name });
+    } catch (err) {
+      varietyStatus.textContent = t('varietyCsvFailed', { msg: err instanceof Error ? err.message : String(err) });
+    }
+    await renderVarietyLists();
+  });
+
   // ── Daten: Alles löschen ────────────────────────────────────────────────
   document.getElementById('btn-clear-all')!.addEventListener('click', async () => {
     if (!confirm(t('clearAllConfirm1'))) return;
     if (!confirm(t('clearAllConfirm2'))) return;
     await clearAllPlants();
+    for (const l of await getVarietyLists().catch(() => [])) await deleteVarietyList(l.id);
     try { localStorage.clear(); } catch {}
     location.href = '/';
   });
@@ -914,6 +1085,7 @@ import Layout from '../layouts/Layout.astro';
   renderSources();
   renderPrefs();
   renderStats();
+  void renderVarietyLists();
   renderLastBackup();
   renderLastSyncInfo();
   loadWebdavCreds();
