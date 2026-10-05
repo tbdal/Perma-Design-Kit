@@ -19,6 +19,12 @@ export const gartenplanDict: Dict = {
   btnSavePlan: { de: 'Waldgartenplan speichern', en: 'Save forest garden plan' },
   confirmDeletePlan: { de: 'Waldgartenplan „{name}" wirklich löschen?', en: 'Really delete forest garden plan "{name}"?' },
   toastPlanSaved: { de: 'Waldgartenplan gespeichert', en: 'Forest garden plan saved' },
+  planRename: { de: 'Umbenennen', en: 'Rename' },
+  planDuplicate: { de: 'Duplizieren', en: 'Duplicate' },
+  planDelete: { de: 'Löschen', en: 'Delete' },
+  planRenamePrompt: { de: 'Neuer Name des Waldgartenplans:', en: 'New name of the forest garden plan:' },
+  planCopyName: { de: '{name} (Kopie)', en: '{name} (copy)' },
+  toastPlanDuplicated: { de: '„{name}“ angelegt', en: '“{name}” created' },
   toastPlanDeleted: { de: 'Waldgartenplan gelöscht', en: 'Forest garden plan deleted' },
   alertEnterName: { de: 'Bitte einen Namen eingeben.', en: 'Please enter a name.' },
 

@@ -11,6 +11,8 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 - [x] **Kalender:** aktueller Monat im Überblick als weiße Karte, in der Tabelle durchgehend hinterlegt; Infobox „Wie funktioniert das?“ mit Anteil der Pflanzen mit Kalenderdaten und Erklärung von Überblick, Tabelle, Filtern und Datenquellen
 - [x] **Lizenz der Schriften:** OFL-1.1-Text für Archivo, Archivo Black und Raleway in `pwa/public/fonts/OFL.txt` (wird mit ausgeliefert), Verweis in `NOTICE`
 - [x] Erledigt aus „Karten“: Kartenhintergrund im Gartenplan-PDF (kam mit dem neuen Plan-PDF)
+- [x] **Höhe und Breite erklärt:** Tooltip ⓘ an den Feldern, Abschnitt „Höhe und Breite“ in der Hilfe, Wachstumsmodell im Gartenplan-Infotext (Endgröße aus PFAF, sonst Mitte der EFG-Spanne; S-Kurve bis 6/15/30 Jahre)
+- [x] **Waldgartenplan-Übersicht:** Umbenennen, Duplizieren (mit Kartenausschnitt/3D-Kamera) und Löschen direkt auf der Projektkarte; Alt+4 bzw. Klick auf „Waldgartenplan“ führt aus einer Planung zurück zur Übersicht
 
 ## Gartenplan: große Pläne, Gebäude-Cache, Dachformen 2026-10-05
 - [x] **Performance großer Pläne:** gemessen an 500 × 400 m mit 840 Pflanzen, ~2000 Gebäuden und NRW-1-m-Gelände. Besonnung über einen Raster-Index (16 s → 0,5 s), Schattenhinweise 10 s → 0,3 s, Zeitregler ohne Layout pro Marker (≈ 300 → 30 ms je Schritt); Stack-Überlauf bei 1-m-Gelände großer Pläne behoben (Hinweise, Besonnung und 3D fielen aus)

@@ -74,6 +74,7 @@ export const layoutDict: Dict = {
   welcomeDone: { de: 'Los geht’s', en: 'Get started' },
 
   shortcutsTitle: { de: 'Tastatur-Shortcuts', en: 'Keyboard shortcuts' },
+  scGpProjects: { de: 'Zurück zur Projektübersicht (auch Klick auf „Waldgartenplan“)', en: 'Back to the project list (also a click on “Forest garden plan”)' },
   scGpView: { de: '2D- / 3D-Ansicht', en: '2D / 3D view' },
   scGpPan: { de: 'Bewegen (Karte verschieben)', en: 'Move (pan the map)' },
   scGpSelect: { de: 'Markieren – einzeln', en: 'Select – single' },
