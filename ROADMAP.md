@@ -44,6 +44,7 @@ Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann
 - [ ] **1-m-Gelände für weitere Länder:** bisher NRW, BB/BE, BW, HE, NI, NL. Bayern nur kostenpflichtiger WCS (DGM1 als Download offen), Sachsen/Sachsen-Anhalt lehnen ab (403), TH/SH/MV/RP/SL kein offener WCS gefunden — erneut prüfen oder Kacheln selbst bereitstellen
 - [ ] **Luftbild Sachsen-Anhalt beobachten:** `ST_LVermGeo_DOP_WMS_OpenData` antwortet seit 2026-10-04 vormittags mit 403 (auch Capabilities; INSPIRE-OI mit 500) — bei anhaltendem Ausfall beim LVermGeo nachfragen (service.lvermgeo@sachsen-anhalt.de) bzw. neue Adresse eintragen
 - [ ] Wachstumsmodelle detaillieren & validieren
+- [ ] **Waldränder in 3D:** Waldflächen im Umkreis von ~150 m um den Plan als Bäume in ihrer ausgewachsenen Höhe zeigen und als Schattenwerfer in die Besonnungskarte nehmen (Hinweis, wenn ein Beet viele Sonnenstunden an den Waldrand verliert). In drei Stufen: (A) Waldflächen + Laub/Nadel aus OSM über `/geo/overpass`; (B) Hauptbaumart aus der Thünen-Baumartenkarte 2017/18 (10 m, CC BY 4.0, DOI 10.3220/DATA20221214084846), serverseitig zugeschnitten, Endhöhe über eine Referenzart in `plants-db.json`; (C) heutige Kronenhöhe aus dem nDOM, wo offen (NRW `wcs_nw_ndom`, dl-de/zero; BW nDOM1 prüfen), Umschalter „heute“/„ausgewachsen“. 3D als `InstancedMesh` je Wuchsform. Konzept: Doc „Einfacher Modus, Experten-Modus und Waldränder in 3D“ (2026-10-05)
 
 
 
