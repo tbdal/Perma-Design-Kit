@@ -122,6 +122,23 @@ test('hint click: first jumps to the area and marks it, second selects the plant
   void errors;
 });
 
+test('plan PDF: paper/scale check and a scaled download', async ({ page, errors }) => {
+  await stubNetwork(page);
+  await seedNeighbourPlan(page);           // 30 × 20 m
+  await openPlan(page, 'np');
+  await page.click('#btn-export-pdf');
+  await page.selectOption('#pdf-paper', 'A4');
+  await page.selectOption('#pdf-scale', '50');
+  await expect(page.locator('#pdf-create')).toBeDisabled();
+  await expect(page.locator('#pdf-info')).toContainText('A2');
+  await page.selectOption('#pdf-scale', '200');
+  await expect(page.locator('#pdf-create')).toBeEnabled();
+  const [dl] = await Promise.all([page.waitForEvent('download'), page.click('#pdf-create')]);
+  const bytes = (await import('node:fs')).readFileSync((await dl.path())!);
+  expect(bytes.subarray(0, 5).toString()).toBe('%PDF-');
+  void errors;
+});
+
 test('construction phases: later plants as outline, phase panel, shopping list per year', async ({ page, errors }) => {
   await stubNetwork(page);
   await seedNeighbourPlan(page, { yearsSincePlanting: 1 });

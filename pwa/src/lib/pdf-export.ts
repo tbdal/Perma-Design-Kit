@@ -1,7 +1,7 @@
 import { PDFDocument, PDFPage, PDFRef, PDFName, PDFString, StandardFonts, degrees, rgb, drawImage as pdfDrawImage, pushGraphicsState, popGraphicsState, moveTo, appendBezierCurve, closePath, clip, endPath } from 'pdf-lib';
 import { renderPolyCardToCanvas, renderStripeCardToCanvas } from './card-canvas';
 import { renderBaumscheibeSvg } from './baumscheibe-render';
-import { renderGardenPlanFullSvg } from './gartenplan-render';
+import { renderGardenPlanInnerSvg, SVG_UNITS_PER_METER } from './gartenplan-render';
 import { dataCredits, type GardenPlan, type PlantData } from './types';
 import { escapeHtml } from './html';
 import { packCircles } from './circle-pack';
@@ -629,6 +629,11 @@ export async function exportBaumscheibeScaledPDF(plants: PlantData[], scale: num
   return { pages: pageCount, shrunk, discarded };
 }
 
+/** Standard PDF fonts are WinAnsi: replace what they can't encode. */
+function pdfSafe(text: string): string {
+  return text.replace(/≈/g, '~').replace(/[‐-―]/g, '-').replace(/[“”„]/g, '"').replace(/[‘’‚]/g, "'").replace(/…/g, '...').replace(/[^\x00-\xff€]/g, '?');
+}
+
 // ── Gartenplan export ────────────────────────────────────────────────────────
 //
 // Unlike Baumscheibe (a 5 MB raster-heavy template), the Gartenplan SVG is
@@ -639,43 +644,106 @@ export async function exportBaumscheibeScaledPDF(plants: PlantData[], scale: num
 const GARDENPLAN_MARGIN_MM = { top: 20, bottom: 18, side: 12 };
 const GARDENPLAN_RASTER_PX_PER_MM = 6; // ≈150dpi at typical plan sizes
 
-/** Portrait for a taller-than-wide plan, landscape otherwise — picked from
- *  the plan's own aspect ratio rather than always defaulting to one. */
-function gardenPlanPageSizeMm(plan: GardenPlan): { w: number; h: number } {
-  return plan.areaWidthM > plan.areaHeightM ? { w: 297, h: 210 } : { w: 210, h: 297 };
+export type PlanPaper = 'A4' | 'A3' | 'A2';
+const PLAN_PAPER_MM: Record<PlanPaper, [number, number]> = { A4: [297, 210], A3: [420, 297], A2: [594, 420] };
+
+export interface PlanPdfOptions {
+  paper: PlanPaper;
+  /** Map scale denominator (100 = 1:100); null = fit the page. */
+  scale: number | null;
+  /** Map tiles under the plan as an SVG fragment in plan units (images as data URLs), see basemapSvgInline(). */
+  backgroundSvg?: string;
+  /** Plain-text credit of the background (printed under the plan). */
+  backgroundCredit?: string;
+  /** Bearing of plan "up" (geo.rotationDeg) for the north arrow; null = no location, no arrow. */
+  rotationDeg: number | null;
 }
 
-export async function exportGardenPlanPDF(plan: GardenPlan, plantsById: Map<string, PlantData>): Promise<void> {
+/** Landscape for a wider-than-tall plan, portrait otherwise. */
+function gardenPlanPageSizeMm(plan: GardenPlan, paper: PlanPaper): { w: number; h: number } {
+  const [a, b] = PLAN_PAPER_MM[paper];
+  return plan.areaWidthM > plan.areaHeightM ? { w: a, h: b } : { w: b, h: a };
+}
+
+/** Space for the drawing on a page (mm). */
+function planDrawArea(plan: GardenPlan, paper: PlanPaper) {
+  const { w, h } = gardenPlanPageSizeMm(plan, paper);
+  return { pageW: w, pageH: h, availW: w - GARDENPLAN_MARGIN_MM.side * 2, availH: h - GARDENPLAN_MARGIN_MM.top - GARDENPLAN_MARGIN_MM.bottom };
+}
+
+/** Does the plan fit the paper at this scale? (fit = scale null always does) */
+export function planFitsPaper(plan: GardenPlan, paper: PlanPaper, scale: number | null): boolean {
+  if (scale == null) return true;
+  const { availW, availH } = planDrawArea(plan, paper);
+  return plan.areaWidthM * 1000 / scale <= availW + 0.01 && plan.areaHeightM * 1000 / scale <= availH + 0.01;
+}
+
+/** "Nice" scale-bar length (m) of about a quarter of the drawing width. */
+export function scaleBarMeters(drawWmm: number, scale: number): number {
+  const target = drawWmm / 4 * scale / 1000;
+  const nice = [0.5, 1, 2, 5, 10, 20, 25, 50, 100, 200, 500, 1000];
+  return nice.reduce((best, n) => (Math.abs(n - target) < Math.abs(best - target) ? n : best), nice[0]);
+}
+
+export async function exportGardenPlanPDF(plan: GardenPlan, plantsById: Map<string, PlantData>, opts: PlanPdfOptions = { paper: 'A4', scale: null, rotationDeg: null }): Promise<void> {
   const pdfDoc = await PDFDocument.create();
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-  const { w: pageWmm, h: pageHmm } = gardenPlanPageSizeMm(plan);
+  const { pageW: pageWmm, pageH: pageHmm, availW, availH } = planDrawArea(plan, opts.paper);
   const page = pdfDoc.addPage([pt(pageWmm), pt(pageHmm)]);
 
+  // Drawing size: at the chosen scale, or as large as the page allows.
+  let drawWmm: number, drawHmm: number;
+  if (opts.scale) {
+    drawWmm = plan.areaWidthM * 1000 / opts.scale;
+    drawHmm = plan.areaHeightM * 1000 / opts.scale;
+  } else {
+    const planAspect = plan.areaWidthM / plan.areaHeightM;
+    drawWmm = availW; drawHmm = availW / planAspect;
+    if (drawHmm > availH) { drawHmm = availH; drawWmm = availH * planAspect; }
+  }
+  const scaleDen = plan.areaWidthM * 1000 / drawWmm;
+  const scaleText = opts.scale ? `Maßstab 1:${opts.scale} (${opts.paper}, in Originalgröße drucken)` : `Maßstab ≈ 1:${Math.round(scaleDen)} (${opts.paper})`;
+
   const title = plan.name || 'Waldgartenplan';
-  const caption = `${plan.yearsSincePlanting} Jahre seit Pflanzung · ${plan.areaWidthM}×${plan.areaHeightM} m · exportiert ${new Date().toLocaleDateString('de-DE')}`;
+  const caption = `${plan.yearsSincePlanting} Jahre seit Pflanzung · ${plan.areaWidthM}×${plan.areaHeightM} m · ${scaleText} · exportiert ${new Date().toLocaleDateString('de-DE')}`;
+  page.drawText(pdfSafe(title), { x: pt(GARDENPLAN_MARGIN_MM.side), y: pt(pageHmm - 14), size: 16, font: fontBold });
+  page.drawText(pdfSafe(caption), { x: pt(GARDENPLAN_MARGIN_MM.side), y: pt(pageHmm - 20), size: 8, font, color: rgb(0.4, 0.4, 0.4) });
 
-  page.drawText(title, { x: pt(GARDENPLAN_MARGIN_MM.side), y: pt(pageHmm - 14), size: 16, font: fontBold });
-  page.drawText(caption, { x: pt(GARDENPLAN_MARGIN_MM.side), y: pt(pageHmm - 20), size: 8, font, color: rgb(0.4, 0.4, 0.4) });
-
-  // Fit the plan's own aspect ratio into the remaining space below the
-  // title and above the legend, centered — the plan area itself is not
-  // necessarily the same aspect ratio as the page.
-  const availW = pageWmm - GARDENPLAN_MARGIN_MM.side * 2;
-  const availH = pageHmm - GARDENPLAN_MARGIN_MM.top - GARDENPLAN_MARGIN_MM.bottom;
-  const planAspect = plan.areaWidthM / plan.areaHeightM;
-  let drawWmm = availW, drawHmm = availW / planAspect;
-  if (drawHmm > availH) { drawHmm = availH; drawWmm = availH * planAspect; }
   const drawXmm = GARDENPLAN_MARGIN_MM.side + (availW - drawWmm) / 2;
   const drawYmmFromTop = GARDENPLAN_MARGIN_MM.top + (availH - drawHmm) / 2;
 
-  const svg = renderGardenPlanFullSvg(plan, plantsById, plan.yearsSincePlanting);
-  const pxW = Math.round(drawWmm * GARDENPLAN_RASTER_PX_PER_MM);
-  const pxH = Math.round(drawHmm * GARDENPLAN_RASTER_PX_PER_MM);
+  // Raster: ~150 dpi, capped so A2 stays within canvas limits.
+  const pxPerMm = Math.min(GARDENPLAN_RASTER_PX_PER_MM, 4000 / Math.max(drawWmm, drawHmm));
+  const pxW = Math.round(drawWmm * pxPerMm), pxH = Math.round(drawHmm * pxPerMm);
+  const w = plan.areaWidthM * SVG_UNITS_PER_METER, h = plan.areaHeightM * SVG_UNITS_PER_METER;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}">${opts.backgroundSvg ?? ''}${renderGardenPlanInnerSvg(plan, plantsById, plan.yearsSincePlanting)}</svg>`;
   const canvas = await svgStringToCanvas(svg, pxW, pxH);
   const img = await pdfDoc.embedJpg(canvasToJpegBytes(canvas));
   const drawYpt = pt(pageHmm) - pt(drawYmmFromTop) - pt(drawHmm);
   page.drawImage(img, { x: pt(drawXmm), y: drawYpt, width: pt(drawWmm), height: pt(drawHmm) });
+
+  // Scale bar (bottom right, under the drawing): 4 alternating segments.
+  const barM = scaleBarMeters(drawWmm, scaleDen);
+  const barMm = barM * 1000 / scaleDen;
+  const barX = pageWmm - GARDENPLAN_MARGIN_MM.side - barMm, barY = 10;
+  for (let i = 0; i < 4; i++) {
+    page.drawRectangle({ x: pt(barX + i * barMm / 4), y: pt(barY), width: pt(barMm / 4), height: pt(1.6), color: i % 2 ? rgb(1, 1, 1) : rgb(0.1, 0.1, 0.1), borderColor: rgb(0.1, 0.1, 0.1), borderWidth: 0.5 });
+  }
+  page.drawText('0', { x: pt(barX) - 2, y: pt(barY + 2.6), size: 7, font });
+  const barLabel = `${barM} m`;
+  page.drawText(barLabel, { x: pt(barX + barMm) - font.widthOfTextAtSize(barLabel, 7) / 2, y: pt(barY + 2.6), size: 7, font });
+
+  // North arrow (top right of the drawing), turned with the plan.
+  if (opts.rotationDeg != null) {
+    const cx = pt(drawXmm + drawWmm - 8), cy = pt(pageHmm - drawYmmFromTop - 10);
+    const a = (opts.rotationDeg) * Math.PI / 180;   // plan up = bearing rotationDeg → north is turned by +rotationDeg (counter-clockwise on paper)
+    const rot = (x: number, y: number) => ({ x: cx + x * Math.cos(a) - y * Math.sin(a), y: cy + x * Math.sin(a) + y * Math.cos(a) });
+    const tip = rot(0, pt(5)), l = rot(-pt(2.5), -pt(3.5)), m = rot(0, -pt(1.5)), r = rot(pt(2.5), -pt(3.5));
+    page.drawSvgPath(`M ${tip.x} ${-tip.y} L ${r.x} ${-r.y} L ${m.x} ${-m.y} L ${l.x} ${-l.y} Z`, { x: 0, y: 0, color: rgb(0.1, 0.1, 0.1), borderColor: rgb(1, 1, 1), borderWidth: 0.6 });
+    const n = rot(0, pt(8));
+    page.drawText('N', { x: n.x - fontBold.widthOfTextAtSize('N', 9) / 2, y: n.y - 3, size: 9, font: fontBold });
+  }
 
   // Layer legend, bottom-left.
   const legend: [string, string][] = [
@@ -686,10 +754,14 @@ export async function exportGardenPlanPDF(plan: GardenPlan, plantsById: Map<stri
   let legendX = GARDENPLAN_MARGIN_MM.side;
   const legendY = 10;
   for (const [label, hex] of legend) {
-    const [r, g, b] = [hex.slice(1, 3), hex.slice(3, 5), hex.slice(5, 7)].map(h => parseInt(h, 16) / 255);
-    page.drawEllipse({ x: pt(legendX + 1.5), y: pt(legendY + 1.5), xScale: pt(1.5), yScale: pt(1.5), color: rgb(r, g, b) });
+    const [r, g, b2] = [hex.slice(1, 3), hex.slice(3, 5), hex.slice(5, 7)].map(x => parseInt(x, 16) / 255);
+    page.drawEllipse({ x: pt(legendX + 1.5), y: pt(legendY + 1.5), xScale: pt(1.5), yScale: pt(1.5), color: rgb(r, g, b2) });
     page.drawText(label, { x: pt(legendX + 5), y: pt(legendY), size: 8, font });
     legendX += label.length * 1.8 + 12;
+  }
+  if (opts.backgroundCredit) {
+    // directly under the drawing, so it never meets the legend or the footer
+    page.drawText(pdfSafe(`Kartenhintergrund: ${opts.backgroundCredit}`).slice(0, 220), { x: pt(drawXmm), y: drawYpt - pt(3.5), size: 5.5, font, color: rgb(0.4, 0.4, 0.4) });
   }
 
   const filename = `${(plan.name || 'gartenplan').toLowerCase().replace(/[^a-z0-9]+/g, '-')}.pdf`;

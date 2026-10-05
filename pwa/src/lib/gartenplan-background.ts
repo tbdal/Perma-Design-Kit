@@ -107,3 +107,36 @@ export function basemapSvg(plan: GardenPlan, view: PlanRect, screenMPerPx: numbe
   }).join('');
   return `<g opacity="${geo.opacity}" pointer-events="none"><g transform="rotate(${-geo.rotationDeg})">${images}</g></g>`;
 }
+
+/** Same as basemapSvg() for the plan area, with every tile embedded as a data
+ *  URL — needed for the PDF, because an SVG rasterized via <img> never loads
+ *  external images. Tiles that can't be fetched (offline, no CORS) are left
+ *  out; their number is returned. */
+export async function basemapSvgInline(plan: GardenPlan, mPerPx: number): Promise<{ svg: string; total: number; failed: number }> {
+  const raw = basemapSvg(plan, { minX: 0, minY: 0, maxX: plan.areaWidthM, maxY: plan.areaHeightM }, mPerPx);
+  if (!raw) return { svg: '', total: 0, failed: 0 };
+  const decode = (s: string) => s.replace(/&amp;/g, '&');
+  const toDataUrl = async (url: string) => {
+    const res = await fetch(url, { mode: 'cors' });
+    if (!res.ok) throw new Error(String(res.status));
+    const blob = await res.blob();
+    return await new Promise<string>((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(String(r.result));
+      r.onerror = () => reject(r.error);
+      r.readAsDataURL(blob);
+    });
+  };
+  const tags = [...raw.matchAll(/<image href="([^"]+)"(?: data-fallback="([^"]+)")?([^>]*)\/>/g)];
+  let failed = 0;
+  const out = await Promise.all(tags.map(async m => {
+    for (const u of [m[1], m[2]].filter(Boolean) as string[]) {
+      try { return `<image href="${await toDataUrl(decode(u))}"${m[3]}/>`; } catch { /* next */ }
+    }
+    failed++;
+    return '';
+  }));
+  let i = 0;
+  const svg = raw.replace(/<image [^>]*\/>/g, () => out[i++] ?? '');
+  return { svg, total: tags.length, failed };
+}

@@ -369,6 +369,25 @@ import Layout from '../layouts/Layout.astro';
   <div id="toast" class="fixed bottom-6 right-6 hidden rounded-lg bg-green-700 px-4 py-2.5 text-sm font-medium text-white shadow-lg"></div>
 
   <!-- Standort & Ausrichtung (Leaflet, src/lib/gartenplan-locate.ts) -->
+  <!-- Plan-PDF: Papier, Maßstab, Kartenhintergrund -->
+  <dialog id="pdf-dialog" aria-labelledby="pdf-title" class="m-auto w-[min(28rem,calc(100vw-2rem))] rounded-xl bg-white dark:bg-stone-800 p-0 text-stone-800 dark:text-stone-100 shadow-2xl backdrop:bg-black/50">
+    <form method="dialog" class="space-y-3 p-5">
+      <h2 id="pdf-title" class="text-base font-semibold" data-i18n="pdfTitle">Plan als PDF</h2>
+      <div class="grid grid-cols-2 gap-3 text-sm">
+        <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="pdfPaper">Papier</span>
+          <select id="pdf-paper" class="mt-1 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2 py-1 text-sm"><option>A4</option><option>A3</option><option>A2</option></select></label>
+        <label class="block"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="pdfScale">Maßstab</span>
+          <select id="pdf-scale" class="mt-1 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2 py-1 text-sm"><option value="" data-i18n="pdfScaleFit">passend</option><option value="50">1:50</option><option value="100">1:100</option><option value="200">1:200</option><option value="500">1:500</option></select></label>
+      </div>
+      <label id="pdf-bg-label" class="flex items-center gap-2 text-sm"><input id="pdf-bg" type="checkbox" checked class="accent-green-600" /> <span data-i18n="pdfBackground">Kartenhintergrund (wie im Plan)</span></label>
+      <p id="pdf-info" class="text-xs text-stone-500 dark:text-stone-400"></p>
+      <div class="flex justify-end gap-2 pt-1">
+        <button value="cancel" type="submit" data-i18n="pdfCancel" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium ring-1 ring-stone-300 dark:ring-stone-600">Abbrechen</button>
+        <button id="pdf-create" type="button" data-i18n="pdfCreate" class="rounded-lg bg-green-700 px-4 py-1.5 text-sm font-medium text-white shadow hover:bg-green-800">PDF erstellen</button>
+      </div>
+    </form>
+  </dialog>
+
   <dialog id="shopping-dialog" aria-labelledby="shopping-title" class="m-auto w-[min(48rem,calc(100vw-2rem))] rounded-xl bg-white dark:bg-stone-800 p-0 text-stone-800 dark:text-stone-100 shadow-2xl backdrop:bg-black/50">
     <div class="flex items-center justify-between border-b border-stone-200 dark:border-stone-700 px-4 py-3">
       <h2 id="shopping-title" class="text-base font-semibold" data-i18n="shopTitle">Pflanzliste</h2>
@@ -465,7 +484,7 @@ import Layout from '../layouts/Layout.astro';
   import { areasSvg, AREA_PALETTE, uiScale, polygonCentroid } from '../lib/gartenplan-render';
   import { planFromLatLngPolygon, planToLatLon } from '../lib/gartenplan-geo';
   import type { MapDrawer } from '../lib/gartenplan-mapdraw';
-  import { basemapSvg, basemapAttribution, sourceForGeo, FALLBACK_ATTRIBUTION } from '../lib/gartenplan-background';
+  import { basemapSvg, basemapAttribution, sourceForGeo, FALLBACK_ATTRIBUTION, basemapSvgInline } from '../lib/gartenplan-background';
   import { growPlanToFit } from '../lib/gartenplan-extent';
   import type { PlanRect } from '../lib/gartenplan-geo';
   import { compassLabel, sunPosition } from '../lib/sun-position';
@@ -483,7 +502,7 @@ import Layout from '../layouts/Layout.astro';
   import { compatScore } from '../lib/compat';
   import { newId } from '../lib/id';
   import { escapeHtml, withButtonSpinner } from '../lib/html';
-  import { exportGardenPlanPDF } from '../lib/pdf-export';
+  import { exportGardenPlanPDF, planFitsPaper, type PlanPaper } from '../lib/pdf-export';
   import { createT, applyStaticI18n, getLang } from '../lib/i18n/core';
   import { searchDict } from '../lib/i18n/dict-search';
   import { initPlantSearchUi } from '../lib/plant-search-ui';
@@ -1337,10 +1356,54 @@ import Layout from '../layouts/Layout.astro';
     }, 60);
   });
 
-  document.getElementById('btn-export-pdf')!.addEventListener('click', async (e) => {
+  // ── Plan-PDF (Papier, Maßstab, Karte, Maßstabsleiste, Nordpfeil) ──
+  const pdfDialog = document.getElementById('pdf-dialog') as HTMLDialogElement;
+  const pdfPaper = document.getElementById('pdf-paper') as HTMLSelectElement;
+  const pdfScale = document.getElementById('pdf-scale') as HTMLSelectElement;
+  const pdfBg = document.getElementById('pdf-bg') as HTMLInputElement;
+  const pdfInfo = document.getElementById('pdf-info')!;
+  const pdfCreate = document.getElementById('pdf-create') as HTMLButtonElement;
+  function syncPdfDialog() {
+    if (!editing) return;
+    const hasMap = !!editing.geo && editing.geo.basemap !== 'none';
+    pdfBg.disabled = !hasMap;
+    if (!hasMap) pdfBg.checked = false;
+    document.getElementById('pdf-bg-label')!.classList.toggle('opacity-50', !hasMap);
+    const scale = pdfScale.value ? Number(pdfScale.value) : null;
+    const fits = planFitsPaper(editing, pdfPaper.value as PlanPaper, scale);
+    pdfCreate.disabled = !fits;
+    const better = (['A4', 'A3', 'A2'] as PlanPaper[]).find(p => planFitsPaper(editing!, p, scale));
+    pdfInfo.textContent = fits
+      ? t('pdfFits', { w: editing.areaWidthM, h: editing.areaHeightM })
+      : better ? t('pdfTooBigPaper', { paper: better }) : t('pdfTooBigScale');
+  }
+  [pdfPaper, pdfScale].forEach(s => s.addEventListener('change', syncPdfDialog));
+  document.getElementById('btn-export-pdf')!.addEventListener('click', () => {
     if (!editing) return;
     syncFormIntoEditing();
-    await withButtonSpinner(e.currentTarget as HTMLButtonElement, () => exportGardenPlanPDF(editing!, plantsById));
+    syncPdfDialog();
+    pdfDialog.showModal();
+  });
+  pdfCreate.addEventListener('click', async () => {
+    if (!editing) return;
+    const plan = editing;
+    await withButtonSpinner(pdfCreate, async () => {
+      let backgroundSvg = '', backgroundCredit = '';
+      if (pdfBg.checked && plan.geo) {
+        // tiles at roughly print resolution (~150 dpi)
+        const scale = pdfScale.value ? Number(pdfScale.value) : null;
+        const mPerPx = scale ? scale / 1000 / 6 : plan.areaWidthM / 2000;
+        const bg = await basemapSvgInline(plan, mPerPx);
+        backgroundSvg = bg.svg;
+        backgroundCredit = basemapAttribution(plan).replace(/<[^>]+>/g, '').replace(/&amp;/g, '&');
+        if (bg.failed) showToast(t('pdfTilesFailed', { n: bg.failed, total: bg.total }));
+      }
+      await exportGardenPlanPDF(plan, plantsById, {
+        paper: pdfPaper.value as PlanPaper, scale: pdfScale.value ? Number(pdfScale.value) : null,
+        backgroundSvg, backgroundCredit, rotationDeg: plan.geo ? plan.geo.rotationDeg : null,
+      });
+    });
+    pdfDialog.close();
   });
 
   document.getElementById('btn-redraw-area')!.addEventListener('click', () => {
