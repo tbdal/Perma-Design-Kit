@@ -572,6 +572,29 @@ import Layout from '../layouts/Layout.astro';
   const suggestionsListEl = document.getElementById('suggestions-list')!;
   const selectedPanel = document.getElementById('selected-panel')!;
   const btnLocate = document.getElementById('btn-locate') as HTMLButtonElement;
+
+  /** Map-bar switches that need a location (Gebäude, Höhenlinien, Wasser):
+   *  without one they stay visible but greyed out — a hidden switch left
+   *  people wondering where the feature went — and a click offers to set
+   *  the location. */
+  function geoGate(label: HTMLElement, hasGeo: boolean) {
+    const input = label.querySelector('input') as HTMLInputElement;
+    if (label.dataset.title === undefined) label.dataset.title = label.title;
+    label.hidden = false;
+    input.disabled = !hasGeo;
+    label.classList.toggle('opacity-50', !hasGeo);
+    label.classList.toggle('cursor-help', !hasGeo);
+    label.title = hasGeo ? label.dataset.title : t('needsLocation');
+    if (!label.dataset.gated) {
+      label.dataset.gated = '1';
+      label.addEventListener('click', (e) => {
+        if (!input.disabled) return;
+        e.preventDefault();
+        if (!btnLocate.hidden) btnLocate.click();
+        else showToast(t('needsLocation'));
+      });
+    }
+  }
   const fBasemap = document.getElementById('g-basemap') as HTMLSelectElement;
   const fBasemapOpacity = document.getElementById('g-basemap-opacity') as HTMLInputElement;
   const fBasemapOrtho = document.getElementById('g-basemap-ortho') as HTMLOptionElement;
@@ -2750,7 +2773,7 @@ import Layout from '../layouts/Layout.astro';
     void loadClimate();
     const plan = editing;
     const geo = plan?.geo;
-    if (!plan || !geo) { terrain = null; terrainKey = ''; contoursToggle.hidden = true; terrainInfo.textContent = ''; renderContours(); return; }
+    if (!plan || !geo) { terrain = null; terrainKey = ''; geoGate(contoursToggle, false); terrainInfo.textContent = ''; renderContours(); return; }
     const key = `${plan.id}|${geo.lat}|${geo.lon}|${geo.rotationDeg}|${plan.areaWidthM}|${plan.areaHeightM}`;
     if (key === terrainKey) return;
     terrainKey = key;
@@ -2782,7 +2805,7 @@ import Layout from '../layouts/Layout.astro';
       contoursToggle.hidden = true;
       return;
     }
-    contoursToggle.hidden = false;
+    geoGate(contoursToggle, true);
     scheduleWarnings(); // terrain shade
     updateTerrainInfo();
     renderContours();
@@ -3160,7 +3183,7 @@ import Layout from '../layouts/Layout.astro';
   }
   function renderWater() {
     const layer = planSvg.querySelector('#water-layer');
-    waterToggle.hidden = !editing?.geo;
+    geoGate(waterToggle, !!editing?.geo);
     const on = !!editing?.geo && waterInput.checked;
     waterSection.hidden = !on;
     if (!layer) return;
@@ -3521,7 +3544,7 @@ import Layout from '../layouts/Layout.astro';
   async function loadBuildings() {
     const plan = editing;
     const geo = plan?.geo;
-    buildingsToggle.hidden = !geo;
+    geoGate(buildingsToggle, !!geo);
     syncBuildingsButton();
     if (!plan || !geo || !buildingsInput.checked) return;
     const m = 150;

@@ -185,3 +185,19 @@ test('field mode: own GPS position, way to a plant, place a plant here', async (
   await expect.poll(() => withDb<number>(page, `return (await all('gardenPlans'))[0].placements.length;`)).toBe(before + 1);
   void errors;
 });
+
+test('without a location the map switches stay visible, greyed out, and offer to set one', async ({ page, errors }) => {
+  await stubNetwork(page);
+  await page.goto('/');
+  await withDb(page, `await put('gardenPlans', arg.p);`, { p: planRecord('nogeo') });
+  await openPlan(page, 'nogeo');
+  const water = page.locator('#water-toggle');
+  await expect(water).toBeVisible();
+  await expect(page.locator('#g-water')).toBeDisabled();
+  await expect(water).toHaveAttribute('title', /Standort/);
+  await expect(page.locator('#buildings-toggle')).toBeVisible();
+  await expect(page.locator('#contours-toggle')).toBeVisible();
+  await water.click({ force: true });   // the label is clickable, its checkbox disabled
+  await expect(page.locator('#locate-dialog')).toBeVisible();
+  void errors;
+});

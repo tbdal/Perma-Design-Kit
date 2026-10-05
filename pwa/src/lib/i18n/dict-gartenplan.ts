@@ -112,6 +112,7 @@ export const gartenplanDict: Dict = {
   gpsPickTarget: { de: 'Pflanze antippen für den Weg dorthin, oder Pflanze in der Liste wählen und „Hier setzen“.', en: 'Tap a plant for the way there, or pick one in the list and “Place here”.' },
   gpsPlaced: { de: 'An deiner Position gesetzt.', en: 'Placed at your position.' },
   gpsMoved: { de: 'Auf deine Position verschoben.', en: 'Moved to your position.' },
+  needsLocation: { de: 'Braucht einen Standort – „Standort festlegen“ in der Kartenleiste, oder den Plan auf der Karte zeichnen.', en: 'Needs a location – “Set location” in the map bar, or draw the plan on the map.' },
   climateHeading: { de: 'Standortklima', en: 'Site climate' },
   climateLoading: { de: 'Klimadaten werden geladen …', en: 'Loading climate data …' },
   climateFailed: { de: 'Klimadaten gerade nicht erreichbar.', en: 'Climate data not available right now.' },
