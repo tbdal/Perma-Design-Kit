@@ -2578,6 +2578,9 @@ import Layout from '../layouts/Layout.astro';
     const key = `${plan.id}|${geo.lat}|${geo.lon}|${geo.rotationDeg}|${plan.areaWidthM}|${plan.areaHeightM}`;
     if (key === terrainKey) return;
     terrainKey = key;
+    // Never keep showing the previous plan's ground while the new one loads.
+    terrain = null;
+    renderContours();
     terrainInfo.textContent = t('terrainLoading');
     const maxDim = Math.max(plan.areaWidthM, plan.areaHeightM);
     // Margin covers the OSM buildings (150 m) so they stand on the same
@@ -2798,9 +2801,16 @@ import Layout from '../layouts/Layout.astro';
   const buildingsToggle = document.getElementById('buildings-toggle')!;
   const buildingsInput = document.getElementById('g-buildings') as HTMLInputElement;
   try { buildingsInput.checked = localStorage.getItem('pgd-buildings') !== '0'; } catch {}
+  // `buildings` always belongs to `buildingsLoadedKey` (location + size of the
+  // plan they were fetched for); after switching plans they only show once
+  // the new plan's own buildings are in — never the previous plan's.
   let buildings: Building[] = [];
-  let buildingsKey = '';
-  const showBuildings = () => !!editing?.geo && buildingsInput.checked && buildings.length > 0;
+  let buildingsKey = '';        // last requested
+  let buildingsLoadedKey = '';  // what `buildings` holds
+  const buildingsKeyOf = (plan: GardenPlan | null) => plan?.geo
+    ? `${plan.geo.lat}|${plan.geo.lon}|${plan.geo.rotationDeg}|${plan.areaWidthM}|${plan.areaHeightM}` : '';
+  const showBuildings = () => !!editing?.geo && buildingsInput.checked && buildings.length > 0
+    && buildingsLoadedKey === buildingsKeyOf(editing);
   buildingsInput.addEventListener('change', () => {
     try { localStorage.setItem('pgd-buildings', buildingsInput.checked ? '1' : '0'); } catch {}
     void loadBuildings();
@@ -2821,15 +2831,18 @@ import Layout from '../layouts/Layout.astro';
     syncBuildingsButton();
     if (!plan || !geo || !buildingsInput.checked) return;
     const m = 150;
-    const key = `${geo.lat}|${geo.lon}|${geo.rotationDeg}|${plan.areaWidthM}|${plan.areaHeightM}`;
+    const key = buildingsKeyOf(plan);
     if (key === buildingsKey) return;
     buildingsKey = key;
+    if (buildingsLoadedKey !== key) { buildings = []; buildingsLoadedKey = ''; updateAttribution(planSvg); }
     try {
       const list = await fetchBuildings(geo, { minX: -m, minY: -m, maxX: plan.areaWidthM + m, maxY: plan.areaHeightM + m });
-      if (buildingsKey !== key || editing !== plan) return;
+      // A newer request (other plan, moved or resized) superseded this one.
+      if (buildingsKey !== key) return;
       buildings = list;
+      buildingsLoadedKey = key;
     } catch {
-      if (buildingsKey === key) { buildingsKey = ''; buildings = []; showToast(t('buildingsUnavailable')); }
+      if (buildingsKey === key) { buildingsKey = ''; buildings = []; buildingsLoadedKey = ''; showToast(t('buildingsUnavailable')); }
       return;
     }
     afterBuildingsChanged();

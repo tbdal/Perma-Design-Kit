@@ -2,6 +2,10 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Gartenplan 2026-10-05
+- [x] Bug: Nach dem Wechsel zu einem anderen Plan wurden manchmal die Gebäude (und kurz das Gelände) des vorherigen Plans angezeigt — jetzt gehören Gebäude/Gelände fest zu ihrem Plan und werden beim Wechsel sofort verworfen
+- [x] Pflanzensuche wie auf der Startseite auch im Gartenplan (nur in der Positionierungsansicht); eine gefundene Pflanze ist gleich zum Setzen ausgewählt
+
 ## Beispielprojekt 2026-10-05
 - [x] permadesignkit.org/example (und /beispiel) öffnet ein hinterlegtes Beispielprojekt: Übersicht, „Beispiel übernehmen“, danach öffnet der Startplan direkt; beim zweiten Besuch „Öffnen“ statt Doppel-Import. Hinterlegen: Link aus „Projekt als Link teilen“ → `npm run example:set -- "<Link>"` → deploy
 - [x] Teilen-Link nimmt auf Wunsch die Ansicht der Pläne mit (Kamera, Ausschnitt, 2D/3D, Sonnenstand, Einfärben) und einen Startplan
