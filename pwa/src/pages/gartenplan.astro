@@ -247,6 +247,16 @@ import Layout from '../layouts/Layout.astro';
             <svg id="plan-svg" class="block w-full touch-none" style="touch-action:none"></svg>
             <div id="plan-3d-container" hidden class="h-[70vh] w-full touch-none" style="touch-action:none"></div>
             <div id="measure-readout" hidden aria-live="polite" class="absolute left-1/2 top-3 z-10 -translate-x-1/2 rounded-md bg-orange-600/90 px-2.5 py-1 text-xs font-medium text-white shadow"></div>
+            <div id="gps-box" hidden aria-live="polite" class="absolute bottom-3 left-3 z-10 max-w-[min(22rem,calc(100%-1.5rem))] space-y-1.5 rounded-lg bg-sky-50/95 dark:bg-sky-950/90 p-2.5 text-xs text-sky-950 dark:text-sky-50 shadow ring-1 ring-sky-300 dark:ring-sky-800">
+              <p id="gps-status" class="font-medium"></p>
+              <p id="gps-way" class="text-sm font-semibold"></p>
+              <div class="flex flex-wrap gap-1.5">
+                <button id="gps-center" type="button" data-i18n="gpsCenter" class="rounded-md bg-white/90 dark:bg-stone-800 px-2 py-1 text-xs font-medium ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white disabled:opacity-40">Mich zeigen</button>
+                <button id="gps-place" type="button" data-i18n="gpsPlace" class="rounded-md bg-white/90 dark:bg-stone-800 px-2 py-1 text-xs font-medium ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white disabled:opacity-40">Hier setzen</button>
+                <button id="gps-move" type="button" data-i18n="gpsMove" class="rounded-md bg-white/90 dark:bg-stone-800 px-2 py-1 text-xs font-medium ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white disabled:opacity-40">Hierher verschieben</button>
+                <button id="gps-stop" type="button" data-i18n="gpsStop" class="rounded-md bg-white/90 dark:bg-stone-800 px-2 py-1 text-xs font-medium ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white disabled:opacity-40">Beenden</button>
+              </div>
+            </div>
             <div id="zoom-controls" class="absolute left-3 top-3 flex flex-col gap-1">
               <button id="zoom-in" type="button" data-i18n-aria-label="zoomIn" data-i18n-title="zoomIn" aria-label="Hineinzoomen" title="Hineinzoomen" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700">+</button>
               <button id="zoom-out" type="button" data-i18n-aria-label="zoomOut" data-i18n-title="zoomOut" aria-label="Herauszoomen" title="Herauszoomen" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700">−</button>
@@ -255,6 +265,7 @@ import Layout from '../layouts/Layout.astro';
               <button id="tool-pan" type="button" data-tool="pan" aria-pressed="false" data-i18n-aria-label="toolPan" data-i18n-title="toolPan" aria-label="Bewegen" title="Bewegen" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700 aria-pressed:bg-amber-200 aria-pressed:ring-amber-500 dark:aria-pressed:bg-amber-800 text-sm">✋</button>
               <button id="tool-select" type="button" data-tool="select" aria-pressed="true" data-i18n-aria-label="toolSelect" data-i18n-title="toolSelect" aria-label="Markieren – einzeln" title="Markieren – einzeln" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700 aria-pressed:bg-amber-200 aria-pressed:ring-amber-500 dark:aria-pressed:bg-amber-800 text-sm">↖</button>
               <button id="tool-lasso" type="button" data-tool="lasso" aria-pressed="false" data-i18n-aria-label="toolLasso" data-i18n-title="toolLasso" aria-label="Markieren – mehrere als Fläche" title="Markieren – mehrere als Fläche" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700 aria-pressed:bg-amber-200 aria-pressed:ring-amber-500 dark:aria-pressed:bg-amber-800 text-sm">⬚</button>
+              <button id="tool-gps" type="button" hidden aria-pressed="false" data-i18n-aria-label="gpsTool" data-i18n-title="gpsTool" aria-label="Feldmodus: eigene Position (GPS)" title="Feldmodus: eigene Position (GPS)" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700 aria-pressed:bg-sky-200 aria-pressed:ring-sky-500 dark:aria-pressed:bg-sky-800 text-sm">📍</button>
               <button id="tool-measure" type="button" data-tool="measure" aria-pressed="false" data-i18n-aria-label="toolMeasure" data-i18n-title="toolMeasure" aria-label="Messen (M)" title="Messen (M)" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700 aria-pressed:bg-amber-200 aria-pressed:ring-amber-500 dark:aria-pressed:bg-amber-800 text-sm">📏</button>
             </div>
             <div aria-hidden="true" class="cursor-readout pointer-events-none absolute hidden rounded bg-stone-900/80 px-1.5 py-0.5 font-mono text-[11px] text-white"></div>
@@ -471,6 +482,8 @@ import Layout from '../layouts/Layout.astro';
   import { displayName, displayCommonName } from '../lib/plant-name';
   import { LAST_PLAN_KEY, planViewKey, readPlanView, writePlanView, type PlanView } from '../lib/plan-view';
   import { neighborHints } from '../lib/neighbors';
+  import { wayTo, arrived } from '../lib/field-mode';
+  import { latLonToPlan } from '../lib/gartenplan-geo';
   import { ageAt, isPlanted, phaseLabel, phaseGroups, phaseOf, MAX_PHASE } from '../lib/phases';
   import { analyzeWater, roofRainM3, type WaterAnalysis } from '../lib/water';
   import { planYield, careTasks, buildIcs, type CareTask } from '../lib/yield-care';
@@ -1532,6 +1545,7 @@ import Layout from '../layouts/Layout.astro';
         armedHint.classList.toggle('hidden', !armedPlantId);
         view3d?.setArmedPlant(armedPlantId);
         renderPlantPicker();
+        if (gpsPos) renderGps();   // enables „Hier setzen“
       });
     });
   }
@@ -1622,6 +1636,7 @@ import Layout from '../layouts/Layout.astro';
   }
 
   function renderSelectedPanel() {
+    if (gpsPos) renderGps();
     if (editing && multiSel.size) { renderMultiPanel(); return; }
     if (editing && (selectedAreaId || editBoundary)) { renderSelectedShapePanel(); return; }
     if (!editing || !selectedPlacementId) {
@@ -1791,7 +1806,8 @@ import Layout from '../layouts/Layout.astro';
       <g id="area-draft" pointer-events="none"></g>
       <g id="row-draft" pointer-events="none"></g>
       <g id="lasso-layer" pointer-events="none"></g>
-      <g id="measure-layer" pointer-events="none"></g>`;
+      <g id="measure-layer" pointer-events="none"></g>
+      <g id="gps-layer" pointer-events="none"></g>`;
     renderBasemap(planSvg);
     renderContours();
     renderCoverage();
@@ -1801,6 +1817,7 @@ import Layout from '../layouts/Layout.astro';
     renderWarnHover();
     renderZones();
     renderWater();
+    renderGps();
     markerMap = new Map();
     const markersGroup = planSvg.querySelector('#plan-markers')!;
     for (const placement of editing.placements) {
@@ -2162,6 +2179,7 @@ import Layout from '../layouts/Layout.astro';
     renderZones();
     renderWarnHover();
     renderWater();
+    renderGps();
   }
   /** `base` zoomed by `factor` (>1 = in) around the SVG point cx/cy. */
   function zoomedView(base: typeof planView, factor: number, cx: number, cy: number): typeof planView {
@@ -2940,6 +2958,102 @@ import Layout from '../layouts/Layout.astro';
   const fmtH = (h: number) => new Intl.NumberFormat(lang, { maximumFractionDigits: 1, minimumFractionDigits: 1 }).format(h);
   let sunMapToken = 0;
   let seasonCache: { key: string; samples: SunSample[] } | null = null;
+  // ── Feldmodus (GPS, lib/field-mode.ts) ──
+  // On the phone in the garden: own position on the plan, the way to the
+  // selected plant ("noch 2,3 m nach NO"), place the chosen plant right
+  // here, or move a selected one to here. Position stays in the browser.
+  const gpsBtn = document.getElementById('tool-gps') as HTMLButtonElement;
+  const gpsBox = document.getElementById('gps-box')!;
+  const gpsStatus = document.getElementById('gps-status')!;
+  const gpsWay = document.getElementById('gps-way')!;
+  const gpsPlace = document.getElementById('gps-place') as HTMLButtonElement;
+  const gpsMove = document.getElementById('gps-move') as HTMLButtonElement;
+  let gpsWatch: number | null = null;
+  let gpsPos: { xM: number; yM: number; accM: number } | null = null;
+  let gpsCentered = false;
+  function syncGpsButton() { gpsBtn.hidden = !editing?.geo || !('geolocation' in navigator); }
+  function stopGps() {
+    if (gpsWatch != null) navigator.geolocation.clearWatch(gpsWatch);
+    gpsWatch = null; gpsPos = null; gpsCentered = false;
+    gpsBtn.setAttribute('aria-pressed', 'false');
+    gpsBox.hidden = true;
+    renderGps();
+  }
+  function centerOnGps() {
+    if (!gpsPos || !plan3dContainer.hidden) return;
+    const w = Math.min(planView.w, 30 * U), h = w * canvasAspect();
+    planView = { x: gpsPos.xM * U - w / 2, y: gpsPos.yM * U - h / 2, w, h };
+    applyPlanView();
+  }
+  gpsBtn.addEventListener('click', () => {
+    if (gpsWatch != null) { stopGps(); return; }
+    if (!editing?.geo) return;
+    gpsBtn.setAttribute('aria-pressed', 'true');
+    gpsBox.hidden = false;
+    gpsStatus.textContent = t('gpsWaiting');
+    gpsWay.textContent = '';
+    gpsWatch = navigator.geolocation.watchPosition(pos => {
+      if (!editing?.geo) return;
+      const p = latLonToPlan(pos.coords.latitude, pos.coords.longitude, editing.geo);
+      gpsPos = { xM: p.xM, yM: p.yM, accM: pos.coords.accuracy };
+      if (!gpsCentered) { gpsCentered = true; centerOnGps(); }
+      renderGps();
+    }, err => {
+      gpsStatus.textContent = t(err.code === err.PERMISSION_DENIED ? 'gpsDenied' : 'gpsError');
+    }, { enableHighAccuracy: true, maximumAge: 2000, timeout: 30000 });
+  });
+  document.getElementById('gps-stop')!.addEventListener('click', stopGps);
+  document.getElementById('gps-center')!.addEventListener('click', centerOnGps);
+  gpsPlace.addEventListener('click', () => {
+    if (!editing || !gpsPos || !armedPlantId) return;
+    editing.placements.push({ id: newId(), plantId: armedPlantId, xM: gpsPos.xM, yM: gpsPos.yM, notes: '' });
+    unplacedPlantIds = unplacedPlantIds.filter(id => id !== armedPlantId);
+    renderUnplacedList();
+    renderSuggestions();
+    renderPlanSvg();
+    view3d?.refreshPlacements();
+    scheduleAutosave();
+    showToast(t('gpsPlaced'));
+  });
+  gpsMove.addEventListener('click', () => {
+    if (!editing || !gpsPos || !selectedPlacementId) return;
+    const pl = editing.placements.find(x => x.id === selectedPlacementId);
+    if (!pl) return;
+    pl.xM = gpsPos.xM; pl.yM = gpsPos.yM;
+    renderPlanSvg();
+    view3d?.refreshPlacements();
+    scheduleAutosave();
+    showToast(t('gpsMoved'));
+  });
+  function renderGps() {
+    const g = planSvg.querySelector('#gps-layer');
+    syncGpsButton();
+    if (!g) return;
+    if (!gpsPos || !editing) { g.innerHTML = ''; return; }
+    const k = viewK();
+    const nf = (v: number) => new Intl.NumberFormat(lang, { maximumFractionDigits: v < 10 ? 1 : 0 }).format(v);
+    const target = selectedPlacementId ? editing.placements.find(x => x.id === selectedPlacementId) : undefined;
+    let line = '';
+    if (target) {
+      const w = wayTo(gpsPos, target, editing.geo?.rotationDeg ?? 0);
+      const p = plantsById.get(target.plantId);
+      const name = p ? displayName(p) || p.latinName : '—';
+      gpsWay.textContent = arrived(w.distM, gpsPos.accM)
+        ? t('gpsArrived', { name })
+        : t('gpsWay', { d: nf(w.distM), dir: compassLabel(w.bearingDeg, lang), name });
+      line = `<line x1="${gpsPos.xM * U}" y1="${gpsPos.yM * U}" x2="${target.xM * U}" y2="${target.yM * U}" stroke="#0284c7" stroke-width="${2.5 * k}" stroke-dasharray="${8 * k} ${5 * k}"/>`;
+    } else {
+      gpsWay.textContent = t('gpsPickTarget');
+    }
+    const inside = editing.boundary.length < 3 || pointInPolygon(gpsPos, editing.boundary);
+    gpsStatus.textContent = t(inside ? 'gpsStatus' : 'gpsOutside', { acc: nf(gpsPos.accM) });
+    gpsPlace.disabled = !armedPlantId;
+    gpsMove.disabled = !target;
+    g.innerHTML = line
+      + `<circle cx="${gpsPos.xM * U}" cy="${gpsPos.yM * U}" r="${gpsPos.accM * U}" fill="#0ea5e9" fill-opacity="0.12" stroke="#0284c7" stroke-width="${1 * k}"/>`
+      + `<circle cx="${gpsPos.xM * U}" cy="${gpsPos.yM * U}" r="${7 * k}" fill="#0284c7" stroke="#fff" stroke-width="${2.5 * k}"/>`;
+  }
+
   // ── Bauabschnitte (lib/phases.ts) ──
   // Each placement can be planted later than the start; the years slider then
   // shows the plan growing phase by phase. plan.startYear only labels them.

@@ -2,6 +2,12 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Gartenplan-Ideen 1, 4, 5, 8 2026-10-05
+- [x] **1. Wasser im Gelände:** Schalter „Wasser“: Abflusswege (D8 auf gefülltem Gelände), Senken mit Tiefe/Fläche/Volumen und Swale-Vorschläge entlang der Höhenlinie – mit 1-m-Geländemodell; Regen vom Dach aus OSM-Gebäuden × Niederschlag
+- [x] **4. Plan-PDF:** Dialog mit Papier A4–A2 und Maßstab 1:50–1:500 (prüft, ob es passt), Kartenhintergrund wie im Plan, Maßstabsleiste, Nordpfeil, Quellenvermerk
+- [x] **5. Feldmodus (GPS):** 📍 in der Werkzeugleiste: eigene Position mit Genauigkeit, „noch 2,3 m nach NO zu …“ zur ausgewählten Pflanze, „Hier setzen“ / „Hierher verschieben“; nginx erlaubt jetzt Ortung für die eigene Seite
+- [x] **8. Bauabschnitte:** Pflanzjahr pro Pflanze (auch für eine Auswahl), Pflanzbeginn als Kalenderjahr, Kasten „Bauabschnitte“; Zeitraffer, 3D, Besonnung, Abdeckung, Hinweise, Ertrag und Pflanzliste rechnen mit dem Alter der Pflanze
+
 ## Gartenplan 2026-10-05 (2)
 - [x] Hinweise: erster Klick springt in der Karte zur Stelle und markiert den betroffenen Bereich (Wirkkreis bei schlechten Nachbarn, ausgewachsene Kronen bei „zu eng“, Krone bei Schatten/Klima, grün bei guten Nachbarn); zweiter Klick wählt die Pflanzen; Esc hebt die Markierung auf
 - [x] **9. Browser-Tests ins Repo:** 13 Playwright-Tests (`npm run e2e`, offline mit gestubbten Diensten) laufen bei jedem `npm run deploy` mit

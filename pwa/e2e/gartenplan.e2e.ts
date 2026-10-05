@@ -163,3 +163,25 @@ test('construction phases: later plants as outline, phase panel, shopping list p
   await expect(page.locator('#shopping-body')).toContainText('(2030)');
   void errors;
 });
+
+test('field mode: own GPS position, way to a plant, place a plant here', async ({ page, context, errors }) => {
+  const lat0 = 50.9, lon0 = 7.0;
+  // stand at plan point (12, 10): 12 m east, 10 m south of the plan's top-left corner
+  await context.grantPermissions(['geolocation']);
+  await context.setGeolocation({ latitude: lat0 - 10 / 111320, longitude: lon0 + 12 / (111320 * Math.cos(lat0 * Math.PI / 180)), accuracy: 4 });
+  await stubNetwork(page);
+  await seedNeighbourPlan(page, { geo: { lat: lat0, lon: lon0, rotationDeg: 0, basemap: 'none', opacity: 0.6 } });
+  await openPlan(page, 'np');
+  await page.click('#tool-gps');
+  await expect(page.locator('#gps-status')).toContainText('im Garten');
+  await expect(page.locator('#gps-layer circle')).toHaveCount(2);
+  // select the apple at (16, 10): 4 m to the east
+  await page.locator('[data-placement-id="a"] .marker-blob').click({ force: true });
+  await expect(page.locator('#gps-way')).toContainText('Noch 4 m nach O');
+  // pick a plant in the list and place it where I stand
+  const before = await withDb<number>(page, `return (await all('gardenPlans'))[0].placements.length;`);
+  await page.locator('#plant-picker [data-picker-plant]').first().click();
+  await page.click('#gps-place');
+  await expect.poll(() => withDb<number>(page, `return (await all('gardenPlans'))[0].placements.length;`)).toBe(before + 1);
+  void errors;
+});

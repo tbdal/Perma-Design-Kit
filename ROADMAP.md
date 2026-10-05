@@ -37,10 +37,6 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 
 ## Gartenplan Ideen
 Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann 2 + 3 als Paket „Standortanalyse“.
-- [ ] **1. Wasser im Gelände:** aus dem 1-m-DGM Abflusswege und Senken berechnen (wohin fließt Regen, wo sammelt er sich), Swales/Mulden entlang der Höhenlinien vorschlagen, Regenertrag von Dachflächen schätzen (OSM-Dachfläche × Jahresniederschlag)
-- [ ] **4. Plan-PDF mit Luftbild, Maßstab und Nordpfeil** zum Abstecken, auch großformatig (A3/A2, 1:100 / 1:200) — vgl. „Kartenhintergrund im Gartenplan-PDF“ unter Karten
-- [ ] **5. Feldmodus (Handy):** eigene GPS-Position im Plan, Absteckhilfe („noch 2,3 m nach NO zum Apfel“), Pflanzen vor Ort per GPS setzen/korrigieren
-- [ ] **8. Bauabschnitte:** Pflanzjahr pro Pflanze („2027 Bäume, 2028 Unterpflanzung“); Zeitraffer und Pflanzliste berücksichtigen die Abschnitte
 - [ ] **Performance großer Pläne prüfen:** Besonnungskarte, 1-m-Gelände (feineres Raster) und viele OSM-Gebäude nur an ~40-m-Gärten getestet; bei Plänen bis 500 m messen und ggf. Raster/Abtastung vergröbern oder in einen Worker auslagern
 - [ ] **Gebäudehöhen/-formen:** ohne OSM-Höhe nach Typ geschätzt (Standard 7 m), alle Dächer flach — Höhen kalibrieren (z. B. `roof:shape`, 3D-Gebäudedaten der Länder/LoD2), Satteldächer
 - [ ] **Overpass-Ausweichserver unzuverlässig:** overpass.private.coffee antwortete im Test mit 504; fällt overpass-api.de aus, fehlen die Gebäude (nur Hinweis) — weiteren datenschutzfreundlichen Spiegel suchen oder Gebäude cachen
