@@ -4,6 +4,7 @@ import { deriveLayer, LAYER_STYLE } from './plant-layer';
 import { blobPathD } from './blob-shape';
 import { escapeHtml } from './html';
 import { displayName } from './plant-name';
+import { ageAt } from './phases';
 
 // Kept in sync with gartenplan.astro's own constant (not imported from there —
 // the page owns the interactive/draggable rendering with its own pointer-event
@@ -40,7 +41,7 @@ export function renderGardenPlanInnerSvg(plan: GardenPlan, plantsById: Map<strin
   const pointsAttr = plan.boundary.map(p => `${p.xM * SVG_UNITS_PER_METER},${p.yM * SVG_UNITS_PER_METER}`).join(' ');
   const markers = plan.placements.map(placement => {
     const p = plantsById.get(placement.plantId);
-    const radiusM = p ? displayRadiusM(p, years) : 0.2;
+    const radiusM = p ? displayRadiusM(p, Math.max(0, ageAt(placement, years))) : 0.2;
     const radiusU = radiusM * SVG_UNITS_PER_METER;
     const layer = p ? deriveLayer(p) : 'shrub';
     const style = LAYER_STYLE[layer];

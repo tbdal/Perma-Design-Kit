@@ -4,6 +4,7 @@ import { enuToPlan } from './gartenplan-geo';
 import { displayRadiusM } from './growth-model';
 import { deriveLayer } from './plant-layer';
 import { pointInPolygon } from './gartenplan-geometry';
+import { ageAt, isPlanted } from './phases';
 
 // "Besonnung": average hours of direct sun per day at a point of the garden.
 // The sun's path (sun-position.ts) is sampled over one day or a season; for
@@ -67,7 +68,7 @@ export function crownOccluder(id: string, at: GardenPlanPoint, plant: PlantData,
 export function planOccluders(plan: GardenPlan, plantsById: Map<string, PlantData>, years: number, groundZ: (x: number, y: number) => number): Occluder[] {
   return plan.placements.flatMap(pl => {
     const p = plantsById.get(pl.plantId);
-    const o = p ? crownOccluder(pl.id, pl, p, years, groundZ) : null;
+    const o = p && isPlanted(pl, years) ? crownOccluder(pl.id, pl, p, ageAt(pl, years), groundZ) : null;
     return o ? [o] : [];
   });
 }

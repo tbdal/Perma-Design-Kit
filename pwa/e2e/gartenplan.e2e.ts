@@ -121,3 +121,28 @@ test('hint click: first jumps to the area and marks it, second selects the plant
   await expect(page.locator('#warn-layer circle')).toHaveCount(0);
   void errors;
 });
+
+test('construction phases: later plants as outline, phase panel, shopping list per year', async ({ page, errors }) => {
+  await stubNetwork(page);
+  await seedNeighbourPlan(page, { yearsSincePlanting: 1 });
+  // the nitrogen fixer only comes three years later
+  await withDb(page, `const p = (await all('gardenPlans'))[0]; p.placements.find(x => x.id === 'e').phaseYear = 3; await put('gardenPlans', p);`);
+  await openPlan(page, 'np');
+  await expect(page.locator('[data-placement-id="e"]')).toHaveCSS('opacity', '0.35');
+  await expect(page.locator('#phases-list')).toContainText('+3');
+  await expect(page.locator('#phases-list')).toContainText('noch nicht gepflanzt');
+  await page.fill('#phases-start', '2027');
+  await page.locator('#phases-start').dispatchEvent('change');
+  await expect(page.locator('#phases-list')).toContainText('2030');
+  // move the apple and walnut (phase 2027) to 2028 through the selection panel
+  await page.locator('#phases-list button', { hasText: '2027' }).click();
+  await page.selectOption('#multi-phase', '1');
+  await expect(page.locator('#phases-list')).toContainText('2028');
+  // slider to year 3: everything planted
+  await page.fill('#g-years', '3');
+  await page.dispatchEvent('#g-years', 'input');
+  await expect(page.locator('[data-placement-id="e"]')).not.toHaveCSS('opacity', '0.35');
+  await page.click('#btn-shopping');
+  await expect(page.locator('#shopping-body')).toContainText('(2030)');
+  void errors;
+});

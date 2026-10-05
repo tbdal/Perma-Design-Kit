@@ -301,6 +301,13 @@ import Layout from '../layouts/Layout.astro';
             <div id="coverage-body" class="space-y-2 text-xs"></div>
           </details>
 
+          <details data-panel="phases" open id="phases-section" hidden class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="phasesHeading">Bauabschnitte</h2><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-stone-500 dark:text-stone-400 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
+            <label class="flex items-center gap-2 text-xs"><span data-i18n="phasesStart">Pflanzbeginn</span><input id="phases-start" type="number" min="1900" max="2200" step="1" class="w-20 rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs" /></label>
+            <ul id="phases-list" class="mt-2 space-y-0.5 text-xs"></ul>
+            <p class="mt-1 text-[10px] text-stone-500 dark:text-stone-400" data-i18n="phasesHint">Pflanzjahr unter „Ausgewählt“ setzen (auch für eine Mehrfachauswahl). Jahre-Regler und Zeitraffer zeigen die Abschnitte nacheinander.</p>
+          </details>
+
           <details data-panel="water" open id="water-section" hidden class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="waterHeading">Wasser</h2><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-stone-500 dark:text-stone-400 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
             <div id="water-body" class="space-y-1.5 text-xs text-stone-700 dark:text-stone-200"></div>
@@ -445,6 +452,7 @@ import Layout from '../layouts/Layout.astro';
   import { displayName, displayCommonName } from '../lib/plant-name';
   import { LAST_PLAN_KEY, planViewKey, readPlanView, writePlanView, type PlanView } from '../lib/plan-view';
   import { neighborHints } from '../lib/neighbors';
+  import { ageAt, isPlanted, phaseLabel, phaseGroups, phaseOf, MAX_PHASE } from '../lib/phases';
   import { analyzeWater, roofRainM3, type WaterAnalysis } from '../lib/water';
   import { planYield, careTasks, buildIcs, type CareTask } from '../lib/yield-care';
   import { DEFAULT_ZONE_RADII, ZONE_COLORS, bearingVector, wedgePath, solsticeSectors } from '../lib/zones-sectors';
@@ -1565,11 +1573,15 @@ import Layout from '../layouts/Layout.astro';
     const p = plantsById.get(placement.plantId);
     selectedPanel.innerHTML = `
       ${p ? plantDetailHtml(p, t) : `<p class="mb-2 text-sm font-medium text-stone-800 dark:text-stone-100">${plantLabel(p)}</p>`}
+      <label class="mb-2 flex items-center gap-2 text-xs"><span class="font-medium text-stone-500 dark:text-stone-400">${t('phaseLabel')}</span>${phaseSelectHtml('placement-phase', phaseOf(placement))}</label>
       <label class="block">
         <span class="text-xs font-medium text-stone-500 dark:text-stone-400">${t('labelPlacementNotes')}</span>
         <textarea id="placement-notes" rows="2" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-xs shadow-inner focus:border-green-500 focus:outline-none">${escapeHtml(placement.notes)}</textarea>
       </label>
       <button id="btn-remove-placement" class="mt-2 rounded-md bg-red-100 dark:bg-red-900/40 px-2.5 py-1 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/60">${t('btnRemovePlacement')}</button>`;
+    document.getElementById('placement-phase')!.addEventListener('change', (e) => {
+      setPhase([placement], Number((e.target as HTMLSelectElement).value));
+    });
     document.getElementById('placement-notes')!.addEventListener('input', (e) => {
       placement.notes = (e.target as HTMLTextAreaElement).value;
       scheduleAutosave();
@@ -1598,6 +1610,7 @@ import Layout from '../layouts/Layout.astro';
     selectedPanel.innerHTML = `
       <p class="mb-2 text-sm font-medium text-stone-800 dark:text-stone-100">${t('multiSelected', { n: sel.length })}</p>
       <ul class="space-y-0.5 text-xs text-stone-700 dark:text-stone-200">${rows}</ul>
+      <label class="mt-2 flex items-center gap-2 text-xs"><span class="font-medium text-stone-500 dark:text-stone-400">${t('phaseLabelAll')}</span>${phaseSelectHtml('multi-phase', sel.every(pl => phaseOf(pl) === phaseOf(sel[0])) ? phaseOf(sel[0]) : -1)}</label>
       <p class="mt-2 text-[11px] text-stone-500 dark:text-stone-400">${t('multiHint')}</p>
       <div class="mt-2 flex flex-wrap gap-2">
         <button id="btn-multi-remove" class="rounded-md bg-red-100 dark:bg-red-900/40 px-2.5 py-1 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/60">${t('multiRemove')}</button>
@@ -1613,6 +1626,10 @@ import Layout from '../layouts/Layout.astro';
       scheduleAutosave();
     });
     document.getElementById('btn-multi-clear')!.addEventListener('click', () => { multiSel.clear(); refreshMarkerHighlight(); renderSelectedPanel(); });
+    document.getElementById('multi-phase')!.addEventListener('change', (e) => {
+      const v = Number((e.target as HTMLSelectElement).value);
+      if (v >= 0) setPhase(sel, v);
+    });
   }
 
   /** "Ausgewählt" for a selected area or the garden outline being edited:
@@ -1652,7 +1669,11 @@ import Layout from '../layouts/Layout.astro';
   // LAYER_STYLE (plant-layer.ts) — a heuristic classification, not real
   // per-species artwork, see the info box for the caveat shown to users.
   function updateMarkerShape(group: SVGGElement, placement: GardenPlanPlacement, p: PlantData | undefined) {
-    const radiusM = p ? displayRadiusM(p, editing!.yearsSincePlanting) : 0.2;
+    const years = editing!.yearsSincePlanting;
+    const planted = isPlanted(placement, years);
+    const radiusM = p ? displayRadiusM(p, Math.max(0, ageAt(placement, years))) : 0.2;
+    // Later construction phase: only a faint dashed outline until it is planted.
+    group.style.opacity = planted ? '' : '0.35';
     const radiusU = radiusM * SVG_UNITS_PER_METER;
     const layer = p ? deriveLayer(p) : 'shrub';
     const style = LAYER_STYLE[layer];
@@ -1670,7 +1691,8 @@ import Layout from '../layouts/Layout.astro';
     const ppu = pxPerUnit();
     const rPx = radiusU * ppu;
     blob.setAttribute('stroke-width', String((selected ? 2.5 : hot ? 3.5 : warned ? 2.5 : 1.2) / ppu));
-    blob.setAttribute('stroke-dasharray', warned && !hot ? `${5 / ppu} ${3 / ppu}` : '');
+    blob.setAttribute('stroke-dasharray', !planted ? `${3 / ppu} ${3 / ppu}` : warned && !hot ? `${5 / ppu} ${3 / ppu}` : '');
+    if (!planted) blob.setAttribute('fill-opacity', '0.15'); else blob.removeAttribute('fill-opacity');
     group.querySelector('.marker-dot')?.setAttribute('r', String(Math.min(3, Math.max(1, rPx * 0.25)) / ppu));
     const fontPx = single ? 13 : Math.min(13, rPx * 0.7);
     const label = group.querySelector('.marker-label') as SVGTextElement;
@@ -2855,6 +2877,62 @@ import Layout from '../layouts/Layout.astro';
   const fmtH = (h: number) => new Intl.NumberFormat(lang, { maximumFractionDigits: 1, minimumFractionDigits: 1 }).format(h);
   let sunMapToken = 0;
   let seasonCache: { key: string; samples: SunSample[] } | null = null;
+  // ── Bauabschnitte (lib/phases.ts) ──
+  // Each placement can be planted later than the start; the years slider then
+  // shows the plan growing phase by phase. plan.startYear only labels them.
+  const phasesSection = document.getElementById('phases-section')!;
+  const phasesStart = document.getElementById('phases-start') as HTMLInputElement;
+  const phasesList = document.getElementById('phases-list')!;
+  function phaseSelectHtml(id: string, value: number): string {
+    const opts = Array.from({ length: 16 }, (_, i) => i);
+    if (value > 15) opts.push(value);
+    return `<select id="${id}" class="${'rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs'}">${value < 0 ? `<option value="-1" selected>${escapeHtml(t('phaseMixed'))}</option>` : ''}${opts.map(i =>
+      `<option value="${i}" ${i === value ? 'selected' : ''}>${escapeHtml(phaseLabel(editing ?? {}, i, t('phaseStartWord')))}</option>`).join('')}</select>`;
+  }
+  function setPhase(pls: GardenPlanPlacement[], v: number) {
+    for (const pl of pls) { if (v > 0) pl.phaseYear = Math.min(MAX_PHASE, v); else delete pl.phaseYear; }
+    refreshMarkerHighlight();
+    view3d?.refreshPlacements();
+    renderPhases();
+    scheduleWarnings();
+    scheduleCoverage();
+    scheduleAutosave();
+  }
+  function renderPhases() {
+    if (!editing) return;
+    const groups = phaseGroups(editing);
+    phasesSection.hidden = editing.placements.length === 0;
+    if (document.activeElement !== phasesStart) phasesStart.value = editing.startYear ? String(editing.startYear) : '';
+    phasesStart.placeholder = String(new Date().getFullYear());
+    const years = editing.yearsSincePlanting;
+    // Rebuilt only when it changed: a re-render right under the pointer would swallow the click.
+    const html = groups.map(([ph, pls]) => `
+      <li><button type="button" data-phase="${ph}" class="flex w-full items-center justify-between gap-2 rounded px-1.5 py-0.5 text-left hover:bg-stone-100 dark:hover:bg-stone-800 ${ph <= years ? '' : 'text-stone-400'}">
+        <span class="font-medium">${escapeHtml(phaseLabel(editing!, ph, t('phaseStartWord')))}</span>
+        <span>${escapeHtml(t('phaseCount', { n: pls.length }))}${ph <= years ? '' : ' · ' + escapeHtml(t('phaseLater'))}</span></button></li>`).join('');
+    if (phasesList.dataset.html === html) return;
+    phasesList.dataset.html = html;
+    phasesList.innerHTML = html;
+    phasesList.querySelectorAll<HTMLButtonElement>('[data-phase]').forEach(b => b.addEventListener('click', () => {
+      // select the phase's plants (to move them to another year at once)
+      const ph = Number(b.dataset.phase);
+      multiSel.clear();
+      editing!.placements.filter(pl => phaseOf(pl) === ph).forEach(pl => multiSel.add(pl.id));
+      selectedPlacementId = null;
+      refreshMarkerHighlight();
+      renderSelectedPanel();
+    }));
+  }
+  phasesStart.addEventListener('change', () => {
+    if (!editing) return;
+    const v = Number(phasesStart.value);
+    if (v >= 1900 && v <= 2200) editing.startYear = Math.round(v); else delete editing.startYear;
+    renderPhases();
+    renderSelectedPanel();
+    renderYield();
+    scheduleAutosave();
+  });
+
   // ── Wasser im Gelände (lib/water.ts) ──
   // Flow paths, sinks and swale suggestions from the elevation grid; roof
   // rain from OSM buildings × site precipitation. Computed once per terrain
@@ -2961,7 +3039,7 @@ import Layout from '../layouts/Layout.astro';
       return `<tr class="border-t border-stone-200/60 dark:border-stone-700/60"><td class="py-0.5 pr-2 text-stone-700 dark:text-stone-200">${escapeHtml(displayName(p) || p.latinName)}${r.generic ? ' <span class="text-stone-400" title="' + escapeHtml(t('yieldGenericTitle')) + '">*</span>' : ''}</td><td class="py-0.5 text-right text-stone-500 dark:text-stone-400">${escapeHtml(when)}</td><td class="py-0.5 pl-2 text-right font-medium">${r.kgTotal > 0 ? escapeHtml(nf(r.kgTotal)) + ' kg' : '–'}</td></tr>`;
     }).join('');
   }
-  yearsInput.addEventListener('input', () => renderYield());
+  yearsInput.addEventListener('input', () => { renderYield(); renderPhases(); });
 
   document.getElementById('btn-care-ics')!.addEventListener('click', () => {
     if (!editing) return;
@@ -3500,6 +3578,7 @@ import Layout from '../layouts/Layout.astro';
       }
     }
     renderYield();
+    renderPhases();
     const neighbors = neighborHints(plan, plantsById);
     // Full-grown crown of a placement (the hints look 30 years ahead).
     const crown = (id: string): WarnMark[] => {

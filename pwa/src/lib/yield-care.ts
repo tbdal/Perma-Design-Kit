@@ -1,6 +1,7 @@
 import type { GardenPlan, PlantData } from './types';
 import { displayRadiusM } from './growth-model';
 import { deriveLayer } from './plant-layer';
+import { ageAt } from './phases';
 
 // Rough yield estimate and care calendar for a garden plan.
 //
@@ -51,16 +52,18 @@ export function plantYieldKg(p: PlantData, years: number): number {
 export interface YieldRow { plantId: string; count: number; kgEach: number; kgTotal: number; generic: boolean; startYear: number; product: YieldSpec['product']; }
 
 export function planYield(plan: GardenPlan, plantsById: Map<string, PlantData>, years: number): { rows: YieldRow[]; totalKg: number } {
-  const counts = new Map<string, number>();
-  for (const pl of plan.placements) counts.set(pl.plantId, (counts.get(pl.plantId) ?? 0) + 1);
+  // Per placement at its own age (construction phases, lib/phases.ts).
+  const byPlant = new Map<string, number[]>();
+  for (const pl of plan.placements) byPlant.set(pl.plantId, [...(byPlant.get(pl.plantId) ?? []), ageAt(pl, years)]);
   const rows: YieldRow[] = [];
-  for (const [plantId, count] of counts) {
+  for (const [plantId, ages] of byPlant) {
     const p = plantsById.get(plantId);
     if (!p) continue;
     const s = yieldSpecOf(p, deriveLayer(p));
     if (!s) continue;
-    const kgEach = plantYieldKg(p, years);
-    rows.push({ plantId, count, kgEach, kgTotal: kgEach * count, generic: s.generic, startYear: s.spec.startYear, product: s.spec.product });
+    const kgTotal = ages.reduce((sum, a) => sum + (a >= 0 ? plantYieldKg(p, a) : 0), 0);
+    const count = ages.length;
+    rows.push({ plantId, count, kgEach: kgTotal / count, kgTotal, generic: s.generic, startYear: s.spec.startYear, product: s.spec.product });
   }
   rows.sort((a, b) => b.kgTotal - a.kgTotal);
   return { rows, totalKg: rows.reduce((s, r) => s + r.kgTotal, 0) };

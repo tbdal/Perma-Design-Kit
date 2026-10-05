@@ -2,6 +2,7 @@ import type { GardenPlan, PlantData } from './types';
 import { displayRadiusM } from './growth-model';
 import { deriveLayer } from './plant-layer';
 import { sunHoursAt, crownOccluder, type Occluder, type SunScene, type SunSample, type SunClass } from './sun-hours';
+import { ageAt, isPlanted } from './phases';
 
 // Hints for the garden plan, looking ahead to (nearly) full-grown plants:
 //   – "crowded": two plants of the same layer (tree/tree, shrub/shrub …)
@@ -23,7 +24,7 @@ export function crowdingWarnings(plan: GardenPlan, plantsById: Map<string, Plant
     if (!p) return [];
     const layer = deriveLayer(p);
     if (layer === 'rhizo' || layer === 'climber') return [];
-    return [{ pl, layer, r: displayRadiusM(p, years) }];
+    return [{ pl, layer, r: displayRadiusM(p, Math.max(0, ageAt(pl, years))) }];
   });
   const out: CrowdedWarning[] = [];
   for (let i = 0; i < items.length; i++) {
@@ -42,7 +43,7 @@ export function crowdingWarnings(plan: GardenPlan, plantsById: Map<string, Plant
 export function grownOccluders(plan: GardenPlan, plantsById: Map<string, PlantData>, groundZ: (x: number, y: number) => number, years = WARN_YEARS): Occluder[] {
   return plan.placements.flatMap(pl => {
     const p = plantsById.get(pl.plantId);
-    const o = p ? crownOccluder(pl.id, pl, p, years, groundZ) : null;
+    const o = p && isPlanted(pl, years) ? crownOccluder(pl.id, pl, p, ageAt(pl, years), groundZ) : null;
     return o ? [o] : [];
   });
 }

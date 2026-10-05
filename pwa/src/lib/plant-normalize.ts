@@ -4,6 +4,7 @@ import {
 } from './types';
 import { newId } from './id';
 import { sanitizeZones } from './zones-sectors';
+import { clampPhase } from './phases';
 
 // Everything that arrives from outside the app — JSON import, backup restore,
 // Gist/WebDAV pull, CSV — goes through here before it touches IndexedDB. Each
@@ -122,6 +123,7 @@ export function normalizeGardenPlan(raw: unknown): GardenPlan | null {
           xM: finite(pl.xM)!,
           yM: finite(pl.yM)!,
           notes: str(pl.notes, ''),
+          ...(clampPhase(pl.phaseYear) ? { phaseYear: clampPhase(pl.phaseYear)! } : {}),
         }))
       : [],
     yearsSincePlanting: clamp(finite(raw.yearsSincePlanting) ?? 0, 0, 100),
@@ -131,6 +133,7 @@ export function normalizeGardenPlan(raw: unknown): GardenPlan | null {
       ? raw.areas.map(a => normalizeGardenPlanArea(a, point)).filter((a): a is GardenPlanArea => a !== null)
       : [],
     ...(sanitizeZones(raw.zones) ? { zones: sanitizeZones(raw.zones)! } : {}),
+    ...(finite(raw.startYear) != null && finite(raw.startYear)! >= 1900 && finite(raw.startYear)! <= 2200 ? { startYear: Math.round(finite(raw.startYear)!) } : {}),
     ...(isObject(raw.plantPrices) ? { plantPrices: Object.fromEntries(Object.entries(raw.plantPrices)
       .filter(([, v]) => typeof v === 'number' && Number.isFinite(v) && v >= 0) as [string, number][]) } : {}),
     createdAt: str(raw.createdAt, d.createdAt),

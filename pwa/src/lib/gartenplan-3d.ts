@@ -10,6 +10,7 @@ import { enuToPlan, tilesForRect, planToLatLon } from './gartenplan-geo';
 import { OSM_TILES, sourceForGeo, tileUrl, fallbackTileUrl } from './gartenplan-background';
 import { sunPosition, sunDirectionEnu } from './sun-position';
 import { sampleGrid, terrainTiles, type ElevationGrid } from './terrain';
+import { ageAt, isPlanted } from './phases';
 
 /** Ground height (m, relative to the plan centre) at plan x/z. */
 type GroundFn = (x: number, z: number) => number;
@@ -534,7 +535,8 @@ export function createGardenPlan3DView(
     plantsGroup.traverse(o => { (o as THREE.Mesh).geometry?.dispose(); });
     plantsGroup.clear();
     for (const placement of plan.placements) {
-      const mesh = buildPlantMesh(placement, plantsById.get(placement.plantId), years);
+      if (!isPlanted(placement, years)) continue;   // later construction phase
+      const mesh = buildPlantMesh(placement, plantsById.get(placement.plantId), ageAt(placement, years));
       mesh.traverse(o => { if (o.name !== 'selection-ring' && (o as THREE.Mesh).isMesh) { o.castShadow = true; o.receiveShadow = true; } });
       mesh.position.y = ground(placement.xM, placement.yM);
       const ring = mesh.getObjectByName('selection-ring');

@@ -4,6 +4,7 @@ import { displayRadiusM } from './growth-model';
 import { deriveLayer } from './plant-layer';
 import { AREA_PALETTE } from './gartenplan-render';
 import { newId } from './id';
+import { ageAt } from './phases';
 
 // GeoJSON exchange with QGIS & co. One FeatureCollection in WGS84 (RFC 7946,
 // lon/lat): the garden outline and areas as polygons, plants as points with
@@ -38,7 +39,8 @@ export function planToGeoJson(plan: GardenPlan, plantsById: Map<string, PlantDat
         pdk_type: 'plant', pdk_id: pl.id, plant_id: pl.plantId,
         latin_name: p?.latinName ?? '', common_name: p?.commonName ?? '',
         layer: p ? deriveLayer(p) : '', height_m: p?.heightM ?? null, width_m: p?.widthM ?? null,
-        canopy_radius_m: p ? Math.round(displayRadiusM(p, plan.yearsSincePlanting) * 100) / 100 : null,
+        canopy_radius_m: p ? Math.round(displayRadiusM(p, Math.max(0, ageAt(pl, plan.yearsSincePlanting))) * 100) / 100 : null,
+        planting_year_offset: pl.phaseYear ?? 0,
         notes: pl.notes,
       } });
   }

@@ -2,6 +2,7 @@ import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import type { GardenPlan, PlantData } from './types';
 import { deriveLayer, PLANT_LAYERS, type PlantLayer } from './plant-layer';
 import { downloadPdf, finishPdf } from './pdf-export';
+import { phaseLabel, phaseOf } from './phases';
 
 // "Pflanzliste / Einkaufszettel": what to buy for a garden plan — one row per
 // plant with the number placed, planting distance (full-grown width) and
@@ -16,18 +17,29 @@ export interface ShoppingRow {
   count: number;
   widthM: number;      // full-grown width = planting distance
   heightM: number;
+  /** Construction phase (years after the start); rows are split per phase when a plan has several. */
+  phaseYear: number;
 }
 
 export function shoppingRows(plan: GardenPlan, plantsById: Map<string, PlantData>, displayName: (p: PlantData) => string): ShoppingRow[] {
+  // One row per plant — and per construction phase if the plan has several,
+  // labelled with its year ("Apfel (2028)"), so each year's order is visible.
+  const phased = new Set(plan.placements.map(phaseOf)).size > 1;
   const counts = new Map<string, number>();
-  for (const pl of plan.placements) counts.set(pl.plantId, (counts.get(pl.plantId) ?? 0) + 1);
+  for (const pl of plan.placements) {
+    const key = `${pl.plantId}|${phased ? phaseOf(pl) : 0}`;
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
   const rows: ShoppingRow[] = [];
-  for (const [id, count] of counts) {
+  for (const [key, count] of counts) {
+    const [id, ph] = key.split('|');
     const p = plantsById.get(id);
     if (!p) continue;
-    rows.push({ plantId: id, name: displayName(p), latinName: p.latinName, layer: deriveLayer(p), count, widthM: p.widthM || 0, heightM: p.heightM || 0 });
+    const phaseYear = Number(ph);
+    const name = phased ? `${displayName(p)} (${phaseLabel(plan, phaseYear)})` : displayName(p);
+    rows.push({ plantId: id, name, latinName: p.latinName, layer: deriveLayer(p), count, widthM: p.widthM || 0, heightM: p.heightM || 0, phaseYear });
   }
-  return rows.sort((a, b) => PLANT_LAYERS.indexOf(a.layer) - PLANT_LAYERS.indexOf(b.layer) || a.name.localeCompare(b.name));
+  return rows.sort((a, b) => a.phaseYear - b.phaseYear || PLANT_LAYERS.indexOf(a.layer) - PLANT_LAYERS.indexOf(b.layer) || a.name.localeCompare(b.name));
 }
 
 export function shoppingTotal(rows: ShoppingRow[], prices: Record<string, number> | undefined): { count: number; cost: number; priced: number } {

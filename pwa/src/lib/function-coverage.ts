@@ -3,6 +3,7 @@ import { displayRadiusM } from './growth-model';
 import { pointInPolygon } from './gartenplan-geometry';
 import { compatScore } from './compat';
 import type { SunClass } from './sun-hours';
+import { ageAt, isPlanted } from './phases';
 
 // "Funktions-Abdeckung": where in the garden are the ecological functions
 // (nitrogen, minerals, insects, pest control, ground cover, wildlife, wind)
@@ -39,8 +40,8 @@ export const funcCount = (mask: number) => COVER_FUNCS.reduce((n, f) => n + (has
 export function coverageGrid(plan: GardenPlan, plantsById: Map<string, PlantData>, cellM: number): CoverageGrid {
   const sources = plan.placements.flatMap(pl => {
     const p = plantsById.get(pl.plantId);
-    if (!p) return [];
-    const r = displayRadiusM(p, plan.yearsSincePlanting);
+    if (!p || !isPlanted(pl, plan.yearsSincePlanting)) return [];
+    const r = displayRadiusM(p, ageAt(pl, plan.yearsSincePlanting));
     const h = p.heightM && p.widthM ? p.heightM * Math.min(1, r / (p.widthM / 2)) : r * 2;
     return COVER_FUNCS.filter(f => Boolean(p[f])).map(f => ({ x: pl.xM, y: pl.yM, r: influenceRadius(f, r, h), b: bit(f) }));
   });
