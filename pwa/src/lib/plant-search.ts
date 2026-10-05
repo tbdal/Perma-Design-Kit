@@ -70,7 +70,8 @@ const KINGDOMS = ['Q756', 'Q764'];
 /** Which of these Wikidata items are plants or fungi — their parent-taxon
  *  chain (P171) reaches Plantae/Fungi? Descriptions alone let e.g. Homo
  *  erectus ("Art der Gattung Homo") through. null when it can't be told in
- *  time (offline, query service slow): then only the description filter runs. */
+ *  time (offline, query service slow, search aborted): then only the
+ *  description filter runs. Never rejects. */
 export async function plantTaxa(ids: string[], signal?: AbortSignal, timeoutMs = 4000): Promise<Set<string> | null> {
   if (!ids.length) return new Set();
   const ctl = new AbortController();
@@ -88,8 +89,10 @@ export async function plantTaxa(ids: string[], signal?: AbortSignal, timeoutMs =
     if (!res.ok) return null;
     const data = await res.json();
     return new Set<string>((data.results?.bindings ?? []).map((b: any) => String(b.item?.value ?? '').split('/').pop()));
-  } catch (e: any) {
-    if (signal?.aborted) throw e;
+  } catch {
+    // Never rejects: the caller starts it before awaiting other requests, so
+    // a rejection (search superseded, offline) would surface as an unhandled
+    // error. A superseded search is stopped by the caller's own fetches.
     return null;
   } finally {
     clearTimeout(timer);
