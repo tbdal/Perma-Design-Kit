@@ -75,7 +75,7 @@ test('buildings of the previous plan never show in the next one', async ({ page,
     { lat, lon }, { lat: lat + 0.0001, lon }, { lat: lat + 0.0001, lon: lon + 0.0001 }, { lat, lon: lon + 0.0001 }, { lat, lon }] }] });
   await stubNetwork(page, {
     overpass: async route => {
-      const isB = (route.request().postData() ?? '').includes('48.1');
+      const isB = (route.request().postData() ?? route.request().url()).includes('48.1');
       if (isB && delayB) await new Promise(r => setTimeout(r, 4000));
       await route.fulfill({ contentType: 'application/json', body: JSON.stringify(isB ? fake(48.1001, 11.5001) : fake(50.9376, 6.9601)) });
     },

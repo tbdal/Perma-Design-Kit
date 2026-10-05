@@ -29,6 +29,8 @@ export async function stubNetwork(page: Page, o: Overrides = {}) {
   // Same-origin services that only exist behind nginx / the proxy process.
   await page.route('**/api/plant-proxy**', route => json(route, { latinName: '', source: '', sources: {} }));
   await page.route('**/geo/terrain/**', route => route.fulfill({ status: 404, body: '' }));
+  // buildings cache on our server (nginx); the bbox travels in the URL
+  await page.route(/\/geo\/overpass\?/, route => (o.overpass ? o.overpass(route) : json(route, { elements: [] })));
   await page.route(/\/geo\/climate(\?|$)/, route => (o.climate ? o.climate(route) : route.fulfill({ status: 404, body: '' })));
 }
 

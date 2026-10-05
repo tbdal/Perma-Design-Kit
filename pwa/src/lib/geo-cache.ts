@@ -23,11 +23,11 @@ function cacheRequest(key: string): Request {
  *  throw (or return !ok) on failure. */
 export async function cachedFetch(key: string, ttlMs: number, fetcher: () => Promise<Response>): Promise<Response> {
   const cache = await open();
-  const req = cacheRequest(key);
+  const req = cache ? cacheRequest(key) : null;   // no Cache API (tests, old browsers): plain fetch
   let stale: Response | null = null;
   if (cache) {
     try {
-      const hit = await cache.match(req);
+      const hit = await cache.match(req!);
       if (hit) {
         const age = Date.now() - Number(hit.headers.get(STAMP) ?? 0);
         if (age >= 0 && age < ttlMs) return hit;
@@ -43,7 +43,7 @@ export async function cachedFetch(key: string, ttlMs: number, fetcher: () => Pro
         const headers = new Headers(res.headers);
         headers.set(STAMP, String(Date.now()));
         const body = await res.clone().blob();
-        await cache.put(req, new Response(body, { status: 200, headers }));
+        await cache.put(req!, new Response(body, { status: 200, headers }));
       } catch { /* quota etc. — the live response is still fine */ }
     }
     return res;

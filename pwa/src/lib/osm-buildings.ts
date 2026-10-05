@@ -111,47 +111,91 @@ export function parseBuildings(json: { elements?: OverpassElement[] }, geo: Gard
   return out.filter(b => b.pts.length >= 3);
 }
 
-/** Overpass query for all buildings in a plan rectangle. */
-export function buildingsQuery(geo: GardenPlanGeo, rect: PlanRect): string {
+/** Bounding box "s,w,n,e" around a plan rectangle, widened to 4 decimals
+ *  (≈ 10 m) so the same plan always asks the same — cache-friendly — question. */
+export function buildingsBbox(geo: GardenPlanGeo, rect: PlanRect): string {
   const c = [
     planToLatLon({ xM: rect.minX, yM: rect.minY }, geo), planToLatLon({ xM: rect.maxX, yM: rect.minY }, geo),
     planToLatLon({ xM: rect.maxX, yM: rect.maxY }, geo), planToLatLon({ xM: rect.minX, yM: rect.maxY }, geo),
   ];
-  const s = Math.min(...c.map(p => p.lat)), n = Math.max(...c.map(p => p.lat));
-  const w = Math.min(...c.map(p => p.lon)), e = Math.max(...c.map(p => p.lon));
-  const bb = [s, w, n, e].map(v => v.toFixed(6)).join(',');
+  const lo = (v: number) => (Math.floor(v * 1e4) / 1e4).toFixed(4), hi = (v: number) => (Math.ceil(v * 1e4) / 1e4).toFixed(4);
+  const lats = c.map(p => p.lat), lons = c.map(p => p.lon);
+  return [lo(Math.min(...lats)), lo(Math.min(...lons)), hi(Math.max(...lats)), hi(Math.max(...lons))].join(',');
+}
+
+/** Overpass query for all buildings in a bbox ("s,w,n,e"). The server cache
+ *  (/geo/overpass, nginx) builds the very same query from the bbox. */
+export function buildingsQueryForBbox(bb: string): string {
   return `[out:json][timeout:25];(way["building"](${bb});relation["building"]["type"="multipolygon"](${bb}););out geom tags;`;
 }
+
+/** Overpass query for all buildings in a plan rectangle. */
+export function buildingsQuery(geo: GardenPlanGeo, rect: PlanRect): string {
+  return buildingsQueryForBbox(buildingsBbox(geo, rect));
+}
+
+/** Our own server asks Overpass and keeps the answer (30 days, served even
+ *  when Overpass is down): the visitor's address never reaches Overpass, and
+ *  each area is fetched once for everyone. Only the bbox goes there — the
+ *  server builds the fixed buildings query itself (no open Overpass proxy).
+ *  Missing (dev server, other hosting) → the public instances directly. */
+export const OVERPASS_PROXY = '/geo/overpass';
 
 const cache = new Map<string, Building[]>();
 
 /** Buildings in `rect` (cached per session); tries the endpoints in turn. */
 export async function fetchBuildings(geo: GardenPlanGeo, rect: PlanRect): Promise<Building[]> {
-  const q = buildingsQuery(geo, rect);
+  const bb = buildingsBbox(geo, rect);
+  const q = buildingsQueryForBbox(bb);
   const hit = cache.get(q);
   if (hit) return hit;
   // Persisted in the browser (30 days) — an unchanged plan never asks
   // Overpass again, and an expired copy still serves if every mirror is down.
-  const res = await cachedFetch(`overpass:${hashKey(q)}`, 30 * DAY_MS, () => overpass(q));
+  const res = await cachedFetch(`overpass:${hashKey(q)}`, 30 * DAY_MS, () => overpass(bb, q));
   const list = parseBuildings(await res.json(), geo);
   cache.set(q, list);
   return list;
 }
 
-/** Tries each mirror in turn (a second round after a short pause, the public
- *  instances are often just briefly overloaded); first success wins. */
-async function overpass(q: string): Promise<Response> {
+/** Overpass answers an overloaded or timed-out query with HTTP 200 and a
+ *  "remark" — that must neither count as success nor end up in a cache. */
+class OverpassRemark extends Error {}
+
+async function checkedJson(res: Response): Promise<Response> {
+  if (!res.ok) throw new Error(`overpass ${res.status}`);
+  const text = await res.text();
+  const json = JSON.parse(text) as { remark?: unknown; elements?: unknown };
+  if (!Array.isArray(json.elements) || (typeof json.remark === 'string' && /error|timed out|out of memory|too many/i.test(json.remark))) {
+    throw new OverpassRemark(String(json.remark ?? 'no elements'));
+  }
+  return new Response(text, { status: 200, headers: { 'Content-Type': 'application/json' } });
+}
+
+async function timedFetch(url: string, init: RequestInit, ms: number): Promise<Response> {
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), ms);
+  try { return await fetch(url, { ...init, signal: ctl.signal }); }
+  finally { clearTimeout(timer); }
+}
+
+/** Own server first (a cached error answer is refreshed once), then each
+ *  public instance in turn, a second round after a short pause — they are
+ *  often just briefly overloaded. First valid answer wins. */
+async function overpass(bb: string, q: string): Promise<Response> {
   let lastErr: unknown = null;
+  for (const refresh of [false, true]) {
+    try {
+      return await checkedJson(await timedFetch(`${OVERPASS_PROXY}?bbox=${bb}${refresh ? '&refresh=1' : ''}`, {}, 45000));
+    } catch (e) {
+      lastErr = e;
+      if (!(e instanceof OverpassRemark)) break;
+    }
+  }
   for (let round = 0; round < 2; round++) {
     for (const url of OVERPASS_ENDPOINTS) {
-      const ctl = new AbortController();
-      const timer = setTimeout(() => ctl.abort(), 20000);
       try {
-        const res = await fetch(url, { method: 'POST', body: new URLSearchParams({ data: q }), signal: ctl.signal });
-        if (!res.ok) throw new Error(`overpass ${res.status}`);
-        return res;
+        return await checkedJson(await timedFetch(url, { method: 'POST', body: new URLSearchParams({ data: q }) }, 20000));
       } catch (e) { lastErr = e; }
-      finally { clearTimeout(timer); }
     }
     if (round === 0) await new Promise(r => setTimeout(r, 1500));
   }
