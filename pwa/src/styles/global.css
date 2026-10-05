@@ -225,8 +225,10 @@ html[data-design="horizont"]:not(.dark) .site-main::before {
   border-radius: 28px;
 }
 
-/* Plant page: the search block lives in the sky, the trees follow below it. */
-html[data-design="horizont"] .site-main:has([data-hz-sky]) { padding-top: 1.75rem; }
+/* Plant page: the search block lives in the sky, the trees follow below it.
+   Only while it is shown — the plan page hides its search in the project
+   list, and the content must then start below the tree line as usual. */
+html[data-design="horizont"] .site-main:has([data-hz-sky]:not([hidden])) { padding-top: 1.75rem; }
 html[data-design="horizont"] [data-hz-sky] {
   max-width: 760px;
   margin-left: auto;
