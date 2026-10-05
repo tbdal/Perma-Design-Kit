@@ -3,6 +3,7 @@ import {
   type PlantData, type Polyculture, type GardenPlan, type GardenPlanGeo, type GardenPlanArea, type DataSource, type PolycultureRole,
 } from './types';
 import { newId } from './id';
+import { sanitizeZones } from './zones-sectors';
 
 // Everything that arrives from outside the app — JSON import, backup restore,
 // Gist/WebDAV pull, CSV — goes through here before it touches IndexedDB. Each
@@ -129,6 +130,7 @@ export function normalizeGardenPlan(raw: unknown): GardenPlan | null {
     areas: Array.isArray(raw.areas)
       ? raw.areas.map(a => normalizeGardenPlanArea(a, point)).filter((a): a is GardenPlanArea => a !== null)
       : [],
+    ...(sanitizeZones(raw.zones) ? { zones: sanitizeZones(raw.zones)! } : {}),
     ...(isObject(raw.plantPrices) ? { plantPrices: Object.fromEntries(Object.entries(raw.plantPrices)
       .filter(([, v]) => typeof v === 'number' && Number.isFinite(v) && v >= 0) as [string, number][]) } : {}),
     createdAt: str(raw.createdAt, d.createdAt),

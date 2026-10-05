@@ -114,6 +114,8 @@ export interface GardenPlan {
   areas: GardenPlanArea[];
   /** Price per piece (EUR) per plantId, for the shopping list. */
   plantPrices?: Record<string, number>;
+  /** Permaculture zones around a centre (lib/zones-sectors.ts); absent = never set up. */
+  zones?: import('./zones-sectors').PlanZones;
   createdAt: string;
   updatedAt: string;
 }

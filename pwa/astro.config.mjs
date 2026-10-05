@@ -49,6 +49,11 @@ export default defineConfig({
         },
         // Terrain tiles come via our own server in production (nginx cache,
         // see server/nginx/permadesignkit.org.conf); in dev go straight to the bucket.
+        '/geo/climate': {
+          target: 'https://archive-api.open-meteo.com',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/geo\/climate/, '/v1/archive'),
+        },
         '/geo/terrain': {
           target: 'https://s3.amazonaws.com',
           changeOrigin: true,

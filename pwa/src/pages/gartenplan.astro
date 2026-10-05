@@ -72,6 +72,7 @@ import Layout from '../layouts/Layout.astro';
       <label class="inline-flex items-center gap-1.5" data-i18n-title="mapGridTitle" title="Meterlinien ein-/ausblenden (G)"><input id="g-grid" type="checkbox" checked class="accent-green-700" /> <span data-i18n="mapGrid">Meterlinien</span></label>
       <label id="buildings-toggle" hidden class="inline-flex items-center gap-1.5" data-i18n-title="mapBuildingsTitle" title="Gebäude aus OpenStreetMap: in 3D und als Schattenwerfer für Besonnung und Hinweise"><input id="g-buildings" type="checkbox" checked class="accent-stone-600" /> <span data-i18n="mapBuildings">Gebäude</span></label>
       <label id="contours-toggle" hidden class="inline-flex items-center gap-1.5"><input id="g-contours" type="checkbox" checked class="accent-amber-700" /> <span data-i18n="mapContours">Höhenlinien</span></label>
+      <label class="inline-flex items-center gap-1.5" data-i18n-title="mapZonesTitle" title="Permakultur-Zonen um das Haus und Sektoren (Sonne, Wind, Kaltluft)"><input id="g-zones" type="checkbox" class="accent-amber-600" /> <span data-i18n="mapZones">Zonen &amp; Sektoren</span></label>
       <span id="map-status" class="text-stone-500 dark:text-stone-400"></span>
       <span id="terrain-info" class="text-stone-600 dark:text-stone-300"></span>
     </div>
@@ -299,6 +300,26 @@ import Layout from '../layouts/Layout.astro';
             <div id="coverage-body" class="space-y-2 text-xs"></div>
           </details>
 
+          <details data-panel="zones" open id="zones-section" hidden class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="zonesHeading">Zonen &amp; Sektoren</h2><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-stone-500 dark:text-stone-400 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
+            <p class="mb-2 text-[11px] text-stone-500 dark:text-stone-400" data-i18n="zonesIntro">Das Haus-Symbol ist das Zentrum – zum Verschieben ziehen. Zone 5 ist alles außerhalb von Zone 4.</p>
+            <div class="grid grid-cols-5 gap-1 text-[10px] text-stone-500 dark:text-stone-400">
+              <label class="flex flex-col items-center gap-0.5"><span>Zone 0</span><input data-zone-radius="0" type="number" min="1" max="2000" step="1" class="w-14 rounded border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1 py-0.5 text-right text-xs" /></label>
+              <label class="flex flex-col items-center gap-0.5"><span>Zone 1</span><input data-zone-radius="1" type="number" min="1" max="2000" step="1" class="w-14 rounded border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1 py-0.5 text-right text-xs" /></label>
+              <label class="flex flex-col items-center gap-0.5"><span>Zone 2</span><input data-zone-radius="2" type="number" min="1" max="2000" step="1" class="w-14 rounded border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1 py-0.5 text-right text-xs" /></label>
+              <label class="flex flex-col items-center gap-0.5"><span>Zone 3</span><input data-zone-radius="3" type="number" min="1" max="2000" step="1" class="w-14 rounded border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1 py-0.5 text-right text-xs" /></label>
+              <label class="flex flex-col items-center gap-0.5"><span>Zone 4</span><input data-zone-radius="4" type="number" min="1" max="2000" step="1" class="w-14 rounded border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1 py-0.5 text-right text-xs" /></label>
+            </div>
+            <p class="mt-1 text-[10px] text-stone-500 dark:text-stone-400" data-i18n="zonesRadiusHint">Außenradius in Metern</p>
+            <ul id="zones-legend" class="mt-2 space-y-0.5 text-xs text-stone-700 dark:text-stone-200"></ul>
+            <button id="zones-center-reset" type="button" data-i18n="zonesCenterReset" class="mt-2 rounded-md bg-stone-100 dark:bg-stone-800 px-2 py-1 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-700">Zentrum aufs Haus / in die Mitte</button>
+          </details>
+
+          <details data-panel="climate" open id="climate-section" hidden class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="climateHeading">Standortklima</h2><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-stone-500 dark:text-stone-400 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
+            <div id="climate-body" class="space-y-1 text-xs text-stone-700 dark:text-stone-200"></div>
+          </details>
+
           <details id="warnings-section" data-panel="warnings" hidden open class="group/panel rounded-xl bg-red-50/60 dark:bg-red-950/30 p-4 shadow-sm ring-1 ring-red-200 dark:ring-red-900">
             <summary class="flex cursor-pointer list-none items-center justify-between gap-2 text-sm font-semibold text-red-900 dark:text-red-200"><span><span data-i18n="warningsHeading">Hinweise</span> (<span id="warnings-count">0</span>)</span><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-red-700 dark:text-red-300 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
             <p class="mt-1 text-xs text-stone-500 dark:text-stone-400" data-i18n="warningsIntro">Mit Blick auf die ausgewachsenen Pflanzen (30 Jahre). Klick markiert die Pflanze(n).</p>
@@ -407,6 +428,8 @@ import Layout from '../layouts/Layout.astro';
   import { normalizeGardenPlan } from '../lib/plant-normalize';
   import { displayName, displayCommonName } from '../lib/plant-name';
   import { LAST_PLAN_KEY, planViewKey, readPlanView, writePlanView, type PlanView } from '../lib/plan-view';
+  import { DEFAULT_ZONE_RADII, ZONE_COLORS, bearingVector, wedgePath, solsticeSectors } from '../lib/zones-sectors';
+  import { fetchSiteClimate, notHardy, blossomFrostRisk, zoneLabel, doyLabel, plantZoneRange, COMPASS16, CLIMATE_ATTRIBUTION, type SiteClimate } from '../lib/site-climate';
   import { createEmptyGardenPlan, type GardenPlan, type GardenPlanPlacement, type GardenPlanPoint, type GardenPlanArea, type Polyculture, type PlantData } from '../lib/types';
   import { displayRadiusM } from '../lib/growth-model';
   import { deriveLayer, LAYER_STYLE, LAYER_I18N, type PlantLayer } from '../lib/plant-layer';
@@ -862,7 +885,8 @@ import Layout from '../layouts/Layout.astro';
     const terrainAttr = isPlan && terrain ? [terrain.dgm?.attributionHtml, tilesAttr].filter(Boolean).join(' · ') : '';
     const bAttr = isPlan && showBuildings() && !basemapAttribution(editing).includes('OpenStreetMap') ? BUILDINGS_ATTRIBUTION : '';
     const fbAttr = orthoFallbackUsed ? FALLBACK_ATTRIBUTION : '';
-    attrib.innerHTML = [basemapAttribution(editing), fbAttr, bAttr, terrainAttr].filter(Boolean).join(' · ');
+    const climAttr = isPlan && siteClimate && siteClimateKey === climateKeyOf(editing) ? CLIMATE_ATTRIBUTION : '';
+    attrib.innerHTML = [basemapAttribution(editing), fbAttr, bAttr, terrainAttr, climAttr].filter(Boolean).join(' · ');
     attrib.classList.toggle('hidden', !attrib.innerHTML);
   }
 
@@ -1329,6 +1353,7 @@ import Layout from '../layouts/Layout.astro';
     mapBar.classList.remove('hidden');
     syncMapBar();
     const savedView = restoreViewState();
+    syncZonesUi();
     if (savedView?.sun) {
       sunDateInput.value = savedView.sun.date;
       sunTimeInput.value = String(savedView.sun.minutes);
@@ -1459,8 +1484,9 @@ import Layout from '../layouts/Layout.astro';
       return;
     }
     const excluded = new Set([...editing.placements.map(pl => pl.plantId), ...unplacedPlantIds]);
+    const climate = currentClimate();
     const candidates = plants
-      .filter(p => !excluded.has(p.id))
+      .filter(p => !excluded.has(p.id) && !(climate && notHardy(p, climate)))
       .map(p => ({ p, score: placedPlants.reduce((sum, ref) => sum + compatScore(p, ref), 0) / placedPlants.length }))
       .sort((a, b) => b.score - a.score)
       .slice(0, 5);
@@ -1650,11 +1676,13 @@ import Layout from '../layouts/Layout.astro';
       <g id="contour-layer" pointer-events="none"></g>
       <g id="coverage-layer" pointer-events="none"></g>
       <g id="plan-grid-layer">${gridDefsAndBackground(w, h, editing.gridSpacingM, 'plan-grid', k, pxPerUnit() * U)}</g>
+      <g id="zones-layer" pointer-events="none"></g>
       <polygon id="plan-boundary" points="${pointsAttr}" fill="#15803d" fill-opacity="0.08" stroke="#15803d" stroke-width="${2 * k}"/>
       <g id="plan-areas-layer">${areasSvg(editing.areas, selectedAreaId, k, true)}</g>
       <g id="plan-markers"></g>
       <g id="warn-layer" pointer-events="none"></g>
       <g id="area-handles"></g>
+      <g id="zones-handle"></g>
       <g id="area-draft" pointer-events="none"></g>
       <g id="row-draft" pointer-events="none"></g>
       <g id="lasso-layer" pointer-events="none"></g>
@@ -1666,6 +1694,7 @@ import Layout from '../layouts/Layout.astro';
     renderRowDraft();
     renderAreaHandles();
     renderWarnHover();
+    renderZones();
     markerMap = new Map();
     const markersGroup = planSvg.querySelector('#plan-markers')!;
     for (const placement of editing.placements) {
@@ -2024,6 +2053,7 @@ import Layout from '../layouts/Layout.astro';
     renderAreaDraft();
     renderRowDraft();
     renderContours();
+    renderZones();
   }
   /** `base` zoomed by `factor` (>1 = in) around the SVG point cx/cy. */
   function zoomedView(base: typeof planView, factor: number, cx: number, cy: number): typeof planView {
@@ -2572,6 +2602,7 @@ import Layout from '../layouts/Layout.astro';
   });
 
   async function loadTerrain() {
+    void loadClimate();
     const plan = editing;
     const geo = plan?.geo;
     if (!plan || !geo) { terrain = null; terrainKey = ''; contoursToggle.hidden = true; terrainInfo.textContent = ''; renderContours(); return; }
@@ -2617,6 +2648,8 @@ import Layout from '../layouts/Layout.astro';
     if (!editing || !terrain) { terrainInfo.textContent = ''; return; }
     const boundary = editing.boundary;
     const s = slopeInfo(terrain, (x, y) => boundary.length >= 3 ? pointInPolygon({ xM: x, yM: y }, boundary) : true, editing.geo?.rotationDeg ?? 0);
+    siteSlope = s ? { slopeDeg: s.slopeDeg, aspectDeg: s.aspectDeg } : null;
+    renderZones();
     if (!s) { terrainInfo.textContent = ''; return; }
     const fmt = (v: number, d = 1) => new Intl.NumberFormat(lang, { maximumFractionDigits: d }).format(v);
     terrainInfo.textContent = (s.aspectDeg === null
@@ -2797,6 +2830,218 @@ import Layout from '../layouts/Layout.astro';
   const fmtH = (h: number) => new Intl.NumberFormat(lang, { maximumFractionDigits: 1, minimumFractionDigits: 1 }).format(h);
   let sunMapToken = 0;
   let seasonCache: { key: string; samples: SunSample[] } | null = null;
+  // ── Zonen & Sektoren (lib/zones-sectors.ts) ──
+  // Rings for zones 0–4 around a draggable centre (the house) and wedges for
+  // summer/winter sun, the main wind (site climate) and cold air (downhill,
+  // from the terrain). Stored with the plan (editing.zones), so it travels in
+  // backups and share links.
+  const zonesInput = document.getElementById('g-zones') as HTMLInputElement;
+  const zonesSection = document.getElementById('zones-section')!;
+  const zonesLegend = document.getElementById('zones-legend')!;
+  const zoneRadiusInputs = [...document.querySelectorAll<HTMLInputElement>('[data-zone-radius]')];
+  let siteSlope: { slopeDeg: number; aspectDeg: number | null } | null = null;
+  let zoneDrag: { pointerId: number } | null = null;
+
+  /** Default centre: the OSM building nearest to the plan centre (the house),
+   *  else the middle of the outline. */
+  function defaultZoneCenter(): { xM: number; yM: number } {
+    const plan = editing!;
+    const cx = plan.areaWidthM / 2, cy = plan.areaHeightM / 2;
+    if (showBuildings()) {
+      const near = buildings.map(b => {
+        const x = b.pts.reduce((s, p) => s + p.xM, 0) / b.pts.length, y = b.pts.reduce((s, p) => s + p.yM, 0) / b.pts.length;
+        return { x, y, d: Math.hypot(x - cx, y - cy) };
+      }).filter(b => b.d < Math.max(plan.areaWidthM, plan.areaHeightM)).sort((a, b) => a.d - b.d)[0];
+      if (near) return { xM: near.x, yM: near.y };
+    }
+    const pts = plan.boundary.length >= 3 ? plan.boundary : [{ xM: cx, yM: cy }];
+    return { xM: pts.reduce((s, p) => s + p.xM, 0) / pts.length, yM: pts.reduce((s, p) => s + p.yM, 0) / pts.length };
+  }
+
+  function syncZonesUi() {
+    const z = editing?.zones;
+    zonesInput.checked = !!z?.show;
+    zonesSection.hidden = !z?.show;
+    if (z) zoneRadiusInputs.forEach((inp, i) => { if (document.activeElement !== inp) inp.value = String(Math.round(z.radiiM[i])); });
+  }
+
+  zonesInput.addEventListener('change', () => {
+    if (!editing) return;
+    if (!editing.zones) editing.zones = { show: true, ...(() => { const c = defaultZoneCenter(); return { centerXM: c.xM, centerYM: c.yM }; })(), radiiM: DEFAULT_ZONE_RADII.slice() };
+    else editing.zones.show = zonesInput.checked;
+    syncZonesUi();
+    renderZones();
+    scheduleAutosave();
+  });
+  zoneRadiusInputs.forEach((inp, i) => inp.addEventListener('change', () => {
+    const z = editing?.zones;
+    const v = Number(inp.value);
+    if (!z || !(v > 0)) return;
+    z.radiiM[i] = v;
+    // keep the rings in order: push the neighbours out/in as needed
+    for (let j = i + 1; j < 5; j++) z.radiiM[j] = Math.max(z.radiiM[j], z.radiiM[j - 1] + 1);
+    for (let j = i - 1; j >= 0; j--) z.radiiM[j] = Math.min(z.radiiM[j], z.radiiM[j + 1] - 1, z.radiiM[j]);
+    z.radiiM = z.radiiM.map(r => Math.max(1, r));
+    syncZonesUi();
+    renderZones();
+    scheduleAutosave();
+  }));
+  document.getElementById('zones-center-reset')!.addEventListener('click', () => {
+    if (!editing?.zones) return;
+    const c = defaultZoneCenter();
+    editing.zones.centerXM = c.xM;
+    editing.zones.centerYM = c.yM;
+    renderZones();
+    scheduleAutosave();
+  });
+
+  function renderZones() {
+    const layer = planSvg.querySelector('#zones-layer');
+    const handle = planSvg.querySelector('#zones-handle');
+    if (!layer || !handle) return;
+    const z = editing?.zones;
+    if (!editing || !z?.show) { layer.innerHTML = ''; handle.innerHTML = ''; zonesLegend.innerHTML = ''; return; }
+    const k = viewK();
+    const cx = z.centerXM * U, cy = z.centerYM * U;
+    const rot = editing.geo?.rotationDeg ?? 0;
+    const lat = editing.geo?.lat ?? DEFAULT_SUN_LATLON.lat, lon = editing.geo?.lon ?? DEFAULT_SUN_LATLON.lon;
+    const R = z.radiiM[3] * U;
+    const label = (x: number, y: number, text: string, color: string, size = 11) =>
+      `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" font-size="${size * k}" font-weight="600" fill="${color}" stroke="#fff" stroke-width="${3 * k}" paint-order="stroke">${escapeHtml(text)}</text>`;
+    const parts: string[] = [];
+    const legend: string[] = [];
+    const dot = (c: string) => `<span class="mr-1 inline-block h-2.5 w-2.5 rounded-full align-middle" style="background:${c}"></span>`;
+
+    // Sectors first (under the rings)
+    const sun = solsticeSectors(lat, lon);
+    const lng = lang === 'en' ? 'en' : 'de';
+    if (sun.summer) {
+      parts.push(`<path d="${wedgePath(cx, cy, R, sun.summer.rise, sun.summer.set, rot)}" fill="#facc15" fill-opacity="0.10" stroke="#ca8a04" stroke-width="${1.2 * k}" stroke-dasharray="${6 * k} ${4 * k}"/>`);
+      legend.push(`${dot('#facc15')}${escapeHtml(t('sectorSummerSun', { rise: compassLabel(sun.summer.rise, lng), set: compassLabel(sun.summer.set, lng) }))}`);
+    }
+    if (sun.winter) {
+      parts.push(`<path d="${wedgePath(cx, cy, R * 0.92, sun.winter.rise, sun.winter.set, rot)}" fill="#f97316" fill-opacity="0.14" stroke="#ea580c" stroke-width="${1.2 * k}"/>`);
+      const mid = bearingVector((sun.winter.rise + sun.winter.set) / 2, rot);
+      parts.push(label(cx + mid.x * R * 0.8, cy + mid.y * R * 0.8, t('sectorWinterLabel'), '#c2410c'));
+      legend.push(`${dot('#f97316')}${escapeHtml(t('sectorWinterSun', { rise: compassLabel(sun.winter.rise, lng), set: compassLabel(sun.winter.set, lng) }))}`);
+    }
+    if (sun.summer) {
+      const mid = bearingVector(((sun.summer.rise + ((sun.summer.set - sun.summer.rise + 360) % 360) / 2) % 360), rot);
+      parts.push(label(cx + mid.x * R * 0.97, cy + mid.y * R * 0.97, t('sectorSummerLabel'), '#a16207'));
+    }
+    const climate = currentClimate();
+    if (climate) {
+      const w = climate.windFromDeg;
+      parts.push(`<path d="${wedgePath(cx, cy, R, w - 22.5, w + 22.5, rot)}" fill="#0ea5e9" fill-opacity="0.13" stroke="#0284c7" stroke-width="${1.2 * k}"/>`);
+      const v = bearingVector(w, rot);
+      const x1 = cx + v.x * R * 1.08, y1 = cy + v.y * R * 1.08, x2 = cx + v.x * R * 0.7, y2 = cy + v.y * R * 0.7;
+      parts.push(`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#0369a1" stroke-width="${3 * k}" marker-end="url(#zones-arrow-wind)"/>`);
+      const dir = COMPASS16[lng][Math.round(w / 22.5) % 16];
+      parts.push(label(cx + v.x * R * 1.16, cy + v.y * R * 1.16, t('sectorWindLabel', { dir }), '#0369a1'));
+      legend.push(`${dot('#0ea5e9')}${escapeHtml(t('sectorWind', { dir, share: Math.round(climate.windRose[Math.round(w / 22.5) % 16] * 100) }))}`);
+    } else {
+      legend.push(`<span class="text-stone-500 dark:text-stone-400">${escapeHtml(t(editing.geo ? 'sectorWindLoading' : 'sectorNeedsLocation'))}</span>`);
+    }
+    if (siteSlope && siteSlope.aspectDeg != null && siteSlope.slopeDeg >= 1) {
+      const v = bearingVector(siteSlope.aspectDeg, rot);
+      const x2 = cx + v.x * R * 0.55, y2 = cy + v.y * R * 0.55;
+      parts.push(`<line x1="${cx + v.x * z.radiiM[0] * U}" y1="${cy + v.y * z.radiiM[0] * U}" x2="${x2}" y2="${y2}" stroke="#4f46e5" stroke-width="${3 * k}" stroke-dasharray="${8 * k} ${4 * k}" marker-end="url(#zones-arrow-cold)"/>`);
+      parts.push(label(x2 + v.x * 14 * k, y2 + v.y * 14 * k, t('sectorColdLabel'), '#4338ca'));
+      legend.push(`${dot('#6366f1')}${escapeHtml(t('sectorCold', { dir: compassLabel(siteSlope.aspectDeg, lng), slope: new Intl.NumberFormat(lang, { maximumFractionDigits: 1 }).format(siteSlope.slopeDeg) }))}`);
+    } else if (siteSlope) {
+      legend.push(`${dot('#6366f1')}${escapeHtml(t('sectorColdFlat'))}`);
+    }
+
+    // Zone rings
+    z.radiiM.forEach((r, i) => {
+      parts.push(`<circle cx="${cx}" cy="${cy}" r="${r * U}" fill="${ZONE_COLORS[i]}" fill-opacity="${i === 0 ? 0.12 : 0.03}" stroke="${ZONE_COLORS[i]}" stroke-width="${1.6 * k}" stroke-dasharray="${i === 0 ? '' : `${10 * k} ${5 * k}`}"/>`);
+      parts.push(label(cx, cy - r * U + 9 * k, t('zonesRingLabel', { n: i }), ZONE_COLORS[i], 10));
+    });
+    const marker = (id: string, color: string) => `<marker id="${id}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${color}"/></marker>`;
+    layer.innerHTML = `<defs>${marker('zones-arrow-wind', '#0369a1')}${marker('zones-arrow-cold', '#4338ca')}</defs>${parts.join('')}`;
+    // House handle (drag to move the centre)
+    const s = 9 * k;
+    handle.innerHTML = `<g class="zones-center" style="cursor:move"><circle cx="${cx}" cy="${cy}" r="${s * 1.6}" fill="transparent"/>
+      <path d="M${cx - s},${cy} L${cx},${cy - s} L${cx + s},${cy} L${cx + s * 0.7},${cy} L${cx + s * 0.7},${cy + s * 0.8} L${cx - s * 0.7},${cy + s * 0.8} L${cx - s * 0.7},${cy} Z" fill="#7c2d12" stroke="#fff" stroke-width="${1.5 * k}"/>
+      <title>${escapeHtml(t('zonesCenterTitle'))}</title></g>`;
+    zonesLegend.innerHTML = legend.map(l => `<li>${l}</li>`).join('');
+  }
+
+  planSvg.addEventListener('pointerdown', (e: PointerEvent) => {
+    if (!(e.target as Element).closest('.zones-center') || !editing?.zones) return;
+    e.stopPropagation();
+    e.preventDefault();
+    zoneDrag = { pointerId: e.pointerId };
+    planSvg.setPointerCapture(e.pointerId);
+  }, { capture: true });
+  planSvg.addEventListener('pointermove', (e: PointerEvent) => {
+    if (!zoneDrag || e.pointerId !== zoneDrag.pointerId || !editing?.zones) return;
+    const p = clientToMeters(planSvg, e.clientX, e.clientY);
+    editing.zones.centerXM = p.xM;
+    editing.zones.centerYM = p.yM;
+    renderZones();
+  });
+  const endZoneDrag = (e: PointerEvent) => {
+    if (!zoneDrag || e.pointerId !== zoneDrag.pointerId) return;
+    zoneDrag = null;
+    scheduleAutosave();
+  };
+  planSvg.addEventListener('pointerup', endZoneDrag);
+  planSvg.addEventListener('pointercancel', endZoneDrag);
+
+  // ── Standortklima (Open-Meteo, lib/site-climate.ts) ──
+  // Loaded with the terrain for located plans; drives the climate panel, the
+  // "not hardy" / "blossom before last frost" hints and the suggestions.
+  const climateSection = document.getElementById('climate-section')!;
+  const climateBody = document.getElementById('climate-body')!;
+  let siteClimate: SiteClimate | null = null;
+  let siteClimateKey = '';       // what siteClimate belongs to
+  let climateRequestKey = '';
+  const climateKeyOf = (plan: GardenPlan | null) => plan?.geo ? `${plan.geo.lat.toFixed(1)}|${plan.geo.lon.toFixed(1)}` : '';
+  /** Climate of the open plan — never the previous plan's while loading. */
+  const currentClimate = () => (siteClimate && editing && siteClimateKey === climateKeyOf(editing) ? siteClimate : null);
+  async function loadClimate() {
+    const key = climateKeyOf(editing);
+    if (!key) { climateRequestKey = ''; renderClimatePanel(); return; }
+    if (key === climateRequestKey) { renderClimatePanel(); return; }
+    climateRequestKey = key;
+    renderClimatePanel(true);
+    try {
+      const c = await fetchSiteClimate(editing!.geo!.lat, editing!.geo!.lon);
+      if (climateRequestKey !== key) return;
+      siteClimate = c;
+      siteClimateKey = key;
+    } catch {
+      if (climateRequestKey === key) { climateRequestKey = ''; renderClimatePanel(false, true); }
+      return;
+    }
+    renderClimatePanel();
+    updateAttribution(planSvg);
+    renderSuggestions();
+    scheduleWarnings();
+    renderZones();
+  }
+  function renderClimatePanel(loading = false, failed = false) {
+    climateSection.hidden = !editing?.geo;
+    if (!editing?.geo) return;
+    if (loading) { climateBody.textContent = t('climateLoading'); return; }
+    if (failed) { climateBody.textContent = t('climateFailed'); return; }
+    const c = currentClimate();
+    if (!c) return;
+    const nf = (v: number, d = 0) => new Intl.NumberFormat(lang, { maximumFractionDigits: d }).format(v);
+    const dir = COMPASS16[lang === 'en' ? 'en' : 'de'][Math.round(c.windFromDeg / 22.5) % 16];
+    const rows: [string, string][] = [
+      [t('climateZone'), t('climateZoneValue', { zone: zoneLabel(c.zone), min: nf(c.meanAnnualMinC, 1) })],
+      [t('climateLastFrost'), c.lastFrostDoy != null ? t('climateAround', { date: doyLabel(c.lastFrostDoy, lang) }) : '—'],
+      [t('climateFirstFrost'), c.firstFrostDoy != null ? t('climateAround', { date: doyLabel(c.firstFrostDoy, lang) }) : '—'],
+      [t('climateFrostFree'), c.frostFreeDays != null ? t('climateDays', { n: c.frostFreeDays }) : '—'],
+      [t('climateRain'), t('climateMm', { mm: nf(c.precipMm) })],
+      [t('climateWind'), t('climateWindValue', { dir, share: nf(c.windRose[Math.round(c.windFromDeg / 22.5) % 16] * 100) })],
+    ];
+    climateBody.innerHTML = `<dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5">${rows.map(([k, v]) => `<dt class="text-stone-500 dark:text-stone-400">${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd>`).join('')}</dl>
+      <p class="pt-1 text-[10px] text-stone-500 dark:text-stone-400">${escapeHtml(t('climateNote', { from: c.years[0], to: c.years[1] }))}</p>`;
+  }
+
   // ── Gebäude (OSM) ──
   const buildingsToggle = document.getElementById('buildings-toggle')!;
   const buildingsInput = document.getElementById('g-buildings') as HTMLInputElement;
@@ -3022,7 +3267,28 @@ import Layout from '../layouts/Layout.astro';
     const grown = { ...scene, occluders: [...grownOccluders(plan, plantsById, scene.groundZ), ...buildingOccluders(scene.groundZ)] };
     const shade = shadeWarnings(plan, plantsById, grown, seasonSamples());
     const fmt1 = (v: number) => new Intl.NumberFormat(lang, { maximumFractionDigits: 1 }).format(v);
+    // Site climate: per plant (all its placements), not per placement.
+    const climate = currentClimate();
+    const climateItems: { ids: string[]; text: string }[] = [];
+    if (climate) {
+      const byPlant = new Map<string, string[]>();
+      for (const pl of plan.placements) byPlant.set(pl.plantId, [...(byPlant.get(pl.plantId) ?? []), pl.id]);
+      for (const [plantId, ids] of byPlant) {
+        const p = plantsById.get(plantId);
+        if (!p) continue;
+        const nm = displayName(p) || p.latinName;
+        if (notHardy(p, climate)) {
+          climateItems.push({ ids, text: t('warnNotHardy', { name: nm, zone: zoneLabel(climate.zone), need: String(plantZoneRange(p.climateZone)![0]) }) });
+        } else if (blossomFrostRisk(p, climate) && ['tree', 'shrub'].includes(deriveLayer(p))) {
+          const m = p.flowerMonths.findIndex(Boolean);
+          climateItems.push({ ids, text: t('warnBlossomFrost', {
+            name: nm, month: new Intl.DateTimeFormat(lang, { month: 'long' }).format(new Date(2001, m, 1)), date: doyLabel(climate.lastFrostDoy!, lang),
+          }) });
+        }
+      }
+    }
     const items = [
+      ...climateItems,
       ...shade.map(w => ({ ids: [w.id], text: t('warnShade', { name: name(w.id), h: fmt1(w.hours), need: t(w.need === 'full' ? 'warnNeedFull' : 'warnNeedMid') }) })),
       ...crowd.map(w => ({ ids: [w.a, w.b], text: t('warnCrowded', { a: name(w.a), b: name(w.b), d: fmt1(w.distM), min: fmt1(w.minM) }) })),
     ];
