@@ -17,7 +17,6 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] zulip wieder starten: cd /opt/zulip && docker compose start
 
   ## Fragen
-- [ ] GitHub-Issues im Repository einschalten, damit „Fehler melden → Auf GitHub melden“ funktioniert: `gh repo edit tbdal/Perma-Design-Kit --enable-issues` (bis dahin führt der Knopf auf eine 404-Seite; E-Mail geht)
 - [ ] Bundessortenamt anfragen, ob die „Gesamtliste Obst“ als Namensliste für die Sortenauswahl übernommen werden darf (vollständigste deutsche Liste, nur als PDF)
 
 ## bugs

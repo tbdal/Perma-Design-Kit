@@ -10,7 +10,7 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 - [x] Dauerhafter Speicher wird erst erklärt (Banner, sobald Daten da sind), dann angefragt; Status und Knopf in Einstellungen → Daten
 - [x] Import von geteiltem Link: ergänzt, überschreibt nichts (Pläne/Polykulturen mit gleicher Kennung als Kopie) — beantwortet im Doc
 - [x] Standard-Artenliste (ehem. Golden Master) auch im Menü „Daten ⋮“; 11 Gattungseinträge (spp.) durch konkrete Arten mit PFAF-Daten ersetzt
-- [x] Fehler melden (Footer → /fehler-melden/): Seite automatisch eingetragen, GitHub-Issue oder E-Mail vorausgefüllt, Debug-Datei ohne Zugangsdaten (Projekt nur auf Wunsch), Fehlerprotokoll des Tabs; Issue-Formular in `.github/ISSUE_TEMPLATE`
+- [x] Fehler melden (Footer → /fehler-melden/): Seite automatisch eingetragen, GitHub-Issue oder E-Mail vorausgefüllt, Debug-Datei ohne Zugangsdaten (Projekt nur auf Wunsch), Fehlerprotokoll des Tabs; Issue-Formular in `.github/ISSUE_TEMPLATE`; GitHub-Issues im Repository eingeschaltet
 - [x] Sortier-Dropdown: „Höhe“, „Breite“, „Vollständigkeit“ statt H, B, Vollst.
 - [x] 3D: Nadelgehölze (erweiterte Gattungsliste) als Kegel, Laubgehölze rund; Schirmkrone nur bei Pinie, Waldkiefer & Co.
 - [x] 3D: Stammdicke wächst mit der Höhe und auch nach Erreichen der Endgröße noch (bis +80 % in 40 Jahren)
