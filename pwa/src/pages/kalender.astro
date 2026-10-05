@@ -6,6 +6,16 @@ import Layout from '../layouts/Layout.astro';
     <div>
       <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-100" data-i18n="pageTitle">Ernte- &amp; Blütenkalender</h1>
       <p class="mt-1 text-sm text-stone-500 dark:text-stone-400" data-i18n="pageSubtitle">Wann blüht was, wann ist was erntereif — aus deinen Pflanzendaten.</p>
+      <details class="mt-3 max-w-2xl rounded-lg bg-stone-50 dark:bg-stone-900 px-3 py-1.5 text-xs text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700">
+        <summary class="cursor-pointer select-none font-medium text-stone-500 dark:text-stone-400" data-i18n="infoToggle">ℹ️ Wie funktioniert das?</summary>
+        <div class="mt-2 space-y-1.5">
+          <p id="kal-coverage" class="font-medium text-stone-700 dark:text-stone-200"></p>
+          <p data-i18n="infoOverview">Überblick</p>
+          <p data-i18n="infoTable">Tabelle</p>
+          <p data-i18n="infoFilters">Filter</p>
+          <p data-i18n="infoData">Daten</p>
+        </div>
+      </details>
     </div>
     <div class="flex items-center gap-4 text-xs text-stone-600 dark:text-stone-300">
       <span class="flex items-center gap-1.5"><span class="inline-block h-3 w-5 rounded-sm bg-amber-400 dark:bg-amber-500"></span><span data-i18n="legendFlower">Blüte</span></span>
@@ -240,8 +250,8 @@ import Layout from '../layouts/Layout.astro';
       const rH = Math.max(rc > 0 ? 4 : 0, Math.round((rc / maxCount) * 44));
       return `
         <div class="rounded-lg p-2 text-center ${isNow
-          ? 'ring-2 ring-green-500 bg-green-50 dark:bg-green-900/20'
-          : 'bg-stone-50 dark:bg-stone-900'}">
+          ? 'ring-2 ring-green-600 bg-white shadow-md dark:bg-stone-700 dark:ring-green-400'
+          : 'bg-stone-50 dark:bg-stone-900'}"${isNow ? ` aria-current="date"` : ''}>
           <p class="text-xs font-semibold ${isNow ? 'text-green-700 dark:text-green-400' : 'text-stone-500 dark:text-stone-400'}">${m}</p>
           <span class="sr-only">${escapeHtml(t('overviewFloweringTitle', { count: fc }))}, ${escapeHtml(t('overviewRipeTitle', { count: rc }))}</span>
           <div aria-hidden="true" class="mt-1 flex items-end justify-center gap-0.5" style="height:50px">
@@ -260,7 +270,7 @@ import Layout from '../layouts/Layout.astro';
 
     const headerCells = MONTHS.map((m, i) => {
       const isNow = i === NOW_MONTH;
-      return `<div class="flex h-8 items-center justify-center text-xs font-medium ${isNow ? 'text-green-700 dark:text-green-400 font-bold' : 'text-stone-500 dark:text-stone-400'}">${m}</div>`;
+      return `<div class="flex h-8 items-center justify-center text-xs font-medium ${isNow ? 'bg-green-50 text-green-800 font-bold dark:bg-green-900/30 dark:text-green-300' : 'text-stone-500 dark:text-stone-400'}"${isNow ? ` aria-current="date"` : ''}>${m}</div>`;
     }).join('');
 
     // Blüte/Frucht each get their own sub-row per month (top/bottom) instead
@@ -281,7 +291,7 @@ import Layout from '../layouts/Layout.astro';
         const fruit  = showR && !!(p.fruitMonths?.[i]);
         const isNow = i === NOW_MONTH;
         return `
-          <div aria-hidden="true" class="flex h-9 flex-col justify-center gap-px ${isNow ? 'ring-1 ring-inset ring-green-400/30' : ''}">
+          <div aria-hidden="true" class="flex h-full min-h-9 flex-col justify-center gap-px ${isNow ? 'bg-green-50 dark:bg-green-900/30' : ''}">
             <div class="h-4 rounded-t ${flower ? 'bg-amber-300 dark:bg-amber-500' : ''}"></div>
             <div class="h-4 rounded-b ${fruit ? 'bg-green-500 dark:bg-green-400' : ''}"></div>
           </div>
@@ -320,6 +330,11 @@ import Layout from '../layouts/Layout.astro';
     emptyNoData.hidden  = active.length > 0 || (showNoData && allPlants.length > 0);
     emptyNoMatch.hidden = eligible.length === 0 || filtered.length > 0;
     tableEl.style.display = filtered.length === 0 ? 'none' : '';
+
+    const covEl = document.getElementById('kal-coverage');
+    if (covEl) covEl.textContent = allPlants.length
+      ? t('infoCoverage', { n: active.length, total: allPlants.length, pct: Math.round(active.length / allPlants.length * 100) })
+      : '';
 
     countEl.textContent = filtered.length === eligible.length
       ? t('countAll', { count: eligible.length })

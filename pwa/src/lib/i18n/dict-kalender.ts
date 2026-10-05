@@ -1,6 +1,12 @@
 import type { Dict } from './core';
 
 export const kalenderDict: Dict = {
+  infoToggle: { de: 'ℹ️ Wie funktioniert das?', en: 'ℹ️ How does it work?' },
+  infoCoverage: { de: '{n} von {total} Pflanzen ({pct} %) haben Blüh- oder Erntemonate – nur diese erscheinen im Kalender.', en: '{n} of {total} plants ({pct} %) have flowering or harvest months – only these appear in the calendar.' },
+  infoOverview: { de: 'Überblick: je Monat zwei Balken – wie viele Pflanzen blühen (gelb) und wie viele reif sind (grün). Der aktuelle Monat ist weiß hervorgehoben.', en: 'Overview: two bars per month – how many plants flower (yellow) and how many are ripe (green). The current month is highlighted in white.' },
+  infoTable: { de: 'Tabelle: eine Zeile pro Pflanze, oben die Blüte, unten die Ernte; die Spalte des aktuellen Monats ist hinterlegt. „×3“ heißt: dreimal in der gewählten Polykultur bzw. im Plan.', en: 'Table: one row per plant, flowering on top, harvest below; the current month’s column is shaded. “×3” means three times in the chosen polyculture or plan.' },
+  infoFilters: { de: 'Filter: Suche, Blüte/Ernte, Nutzung und Funktionen schränken ein; „Pflanzen aus“ zeigt nur die Pflanzen einer Polykultur oder eines Waldgartenplans. Die Tabelle gibt es auch als PDF (Farbe oder Graustufen).', en: 'Filters: search, flowering/harvest, uses and functions narrow it down; “Plants from” shows only the plants of one polyculture or forest garden plan. The table is also available as a PDF (colour or greyscale).' },
+  infoData: { de: 'Daten: Blüh- und Erntemonate kommen aus PFAF bzw. Edible Forest Gardens beim Anreichern oder werden in der Pflanze selbst eingetragen – fehlen sie, die Pflanze anreichern oder bearbeiten.', en: 'Data: flowering and harvest months come from PFAF or Edible Forest Gardens when enriching, or are entered on the plant itself – if they are missing, enrich or edit the plant.' },
   scopeLabel: { de: 'Pflanzen aus', en: 'Plants from' },
   scopeAll: { de: 'Allen Pflanzen', en: 'All plants' },
   scopePlans: { de: 'Waldgartenplan', en: 'Forest garden plan' },
