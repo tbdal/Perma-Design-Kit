@@ -119,6 +119,13 @@ import Layout from '../layouts/Layout.astro';
         <dt class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="statLabelStorage">Speicherverbrauch</dt>
         <dd id="stats-storage" class="font-mono text-stone-800 dark:text-stone-100">…</dd>
       </div>
+      <div class="sm:col-span-2">
+        <dt class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="statLabelPersist">Dauerhafter Speicher</dt>
+        <dd class="flex flex-wrap items-center gap-2 text-stone-800 dark:text-stone-100">
+          <span id="stats-persist">…</span>
+          <button id="btn-persist" type="button" hidden data-i18n="btnPersist" class="rounded-md bg-stone-100 dark:bg-stone-700 px-2 py-0.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Jetzt anfragen</button>
+        </dd>
+      </div>
     </dl>
 
     <p id="last-backup-info" class="mt-3 text-xs text-stone-500 dark:text-stone-400"></p>
@@ -435,7 +442,24 @@ import Layout from '../layouts/Layout.astro';
     } else {
       statsStorage.textContent = '—';
     }
+    await renderPersist();
   }
+
+  // Persistent storage: status + manual request (the banner in Layout asks
+  // once there is data; this is the place to check or retry).
+  const statsPersist = document.getElementById('stats-persist')!;
+  const btnPersist = document.getElementById('btn-persist') as HTMLButtonElement;
+  async function renderPersist() {
+    if (!navigator.storage?.persisted) { statsPersist.textContent = t('persistUnsupported'); btnPersist.hidden = true; return; }
+    const on = await navigator.storage.persisted().catch(() => false);
+    statsPersist.textContent = t(on ? 'persistOn' : 'persistOff');
+    btnPersist.hidden = on;
+  }
+  btnPersist.addEventListener('click', async () => {
+    const ok = await navigator.storage.persist().catch(() => false);
+    if (!ok) showToast(t('persistRequestDenied'));
+    await renderPersist();
+  });
 
   // The design switches (and is stored) on click, not via "Einstellungen
   // speichern" — far below the radios, that button was easy to miss.
@@ -902,16 +926,11 @@ import Layout from '../layouts/Layout.astro';
   document.getElementById('btn-reload-master')!.addEventListener('click', async () => {
     if (!confirm(t('reloadMasterConfirm'))) return;
     try {
-      const res = await fetch('/plants-db.json');
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      // plants-db.json is a name index ({latinName, commonName} only, no ids),
-      // so normalize each entry into a full record and skip plants that are
-      // already in the collection — otherwise every click added duplicates.
-      const { plants: master } = parseBackup(await res.text());
-      const existing = new Set((await getAllPlants()).map(p => p.latinName.trim().toLowerCase()));
-      const plants = master.filter(p => !existing.has(p.latinName.trim().toLowerCase()));
-      await importPlants(plants);
-      showToast(t('reloadMasterToast', { n: plants.length }));
+      // plants-db.json is a name index ({latinName, commonName} only, no ids);
+      // loadMasterList() normalizes the entries and skips plants already in
+      // the collection — otherwise every click added duplicates.
+      const { loadMasterList } = await import('../lib/master-list');
+      showToast(t('reloadMasterToast', { n: await loadMasterList() }));
       await renderStats();
     } catch (err) {
       alert(t('reloadMasterFailed', { msg: err instanceof Error ? err.message : String(err) }));

@@ -73,6 +73,7 @@ import Layout from '../layouts/Layout.astro';
           <hr class="my-1 border-stone-200 dark:border-stone-700">
           <button id="btn-load-samples" data-i18n="menuLoadSamples" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Beispieldaten laden</button>
           <button id="btn-load-samples-crawford" data-i18n="menuLoadSamplesCrawford" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Beispieldaten laden (Crawford)</button>
+          <button id="btn-load-master" data-i18n="menuLoadMaster" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Standard-Artenliste laden (≈190 Arten)</button>
           <hr class="my-1 border-stone-200 dark:border-stone-700">
           <button id="btn-enrich-all" data-i18n="menuEnrichAll" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Lade alle fehlenden Daten</button>
         </div>
@@ -1458,6 +1459,19 @@ import Layout from '../layouts/Layout.astro';
     } catch (err) {
       alert(t('alertSampleImportFailed', { error: err instanceof Error ? err.message : String(err) }));
       console.error(err);
+    }
+  });
+  document.getElementById('btn-load-master')!.addEventListener('click', async () => {
+    if (!confirm(t('confirmLoadMaster'))) return;
+    try {
+      const { loadMasterList } = await import('../lib/master-list');
+      const n = await loadMasterList();
+      const before = anyFilterActive();
+      clearAllFilters();
+      await renderList();
+      alert(t('alertMasterImported', { n, reset: before ? t('alertFiltersReset') : '' }));
+    } catch (err) {
+      alert(t('alertSampleImportFailed', { error: err instanceof Error ? err.message : String(err) }));
     }
   });
   document.getElementById('btn-enrich-all')!.addEventListener('click', async () => {

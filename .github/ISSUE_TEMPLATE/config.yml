@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Ohne GitHub-Konto melden
+    url: mailto:info@permadesignkit.org
+    about: Fehler oder Fragen per E-Mail schicken.
+  - name: Fehler melden in der App
+    url: https://permadesignkit.org/fehler-melden/
+    about: Füllt Seite und Umgebung automatisch aus und erstellt eine Debug-Datei.

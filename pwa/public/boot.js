@@ -23,3 +23,22 @@
     if (font === '115' || font === '130') root.dataset.font = font;
   } catch (_) {}
 })();
+
+// Last 20 script errors of this tab, for the debug file on /fehler-melden/
+// (src/lib/bug-report.ts). sessionStorage: stays in the tab, nothing is sent.
+(function () {
+  function remember(msg, src) {
+    try {
+      var list = JSON.parse(sessionStorage.getItem('pdk-errors') || '[]');
+      list.push({ t: new Date().toISOString(), msg: String(msg).slice(0, 500), src: (src || location.pathname).slice(0, 200) });
+      sessionStorage.setItem('pdk-errors', JSON.stringify(list.slice(-20)));
+    } catch (_) {}
+  }
+  window.addEventListener('error', function (e) {
+    remember(e.message || (e.target && e.target.src ? 'resource failed: ' + e.target.src : 'error'), e.filename ? e.filename.replace(location.origin, '') + ':' + e.lineno : '');
+  });
+  window.addEventListener('unhandledrejection', function (e) {
+    var r = e.reason;
+    remember('unhandled rejection: ' + (r && r.message ? r.message : r), '');
+  });
+})();

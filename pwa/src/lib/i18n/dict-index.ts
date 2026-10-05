@@ -45,6 +45,9 @@ export const indexDict: Dict = {
   menuExportAll: { de: 'Alle exportieren (JSON)', en: 'Export all (JSON)' },
   menuShareLink: { de: '🔗 Projekt als Link teilen…', en: '🔗 Share project as link…' },
   menuLoadSamples: { de: 'Beispieldaten laden', en: 'Load sample data' },
+  menuLoadMaster: { de: 'Standard-Artenliste laden (≈190 Arten)', en: 'Load default species list (≈190 species)' },
+  confirmLoadMaster: { de: 'Die Standard-Artenliste (≈190 vor allem Obst-, Nuss- und Beerengehölze, nur Namen) importieren? Arten, die schon in deiner Liste sind, werden übersprungen. Details lädst du danach mit „Lade alle fehlenden Daten“.', en: 'Import the default species list (≈190, mostly fruit, nut and berry woody plants, names only)? Species already in your list are skipped. Load their details afterwards with “Load all missing data”.' },
+  alertMasterImported: { de: '{n} Arten aus der Standard-Artenliste übernommen{reset}. Details mit „Daten ⋮ → Lade alle fehlenden Daten“.', en: '{n} species added from the default list{reset}. Details via “Data ⋮ → Load all missing data”.' },
   menuLoadSamplesCrawford: { de: 'Beispieldaten laden (Crawford)', en: 'Load sample data (Crawford)' },
   menuEnrichAll: { de: 'Lade alle fehlenden Daten', en: 'Fetch all missing data' },
 

@@ -153,7 +153,7 @@ export const settingsDict: Dict = {
   restoreToast: { de: '{plants} Pflanzen{guildPart}{gardenPlanPart} wiederhergestellt', en: '{plants} plants{guildPart}{gardenPlanPart} restored' },
   restoreFailed: { de: 'Backup-Import fehlgeschlagen: {msg}', en: 'Backup import failed: {msg}' },
 
-  reloadMasterConfirm: { de: 'Die Standard-Artenliste (≈190 Obst-, Nuss-, Beeren- und Wildgehölze, nur Namen) importieren? Arten, die schon in deiner Liste sind, werden übersprungen. Details lädst du danach mit „Lade alle fehlenden Daten“.', en: 'Import the default species list (≈190 fruit, nut, berry and wild woody species, names only)? Species already in your list are skipped. Load their details afterwards with “Load all missing data”.' },
+  reloadMasterConfirm: { de: 'Die Standard-Artenliste (≈190 vor allem Obst-, Nuss- und Beerengehölze, nur Namen) importieren? Arten, die schon in deiner Liste sind, werden übersprungen. Details lädst du danach mit „Lade alle fehlenden Daten“.', en: 'Import the default species list (≈190, mostly fruit, nut and berry woody plants, names only)? Species already in your list are skipped. Load their details afterwards with “Load all missing data”.' },
   reloadMasterToast: { de: '{n} Pflanzen importiert', en: '{n} plants imported' },
   reloadMasterFailed: { de: 'Import fehlgeschlagen: {msg}', en: 'Import failed: {msg}' },
 
@@ -192,4 +192,10 @@ export const settingsDict: Dict = {
   varietyCsvDone: { de: '{n} Sorten als „{name}“ importiert.', en: 'Imported {n} varieties as “{name}”.' },
   varietyCsvEmpty: { de: 'Die Datei enthält keine Sorten.', en: 'The file contains no varieties.' },
   varietyCsvFailed: { de: 'Import fehlgeschlagen: {msg}', en: 'Import failed: {msg}' },
+  statLabelPersist: { de: 'Dauerhafter Speicher', en: 'Persistent storage' },
+  btnPersist: { de: 'Jetzt anfragen', en: 'Request now' },
+  persistOn: { de: 'aktiv – der Browser löscht deine Daten nicht von sich aus', en: 'active – the browser won’t delete your data on its own' },
+  persistOff: { de: 'nicht aktiv – bei Speichermangel kann der Browser die Daten löschen', en: 'not active – the browser may delete the data when space runs low' },
+  persistUnsupported: { de: 'vom Browser nicht unterstützt', en: 'not supported by this browser' },
+  persistRequestDenied: { de: 'Der Browser hat abgelehnt oder entscheidet selbst. Regelmäßige Backups schützen deine Daten.', en: 'The browser declined or decides on its own. Regular backups keep your data safe.' },
 };

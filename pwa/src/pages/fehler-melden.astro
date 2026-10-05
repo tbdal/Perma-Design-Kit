@@ -1,0 +1,78 @@
+---
+import Layout from '../layouts/Layout.astro';
+const field = 'mt-1 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-3 py-2 text-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200';
+const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
+---
+<Layout title="Perma Design Kit — Fehler melden">
+  <article class="mx-auto max-w-2xl space-y-5 text-stone-800 dark:text-stone-100">
+    <h1 class="text-2xl font-bold" data-i18n="rpTitle">Fehler melden</h1>
+    <p class="text-sm text-stone-600 dark:text-stone-300" data-i18n="rpIntro">Danke, dass du hilfst! Beschreib kurz, was passiert ist. Die App sendet selbst nichts: Du schickst die Meldung per GitHub oder E-Mail, und die Debug-Datei hängst du bei Bedarf selbst an.</p>
+
+    <form id="rp-form" class="space-y-4 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+      <label class="block text-sm font-medium"><span data-i18n="rpPage">Auf welcher Seite?</span>
+        <input id="rp-page" class={field} required />
+      </label>
+      <label class="block text-sm font-medium"><span data-i18n="rpWhat">Was ist passiert?</span>
+        <textarea id="rp-what" rows="5" class={field} required data-i18n-placeholder="rpWhatPlaceholder" placeholder="Was hast du gemacht, und was ist dann passiert?"></textarea>
+      </label>
+      <label class="block text-sm font-medium"><span data-i18n="rpExpected">Was hast du erwartet?</span>
+        <textarea id="rp-expected" rows="2" class={field}></textarea>
+      </label>
+      <p class="text-xs text-stone-500 dark:text-stone-400"><span data-i18n="rpEnv">Wird automatisch ergänzt:</span> <code id="rp-env" class="break-all"></code></p>
+
+      <div class="rounded-lg bg-stone-50 dark:bg-stone-900 p-3 text-sm">
+        <p class="font-medium" data-i18n="rpFileTitle">Debug-Datei (optional)</p>
+        <p class="mt-1 text-xs text-stone-500 dark:text-stone-400" data-i18n="rpFileBody">Enthält Version, Browser, Fenstergröße, Einstellungen ohne Zugangsdaten, die Anzahl deiner Pflanzen und Pläne und die letzten Fehlermeldungen dieses Tabs.</p>
+        <label class="mt-2 inline-flex items-start gap-2 text-xs"><input type="checkbox" id="rp-project" class="mt-0.5 accent-green-600" /> <span data-i18n="rpIncludeProject">Auch mein Projekt beilegen (Pflanzen, Polykulturen, Pläne mit Standort und Notizen) – nur, wenn der Fehler damit zu tun hat.</span></label>
+        <div class="mt-2"><button type="button" id="rp-download" data-i18n="rpDownload" class={`${btn} bg-white dark:bg-stone-800 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700`}>Debug-Datei herunterladen</button></div>
+      </div>
+
+      <p class="text-xs text-stone-500 dark:text-stone-400" data-i18n="rpScreenshot">Ein Bildschirmfoto hilft oft: Windows Win+Umschalt+S, macOS Cmd+Umschalt+4, Android/iOS Ein-/Aus- und Leiser-Taste. Anhängen kannst du es in GitHub oder in der Mail.</p>
+
+      <div class="flex flex-wrap gap-2">
+        <button type="submit" data-action="github" data-i18n="rpGithub" class={`${btn} bg-green-700 text-white hover:bg-green-800`}>Auf GitHub melden</button>
+        <button type="submit" data-action="mail" data-i18n="rpMail" class={`${btn} bg-white dark:bg-stone-800 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700`}>Per E-Mail senden</button>
+      </div>
+      <p class="text-xs text-stone-500 dark:text-stone-400" data-i18n="rpGithubNote">GitHub braucht ein kostenloses Konto; Meldungen dort sind öffentlich. Ohne Konto: E-Mail an info@permadesignkit.org.</p>
+    </form>
+  </article>
+
+  <script>
+    import { applyStaticI18n, getLang } from '../lib/i18n/core';
+    import { reportDict } from '../lib/i18n/dict-report';
+    import { buildDebugInfo, environmentLine, issueUrl, mailtoUrl, APP_VERSION, type ReportText } from '../lib/bug-report';
+
+    applyStaticI18n(reportDict);
+    const page = document.getElementById('rp-page') as HTMLInputElement;
+    const what = document.getElementById('rp-what') as HTMLTextAreaElement;
+    const expected = document.getElementById('rp-expected') as HTMLTextAreaElement;
+    const withProject = document.getElementById('rp-project') as HTMLInputElement;
+    const form = document.getElementById('rp-form') as HTMLFormElement;
+
+    // The page the person came from: ?from= (footer link) or the referrer path.
+    const from = new URLSearchParams(location.search).get('from');
+    let refPath = '';
+    try { if (document.referrer && new URL(document.referrer).origin === location.origin) refPath = new URL(document.referrer).pathname; } catch {}
+    page.value = from || refPath || '/';
+    const env = environmentLine();
+    document.getElementById('rp-env')!.textContent = env;
+
+    const text = (): ReportText => ({ page: page.value.trim(), what: what.value.trim(), expected: expected.value.trim() });
+
+    document.getElementById('rp-download')!.addEventListener('click', async () => {
+      const info = await buildDebugInfo(text(), withProject.checked);
+      const url = URL.createObjectURL(new Blob([JSON.stringify(info, null, 2)], { type: 'application/json' }));
+      const a = document.createElement('a');
+      a.href = url; a.download = `pdk-debug-${APP_VERSION}-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const action = ((e as SubmitEvent).submitter as HTMLButtonElement | null)?.dataset.action;
+      if (action === 'mail') location.href = mailtoUrl(text(), env, getLang() === 'de');
+      else window.open(issueUrl(text(), env), '_blank', 'noopener');
+    });
+  </script>
+</Layout>

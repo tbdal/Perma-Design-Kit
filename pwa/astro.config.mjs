@@ -1,5 +1,6 @@
 // @ts-check
 import { readFileSync, existsSync } from 'node:fs';
+import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'astro/config';
 
@@ -15,6 +16,10 @@ const httpsConfig = existsSync(keyPath) && existsSync(certPath)
   ? { key: readFileSync(keyPath), cert: readFileSync(certPath) }
   : undefined;
 
+// Build id shown on /fehler-melden/ and in debug files: short commit + date.
+let pdkVersion = 'dev';
+try { pdkVersion = `${execSync('git rev-parse --short HEAD').toString().trim()}-${new Date().toISOString().slice(0, 10)}`; } catch {}
+
 // https://astro.build/config
 export default defineConfig({
   output: 'static',
@@ -23,6 +28,7 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()],
+    define: { __PDK_VERSION__: JSON.stringify(pdkVersion) },
     // Astro inlines processed <script>s smaller than this limit into the
     // HTML, which the production CSP (script-src without 'unsafe-inline')
     // silently blocks — the dev server sends no CSP, so it only breaks live.

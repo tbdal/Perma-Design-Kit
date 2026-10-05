@@ -1,0 +1,38 @@
+name: Fehler melden
+description: Etwas funktioniert nicht wie erwartet.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Danke für die Meldung! Am einfachsten über **„Fehler melden“** unten in der App – dann sind Seite und Umgebung schon eingetragen.
+        Debug-Datei oder Bildschirmfoto kannst du unten einfach hineinziehen.
+  - type: input
+    id: seite
+    attributes:
+      label: Seite
+      description: Auf welcher Seite ist es passiert? (z. B. /gartenplan, /settings)
+      placeholder: /gartenplan
+    validations:
+      required: true
+  - type: textarea
+    id: beschreibung
+    attributes:
+      label: Was ist passiert?
+      description: Was hast du gemacht, und was ist dann passiert?
+    validations:
+      required: true
+  - type: textarea
+    id: erwartet
+    attributes:
+      label: Was hast du erwartet?
+  - type: input
+    id: umgebung
+    attributes:
+      label: Umgebung
+      description: Version, Browser, Fenstergröße (trägt die App selbst ein)
+  - type: textarea
+    id: anhang
+    attributes:
+      label: Debug-Datei / Bildschirmfoto
+      description: Datei oder Bild hier hineinziehen. Die Debug-Datei enthält keine Zugangsdaten; dein Projekt nur, wenn du es beim Herunterladen angehakt hast.
