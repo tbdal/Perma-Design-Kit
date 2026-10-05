@@ -2,6 +2,12 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Waldgartenplan-Übersicht sortieren, Hilfe 2026-10-05
+- [x] **Sortieren der Projekte:** neueste Planung (Standard), zuletzt bearbeitet, Name (Zahlen in natürlicher Reihenfolge), Größe (gezeichnete Fläche in m²) und Anzahl Pflanzen, je auf- und absteigend (↑/↓); Wahl bleibt gespeichert. Kacheln zeigen Fläche in m² sowie Anlage- und Bearbeitungsdatum
+- [x] **Projektkarten:** Knöpfe rechts untereinander, Löschen rot
+- [x] **ⓘ bei Höhe/Breite:** klappt die Erklärung beim Antippen auf (der reine Tooltip erschien auf Touch-Geräten nie), mit Link zur Hilfe
+- [x] **Hilfe – Shortcuts:** Hinweis, dass es je nach Seite und Ansicht weitere Kürzel gibt (vor allem im Waldgartenplan), vollständige Liste mit „?“
+
 ## Bugs, Kalender, Wasser in 3D 2026-10-05
 - [x] **Malus domestica 10,7 m:** EFG-Größen nehmen die Mitte der Spanne statt der Obergrenze (Kulturapfel „standard“ 25–35' → 9,1 m); die 10,7 m kamen als Breite aus EFG, weil PFAF beim Apfel keine Breite angibt. Bestehende Pflanzen: neu anreichern
 - [x] **Homo erectus & Co.:** Wikidata-Treffer werden über die Abstammung geprüft (Pflanzen oder Pilze), parallel zur Detailabfrage; Textfilter als Rückfall um Mensch/Homo/Virus ergänzt

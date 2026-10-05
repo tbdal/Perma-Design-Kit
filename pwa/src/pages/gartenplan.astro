@@ -32,6 +32,17 @@ import Layout from '../layouts/Layout.astro';
     </div>
     <p class="mb-4 text-sm text-stone-500 dark:text-stone-400" data-i18n="introText">Zeichne eine Fläche, platziere Pflanzen darauf und sieh mit dem Schieberegler, wie groß sie nach x Jahren ungefähr werden.</p>
     <p class="mb-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 px-3 py-2 text-sm text-amber-800 dark:text-amber-200 ring-1 ring-amber-200 dark:ring-amber-800" data-i18n="experimentalNotice">Experimentell — diese Funktion befindet sich noch in der Entwicklung.</p>
+    <div id="plan-sort-bar" hidden class="mb-3 flex flex-wrap items-center gap-2 text-sm">
+      <label for="plan-sort-field" class="text-stone-600 dark:text-stone-300" data-i18n="planSortLabel">Sortieren</label>
+      <select id="plan-sort-field" class="rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2 py-1.5 text-sm shadow-sm focus:border-green-500 focus:outline-none">
+        <option value="created" data-i18n="planSortCreated">Neueste Planung</option>
+        <option value="updated" data-i18n="planSortUpdated">Zuletzt bearbeitet</option>
+        <option value="name" data-i18n="planSortName">Name</option>
+        <option value="area" data-i18n="planSortArea">Größe (Fläche)</option>
+        <option value="plants" data-i18n="planSortPlants">Anzahl Pflanzen</option>
+      </select>
+      <button id="plan-sort-dir" type="button" data-i18n-title="planSortDirTitle" data-i18n-aria-label="planSortDirTitle" aria-label="Sortierrichtung umkehren" title="Sortierrichtung umkehren" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-2.5 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700">↓</button>
+    </div>
     <div id="plan-list" class="grid gap-4 sm:grid-cols-2"></div>
     <div id="plan-empty" class="hidden rounded-xl border-2 border-dashed border-stone-300 dark:border-stone-600 py-16 text-center">
       <p class="text-stone-500 dark:text-stone-400" data-i18n="emptyStateText">Noch keine Waldgartenpläne angelegt.</p>
@@ -514,6 +525,7 @@ import Layout from '../layouts/Layout.astro';
   import { plantDetailHtml } from '../lib/plant-detail';
   import { compatScore } from '../lib/compat';
   import { newId } from '../lib/id';
+  import { sortPlans, defaultDir, planAreaM2, PLAN_SORT_FIELDS, type PlanSortField, type SortDir } from '../lib/plan-list-sort';
   import { escapeHtml, withButtonSpinner } from '../lib/html';
   import { exportGardenPlanPDF, planFitsPaper, type PlanPaper } from '../lib/pdf-export';
   import { createT, applyStaticI18n, getLang } from '../lib/i18n/core';
@@ -822,7 +834,40 @@ import Layout from '../layouts/Layout.astro';
   }
 
   // ── Listenansicht ──────────────────────────────────────────────────────
+  // Sorting of the project list (lib/plan-list-sort.ts), kept per device.
+  const PLAN_SORT_KEY = 'pdk-plan-sort';
+  const sortBar = document.getElementById('plan-sort-bar')!;
+  const sortFieldSel = document.getElementById('plan-sort-field') as HTMLSelectElement;
+  const sortDirBtn = document.getElementById('plan-sort-dir') as HTMLButtonElement;
+  let planSort: { field: PlanSortField; dir: SortDir } = { field: 'created', dir: 'desc' };
+  try {
+    const saved = JSON.parse(localStorage.getItem(PLAN_SORT_KEY) || 'null');
+    if (saved && PLAN_SORT_FIELDS.includes(saved.field) && (saved.dir === 'asc' || saved.dir === 'desc')) planSort = saved;
+  } catch { /* ignore */ }
+  function syncSortUi() {
+    sortFieldSel.value = planSort.field;
+    sortDirBtn.textContent = planSort.dir === 'asc' ? '↑' : '↓';
+    try { localStorage.setItem(PLAN_SORT_KEY, JSON.stringify(planSort)); } catch { /* ignore */ }
+  }
+  sortFieldSel.addEventListener('change', () => {
+    const field = sortFieldSel.value as PlanSortField;
+    planSort = { field, dir: defaultDir(field) };
+    syncSortUi();
+    renderList();
+  });
+  sortDirBtn.addEventListener('click', () => {
+    planSort = { ...planSort, dir: planSort.dir === 'asc' ? 'desc' : 'asc' };
+    syncSortUi();
+    renderList();
+  });
+  syncSortUi();
+  const fmtDate = (iso?: string) => {
+    const d = iso ? new Date(iso) : null;
+    return d && !isNaN(+d) ? new Intl.DateTimeFormat(lang, { day: 'numeric', month: 'short', year: 'numeric' }).format(d) : '';
+  };
+
   function renderList() {
+    sortBar.hidden = plans.length < 2;
     if (plans.length === 0) {
       emptyEl.classList.remove('hidden');
       listEl.classList.add('hidden');
@@ -830,7 +875,7 @@ import Layout from '../layouts/Layout.astro';
     }
     emptyEl.classList.add('hidden');
     listEl.classList.remove('hidden');
-    listEl.innerHTML = plans.map(plan => {
+    listEl.innerHTML = sortPlans(plans, planSort.field, planSort.dir, lang).map(plan => {
       const poly = plan.polycultureId ? polyculturesById.get(plan.polycultureId) : undefined;
       return `
         <article data-plan-id="${plan.id}" class="flex cursor-pointer items-start gap-3 rounded-xl bg-white dark:bg-stone-800 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:ring-green-300 dark:hover:ring-green-700">
@@ -839,7 +884,8 @@ import Layout from '../layouts/Layout.astro';
             ${plan.description ? `<p class="mt-0.5 text-xs text-stone-500 dark:text-stone-400">${escapeHtml(plan.description)}</p>` : ''}
             ${poly ? `<p class="mt-2 text-xs text-stone-500 dark:text-stone-400">${t('linkedPolycultureLabel')} ${escapeHtml(poly.name || '—')}</p>` : ''}
             <p class="mt-2 text-sm text-stone-700 dark:text-stone-200">${t('placementCount', { count: plan.placements.length })}</p>
-            <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">${t('areaSizeLabel', { w: plan.areaWidthM, h: plan.areaHeightM })}</p>
+            <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">${t('areaSizeLabel', { w: plan.areaWidthM, h: plan.areaHeightM })} · ${new Intl.NumberFormat(lang, { maximumFractionDigits: 0 }).format(planAreaM2(plan))} m²</p>
+            ${plan.updatedAt || plan.createdAt ? `<p class="mt-1 text-[11px] text-stone-400 dark:text-stone-500">${escapeHtml(t('planDates', { created: fmtDate(plan.createdAt), updated: fmtDate(plan.updatedAt || plan.createdAt) }))}</p>` : ''}
           </div>
           <div class="flex w-32 shrink-0 flex-col gap-1.5">
             <button type="button" data-plan-action="rename" class="w-full rounded-md px-2.5 py-1 text-left text-xs font-medium bg-stone-50 dark:bg-stone-700/60 text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">✎ ${escapeHtml(t('planRename'))}</button>

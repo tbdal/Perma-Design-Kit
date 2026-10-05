@@ -188,6 +188,8 @@ export const indexDict: Dict = {
   fieldGroupsPlaceholder: { de: 'z.B. Vorgarten, Waldgarten Nord', en: 'e.g. front yard, north food forest' },
   fieldHeightM: { de: 'Höhe (m)', en: 'Height (m)' },
   fieldWidthM: { de: 'Breite (m)', en: 'Width (m)' },
+  fieldSizeHintToggle: { de: 'Wie entstehen Höhe und Breite?', en: 'How are height and width determined?' },
+  fieldSizeHintMore: { de: 'Mehr in der Hilfe →', en: 'More in the help →' },
   fieldSizeHint: { de: 'Endgröße der ausgewachsenen Pflanze. Beim Anreichern: PFAF („growing to 9 m by 6 m“) hat Vorrang, fehlt dort ein Wert, kommt er aus Edible Forest Gardens – deren Spannen in Fuß werden umgerechnet, genommen wird die Mitte (25–35 ft → 9,1 m). Selbst eingetragene Werte werden nie überschrieben.', en: 'Final size of the mature plant. When enriching, PFAF (“growing to 9 m by 6 m”) comes first; a missing value comes from Edible Forest Gardens – their ranges in feet are converted, using the middle (25–35 ft → 9.1 m). Values you enter yourself are never overwritten.' },
   fieldClimateZone: { de: 'Klimazone', en: 'Climate zone' },
   fieldHabit: { de: 'Wuchsform', en: 'Growth form' },

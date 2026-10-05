@@ -64,7 +64,7 @@ import Layout from '../layouts/Layout.astro';
       </dl>
     </section>
 
-    <section class="space-y-2">
+    <section id="quellen" class="space-y-2">
       <h2 class="text-xl font-semibold" data-i18n="sourcesHeading">Datenquellen</h2>
       <p><span data-i18n="sourcesIntro">Beim Anlegen oder Anreichern werden Pflanzendaten aus verschiedenen Quellen kombiniert. Welche
         aktiv sind, stellst du in den</span> <a href="/settings" data-i18n="sourcesIntroLink" class="text-green-700 dark:text-green-400 underline underline-offset-2 hover:no-underline">Einstellungen</a> <span data-i18n="sourcesIntroEnd">ein.</span></p>
@@ -161,7 +161,7 @@ import Layout from '../layouts/Layout.astro';
       <p data-i18n="gpLimits">Grenzen.</p>
     </section>
 
-    <section class="space-y-2">
+    <section id="shortcuts" class="space-y-2">
       <h2 class="text-xl font-semibold" data-i18n="shortcutsHeading">Tastatur-Shortcuts</h2>
       <p class="text-sm text-stone-600 dark:text-stone-300"><span data-i18n="shortcutsIntro">Greifen auf der Hauptseite — nicht
         während du in einem Eingabefeld tippst (außer</span> <kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1 text-xs">Esc</kbd><span data-i18n="shortcutsIntroEnd">, das schließt überall den offenen Dialog).</span></p>
@@ -178,6 +178,7 @@ import Layout from '../layouts/Layout.astro';
           <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">?</kbd></td><td data-i18n="shortcutOverview">Übersicht der Kürzel der aktuellen Seite — im Waldgartenplan dessen eigene (2/3, H/V/L/M, F/R/U, G, P, Strg+Z …)</td></tr>
         </tbody>
       </table>
+      <p class="rounded-lg bg-green-50 dark:bg-green-900/20 px-3 py-2 text-sm text-stone-700 dark:text-stone-200 ring-1 ring-green-200 dark:ring-green-800"><span data-i18n="shortcutsMore">Je nach Seite und Ansicht gibt es weitere Kürzel – vor allem im Waldgartenplan: 2/3 für 2D/3D, H/V/L/M für Bewegen, Markieren, Lasso und Messen, F/R/U für Fläche, Reihe und Umriss, I/O für die Jahre, J/K für die Sonne in 3D, Strg+Z zum Rückgängigmachen, Alt+4 zurück zur Projektübersicht.</span> <span data-i18n="shortcutsMoreKey">Die vollständige Liste der aktuellen Seite zeigt jederzeit die Taste</span> <kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1 text-xs">?</kbd>.</p>
     </section>
 
     <section class="space-y-2">

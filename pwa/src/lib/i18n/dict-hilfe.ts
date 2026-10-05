@@ -108,6 +108,8 @@ export const hilfeDict: Dict = {
   exportPdfDesc: { de: 'aus der Kartenansicht: alle Karten, Streifen oder Baumscheiben.', en: 'from the card view: all cards, strips or Baumscheiben.' },
 
   shortcutsHeading: { de: 'Tastatur-Shortcuts', en: 'Keyboard shortcuts' },
+  shortcutsMore: { de: 'Je nach Seite und Ansicht gibt es weitere Kürzel – vor allem im Waldgartenplan: 2/3 für 2D/3D, H/V/L/M für Bewegen, Markieren, Lasso und Messen, F/R/U für Fläche, Reihe und Umriss, I/O für die Jahre, J/K für die Sonne in 3D, Strg+Z zum Rückgängigmachen, Alt+4 zurück zur Projektübersicht.', en: 'Depending on the page and view there are more shortcuts – above all in the forest garden plan: 2/3 for 2D/3D, H/V/L/M for pan, select, lasso and measure, F/R/U for area, row and outline, I/O for the years, J/K for the sun in 3D, Ctrl+Z to undo, Alt+4 back to the project list.' },
+  shortcutsMoreKey: { de: 'Die vollständige Liste der aktuellen Seite zeigt jederzeit die Taste', en: 'The full list for the current page is always shown by the key' },
   shortcutsIntro: { de: 'Greifen auf der Hauptseite — nicht während du in einem Eingabefeld tippst (außer', en: 'Apply on the main page — not while typing in an input field (except' },
   shortcutsIntroEnd: { de: ', das schließt überall den offenen Dialog).', en: ', which closes any open dialog everywhere).' },
   shortcutFocusSearch: { de: 'Suche fokussieren', en: 'Focus search' },
