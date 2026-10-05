@@ -6,7 +6,7 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 - [x] **Performance großer Pläne:** gemessen an 500 × 400 m mit 840 Pflanzen, ~2000 Gebäuden und NRW-1-m-Gelände. Besonnung über einen Raster-Index (16 s → 0,5 s), Schattenhinweise 10 s → 0,3 s, Zeitregler ohne Layout pro Marker (≈ 300 → 30 ms je Schritt); Stack-Überlauf bei 1-m-Gelände großer Pläne behoben (Hinweise, Besonnung und 3D fielen aus)
 - [x] **Overpass unzuverlässig:** Gebäude kommen über unseren Server (`/geo/overpass`, nginx-Cache 30 Tage, bei Ausfall die gespeicherte Kopie, Ausweichen zwischen den beiden overpass-api.de-Servern; nur eine Bbox wird angenommen, kein offener Proxy). Overpass-Fehlerantworten mit HTTP 200 werden erkannt und nicht mehr 30 Tage im Browser gespeichert. Die öffentlichen Instanzen bleiben direkter Rückfall
 
-## Gartenplan-Ideen 1, 4, 5, 8 2026-10-05
+## Gartenplan-Ideen 1, 4, 5, 8 2026-10-05 #prüfen
 - [x] **1. Wasser im Gelände:** Schalter „Wasser“: Abflusswege (D8 auf gefülltem Gelände), Senken mit Tiefe/Fläche/Volumen und Swale-Vorschläge entlang der Höhenlinie – mit 1-m-Geländemodell; Regen vom Dach aus OSM-Gebäuden × Niederschlag
 - [x] **4. Plan-PDF:** Dialog mit Papier A4–A2 und Maßstab 1:50–1:500 (prüft, ob es passt), Kartenhintergrund wie im Plan, Maßstabsleiste, Nordpfeil, Quellenvermerk
 - [x] **5. Feldmodus (GPS):** 📍 in der Werkzeugleiste: eigene Position mit Genauigkeit, „noch 2,3 m nach NO zu …“ zur ausgewählten Pflanze, „Hier setzen“ / „Hierher verschieben“; nginx erlaubt jetzt Ortung für die eigene Seite
@@ -16,7 +16,7 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 - [x] Hinweise: erster Klick springt in der Karte zur Stelle und markiert den betroffenen Bereich (Wirkkreis bei schlechten Nachbarn, ausgewachsene Kronen bei „zu eng“, Krone bei Schatten/Klima, grün bei guten Nachbarn); zweiter Klick wählt die Pflanzen; Esc hebt die Markierung auf
 - [x] **9. Browser-Tests ins Repo:** 13 Playwright-Tests (`npm run e2e`, offline mit gestubbten Diensten) laufen bei jedem `npm run deploy` mit
 
-## Gartenplan-Ideen 2, 3, 6, 7 2026-10-05
+## Gartenplan-Ideen 2, 3, 6, 7 2026-10-05 #prüfen
 - [x] **2. Standort-Klima:** 30 Jahre Wetterdaten (Open-Meteo/ERA5, über eigenen Server, Ort auf 0,1° gerundet) → Winterhärtezone, Frosttermine, frostfreie Tage, Niederschlag, Hauptwind im Kasten „Standortklima“; Hinweise „nicht winterhart“ und „Spätfrostgefahr für die Blüte“; Vorschläge ohne nicht winterharte Pflanzen
 - [x] **3. Zonen & Sektoren:** Schalter in der Kartenleiste; Zonen 0–4 um ein ziehbares Haus-Symbol (Radien einstellbar, im Plan gespeichert), Sektoren Sommer-/Wintersonne, Hauptwind, Kaltluft (hangabwärts)
 - [x] **6. Nachbarschaften:** schlechte Nachbarn (Walnuss/Hickory-Juglon, Fenchel, Wermut) als Hinweis, gute Nachbarschaften (Stickstoff, Nährstoffe, Bestäuber bei Obstgehölzen) als grüne Liste #prüfen
