@@ -5,7 +5,7 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 ## Gartenplan-Ideen 2, 3, 6, 7 2026-10-05
 - [x] **2. Standort-Klima:** 30 Jahre Wetterdaten (Open-Meteo/ERA5, über eigenen Server, Ort auf 0,1° gerundet) → Winterhärtezone, Frosttermine, frostfreie Tage, Niederschlag, Hauptwind im Kasten „Standortklima“; Hinweise „nicht winterhart“ und „Spätfrostgefahr für die Blüte“; Vorschläge ohne nicht winterharte Pflanzen
 - [x] **3. Zonen & Sektoren:** Schalter in der Kartenleiste; Zonen 0–4 um ein ziehbares Haus-Symbol (Radien einstellbar, im Plan gespeichert), Sektoren Sommer-/Wintersonne, Hauptwind, Kaltluft (hangabwärts)
-- [x] **6. Nachbarschaften:** schlechte Nachbarn (Walnuss/Hickory-Juglon, Fenchel, Wermut) als Hinweis, gute Nachbarschaften (Stickstoff, Nährstoffe, Bestäuber bei Obstgehölzen) als grüne Liste
+- [x] **6. Nachbarschaften:** schlechte Nachbarn (Walnuss/Hickory-Juglon, Fenchel, Wermut) als Hinweis, gute Nachbarschaften (Stickstoff, Nährstoffe, Bestäuber bei Obstgehölzen) als grüne Liste #prüfen
 - [x] **7. Ertrag & Pflegekalender:** Ertragsschätzung (kg/Jahr) zum Jahre-Regler; Pflegekalender als iCal (Ernte, Schnitt, Mulch, Frostschutz der Blüte) mit jährlichen Terminen
 - Offen: Zonen/Sektoren in 3D und im Plan-PDF; Ertragswerte sind Richtwerte und könnten pro Pflanze überschreibbar werden
 
