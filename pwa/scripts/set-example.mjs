@@ -4,9 +4,11 @@
 // teilen" with "Ansicht der Pläne mitschicken" and the plan that should open.
 // The link is decoded first, so a cut-off or broken link is refused; then it
 // is written to public/example-project.txt. Commit and deploy afterwards.
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 
-const arg = (process.argv[2] ?? '').trim();
+// A long link can also come from a file: npm run example:set -- @link.txt
+const raw = process.argv[2] ?? '';
+const arg = (raw.startsWith('@') ? readFileSync(raw.slice(1), 'utf8') : raw).trim();
 const m = /[#&]d=([A-Za-z0-9_-]+)/.exec(arg) ?? (/^[A-Za-z0-9_-]{20,}$/.test(arg) ? [null, arg] : null);
 if (!m) {
   console.error('Aufruf: npm run example:set -- "<Link aus „Projekt als Link teilen“>"');
