@@ -111,4 +111,17 @@ export const layoutDict: Dict = {
   iosInstallShare: { de: 'Teilen', en: 'Share' },
   iosInstallStep2: { de: 'und dann auf', en: 'at the bottom of Safari, then' },
   iosInstallAddToHome: { de: '„Zum Home-Bildschirm"', en: '"Add to Home Screen"' },
+
+  modeMenuLabel: { de: 'Ansicht: Einfach, Klassisch oder Experte', en: 'View: simple, classic or expert' },
+  modeMenuHeading: { de: 'Ansicht', en: 'View' },
+  modeSimple: { de: 'Einfach', en: 'Simple' },
+  modeSimpleDesc: { de: 'Fläche zeichnen, Pflanzen setzen, in 3D ansehen', en: 'Draw an area, place plants, look at it in 3D' },
+  modeClassic: { de: 'Klassisch', en: 'Classic' },
+  modeClassicDesc: { de: 'Alle Werkzeuge, wie bisher', en: 'All tools, as before' },
+  modeExpert: { de: 'Experte', en: 'Expert' },
+  modeExpertDesc: { de: 'Klassisch plus Funktionen in Erprobung (mit Zugang)', en: 'Classic plus features being tried out (needs access)' },
+  modeLogin: { de: 'Anmelden', en: 'Log in' },
+  modeLogout: { de: 'Abmelden', en: 'Log out' },
+  modeAdmin: { de: 'Funktionen verwalten', en: 'Manage features' },
+  modeLoggedInAs: { de: 'Angemeldet als {name}', en: 'Logged in as {name}' },
 };

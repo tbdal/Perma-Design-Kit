@@ -19,6 +19,21 @@ const httpsConfig = existsSync(keyPath) && existsSync(certPath)
 // Build id shown on /fehler-melden/ and in debug files: short commit + date.
 let pdkVersion = 'dev';
 try { pdkVersion = `${execSync('git rev-parse --short HEAD').toString().trim()}-${new Date().toISOString().slice(0, 10)}`; } catch {}
+// Builds that contain the private expert module (src/expert/, its own git
+// repo on the VPS) add its commit: "abc1234+x9f8e7d6-2026-10-05".
+if (existsSync(fileURLToPath(new URL('./src/expert/.git', import.meta.url)))) {
+  try {
+    const x = execSync('git rev-parse --short HEAD', { cwd: fileURLToPath(new URL('./src/expert/', import.meta.url)) }).toString().trim();
+    pdkVersion = pdkVersion.replace(/^([^-]+)/, `$1+x${x}`);
+  } catch {}
+}
+
+// Chunks containing private expert code go to /x/ — nginx serves that path
+// only with a valid login cookie (server/nginx/permadesignkit.org.conf).
+// Everything else keeps Astro's own naming (_astro/<name>.<hash>.js).
+// scripts/check-private.mjs verifies the split after each build.
+const isExpertModule = (/** @type {string} */ id) => /[\\/]src[\\/]expert[\\/]/.test(id);
+const chunkName = (/** @type {string} */ name) => name.replace(/[^\w.\-/]/g, '_');
 
 // https://astro.build/config
 export default defineConfig({
@@ -33,6 +48,18 @@ export default defineConfig({
     // HTML, which the production CSP (script-src without 'unsafe-inline')
     // silently blocks — the dev server sends no CSP, so it only breaks live.
     build: { assetsInlineLimit: 0 },
+    environments: {
+      client: {
+        build: {
+          rolldownOptions: {
+            output: {
+              chunkFileNames: (chunk) =>
+                `${chunk.moduleIds.some(isExpertModule) ? 'x' : '_astro'}/${chunkName(chunk.name)}.[hash].js`,
+            },
+          },
+        },
+      },
+    },
     server: {
       https: httpsConfig,
       // Forwards /api/plant-proxy to the standalone proxy process (see
@@ -42,6 +69,12 @@ export default defineConfig({
       // proxy's own rate limiter sees actual visitors, not just this dev
       // server's address.
       proxy: {
+        // Expert mode: login, accounts, feature table (server/auth.mjs, same process).
+        '^/api/(auth|admin)/|^/api/features$': {
+          target: `http://127.0.0.1:${process.env.PLANT_PROXY_PORT || 8787}`,
+          changeOrigin: true,
+          xfwd: true,
+        },
         '/api/plant-proxy': {
           target: `http://127.0.0.1:${process.env.PLANT_PROXY_PORT || 8787}`,
           changeOrigin: true,

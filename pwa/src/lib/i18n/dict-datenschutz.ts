@@ -82,7 +82,10 @@ export const datenschutzDict: Dict = {
   },
 
   dsCookiesTitle: { de: 'Cookies', en: 'Cookies' },
-  dsCookiesBody1: { de: 'Diese Anwendung setzt keine Cookies. Für lokale Einstellungen wird ausschließlich', en: 'This application does not use cookies. For local settings it uses exclusively' },
+  dsCookiesBody1: { de: 'Ohne Experten-Zugang setzt diese Anwendung keine Cookies (mit Zugang siehe „Experten-Zugang“). Für lokale Einstellungen wird ausschließlich', en: 'Without expert access this application does not use cookies (with access, see “Expert access”). For local settings it uses exclusively' },
+  dsExpertTitle: { de: 'Experten-Zugang', en: 'Expert access' },
+  dsExpertBody1: { de: 'Für den Experten-Modus vergibt das Team einzelne Zugänge (Name und Passwort). Auf dem Server gespeichert werden nur der Zugangsname, die Rolle, das Anlagedatum und ein nicht umkehrbarer Hash des Passworts.', en: 'For expert mode the team hands out individual accounts (name and password). The server stores only the account name, the role, the creation date and a non-reversible hash of the password.' },
+  dsExpertBody2: { de: 'Nach der Anmeldung setzt der Server ein Cookie („pdk_s“), das den Zugangsnamen, die Rolle und das Ablaufdatum enthält, signiert gegen Fälschung. Es ist technisch notwendig, um den Zugang zu prüfen (§ 25 Abs. 2 Nr. 2 TDDDG, Art. 6 Abs. 1 lit. b DSGVO), und läuft nach 90 Tagen ab oder wird beim Abmelden gelöscht. Fehlgeschlagene Anmeldungen werden zur Abwehr von Passwort-Raten bis zu 15 Minuten mit der IP-Adresse im Arbeitsspeicher gezählt und nicht gespeichert.', en: 'After logging in, the server sets a cookie (“pdk_s”) holding the account name, the role and the expiry date, signed against forgery. It is technically necessary to check the access (§ 25(2) no. 2 TDDDG, Art. 6(1)(b) GDPR) and expires after 90 days or is deleted on logout. Failed logins are counted together with the IP address in memory for up to 15 minutes to stop password guessing, and are not stored.' },
   dsCookiesBody2: { de: 'und', en: 'and' },
   dsCookiesBody3: { de: 'verwendet. Diese Daten verbleiben auf deinem Gerät.', en: 'This data remains on your device.' },
 

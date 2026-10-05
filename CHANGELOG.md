@@ -2,6 +2,16 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Einfach / Klassisch / Experte, privates Experten-Repo 2026-10-05
+- [x] **Ansicht wählen:** Menü in der Kopfzeile (alle Seiten) mit „Einfach“, „Klassisch“ (die bisherige Oberfläche) und „Experte“ (mit Zugang). Neue Besucher starten einfach, wer schon da war, klassisch. Gespeichert pro Gerät, vor dem ersten Zeichnen angewandt (`boot.js`), kein Aufflackern
+- [x] **Funktionsliste:** `src/lib/features.ts` listet jede schaltbare Funktion einmal mit ihren Standard-Modi; Markup hängt sich mit `data-feature` daran, Logik fragt `featureOn()`. Ein Test prüft, dass jedes `data-feature` in der Liste steht
+- [x] **Einfacher Waldgartenplan:** Schritt-Leiste (Fläche zeichnen → Pflanzen setzen → in 3D ansehen), „Dein Waldgarten“ mit fünf Schichten zum Füllen und einem Tipp (wichtigster Hinweis mit „Zeig mir wo“, sonst die nächste leere Schicht). Ausgeblendet: Flächen, Reihe, Umriss, Lasso, Messen, GPS, Polykultur-Paket, Standort, Luftbild/Satellit, Gelände, Gebäude, Sonnen-Extras, Funktions-Abdeckung, Hinweise, Bauabschnitte, Wasser, Zonen, Klima, Ertrag, Export. Ausgeblendete Funktionen rechnen nicht mit, ihre Tastenkürzel greifen nicht; Daten im Plan bleiben erhalten
+- [x] **Login für den Experten-Modus:** Zugänge pro Person (scrypt-Hash, `server/data/private/users.json`, nicht im Repo), signiertes HttpOnly-Cookie für 90 Tage, Sperre nach 5 Fehlversuchen in 15 Minuten; im Plant-Proxy (`server/auth.mjs`), keine neue Abhängigkeit. Seite `/anmelden/`, Konsole `npm run user -- add <name> --admin`
+- [x] **Admin-Seite `/admin/`:** pro Funktion die Modi (mehrere möglich, „Aus“ blendet überall aus), Zugänge anlegen, Rolle/Passwort ändern, entfernen. Gespeichert serverseitig (`features.json`), die App lädt die Liste beim Start und merkt sie offline
+- [x] **Privates Experten-Repo:** `pwa/src/expert/` ist ein eigenes Git-Repo (Bare-Repo `/root/git/pdk-expert.git` auf dem VPS, nicht auf GitHub, hier in `.gitignore`). Sein Code landet beim Build unter `/x/`, nginx liefert das nur mit gültigem Login aus (`auth_request`); `scripts/check-private.mjs` bricht den Build ab, wenn privater Code woanders auftaucht; `deploy.sh` verlangt einen gepushten Stand. Erste Funktion: Probe-Kasten „Experten-Modul“ im Waldgartenplan
+- [x] **Datenschutz:** Abschnitt „Experten-Zugang“ (Cookie, gespeicherte Daten) #prüfen
+- [x] Kopfzeile im Horizont-Design: „Aa“ und das Ansicht-Menü in derselben dunklen Schrift wie die übrigen Einträge
+
 ## Waldgartenplan-Übersicht sortieren, Hilfe 2026-10-05
 - [x] **Sortieren der Projekte:** neueste Planung (Standard), zuletzt bearbeitet, Name (Zahlen in natürlicher Reihenfolge), Größe (gezeichnete Fläche in m²) und Anzahl Pflanzen, je auf- und absteigend (↑/↓); Wahl bleibt gespeichert. Kacheln zeigen Fläche in m² sowie Anlage- und Bearbeitungsdatum
 - [x] **Projektkarten:** Knöpfe rechts untereinander, Löschen rot

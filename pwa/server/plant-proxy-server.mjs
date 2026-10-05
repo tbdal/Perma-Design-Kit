@@ -9,6 +9,7 @@
 import { createServer } from 'node:http';
 import { parsePfafHtml, pfafNameCandidates } from './pfaf-parse.mjs';
 import { lookupEfg, efgIndex } from './efg.mjs';
+import { createAuthHandler, createStore } from './auth.mjs';
 
 const PORT = process.env.PLANT_PROXY_PORT || 8787;
 const UPSTREAM_TIMEOUT_MS = 15_000;
@@ -277,8 +278,13 @@ async function lookup(name) {
   return { body: JSON.stringify(result), found: sources.length > 0, upstreamFailed };
 }
 
+// Expert mode: login, accounts and the feature table (server/auth.mjs) under
+// /api/auth/, /api/admin/ and /api/features. Same-origin only, no CORS.
+const handleAuth = createAuthHandler({ store: createStore(), isAllowedOrigin });
+
 async function handleRequest(req, res) {
   const url = new URL(req.url, `http://${req.headers.host}`);
+  if (await handleAuth(req, res, url, clientIp(req))) return;
   const origin = req.headers.origin || null;
   const headers = corsHeaders(origin);
 

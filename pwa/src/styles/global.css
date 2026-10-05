@@ -1,4 +1,6 @@
 @import "tailwindcss";
+/* The private expert module is gitignored, which Tailwind skips by default. */
+@source "../expert";
 
 /* Keyboard focus is always visible (WCAG 2.4.7). Unlayered, so it also wins
    over utilities like focus:outline-none (their own rings stay as well). */
@@ -175,19 +177,19 @@ html[data-design="horizont"] .site-header .hz-wordmark {
   color: #0f1208;
   text-shadow: 0 0 5px #e6f58a, 0 0 1px #e6f58a;
 }
-html[data-design="horizont"] .site-header :where(a[data-nav], #lang-toggle, #theme-toggle, a[href="/settings"]) {
+html[data-design="horizont"] .site-header :where(a[data-nav], #mode-toggle, #lang-toggle, #display-toggle, #theme-toggle, a[href="/settings"]) {
   color: var(--hz-ink);
   font-weight: 600;
   border-radius: 999px;
 }
-html[data-design="horizont"] .site-header :where(a[data-nav], #lang-toggle, #theme-toggle, a[href="/settings"]):hover {
+html[data-design="horizont"] .site-header :where(a[data-nav], #mode-toggle, #lang-toggle, #display-toggle, #theme-toggle, a[href="/settings"]):hover {
   background: rgb(255 255 255 / 0.35);
   color: #0f1208;
 }
 html[data-design="horizont"] .site-header a[data-nav="/gartenplan"] { color: #4f5b30; }
 @media (max-width: 639px) {
   html[data-design="horizont"] .site-header .hz-wordmark { font-size: 11px; }
-  html[data-design="horizont"] .site-header :where(a[data-nav], #lang-toggle, #theme-toggle, a[href="/settings"]) {
+  html[data-design="horizont"] .site-header :where(a[data-nav], #mode-toggle, #lang-toggle, #display-toggle, #theme-toggle, a[href="/settings"]) {
     font-weight: 500;
     padding-left: 0.45rem;
     padding-right: 0.45rem;
@@ -348,3 +350,8 @@ html[data-font="130"] { font-size: 130%; }
 
 /* Gartenplan sidebar panels draw their own chevron (Safari would add a marker). */
 details[data-panel] > summary::-webkit-details-marker { display: none; }
+
+/* Einfacher Modus: a layer tile pops once when its first plant lands. */
+@keyframes guide-pop { 0% { transform: scale(0.6); } 60% { transform: scale(1.12); } 100% { transform: scale(1); } }
+.guide-pop { animation: guide-pop 0.45s ease-out; }
+@media (prefers-reduced-motion: reduce) { .guide-pop { animation: none; } }

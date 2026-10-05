@@ -24,6 +24,42 @@
   } catch (_) {}
 })();
 
+// UI mode (Einfach / Klassisch / Experte) and the features it hides, before
+// first paint so hidden panels never flash. Same rules as src/lib/features.ts
+// (initialMode, effectiveMode, offFeatures, featureCss) and ui-mode.ts, which
+// takes over after load and reuses the stylesheet created here.
+(function () {
+  try {
+    var root = document.documentElement;
+    var get = function (k) { try { return localStorage.getItem(k); } catch (_) { return null; } };
+    var parse = function (s) { try { return s ? JSON.parse(s) : null; } catch (_) { return null; } };
+    var mode = get('pdk-mode');
+    if (mode !== 'simple' && mode !== 'classic' && mode !== 'expert') {
+      mode = get('pdk-welcome-seen') ? 'classic' : 'simple';
+      try { localStorage.setItem('pdk-mode', mode); } catch (_) {}
+    }
+    var auth = parse(get('pdk-auth'));
+    if (mode === 'expert' && !(auth && auth.name)) mode = 'classic';
+    root.dataset.mode = mode;
+    var defaults = parse(root.getAttribute('data-feature-defaults')) || {};
+    var config = parse(get('pdk-feature-config')) || {};
+    var css = '';
+    var seen = {};
+    var ids = Object.keys(defaults).concat(Object.keys(config));
+    for (var i = 0; i < ids.length; i++) {
+      var id = ids[i];
+      if (seen[id] || !/^[a-z0-9][a-z0-9-]{0,39}$/.test(id)) continue;
+      seen[id] = 1;
+      var modes = Array.isArray(config[id]) ? config[id] : (defaults[id] || []);
+      if (modes.indexOf(mode) < 0) css += '[data-feature~="' + id + '"]{display:none!important}\n';
+    }
+    var sheet = new CSSStyleSheet();
+    sheet.replaceSync(css);
+    document.adoptedStyleSheets = document.adoptedStyleSheets.concat([sheet]);
+    window.__pdkFeatureSheet = sheet;
+  } catch (_) {}
+})();
+
 // Last 20 script errors of this tab, for the debug file on /fehler-melden/
 // (src/lib/bug-report.ts). sessionStorage: stays in the tab, nothing is sent.
 (function () {

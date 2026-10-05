@@ -28,3 +28,8 @@ pnpm-debug.log*
 .idea/
 test-results/
 playwright-report/
+
+# expert mode: accounts, session secret, feature table (server/auth.mjs)
+server/data/private/
+# private expert module — its own git repo on the VPS (src/lib/expert-loader.ts)
+src/expert/

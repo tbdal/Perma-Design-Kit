@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import { featureDefaults } from '../lib/features';
 interface Props {
   title: string;
   /** Widens the header/main/footer container beyond the default max-w-6xl —
@@ -14,9 +15,11 @@ const containerMaxW = full ? 'max-w-none' : wide ? 'max-w-[1600px]' : 'max-w-6xl
 // Header and footer always use the wide container, so the menu doesn't
 // shift sideways when switching between wide and narrow pages.
 const barMaxW = 'max-w-[1600px]';
+// Default modes per feature for public/boot.js (hides panels before first paint).
+const featureDefaultsJson = JSON.stringify(featureDefaults());
 ---
 <!doctype html>
-<html lang="de" class="h-full" data-design="horizont">
+<html lang="de" class="h-full" data-design="horizont" data-feature-defaults={featureDefaultsJson}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -98,6 +101,36 @@ const barMaxW = 'max-w-[1600px]';
         </div>
 
         <div class="ml-auto flex items-center gap-1">
+          <!-- Ansicht: Einfach / Klassisch / Experte (src/lib/ui-mode.ts) -->
+          <div class="relative">
+            <button id="mode-toggle" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="mode-menu" data-i18n-title="modeMenuLabel" title="Ansicht: Einfach, Klassisch oder Experte" class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm font-medium text-green-100 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900">
+              <span id="mode-current">Ansicht</span>
+              <svg class="h-3 w-3" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7.5l5 5 5-5"/></svg>
+            </button>
+            <div id="mode-menu" hidden class="absolute right-0 z-50 mt-1 w-72 space-y-0.5 rounded-lg bg-white dark:bg-stone-800 p-2 text-sm text-stone-700 dark:text-stone-200 shadow-lg ring-1 ring-stone-200 dark:ring-stone-700">
+              <p class="px-2 pb-1 text-xs font-semibold" data-i18n="modeMenuHeading">Ansicht</p>
+              <button type="button" data-mode-opt="simple" aria-pressed="false" class="block w-full rounded-md px-2 py-1.5 text-left hover:bg-stone-100 dark:hover:bg-stone-700 aria-pressed:bg-green-100 dark:aria-pressed:bg-green-900/50">
+                <span class="block font-medium" data-i18n="modeSimple">Einfach</span>
+                <span class="block text-xs text-stone-500 dark:text-stone-400" data-i18n="modeSimpleDesc">Fläche zeichnen, Pflanzen setzen, in 3D ansehen</span>
+              </button>
+              <button type="button" data-mode-opt="classic" aria-pressed="false" class="block w-full rounded-md px-2 py-1.5 text-left hover:bg-stone-100 dark:hover:bg-stone-700 aria-pressed:bg-green-100 dark:aria-pressed:bg-green-900/50">
+                <span class="block font-medium" data-i18n="modeClassic">Klassisch</span>
+                <span class="block text-xs text-stone-500 dark:text-stone-400" data-i18n="modeClassicDesc">Alle Werkzeuge, wie bisher</span>
+              </button>
+              <button type="button" data-mode-opt="expert" aria-pressed="false" class="block w-full rounded-md px-2 py-1.5 text-left hover:bg-stone-100 dark:hover:bg-stone-700 aria-pressed:bg-green-100 dark:aria-pressed:bg-green-900/50">
+                <span class="flex items-center gap-1.5 font-medium"><span data-i18n="modeExpert">Experte</span><svg id="mode-expert-lock" class="h-3.5 w-3.5 text-stone-500 dark:text-stone-400" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="9" width="12" height="8" rx="1.5"/><path d="M7 9V6.5a3 3 0 0 1 6 0V9"/></svg></span>
+                <span class="block text-xs text-stone-500 dark:text-stone-400" data-i18n="modeExpertDesc">Klassisch plus Funktionen in Erprobung (mit Zugang)</span>
+              </button>
+              <div class="mt-1 border-t border-stone-200 dark:border-stone-700 px-2 pt-2 text-xs">
+                <a id="mode-login" href="/anmelden/" class="font-medium text-green-700 dark:text-green-400 hover:underline" data-i18n="modeLogin">Anmelden</a>
+                <p id="mode-auth" hidden class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <span id="mode-auth-name" class="text-stone-500 dark:text-stone-400"></span>
+                  <a id="mode-admin-link" href="/admin/" hidden class="font-medium text-green-700 dark:text-green-400 hover:underline" data-i18n="modeAdmin">Funktionen verwalten</a>
+                  <button id="mode-logout" type="button" class="font-medium text-green-700 dark:text-green-400 hover:underline" data-i18n="modeLogout">Abmelden</button>
+                </p>
+              </div>
+            </div>
+          </div>
           <div class="relative">
             <button id="lang-toggle" type="button" data-i18n-aria-label="langSwitchLabel" data-i18n-title="langSwitchLabel" aria-label="Sprache wechseln" title="Sprache wechseln" class="rounded-lg px-2.5 py-1.5 text-sm font-medium uppercase tracking-wide text-green-100 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900">
               <span id="lang-current">DE</span>
@@ -224,22 +257,22 @@ const barMaxW = 'max-w-[1600px]';
             <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Alt</kbd>+<kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">4</kbd></td><td data-i18n="scGpProjects">Zurück zur Projektübersicht (auch Klick auf „Waldgartenplan“)</td></tr>
             <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">H</kbd></td><td data-i18n="scGpPan">Bewegen (Karte verschieben)</td></tr>
             <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">V</kbd></td><td data-i18n="scGpSelect">Markieren – einzeln</td></tr>
-            <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">L</kbd></td><td data-i18n="scGpLasso">Markieren – mehrere als Fläche (Lasso)</td></tr>
-            <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">M</kbd></td><td data-i18n="scGpMeasure">Messen (Enter schließt Fläche, ⌫ letzter Punkt weg)</td></tr>
+            <tr data-feature="lasso"><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">L</kbd></td><td data-i18n="scGpLasso">Markieren – mehrere als Fläche (Lasso)</td></tr>
+            <tr data-feature="measure"><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">M</kbd></td><td data-i18n="scGpMeasure">Messen (Enter schließt Fläche, ⌫ letzter Punkt weg)</td></tr>
             <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Shift</kbd>+Klick</td><td data-i18n="scGpShiftClick">Pflanze zur Markierung hinzufügen / entfernen</td></tr>
             <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">+</kbd> / <kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">−</kbd> / <kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">0</kbd></td><td data-i18n="scGpZoom">Hinein- / herauszoomen / ganzer Plan</td></tr>
             <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Strg</kbd>/<kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">⌘</kbd>+Mausrad</td><td data-i18n="scGpWheel">Zoomen am Mauszeiger</td></tr>
-            <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">F</kbd></td><td data-i18n="scGpArea">Fläche einzeichnen</td></tr>
-            <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">R</kbd></td><td data-i18n="scGpRow">Reihe pflanzen (gewählte Pflanze)</td></tr>
-            <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">U</kbd></td><td data-i18n="scGpBoundary">Umriss bearbeiten</td></tr>
+            <tr data-feature="areas"><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">F</kbd></td><td data-i18n="scGpArea">Fläche einzeichnen</td></tr>
+            <tr data-feature="row"><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">R</kbd></td><td data-i18n="scGpRow">Reihe pflanzen (gewählte Pflanze)</td></tr>
+            <tr data-feature="boundary-edit"><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">U</kbd></td><td data-i18n="scGpBoundary">Umriss bearbeiten</td></tr>
             <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">G</kbd></td><td data-i18n="scGpGrid">Meterlinien ein-/ausblenden</td></tr>
             <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Strg</kbd>/<kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">⌘</kbd>+<kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Z</kbd></td><td data-i18n="scGpUndo">Rückgängig</td></tr>
             <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Strg</kbd>/<kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">⌘</kbd>+<kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Shift</kbd>+<kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Z</kbd>, <kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Strg</kbd>+<kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Y</kbd></td><td data-i18n="scGpRedo">Wiederholen</td></tr>
-            <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">T</kbd></td><td data-i18n="scGp3dViews">3D: Draufsicht ↔ Schrägansicht</td></tr>
+            <tr data-feature="sun-advanced"><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">T</kbd></td><td data-i18n="scGp3dViews">3D: Draufsicht ↔ Schrägansicht</td></tr>
             <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">I</kbd> / <kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">O</kbd></td><td data-i18n="scGpYears">Weniger / mehr Jahre seit Pflanzung</td></tr>
-            <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">P</kbd></td><td data-i18n="scGpSnapshot">3D: Ansicht als Bild speichern</td></tr>
+            <tr data-feature="sun-advanced"><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">P</kbd></td><td data-i18n="scGpSnapshot">3D: Ansicht als Bild speichern</td></tr>
             <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">J</kbd> / <kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">K</kbd></td><td data-i18n="scGpSunTime">3D-Sonne: Tageszeit zurück / vor (15 min, mit Shift 1 h)</td></tr>
-            <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">B</kbd></td><td data-i18n="scGpBuildings">Gebäude ein-/ausblenden</td></tr>
+            <tr data-feature="buildings"><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">B</kbd></td><td data-i18n="scGpBuildings">Gebäude ein-/ausblenden</td></tr>
             <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Entf</kbd></td><td data-i18n="scGpDelete">Markierte Pflanze(n) bzw. Fläche entfernen</td></tr>
             <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Esc</kbd></td><td data-i18n="scGpEsc">Abbrechen / Markierung aufheben</td></tr>
           </tbody>
@@ -748,6 +781,76 @@ const barMaxW = 'max-w-[1600px]';
         if (iosPopup) iosPopup.hidden = true;
         lsSet('ios-install-dismissed', '1');
       });
+    </script>
+    <script>
+      // Ansicht (Einfach / Klassisch / Experte): menu in the header, login
+      // state, admin overrides, and — in expert mode — the private module.
+      import { createT, getLang } from '../lib/i18n/core';
+      import { layoutDict } from '../lib/i18n/dict-layout';
+      import type { UiMode } from '../lib/features';
+      import { applyFeatures, currentMode, featureOn, getAuth, logout, onFeaturesChange, refreshAuth, refreshFeatureConfig, registerFeatures, setMode } from '../lib/ui-mode';
+      import { hasExpertCode, loadExpertModule } from '../lib/expert-loader';
+      import { pageApi } from '../lib/expert-api';
+
+      const t = createT(layoutDict);
+      const toggle = document.getElementById('mode-toggle')!;
+      const menu = document.getElementById('mode-menu')!;
+      const MODE_LABEL: Record<UiMode, string> = { simple: 'modeSimple', classic: 'modeClassic', expert: 'modeExpert' };
+      const loginHref = (mode?: UiMode) =>
+        `/anmelden/?next=${encodeURIComponent(location.pathname + location.search)}${mode ? `&mode=${mode}` : ''}`;
+
+      function sync() {
+        const mode = currentMode();
+        const auth = getAuth();
+        document.getElementById('mode-current')!.textContent = t(MODE_LABEL[mode]);
+        menu.querySelectorAll<HTMLElement>('[data-mode-opt]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.modeOpt === mode)));
+        document.getElementById('mode-expert-lock')!.toggleAttribute('hidden', !!auth);
+        const login = document.getElementById('mode-login') as HTMLAnchorElement;
+        login.hidden = !!auth;
+        login.href = loginHref();
+        document.getElementById('mode-auth')!.hidden = !auth;
+        document.getElementById('mode-auth-name')!.textContent = auth ? t('modeLoggedInAs', { name: auth.name }) : '';
+        document.getElementById('mode-admin-link')!.hidden = auth?.role !== 'admin';
+      }
+      const setOpen = (open: boolean) => {
+        menu.hidden = !open;
+        toggle.setAttribute('aria-expanded', String(open));
+      };
+      toggle.addEventListener('click', e => { e.stopPropagation(); setOpen(!!menu.hidden); });
+      menu.addEventListener('click', e => e.stopPropagation());
+      document.addEventListener('click', () => setOpen(false));
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && !menu.hidden) { setOpen(false); toggle.focus(); }
+      });
+      menu.querySelectorAll<HTMLElement>('[data-mode-opt]').forEach(b => b.addEventListener('click', () => {
+        const mode = b.dataset.modeOpt as UiMode;
+        if (mode === 'expert' && !getAuth()) { location.href = loginHref('expert'); return; }
+        setOpen(false);
+        setMode(mode);
+      }));
+      document.getElementById('mode-logout')!.addEventListener('click', () => void logout());
+
+      onFeaturesChange(sync);
+      applyFeatures();
+      void refreshFeatureConfig();
+      // Only for people who logged in on this device (no extra request for everyone else).
+      if (getAuth()) void refreshAuth();
+
+      // Expert mode: load the private module (only in builds that contain
+      // src/expert/; its chunks come from /x/, which needs the login cookie).
+      if (hasExpertCode && currentMode() === 'expert') {
+        loadExpertModule().then(async mod => {
+          if (!mod) return;
+          registerFeatures(mod.features);
+          await mod.mount({
+            page: location.pathname.replace(/\/$/, '') || '/',
+            lang: getLang(),
+            featureOn,
+            onFeaturesChange: cb => onFeaturesChange(() => cb()),
+            pageApi,
+          });
+        }).catch(err => console.warn('expert module failed', err));
+      }
     </script>
   </body>
 </html>

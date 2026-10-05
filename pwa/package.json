@@ -17,7 +17,8 @@
     "test": "vitest run",
     "e2e": "playwright test",
     "check": "astro check",
-    "efg:update": "node scripts/update-efg.mjs"
+    "efg:update": "node scripts/update-efg.mjs",
+    "user": "node scripts/user-admin.mjs"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.2",

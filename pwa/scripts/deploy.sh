@@ -28,6 +28,26 @@ if [[ "${DEPLOY_FORCE:-}" != "1" ]]; then
   fi
 fi
 
+# Private expert module (src/expert/, its own git repo with the bare repo on
+# this VPS as origin — never on GitHub): same rule, what's live must be a
+# pushed commit of its main branch.
+if [[ -d src/expert/.git && "${DEPLOY_FORCE:-}" != "1" ]]; then
+  if [[ "$(git -C src/expert rev-parse --abbrev-ref HEAD)" != "main" ]]; then
+    echo "Refusing to deploy: src/expert is not on its main branch." >&2
+    exit 1
+  fi
+  if [[ -n "$(git -C src/expert status --porcelain)" ]]; then
+    echo "Refusing to deploy: uncommitted changes in src/expert:" >&2
+    git -C src/expert status --short >&2
+    exit 1
+  fi
+  git -C src/expert fetch --quiet origin main
+  if [[ "$(git -C src/expert rev-parse HEAD)" != "$(git -C src/expert rev-parse origin/main)" ]]; then
+    echo "Refusing to deploy: src/expert main differs from its origin (the bare repo on the VPS). Push or pull there first." >&2
+    exit 1
+  fi
+fi
+
 # Incremental install (not `npm ci`): keeps a dev server running from this
 # checkout alive while still picking up dependency changes from the lockfile.
 npm install --no-audit --no-fund --silent
@@ -36,6 +56,8 @@ npm run check
 npm test
 npm run build
 node scripts/check-csp.mjs dist
+# Private expert code only under dist/x/ (served after login only).
+node scripts/check-private.mjs dist
 # Browser tests against the fresh build (offline, external services stubbed).
 # Needs Playwright's Chromium once: npx playwright install chromium
 npx playwright test --reporter=line

@@ -32,6 +32,12 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] Sukzessive Pflanzung
 - [ ] kommerzieller Satellit mit offiziellem Key (Esri Location Platform / MapTiler / Mapbox Raster) erst bei Bedarf außerhalb der Ortho-Länder — Esri *ohne* Key ist nur nicht-kommerziell nutzbar
 
+## Modi & Experten-Repo
+- [ ] **Live schalten:** nginx-Konfiguration (`/api/auth/`, `/api/admin/`, `/api/features`, `/x/` mit `auth_request`) nach `/etc/nginx/sites-available/` kopieren, `nginx -t`, reload; `plant-proxy` neu starten; ersten Admin anlegen (`npm run user -- add <name> --admin`); `src/expert/` im Checkout `/root/pdk/pwa` aus `/root/git/pdk-expert.git` klonen
+- [ ] **Backup des Bare-Repos** `/root/git/pdk-expert.git` (z. B. nächtliches `git bundle` an einen zweiten Ort)
+- [ ] **Einfacher Modus auf weiteren Seiten:** bisher nur der Waldgartenplan; Pflanzenliste (Filter, Tabellen-PDF), Polykulturen und Einstellungen genauso über `data-feature` vereinfachen
+- [ ] **Einfacher Modus prüfen:** mit 2–3 Neulingen ausprobieren — reichen die drei Schritte, fehlt etwas (z. B. Flächen für Teich/Beete)?
+
 ## Gartenplan Ideen
 Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann 2 + 3 als Paket „Standortanalyse“.
 - [ ] **Gebäude aus amtlichen 3D-Daten (LoD2):** Dachformen kommen jetzt aus OSM `roof:shape` bzw. geschätzt (Satteldach für Wohnhäuser); genauer wären die LoD2-Modelle der Länder (z. B. NRW offen) — als CityGML-Kacheln aber zu schwer für den Browser, bräuchte serverseitige Aufbereitung

@@ -1,0 +1,242 @@
+---
+import Layout from '../layouts/Layout.astro';
+const field = 'block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-200';
+const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
+---
+<Layout title="Perma Design Kit — Funktionen verwalten" wide>
+  <article class="space-y-5 text-stone-800 dark:text-stone-100">
+    <h1 class="text-2xl font-bold" data-i18n="adTitle">Funktionen und Modi</h1>
+
+    <p id="admin-denied" hidden class="rounded-lg bg-amber-50 dark:bg-amber-900/30 px-3 py-2 text-sm text-amber-900 dark:text-amber-100 ring-1 ring-amber-200 dark:ring-amber-800">
+      <span data-i18n="adNeedAdmin">Diese Seite ist nur für Admins.</span>
+      <a id="admin-login" href="/anmelden/?next=/admin/" class="ml-1 font-semibold underline underline-offset-2" data-i18n="adLoginLink">Anmelden</a>
+    </p>
+
+    <div id="admin-body" hidden class="grid gap-6 xl:grid-cols-3">
+      <section class="space-y-3 xl:col-span-2">
+        <p class="max-w-3xl text-sm text-stone-600 dark:text-stone-300" data-i18n="adIntro">Hier legst du fest, in welchen Modi eine Funktion erscheint.</p>
+        <div class="overflow-x-auto rounded-xl bg-white dark:bg-stone-800 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+          <table class="w-full min-w-[36rem] text-sm">
+            <thead class="text-left text-xs uppercase tracking-wide text-stone-500 dark:text-stone-400">
+              <tr class="border-b border-stone-200 dark:border-stone-700">
+                <th class="px-3 py-2 font-semibold" data-i18n="adFeature">Funktion</th>
+                <th class="px-2 py-2 text-center font-semibold" data-mode-head="simple"></th>
+                <th class="px-2 py-2 text-center font-semibold" data-mode-head="classic"></th>
+                <th class="px-2 py-2 text-center font-semibold" data-mode-head="expert"></th>
+                <th class="px-2 py-2 text-center font-semibold" data-i18n="adOff">Aus</th>
+              </tr>
+            </thead>
+            <tbody id="feature-rows" class="divide-y divide-stone-100 dark:divide-stone-700"></tbody>
+          </table>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="features-save" type="button" data-i18n="adSave" class={`${btn} bg-green-700 text-white hover:bg-green-800 disabled:opacity-50`}>Übernehmen</button>
+          <button id="features-reset" type="button" data-i18n="adReset" class={`${btn} bg-white dark:bg-stone-800 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700`}>Alles auf Standard</button>
+          <span id="features-status" role="status" class="text-sm text-stone-600 dark:text-stone-300"></span>
+        </div>
+      </section>
+
+      <section class="space-y-3">
+        <h2 class="text-lg font-semibold" data-i18n="adUsersTitle">Zugänge</h2>
+        <ul id="user-list" class="divide-y divide-stone-100 dark:divide-stone-700 rounded-xl bg-white dark:bg-stone-800 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700"></ul>
+        <form id="user-add" class="space-y-2 rounded-xl bg-white dark:bg-stone-800 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+          <p class="text-sm font-semibold" data-i18n="adAddUser">Zugang anlegen</p>
+          <label class="block text-xs font-medium"><span data-i18n="acName">Name</span>
+            <input id="new-name" required maxlength="40" autocomplete="off" class={`mt-1 ${field}`} />
+          </label>
+          <label class="block text-xs font-medium"><span data-i18n="acPassword">Passwort</span> <span class="font-normal text-stone-500 dark:text-stone-400" data-i18n="adPasswordHint">mindestens 10 Zeichen</span>
+            <input id="new-password" type="password" required minlength="10" autocomplete="new-password" class={`mt-1 ${field}`} />
+          </label>
+          <label class="block text-xs font-medium"><span data-i18n="adRole">Rolle</span>
+            <select id="new-role" class={`mt-1 ${field}`}>
+              <option value="expert" data-i18n="adRoleExpert">Experte</option>
+              <option value="admin" data-i18n="adRoleAdmin">Admin</option>
+            </select>
+          </label>
+          <button type="submit" data-i18n="adAddUser" class={`${btn} bg-green-700 text-white hover:bg-green-800`}>Zugang anlegen</button>
+          <p id="user-status" role="status" class="text-sm text-stone-600 dark:text-stone-300"></p>
+        </form>
+      </section>
+    </div>
+  </article>
+
+  <script>
+    import { applyStaticI18n, createT, getLang } from '../lib/i18n/core';
+    import { accessDict } from '../lib/i18n/dict-access';
+    import { layoutDict } from '../lib/i18n/dict-layout';
+    import { FEATURES, UI_MODES, sanitizeFeatureConfig, type FeatureConfig, type FeatureDef, type UiMode } from '../lib/features';
+    import { refreshAuth } from '../lib/ui-mode';
+    import { loadExpertModule } from '../lib/expert-loader';
+    import { escapeHtml } from '../lib/html';
+
+    applyStaticI18n(accessDict);
+    const t = createT(layoutDict, accessDict);
+    const lang = getLang();
+    const MODE_KEY: Record<UiMode, string> = { simple: 'modeSimple', classic: 'modeClassic', expert: 'modeExpert' };
+    document.querySelectorAll<HTMLElement>('[data-mode-head]').forEach(th => { th.textContent = t(MODE_KEY[th.dataset.modeHead as UiMode]); });
+
+    const rows = document.getElementById('feature-rows')!;
+    const status = document.getElementById('features-status')!;
+    const saveBtn = document.getElementById('features-save') as HTMLButtonElement;
+    let defs: FeatureDef[] = [...FEATURES];
+    let saved: FeatureConfig = {};
+    let draft: FeatureConfig = {};
+
+    const errText = (code: string) => {
+      const key = `adErr_${code.replace(/-/g, '_')}`;
+      return accessDict[key] ? t(key) : t('adErr_generic', { error: code });
+    };
+    async function api(method: string, path: string, body?: unknown): Promise<{ ok: boolean; data: Record<string, unknown> }> {
+      try {
+        const res = await fetch(path, {
+          method, credentials: 'same-origin', cache: 'no-store',
+          headers: body === undefined ? {} : { 'Content-Type': 'application/json' },
+          body: body === undefined ? undefined : JSON.stringify(body),
+        });
+        const data = await res.json().catch(() => ({}));
+        return { ok: res.ok, data: { status: res.status, ...data } };
+      } catch {
+        return { ok: false, data: { error: 'network' } };
+      }
+    }
+
+    const modesOf = (d: FeatureDef, cfg: FeatureConfig): UiMode[] =>
+      (cfg[d.id] ?? [...d.modes]).filter(m => !d.private || m === 'expert');
+    const same = (a: UiMode[], b: readonly UiMode[]) => a.length === b.length && a.every(m => b.includes(m));
+
+    function changedCount() {
+      return defs.filter(d => !same(modesOf(d, draft), modesOf(d, saved))).length;
+    }
+    function syncStatus(msg?: string) {
+      const n = changedCount();
+      saveBtn.disabled = n === 0;
+      status.textContent = msg ?? (n ? t('adUnsaved', { n }) : t('adNoChanges'));
+    }
+
+    function renderRows() {
+      rows.innerHTML = defs.map(d => {
+        const on = modesOf(d, draft);
+        const changed = !same(on, d.modes);
+        const cell = (mode: UiMode) => {
+          const disabled = d.private && mode !== 'expert';
+          return `<td class="px-2 py-2 text-center"><input type="checkbox" data-id="${d.id}" data-mode="${mode}" ${on.includes(mode) ? 'checked' : ''} ${disabled ? 'disabled' : ''}
+            aria-label="${escapeHtml(`${d[lang]}: ${t(MODE_KEY[mode])}`)}" class="h-4 w-4 accent-green-700 disabled:opacity-30" /></td>`;
+        };
+        return `<tr>
+          <td class="px-3 py-2">${escapeHtml(d[lang])}
+            ${d.private ? `<span class="ml-1 rounded-full bg-amber-100 dark:bg-amber-900/50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800 dark:text-amber-200">${escapeHtml(t('adPrivate'))}</span>` : ''}
+            ${changed ? `<span class="ml-1 text-[10px] text-stone-500 dark:text-stone-400">${escapeHtml(t('adChanged'))}</span>` : ''}
+            <span class="block font-mono text-[10px] text-stone-400">${d.id}</span></td>
+          ${UI_MODES.map(cell).join('')}
+          <td class="px-2 py-2 text-center"><input type="checkbox" data-id="${d.id}" data-off ${on.length ? '' : 'checked'}
+            aria-label="${escapeHtml(`${d[lang]}: ${t('adOff')}`)}" class="h-4 w-4 accent-red-700" /></td>
+        </tr>`;
+      }).join('');
+      syncStatus();
+    }
+
+    rows.addEventListener('change', e => {
+      const box = e.target as HTMLInputElement;
+      const def = defs.find(d => d.id === box.dataset.id);
+      if (!def) return;
+      let modes = modesOf(def, draft);
+      if (box.hasAttribute('data-off')) modes = box.checked ? [] : [...def.modes].filter(m => !def.private || m === 'expert');
+      else {
+        const m = box.dataset.mode as UiMode;
+        modes = box.checked ? UI_MODES.filter(x => x === m || modes.includes(x)) : modes.filter(x => x !== m);
+      }
+      // Only differences from the default are stored.
+      if (same(modes, def.modes)) delete draft[def.id];
+      else draft[def.id] = modes;
+      renderRows();
+    });
+
+    saveBtn.addEventListener('click', async () => {
+      const res = await api('PUT', '/api/admin/features', { features: draft });
+      if (!res.ok) { syncStatus(t('adSaveFailed', { error: String(res.data.error ?? res.data.status) })); return; }
+      saved = sanitizeFeatureConfig(res.data.features);
+      draft = { ...saved };
+      try { localStorage.setItem('pdk-feature-config', JSON.stringify(saved)); } catch { /* ignore */ }
+      renderRows();
+      syncStatus(t('adSaved'));
+    });
+    document.getElementById('features-reset')!.addEventListener('click', () => { draft = {}; renderRows(); });
+
+    // ── Accounts ─────────────────────────────────────────────────────────
+    const userList = document.getElementById('user-list')!;
+    const userStatus = document.getElementById('user-status')!;
+    type User = { name: string; role: 'expert' | 'admin'; created: string | null };
+
+    async function loadUsers() {
+      const res = await api('GET', '/api/admin/users');
+      const users = (res.ok ? res.data.users : []) as User[];
+      userList.innerHTML = users.map((u, i) => `
+        <li class="space-y-2 p-3 text-sm" data-name="${escapeHtml(u.name)}">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="font-medium">${escapeHtml(u.name)}</span>
+            <span class="text-xs text-stone-500 dark:text-stone-400">${u.created ? `${t('adSince')} ${escapeHtml(u.created.slice(0, 10))}` : ''}</span>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <select data-act="role" aria-label="${escapeHtml(`${u.name}: ${t('adRole')}`)}" class="rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2 py-1 text-xs">
+              <option value="expert" ${u.role === 'expert' ? 'selected' : ''}>${escapeHtml(t('adRoleExpert'))}</option>
+              <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>${escapeHtml(t('adRoleAdmin'))}</option>
+            </select>
+            <input data-act="pw" id="pw-${i}" type="password" minlength="10" autocomplete="new-password" placeholder="${escapeHtml(t('adSetPassword'))}" aria-label="${escapeHtml(`${u.name}: ${t('adSetPassword')}`)}" class="w-36 rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2 py-1 text-xs" />
+            <button type="button" data-act="pw-save" class="rounded-md bg-stone-100 dark:bg-stone-700 px-2 py-1 text-xs font-medium ring-1 ring-stone-300 dark:ring-stone-600">${escapeHtml(t('adSave'))}</button>
+            <button type="button" data-act="remove" class="ml-auto rounded-md px-2 py-1 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30">${escapeHtml(t('adRemove'))}</button>
+          </div>
+        </li>`).join('');
+    }
+
+    async function userAction(res: { ok: boolean; data: Record<string, unknown> }) {
+      userStatus.textContent = res.ok ? t('adUserSaved') : errText(String(res.data.error ?? res.data.status));
+      await loadUsers();
+    }
+
+    userList.addEventListener('change', async e => {
+      const el = e.target as HTMLElement;
+      if (el.dataset.act !== 'role') return;
+      const name = el.closest<HTMLElement>('[data-name]')!.dataset.name!;
+      await userAction(await api('POST', '/api/admin/users', { name, role: (el as HTMLSelectElement).value }));
+    });
+    userList.addEventListener('click', async e => {
+      const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-act]');
+      const li = btn?.closest<HTMLElement>('[data-name]');
+      if (!btn || !li) return;
+      const name = li.dataset.name!;
+      if (btn.dataset.act === 'pw-save') {
+        const pw = li.querySelector<HTMLInputElement>('[data-act="pw"]')!.value;
+        await userAction(await api('POST', '/api/admin/users', { name, password: pw }));
+      } else if (btn.dataset.act === 'remove') {
+        if (!confirm(t('adRemoveConfirm', { name }))) return;
+        await userAction(await api('DELETE', `/api/admin/users?name=${encodeURIComponent(name)}`));
+      }
+    });
+    document.getElementById('user-add')!.addEventListener('submit', async e => {
+      e.preventDefault();
+      const nameEl = document.getElementById('new-name') as HTMLInputElement;
+      const pwEl = document.getElementById('new-password') as HTMLInputElement;
+      const role = (document.getElementById('new-role') as HTMLSelectElement).value;
+      const res = await api('POST', '/api/admin/users', { name: nameEl.value.trim(), password: pwEl.value, role });
+      if (res.ok) { nameEl.value = ''; pwEl.value = ''; }
+      await userAction(res);
+    });
+
+    // ── Start: admins only ───────────────────────────────────────────────
+    (async () => {
+      const auth = await refreshAuth();
+      if (auth?.role !== 'admin') {
+        document.getElementById('admin-denied')!.hidden = false;
+        return;
+      }
+      document.getElementById('admin-body')!.hidden = false;
+      const mod = await loadExpertModule();
+      if (mod) defs = [...FEATURES, ...mod.features.map(f => ({ ...f, private: true }))];
+      const res = await api('GET', '/api/features');
+      saved = sanitizeFeatureConfig(res.data.features);
+      draft = { ...saved };
+      renderRows();
+      await loadUsers();
+    })();
+  </script>
+</Layout>

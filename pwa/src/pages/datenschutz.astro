@@ -88,6 +88,12 @@ import Layout from '../layouts/Layout.astro';
       <p><span data-i18n="dsCookiesBody1">Diese Anwendung setzt keine Cookies. Für lokale Einstellungen wird ausschließlich</span> <code>localStorage</code> <span data-i18n="dsCookiesBody2">und</span> <code>IndexedDB</code> <span data-i18n="dsCookiesBody3">verwendet. Diese Daten verbleiben auf deinem Gerät.</span></p>
     </section>
 
+    <section id="experten-zugang" class="space-y-2">
+      <h2 class="text-xl font-semibold" data-i18n="dsExpertTitle">Experten-Zugang</h2>
+      <p data-i18n="dsExpertBody1">Für den Experten-Modus vergibt das Team einzelne Zugänge (Name und Passwort). Auf dem Server gespeichert werden nur der Zugangsname, die Rolle, das Anlagedatum und ein nicht umkehrbarer Hash des Passworts.</p>
+      <p data-i18n="dsExpertBody2">Nach der Anmeldung setzt der Server ein Cookie („pdk_s“), das den Zugangsnamen, die Rolle und das Ablaufdatum enthält, signiert gegen Fälschung. Es ist technisch notwendig, um den Zugang zu prüfen (§ 25 Abs. 2 Nr. 2 TDDDG, Art. 6 Abs. 1 lit. b DSGVO), und läuft nach 90 Tagen ab oder wird beim Abmelden gelöscht. Fehlgeschlagene Anmeldungen werden zur Abwehr von Passwort-Raten bis zu 15 Minuten mit der IP-Adresse im Arbeitsspeicher gezählt und nicht gespeichert.</p>
+    </section>
+
     <section class="space-y-2">
       <h2 class="text-xl font-semibold" data-i18n="dsAnalyticsTitle">Reichweiten­messung mit Umami (selbst gehostet)</h2>
       <p><span data-i18n="dsAnalyticsIntro1">Wir verwenden ein selbst betriebenes</span> <strong>Umami Analytics</strong> <span data-i18n="dsAnalyticsAddress">(läuft auf unserem eigenen Server unter</span> <a class="text-green-700 dark:text-green-400 underline underline-offset-2 hover:no-underline" href="https://stats.permadesignkit.org" target="_blank" rel="noopener">stats.permadesignkit.org</a><span data-i18n="dsAnalyticsIntro2">), um Seitenaufrufe und grobe Nutzungsmuster zu zählen. Es fließen dabei keine Daten an ein

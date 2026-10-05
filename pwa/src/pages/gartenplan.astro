@@ -24,7 +24,7 @@ import Layout from '../layouts/Layout.astro';
   <section id="plan-list-view">
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
       <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-100" data-i18n="pageTitle">Waldgartenplan</h1>
-      <label class="cursor-pointer rounded-lg bg-stone-100 dark:bg-stone-800 px-3.5 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700" data-i18n-title="importGeojsonTitle" title="GeoJSON aus QGIS & Co. als Waldgartenplan übernehmen">
+      <label data-feature="export" class="cursor-pointer rounded-lg bg-stone-100 dark:bg-stone-800 px-3.5 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700" data-i18n-title="importGeojsonTitle" title="GeoJSON aus QGIS & Co. als Waldgartenplan übernehmen">
         <span data-i18n="btnImportGeojson">⤒ GeoJSON importieren</span>
         <input id="geojson-input" type="file" accept=".geojson,.json,application/geo+json,application/json" class="hidden" />
       </label>
@@ -62,32 +62,39 @@ import Layout from '../layouts/Layout.astro';
 
     <!-- Karte: Standort, Ausrichtung, Hintergrund — gilt für beide Phasen -->
     <div id="map-bar" class="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl bg-stone-50 dark:bg-stone-900 px-3 py-2 text-xs text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700">
-      <button id="btn-locate" type="button" data-i18n="mapBarLocate" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">📍 Standort festlegen…</button>
+      <button data-feature="location" id="btn-locate" type="button" data-i18n="mapBarLocate" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">📍 Standort festlegen…</button>
       <label class="inline-flex items-center gap-1.5">
         <span data-i18n="mapBarBackground">Hintergrund</span>
         <select id="g-basemap" class="rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs disabled:opacity-50">
           <option value="none" data-i18n="mapBgNone">Kein</option>
           <option value="osm" data-i18n="mapBgOsm">Karte (OpenStreetMap)</option>
-          <option value="ortho" id="g-basemap-ortho">Luftbild (amtlich)</option>
-          <option value="sat" data-i18n="mapBgSat">Satellit (grob, 10 m)</option>
+          <option data-feature="basemap-extra" value="ortho" id="g-basemap-ortho">Luftbild (amtlich)</option>
+          <option data-feature="basemap-extra" value="sat" data-i18n="mapBgSat">Satellit (grob, 10 m)</option>
         </select>
       </label>
-      <label class="inline-flex items-center gap-1.5">
+      <label data-feature="basemap-extra" class="inline-flex items-center gap-1.5">
         <span data-i18n="mapBarOpacity">Deckkraft</span>
         <input id="g-basemap-opacity" type="range" min="0.1" max="1" step="0.05" value="0.6" class="w-24 disabled:opacity-50" />
       </label>
-      <label class="inline-flex items-center gap-1.5">
+      <label data-feature="coverage" class="inline-flex items-center gap-1.5">
         <span data-i18n="coverageLabel">Funktionen</span>
         <select id="g-coverage" class="rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs"></select>
       </label>
       <label class="inline-flex items-center gap-1.5" data-i18n-title="mapGridTitle" title="Meterlinien ein-/ausblenden (G)"><input id="g-grid" type="checkbox" checked class="accent-green-700" /> <span data-i18n="mapGrid">Meterlinien</span></label>
-      <label id="buildings-toggle" hidden class="inline-flex items-center gap-1.5" data-i18n-title="mapBuildingsTitle" title="Gebäude aus OpenStreetMap: in 3D und als Schattenwerfer für Besonnung und Hinweise"><input id="g-buildings" type="checkbox" checked class="accent-stone-600" /> <span data-i18n="mapBuildings">Gebäude</span></label>
-      <label id="contours-toggle" hidden class="inline-flex items-center gap-1.5"><input id="g-contours" type="checkbox" checked class="accent-amber-700" /> <span data-i18n="mapContours">Höhenlinien</span></label>
-      <label id="water-toggle" hidden class="inline-flex items-center gap-1.5" data-i18n-title="mapWaterTitle" title="Abflusswege, Senken, Swale-Vorschläge und Regen vom Dach"><input id="g-water" type="checkbox" class="accent-sky-600" /> <span data-i18n="mapWater">Wasser</span></label>
-      <label class="inline-flex items-center gap-1.5" data-i18n-title="mapZonesTitle" title="Permakultur-Zonen um das Haus und Sektoren (Sonne, Wind, Kaltluft)"><input id="g-zones" type="checkbox" class="accent-amber-600" /> <span data-i18n="mapZones">Zonen &amp; Sektoren</span></label>
+      <label data-feature="buildings" id="buildings-toggle" hidden class="inline-flex items-center gap-1.5" data-i18n-title="mapBuildingsTitle" title="Gebäude aus OpenStreetMap: in 3D und als Schattenwerfer für Besonnung und Hinweise"><input id="g-buildings" type="checkbox" checked class="accent-stone-600" /> <span data-i18n="mapBuildings">Gebäude</span></label>
+      <label data-feature="terrain" id="contours-toggle" hidden class="inline-flex items-center gap-1.5"><input id="g-contours" type="checkbox" checked class="accent-amber-700" /> <span data-i18n="mapContours">Höhenlinien</span></label>
+      <label data-feature="water" id="water-toggle" hidden class="inline-flex items-center gap-1.5" data-i18n-title="mapWaterTitle" title="Abflusswege, Senken, Swale-Vorschläge und Regen vom Dach"><input id="g-water" type="checkbox" class="accent-sky-600" /> <span data-i18n="mapWater">Wasser</span></label>
+      <label data-feature="zones" class="inline-flex items-center gap-1.5" data-i18n-title="mapZonesTitle" title="Permakultur-Zonen um das Haus und Sektoren (Sonne, Wind, Kaltluft)"><input id="g-zones" type="checkbox" class="accent-amber-600" /> <span data-i18n="mapZones">Zonen &amp; Sektoren</span></label>
       <span id="map-status" class="text-stone-500 dark:text-stone-400"></span>
-      <span id="terrain-info" class="text-stone-600 dark:text-stone-300"></span>
+      <span data-feature="terrain" id="terrain-info" class="text-stone-600 dark:text-stone-300"></span>
     </div>
+
+    <!-- Einfacher Modus: drei Schritte (feature 'simple-guide', lib/features.ts) -->
+    <ol id="guide-steps" data-feature="simple-guide" class="mb-4 flex flex-wrap gap-2 text-sm" data-i18n-aria-label="guideStepsLabel" aria-label="Schritte">
+        <li><button type="button" data-step="1" data-state="todo" class="group inline-flex items-center gap-2 rounded-full bg-white dark:bg-stone-800 py-1 pl-1 pr-3.5 font-medium text-stone-500 dark:text-stone-400 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition data-[state=done]:text-stone-800 data-[state=now]:text-stone-900 data-[state=now]:ring-2 data-[state=now]:ring-amber-400 dark:data-[state=done]:text-stone-100 dark:data-[state=now]:text-white"><span class="guide-num flex h-7 w-7 items-center justify-center rounded-full bg-stone-200 dark:bg-stone-700 text-xs font-bold group-data-[state=done]:bg-green-700 group-data-[state=done]:text-white group-data-[state=now]:bg-amber-400 group-data-[state=now]:text-stone-900">1</span><span data-i18n="guideStep1">Fläche zeichnen</span></button></li>
+        <li><button type="button" data-step="2" data-state="todo" class="group inline-flex items-center gap-2 rounded-full bg-white dark:bg-stone-800 py-1 pl-1 pr-3.5 font-medium text-stone-500 dark:text-stone-400 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition data-[state=done]:text-stone-800 data-[state=now]:text-stone-900 data-[state=now]:ring-2 data-[state=now]:ring-amber-400 dark:data-[state=done]:text-stone-100 dark:data-[state=now]:text-white"><span class="guide-num flex h-7 w-7 items-center justify-center rounded-full bg-stone-200 dark:bg-stone-700 text-xs font-bold group-data-[state=done]:bg-green-700 group-data-[state=done]:text-white group-data-[state=now]:bg-amber-400 group-data-[state=now]:text-stone-900">2</span><span data-i18n="guideStep2">Pflanzen setzen</span></button></li>
+        <li><button type="button" data-step="3" data-state="todo" class="group inline-flex items-center gap-2 rounded-full bg-white dark:bg-stone-800 py-1 pl-1 pr-3.5 font-medium text-stone-500 dark:text-stone-400 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition data-[state=done]:text-stone-800 data-[state=now]:text-stone-900 data-[state=now]:ring-2 data-[state=now]:ring-amber-400 dark:data-[state=done]:text-stone-100 dark:data-[state=now]:text-white"><span class="guide-num flex h-7 w-7 items-center justify-center rounded-full bg-stone-200 dark:bg-stone-700 text-xs font-bold group-data-[state=done]:bg-green-700 group-data-[state=done]:text-white group-data-[state=now]:bg-amber-400 group-data-[state=now]:text-stone-900">3</span><span data-i18n="guideStep3">In 3D ansehen</span></button></li>
+    </ol>
 
     <!-- Phase A: Grunddaten + Fläche zeichnen -->
     <div id="phase-a">
@@ -102,7 +109,7 @@ import Layout from '../layouts/Layout.astro';
               <span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="labelDescription">Beschreibung</span>
               <input id="g-description" type="text" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none" />
             </label>
-            <label class="block">
+            <label data-feature="polyculture" class="block">
               <span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="labelLinkedPolyculture">Bestehende Polykultur verknüpfen (optional)</span>
               <select id="g-polyculture" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none"></select>
             </label>
@@ -193,13 +200,13 @@ import Layout from '../layouts/Layout.astro';
             <button id="btn-view-2d" data-i18n="btnView2d" class="rounded-md bg-white dark:bg-stone-700 px-2.5 py-1 font-medium text-stone-800 dark:text-stone-100 shadow-sm">2D</button>
             <button id="btn-view-3d" data-i18n="btnView3d" class="rounded-md px-2.5 py-1 font-medium text-stone-500 dark:text-stone-400">3D</button>
           </div>
-          <button id="btn-edit-boundary" type="button" aria-pressed="false" data-i18n="btnEditBoundary" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700 aria-pressed:bg-amber-100 aria-pressed:ring-amber-400 dark:aria-pressed:bg-amber-900/40">✎ Umriss bearbeiten</button>
-          <button id="btn-draw-area" type="button" data-i18n="btnDrawArea" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">▱ Fläche einzeichnen</button>
-          <button id="btn-draw-row" type="button" data-i18n="btnDrawRow" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">⋯ Reihe pflanzen</button>
-          <button id="btn-export-geojson" type="button" data-i18n="btnExportGeojson" data-i18n-title="exportGeojsonTitle" title="Für QGIS & Co.: Umriss, Flächen und Pflanzen als GeoJSON (WGS84)" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">⤓ GeoJSON (QGIS)</button>
-          <a id="btn-plan-calendar" href="/kalender" data-i18n="btnPlanCalendar" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">Kalender</a>
-          <button id="btn-shopping" type="button" data-i18n="btnShopping" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">Pflanzliste</button>
-          <button id="btn-export-pdf" data-i18n="btnExportPdf" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">PDF exportieren</button>
+          <button data-feature="boundary-edit" id="btn-edit-boundary" type="button" aria-pressed="false" data-i18n="btnEditBoundary" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700 aria-pressed:bg-amber-100 aria-pressed:ring-amber-400 dark:aria-pressed:bg-amber-900/40">✎ Umriss bearbeiten</button>
+          <button data-feature="areas" id="btn-draw-area" type="button" data-i18n="btnDrawArea" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">▱ Fläche einzeichnen</button>
+          <button data-feature="row" id="btn-draw-row" type="button" data-i18n="btnDrawRow" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">⋯ Reihe pflanzen</button>
+          <button data-feature="export" id="btn-export-geojson" type="button" data-i18n="btnExportGeojson" data-i18n-title="exportGeojsonTitle" title="Für QGIS & Co.: Umriss, Flächen und Pflanzen als GeoJSON (WGS84)" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">⤓ GeoJSON (QGIS)</button>
+          <a data-feature="export" id="btn-plan-calendar" href="/kalender" data-i18n="btnPlanCalendar" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">Kalender</a>
+          <button data-feature="export" id="btn-shopping" type="button" data-i18n="btnShopping" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">Pflanzliste</button>
+          <button data-feature="export" id="btn-export-pdf" data-i18n="btnExportPdf" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">PDF exportieren</button>
           <button id="btn-redraw-area" data-i18n="btnRedrawArea" class="text-xs font-medium text-stone-500 dark:text-stone-400 hover:text-red-600 dark:hover:text-red-400">Fläche neu zeichnen</button>
         </div>
       </div>
@@ -220,7 +227,7 @@ import Layout from '../layouts/Layout.astro';
 
       <div class="grid gap-6 lg:grid-cols-3 2xl:grid-cols-4">
         <div class="lg:col-span-2 2xl:col-span-3 space-y-2">
-          <div id="row-draw-bar" class="hidden flex flex-wrap items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-900/30 px-3 py-2 text-xs text-amber-900 dark:text-amber-100 ring-1 ring-amber-200 dark:ring-amber-800">
+          <div data-feature="row" id="row-draw-bar" class="hidden flex flex-wrap items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-900/30 px-3 py-2 text-xs text-amber-900 dark:text-amber-100 ring-1 ring-amber-200 dark:ring-amber-800">
             <span id="row-draw-hint" class="mr-auto"></span>
             <label class="inline-flex items-center gap-1"><span data-i18n="rowSpacing">Abstand</span>
               <input id="row-spacing" type="number" min="0.1" max="50" step="0.1" value="1" class="w-16 rounded-md border border-amber-300 dark:border-amber-700 bg-white dark:bg-stone-900 px-1.5 py-0.5" /> m</label>
@@ -229,36 +236,36 @@ import Layout from '../layouts/Layout.astro';
             <button id="btn-row-cancel" type="button" data-i18n="btnAreaCancel" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium ring-1 ring-amber-300 dark:ring-amber-700">Abbrechen</button>
             <button id="btn-row-finish" type="button" data-i18n="btnRowFinish" disabled class="rounded-md bg-green-700 px-2.5 py-1 font-medium text-white disabled:opacity-40">Pflanzen</button>
           </div>
-          <div id="area-draw-bar" class="hidden flex flex-wrap items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-900/30 px-3 py-2 text-xs text-amber-900 dark:text-amber-100 ring-1 ring-amber-200 dark:ring-amber-800">
+          <div data-feature="areas" id="area-draw-bar" class="hidden flex flex-wrap items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-900/30 px-3 py-2 text-xs text-amber-900 dark:text-amber-100 ring-1 ring-amber-200 dark:ring-amber-800">
             <span class="mr-auto" data-i18n="areaDrawHint">Eckpunkte anklicken; Klick auf den ersten Punkt oder „Fertig“ schließt die Fläche. Esc bricht ab.</span>
             <button id="btn-area-undo" type="button" data-i18n="btnUndoPoint" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium ring-1 ring-amber-300 dark:ring-amber-700">Letzten Punkt entfernen</button>
             <button id="btn-area-cancel" type="button" data-i18n="btnAreaCancel" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium ring-1 ring-amber-300 dark:ring-amber-700">Abbrechen</button>
             <button id="btn-area-finish" type="button" data-i18n="btnAreaFinish" disabled class="rounded-md bg-green-700 px-2.5 py-1 font-medium text-white disabled:opacity-40">Fertig</button>
           </div>
-          <div id="boundary-edit-bar" class="hidden flex flex-wrap items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-900/30 px-3 py-2 text-xs text-amber-900 dark:text-amber-100 ring-1 ring-amber-200 dark:ring-amber-800">
+          <div data-feature="boundary-edit" id="boundary-edit-bar" class="hidden flex flex-wrap items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-900/30 px-3 py-2 text-xs text-amber-900 dark:text-amber-100 ring-1 ring-amber-200 dark:ring-amber-800">
             <span class="mr-auto" data-i18n="boundaryEditHint">Umriss bearbeiten: Ecken ziehen, ＋ auf einer Kante fügt einen Punkt ein, Doppelklick entfernt ihn. Über den Rand ziehen vergrößert den Plan.</span>
             <button id="btn-boundary-done" type="button" data-i18n="btnAreaFinish" class="rounded-md bg-green-700 px-2.5 py-1 font-medium text-white">Fertig</button>
           </div>
           <div id="sun-controls" hidden class="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg bg-sky-50 dark:bg-sky-900/30 px-3 py-2 text-xs text-sky-900 dark:text-sky-100 ring-1 ring-sky-200 dark:ring-sky-800">
             <span class="font-semibold" data-i18n="sunHeading">☀ Sonnenstand</span>
-            <input id="sun-date" type="date" data-i18n-aria-label="sunDate" aria-label="Datum" class="rounded-md border border-sky-300 dark:border-sky-700 bg-white dark:bg-stone-900 px-1.5 py-0.5" />
+            <input data-feature="sun-advanced" id="sun-date" type="date" data-i18n-aria-label="sunDate" aria-label="Datum" class="rounded-md border border-sky-300 dark:border-sky-700 bg-white dark:bg-stone-900 px-1.5 py-0.5" />
             <input id="sun-time" type="range" min="0" max="1435" step="5" data-i18n-aria-label="sunTime" aria-label="Uhrzeit" class="w-40 accent-amber-500" />
             <span id="sun-time-label" class="w-10 font-mono"></span>
             <button id="sun-now" type="button" data-i18n="sunNow" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">Jetzt</button>
-            <button id="sun-play" type="button" data-i18n="sunPlay" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">▶ Tagesverlauf</button>
-            <span class="inline-flex gap-1">
+            <button data-feature="sun-advanced" id="sun-play" type="button" data-i18n="sunPlay" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">▶ Tagesverlauf</button>
+            <span data-feature="sun-advanced" class="inline-flex gap-1">
               <button id="view-top" type="button" data-i18n="viewTop" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">Draufsicht</button>
               <button id="view-oblique" type="button" data-i18n="viewOblique" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">Schrägansicht</button>
             </span>
-            <button id="btn-buildings-3d" type="button" hidden aria-pressed="true" data-i18n-title="buildings3dTitle" title="Gebäude ein-/ausblenden (B)" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700 aria-pressed:bg-stone-200 dark:aria-pressed:bg-stone-600">🏠 <span data-i18n="buildings3dBtn">Gebäude</span></button>
-            <button id="btn-snapshot" type="button" data-i18n="snapshotBtn" data-i18n-title="snapshotTitle" title="Aktuelle 3D-Ansicht als Bild speichern (P)" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">📷 Bild</button>
+            <button data-feature="buildings" id="btn-buildings-3d" type="button" hidden aria-pressed="true" data-i18n-title="buildings3dTitle" title="Gebäude ein-/ausblenden (B)" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700 aria-pressed:bg-stone-200 dark:aria-pressed:bg-stone-600">🏠 <span data-i18n="buildings3dBtn">Gebäude</span></button>
+            <button data-feature="sun-advanced" id="btn-snapshot" type="button" data-i18n="snapshotBtn" data-i18n-title="snapshotTitle" title="Aktuelle 3D-Ansicht als Bild speichern (P)" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">📷 Bild</button>
             <span id="sun-info" class="basis-full text-sky-800 dark:text-sky-200 sm:basis-auto"></span>
           </div>
           <div id="plan-wrap" class="relative overflow-hidden rounded-xl bg-white dark:bg-stone-800 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <svg id="plan-svg" class="block w-full touch-none" style="touch-action:none"></svg>
             <div id="plan-3d-container" hidden class="h-[70vh] w-full touch-none" style="touch-action:none"></div>
-            <div id="measure-readout" hidden aria-live="polite" class="absolute left-1/2 top-3 z-10 -translate-x-1/2 rounded-md bg-orange-600/90 px-2.5 py-1 text-xs font-medium text-white shadow"></div>
-            <div id="gps-box" hidden aria-live="polite" class="absolute bottom-3 left-3 z-10 max-w-[min(22rem,calc(100%-1.5rem))] space-y-1.5 rounded-lg bg-sky-50/95 dark:bg-sky-950/90 p-2.5 text-xs text-sky-950 dark:text-sky-50 shadow ring-1 ring-sky-300 dark:ring-sky-800">
+            <div data-feature="measure" id="measure-readout" hidden aria-live="polite" class="absolute left-1/2 top-3 z-10 -translate-x-1/2 rounded-md bg-orange-600/90 px-2.5 py-1 text-xs font-medium text-white shadow"></div>
+            <div data-feature="gps" id="gps-box" hidden aria-live="polite" class="absolute bottom-3 left-3 z-10 max-w-[min(22rem,calc(100%-1.5rem))] space-y-1.5 rounded-lg bg-sky-50/95 dark:bg-sky-950/90 p-2.5 text-xs text-sky-950 dark:text-sky-50 shadow ring-1 ring-sky-300 dark:ring-sky-800">
               <p id="gps-status" class="font-medium"></p>
               <p id="gps-way" class="text-sm font-semibold"></p>
               <div class="flex flex-wrap gap-1.5">
@@ -275,9 +282,9 @@ import Layout from '../layouts/Layout.astro';
               <span class="my-1 h-px bg-stone-300 dark:bg-stone-600"></span>
               <button id="tool-pan" type="button" data-tool="pan" aria-pressed="false" data-i18n-aria-label="toolPan" data-i18n-title="toolPan" aria-label="Bewegen" title="Bewegen" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700 aria-pressed:bg-amber-200 aria-pressed:ring-amber-500 dark:aria-pressed:bg-amber-800 text-sm">✋</button>
               <button id="tool-select" type="button" data-tool="select" aria-pressed="true" data-i18n-aria-label="toolSelect" data-i18n-title="toolSelect" aria-label="Markieren – einzeln" title="Markieren – einzeln" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700 aria-pressed:bg-amber-200 aria-pressed:ring-amber-500 dark:aria-pressed:bg-amber-800 text-sm">↖</button>
-              <button id="tool-lasso" type="button" data-tool="lasso" aria-pressed="false" data-i18n-aria-label="toolLasso" data-i18n-title="toolLasso" aria-label="Markieren – mehrere als Fläche" title="Markieren – mehrere als Fläche" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700 aria-pressed:bg-amber-200 aria-pressed:ring-amber-500 dark:aria-pressed:bg-amber-800 text-sm">⬚</button>
-              <button id="tool-gps" type="button" hidden aria-pressed="false" data-i18n-aria-label="gpsTool" data-i18n-title="gpsTool" aria-label="Feldmodus: eigene Position (GPS)" title="Feldmodus: eigene Position (GPS)" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700 aria-pressed:bg-sky-200 aria-pressed:ring-sky-500 dark:aria-pressed:bg-sky-800 text-sm">📍</button>
-              <button id="tool-measure" type="button" data-tool="measure" aria-pressed="false" data-i18n-aria-label="toolMeasure" data-i18n-title="toolMeasure" aria-label="Messen (M)" title="Messen (M)" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700 aria-pressed:bg-amber-200 aria-pressed:ring-amber-500 dark:aria-pressed:bg-amber-800 text-sm">📏</button>
+              <button data-feature="lasso" id="tool-lasso" type="button" data-tool="lasso" aria-pressed="false" data-i18n-aria-label="toolLasso" data-i18n-title="toolLasso" aria-label="Markieren – mehrere als Fläche" title="Markieren – mehrere als Fläche" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700 aria-pressed:bg-amber-200 aria-pressed:ring-amber-500 dark:aria-pressed:bg-amber-800 text-sm">⬚</button>
+              <button data-feature="gps" id="tool-gps" type="button" hidden aria-pressed="false" data-i18n-aria-label="gpsTool" data-i18n-title="gpsTool" aria-label="Feldmodus: eigene Position (GPS)" title="Feldmodus: eigene Position (GPS)" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700 aria-pressed:bg-sky-200 aria-pressed:ring-sky-500 dark:aria-pressed:bg-sky-800 text-sm">📍</button>
+              <button data-feature="measure" id="tool-measure" type="button" data-tool="measure" aria-pressed="false" data-i18n-aria-label="toolMeasure" data-i18n-title="toolMeasure" aria-label="Messen (M)" title="Messen (M)" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700 aria-pressed:bg-amber-200 aria-pressed:ring-amber-500 dark:aria-pressed:bg-amber-800 text-sm">📏</button>
             </div>
             <div aria-hidden="true" class="cursor-readout pointer-events-none absolute hidden rounded bg-stone-900/80 px-1.5 py-0.5 font-mono text-[11px] text-white"></div>
             <div class="basemap-attrib absolute bottom-3 right-3 z-10 hidden rounded-tl bg-white/80 px-1 text-[10px] text-stone-600"></div>
@@ -295,6 +302,13 @@ import Layout from '../layouts/Layout.astro';
         </div>
 
         <aside class="space-y-4">
+          <!-- Einfacher Modus: Schichten sammeln + ein Tipp -->
+          <section id="simple-guide" data-feature="simple-guide" class="rounded-xl bg-white dark:bg-stone-800 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+            <h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="guideHeading">Dein Waldgarten</h2>
+            <div id="guide-layers" class="mt-3 grid grid-cols-5 gap-1.5"></div>
+            <p id="guide-stats" class="mt-2 text-xs text-stone-600 dark:text-stone-300"></p>
+            <p id="guide-tip" aria-live="polite" class="mt-3 rounded-lg bg-amber-50 dark:bg-amber-900/30 px-3 py-2 text-sm text-amber-950 dark:text-amber-100 ring-1 ring-amber-200 dark:ring-amber-800"></p>
+          </section>
           <details data-panel="selected" open class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="selectedPanelHeading">Ausgewählt</h2><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-stone-500 dark:text-stone-400 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
             <div id="selected-panel"></div>
@@ -303,7 +317,7 @@ import Layout from '../layouts/Layout.astro';
             <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="pickerHeading">Pflanzen</h2><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-stone-500 dark:text-stone-400 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
             <input id="picker-filter" type="search" data-i18n-placeholder="pickerFilterPlaceholder" placeholder="Pflanze filtern…" class="mb-2 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-xs shadow-inner focus:border-green-500 focus:outline-none" />
             <div id="plant-picker" class="max-h-56 space-y-0.5 overflow-y-auto"></div>
-            <div class="mt-2 flex gap-1.5 border-t border-stone-200 dark:border-stone-700 pt-2">
+            <div data-feature="polyculture" class="mt-2 flex gap-1.5 border-t border-stone-200 dark:border-stone-700 pt-2">
               <select id="pc-package" data-i18n-aria-label="pkgLabel" aria-label="Polykultur als Paket platzieren" class="rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs min-w-0 flex-1 py-1"></select>
               <button id="btn-pc-package" type="button" data-i18n="pkgPlace" class="rounded-md bg-green-700 px-2.5 py-1 text-xs font-medium text-white hover:bg-green-800 disabled:opacity-40">Platzieren</button>
             </div>
@@ -311,31 +325,31 @@ import Layout from '../layouts/Layout.astro';
             <p id="armed-hint" class="mt-2 hidden text-xs font-medium text-green-700 dark:text-green-400" data-i18n="hintArmed">Auf die Fläche tippen zum Platzieren.</p>
           </details>
 
-          <details data-panel="areas" open class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+          <details data-feature="areas" data-panel="areas" open class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="areasHeading">Flächen</h2><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-stone-500 dark:text-stone-400 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
             <p id="areas-empty" class="text-xs text-stone-400 dark:text-stone-500" data-i18n="areasEmpty">Noch keine Flächen. Mit „Fläche einzeichnen“ Beete, Teich, Wege … einzeichnen.</p>
             <ul id="areas-list" class="space-y-1.5"></ul>
             <p id="area-edit-hint" hidden class="mt-2 text-[11px] text-stone-500 dark:text-stone-400" data-i18n="areaEditHint">Ausgewählte Fläche: Eckpunkte ziehen (auch in 3D), ＋ auf einer Kante fügt einen Punkt ein, Doppelklick auf einen Punkt entfernt ihn. Esc hebt die Auswahl auf.</p>
           </details>
 
-          <details data-panel="coverage" open id="coverage-section" hidden class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+          <details data-feature="coverage" data-panel="coverage" open id="coverage-section" hidden class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-1"><h2 id="coverage-heading" class="text-sm font-semibold text-stone-800 dark:text-stone-100">Funktions-Abdeckung</h2><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-stone-500 dark:text-stone-400 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
             <div id="coverage-body" class="space-y-2 text-xs"></div>
           </details>
 
-          <details data-panel="phases" open id="phases-section" hidden class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+          <details data-feature="phases" data-panel="phases" open id="phases-section" hidden class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="phasesHeading">Bauabschnitte</h2><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-stone-500 dark:text-stone-400 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
             <label class="flex items-center gap-2 text-xs"><span data-i18n="phasesStart">Pflanzbeginn</span><input id="phases-start" type="number" min="1900" max="2200" step="1" class="w-20 rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs" /></label>
             <ul id="phases-list" class="mt-2 space-y-0.5 text-xs"></ul>
             <p class="mt-1 text-[10px] text-stone-500 dark:text-stone-400" data-i18n="phasesHint">Pflanzjahr unter „Ausgewählt“ setzen (auch für eine Mehrfachauswahl). Jahre-Regler und Zeitraffer zeigen die Abschnitte nacheinander.</p>
           </details>
 
-          <details data-panel="water" open id="water-section" hidden class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+          <details data-feature="water" data-panel="water" open id="water-section" hidden class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="waterHeading">Wasser</h2><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-stone-500 dark:text-stone-400 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
             <div id="water-body" class="space-y-1.5 text-xs text-stone-700 dark:text-stone-200"></div>
           </details>
 
-          <details data-panel="zones" open id="zones-section" hidden class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+          <details data-feature="zones" data-panel="zones" open id="zones-section" hidden class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="zonesHeading">Zonen &amp; Sektoren</h2><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-stone-500 dark:text-stone-400 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
             <p class="mb-2 text-[11px] text-stone-500 dark:text-stone-400" data-i18n="zonesIntro">Das Haus-Symbol ist das Zentrum – zum Verschieben ziehen. Zone 5 ist alles außerhalb von Zone 4.</p>
             <div class="grid grid-cols-5 gap-1 text-[10px] text-stone-500 dark:text-stone-400">
@@ -350,7 +364,7 @@ import Layout from '../layouts/Layout.astro';
             <button id="zones-center-reset" type="button" data-i18n="zonesCenterReset" class="mt-2 rounded-md bg-stone-100 dark:bg-stone-800 px-2 py-1 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-700">Zentrum aufs Haus / in die Mitte</button>
           </details>
 
-          <details data-panel="yield" open id="yield-section" hidden class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+          <details data-feature="yield" data-panel="yield" open id="yield-section" hidden class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="yieldHeading">Ertrag &amp; Pflege</h2><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-stone-500 dark:text-stone-400 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
             <p id="yield-total" class="text-sm font-semibold text-stone-800 dark:text-stone-100"></p>
             <table class="mt-1 w-full text-xs"><tbody id="yield-rows"></tbody></table>
@@ -358,12 +372,12 @@ import Layout from '../layouts/Layout.astro';
             <button id="btn-care-ics" type="button" data-i18n="careIcsBtn" class="mt-2 rounded-md bg-stone-100 dark:bg-stone-800 px-2 py-1 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-700">📅 Pflegekalender (iCal)</button>
           </details>
 
-          <details data-panel="climate" open id="climate-section" hidden class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+          <details data-feature="climate" data-panel="climate" open id="climate-section" hidden class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="climateHeading">Standortklima</h2><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-stone-500 dark:text-stone-400 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
             <div id="climate-body" class="space-y-1 text-xs text-stone-700 dark:text-stone-200"></div>
           </details>
 
-          <details id="warnings-section" data-panel="warnings" hidden open class="group/panel rounded-xl bg-red-50/60 dark:bg-red-950/30 p-4 shadow-sm ring-1 ring-red-200 dark:ring-red-900">
+          <details data-feature="warnings" id="warnings-section" data-panel="warnings" hidden open class="group/panel rounded-xl bg-red-50/60 dark:bg-red-950/30 p-4 shadow-sm ring-1 ring-red-200 dark:ring-red-900">
             <summary class="flex cursor-pointer list-none items-center justify-between gap-2 text-sm font-semibold text-red-900 dark:text-red-200"><span><span data-i18n="warningsHeading">Hinweise</span> (<span id="warnings-count">0</span>)</span><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-red-700 dark:text-red-300 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
             <p class="mt-1 text-xs text-stone-500 dark:text-stone-400" data-i18n="warningsIntro">Mit Blick auf die ausgewachsenen Pflanzen (30 Jahre). Klick markiert die Pflanze(n).</p>
             <ul id="warnings-list" class="mt-1 space-y-0.5 text-xs text-stone-700 dark:text-stone-200"></ul>
@@ -371,13 +385,13 @@ import Layout from '../layouts/Layout.astro';
             <ul id="good-neighbors-list" class="mt-1 space-y-0.5 text-xs text-stone-700 dark:text-stone-200"></ul>
           </details>
 
-          <details data-panel="suggestions" open id="suggestions-section" class="group/panel hidden rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+          <details data-feature="coverage" data-panel="suggestions" open id="suggestions-section" class="group/panel hidden rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-1"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="suggestionsHeading">Vorschläge</h2><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-stone-500 dark:text-stone-400 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
             <p class="mb-2 text-[10px] text-stone-500 dark:text-stone-400" data-i18n="suggestionsIntro">Pflanzen aus deinem Bestand, die mit den bereits platzierten in Sonne/Wasser/pH überlappen.</p>
             <div id="suggestions-list" class="space-y-0.5"></div>
           </details>
 
-          <details data-panel="unplaced" open id="unplaced-section" class="group/panel hidden rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+          <details data-feature="polyculture" data-panel="unplaced" open id="unplaced-section" class="group/panel hidden rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="unplacedHeading">Noch zu platzieren</h2><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-stone-500 dark:text-stone-400 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
             <div id="unplaced-list" class="space-y-0.5"></div>
           </details>
@@ -525,6 +539,8 @@ import Layout from '../layouts/Layout.astro';
   import { plantDetailHtml } from '../lib/plant-detail';
   import { compatScore } from '../lib/compat';
   import { newId } from '../lib/id';
+  import { featureOn, onFeaturesChange } from '../lib/ui-mode';
+  import { providePageApi } from '../lib/expert-api';
   import { sortPlans, defaultDir, planAreaM2, PLAN_SORT_FIELDS, type PlanSortField, type SortDir } from '../lib/plan-list-sort';
   import { escapeHtml, withButtonSpinner } from '../lib/html';
   import { exportGardenPlanPDF, planFitsPaper, type PlanPaper } from '../lib/pdf-export';
@@ -985,6 +1001,7 @@ import Layout from '../layouts/Layout.astro';
       phaseB.classList.add('hidden');
       showDrawingUi();
     }
+    renderSimpleGuide();
     window.scrollTo({ top: 0 });
   }
 
@@ -1000,6 +1017,7 @@ import Layout from '../layouts/Layout.astro';
     listView.hidden = false;
     editorView.hidden = true;
     try { localStorage.removeItem(LAST_PLAN_KEY); } catch {}
+    notifyPlanChange();
   }
 
   // ── Karte: Standort, Ausrichtung, Hintergrund ───────────────────────────
@@ -1766,7 +1784,7 @@ import Layout from '../layouts/Layout.astro';
     const p = plantsById.get(placement.plantId);
     selectedPanel.innerHTML = `
       ${p ? plantDetailHtml(p, t) : `<p class="mb-2 text-sm font-medium text-stone-800 dark:text-stone-100">${plantLabel(p)}</p>`}
-      <label class="mb-2 flex items-center gap-2 text-xs"><span class="font-medium text-stone-500 dark:text-stone-400">${t('phaseLabel')}</span>${phaseSelectHtml('placement-phase', phaseOf(placement))}</label>
+      <label data-feature="phases" class="mb-2 flex items-center gap-2 text-xs"><span class="font-medium text-stone-500 dark:text-stone-400">${t('phaseLabel')}</span>${phaseSelectHtml('placement-phase', phaseOf(placement))}</label>
       <label class="block">
         <span class="text-xs font-medium text-stone-500 dark:text-stone-400">${t('labelPlacementNotes')}</span>
         <textarea id="placement-notes" rows="2" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-xs shadow-inner focus:border-green-500 focus:outline-none">${escapeHtml(placement.notes)}</textarea>
@@ -1803,7 +1821,7 @@ import Layout from '../layouts/Layout.astro';
     selectedPanel.innerHTML = `
       <p class="mb-2 text-sm font-medium text-stone-800 dark:text-stone-100">${t('multiSelected', { n: sel.length })}</p>
       <ul class="space-y-0.5 text-xs text-stone-700 dark:text-stone-200">${rows}</ul>
-      <label class="mt-2 flex items-center gap-2 text-xs"><span class="font-medium text-stone-500 dark:text-stone-400">${t('phaseLabelAll')}</span>${phaseSelectHtml('multi-phase', sel.every(pl => phaseOf(pl) === phaseOf(sel[0])) ? phaseOf(sel[0]) : -1)}</label>
+      <label data-feature="phases" class="mt-2 flex items-center gap-2 text-xs"><span class="font-medium text-stone-500 dark:text-stone-400">${t('phaseLabelAll')}</span>${phaseSelectHtml('multi-phase', sel.every(pl => phaseOf(pl) === phaseOf(sel[0])) ? phaseOf(sel[0]) : -1)}</label>
       <p class="mt-2 text-[11px] text-stone-500 dark:text-stone-400">${t('multiHint')}</p>
       <div class="mt-2 flex flex-wrap gap-2">
         <button id="btn-multi-remove" class="rounded-md bg-red-100 dark:bg-red-900/40 px-2.5 py-1 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/60">${t('multiRemove')}</button>
@@ -1966,6 +1984,8 @@ import Layout from '../layouts/Layout.astro';
       markersGroup.appendChild(group);
       markerMap.set(placement.id, group);
     }
+    renderSimpleGuide();
+    notifyPlanChange();
   }
 
   function wirePlacementDrag(group: SVGGElement, placement: GardenPlanPlacement) {
@@ -2794,6 +2814,8 @@ import Layout from '../layouts/Layout.astro';
     const in2d = plan3dContainer.hidden;
     const click = (id: string) => (document.getElementById(id) as HTMLButtonElement | null)?.click();
     const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    const keyFeature: Record<string, string> = { l: 'lasso', m: 'measure', f: 'areas', r: 'row', u: 'boundary-edit', t: 'sun-advanced', p: 'sun-advanced', b: 'buildings' };
+    if (keyFeature[key] && !featureOn(keyFeature[key])) return;
     let handled = true;
     switch (key) {
       case '2': if (!in2d) btnView2d.click(); break;
@@ -2916,7 +2938,7 @@ import Layout from '../layouts/Layout.astro';
   function renderContours() {
     const layer = planSvg.querySelector('#contour-layer');
     if (!layer) return;
-    if (!terrain || !contoursInput.checked || !editing?.geo) { layer.innerHTML = ''; return; }
+    if (!terrain || !contoursInput.checked || !editing?.geo || !featureOn('terrain')) { layer.innerHTML = ''; return; }
     let lo = Infinity, hi = -Infinity;
     for (const h of terrain.heights) { lo = Math.min(lo, h); hi = Math.max(hi, h); }
     const interval = contourInterval(hi - lo);
@@ -2963,7 +2985,7 @@ import Layout from '../layouts/Layout.astro';
 
   function renderCoverage() {
     const layer = planSvg.querySelector('#coverage-layer');
-    const raw = coverageSelect.value;
+    const raw = featureOn('coverage') ? coverageSelect.value : '';
     if (raw === 'sun-day' || raw === 'sun-season') { void renderSunMap(raw); return; }
     sunMapToken++;
     coverageHeading.textContent = t('coverageHeading');
@@ -3269,7 +3291,7 @@ import Layout from '../layouts/Layout.astro';
   function renderWater() {
     const layer = planSvg.querySelector('#water-layer');
     geoGate(waterToggle, !!editing?.geo);
-    const on = !!editing?.geo && waterInput.checked;
+    const on = !!editing?.geo && waterInput.checked && featureOn('water');
     waterSection.hidden = !on;
     if (!layer) return;
     if (!on || !editing) { layer.innerHTML = ''; water3d = null; view3d?.setWater(null); return; }
@@ -3457,7 +3479,7 @@ import Layout from '../layouts/Layout.astro';
     const handle = planSvg.querySelector('#zones-handle');
     if (!layer || !handle) return;
     const z = editing?.zones;
-    if (!editing || !z?.show) { layer.innerHTML = ''; handle.innerHTML = ''; zonesLegend.innerHTML = ''; return; }
+    if (!editing || !z?.show || !featureOn('zones')) { layer.innerHTML = ''; handle.innerHTML = ''; zonesLegend.innerHTML = ''; return; }
     const k = viewK();
     const cx = z.centerXM * U, cy = z.centerYM * U;
     const rot = editing.geo?.rotationDeg ?? 0;
@@ -3611,7 +3633,7 @@ import Layout from '../layouts/Layout.astro';
   let buildingsLoadedKey = '';  // what `buildings` holds
   const buildingsKeyOf = (plan: GardenPlan | null) => plan?.geo
     ? `${plan.geo.lat}|${plan.geo.lon}|${plan.geo.rotationDeg}|${plan.areaWidthM}|${plan.areaHeightM}` : '';
-  const showBuildings = () => !!editing?.geo && buildingsInput.checked && buildings.length > 0
+  const showBuildings = () => !!editing?.geo && buildingsInput.checked && featureOn('buildings') && buildings.length > 0
     && buildingsLoadedKey === buildingsKeyOf(editing);
   buildingsInput.addEventListener('change', () => {
     try { localStorage.setItem('pgd-buildings', buildingsInput.checked ? '1' : '0'); } catch {}
@@ -3631,7 +3653,7 @@ import Layout from '../layouts/Layout.astro';
     const geo = plan?.geo;
     geoGate(buildingsToggle, !!geo);
     syncBuildingsButton();
-    if (!plan || !geo || !buildingsInput.checked) return;
+    if (!plan || !geo || !buildingsInput.checked || !featureOn('buildings')) return;
     const m = 150;
     const key = buildingsKeyOf(plan);
     if (key === buildingsKey) return;
@@ -3959,7 +3981,121 @@ import Layout from '../layouts/Layout.astro';
       renderSelectedPanel();
     }));
     if (before.size !== warnedIds.size || [...warnedIds].some(id => !before.has(id))) refreshMarkerHighlight();
+    guideWarnings = items;
+    renderSimpleGuide();
   }
+
+  // ── Einfacher Modus: drei Schritte, Schichten sammeln, ein Tipp ─────────
+  // Only drawn while the 'simple-guide' feature is on (lib/features.ts). The
+  // tip shows the most important hint (same list as "Hinweise") or, without
+  // one, the next empty layer; layers fill up as plants of that layer land.
+  const guideSteps = document.getElementById('guide-steps')!;
+  const guideLayers = document.getElementById('guide-layers')!;
+  const guideStats = document.getElementById('guide-stats')!;
+  const guideTip = document.getElementById('guide-tip')!;
+  const GUIDE_LAYERS: PlantLayer[] = ['tree', 'shrub', 'herb', 'climber', 'rhizo'];
+  const GUIDE_TIP_LAYER: Record<PlantLayer, string> = {
+    tree: 'guideTipTree', shrub: 'guideTipShrub', herb: 'guideTipHerb', climber: 'guideTipClimber', rhizo: 'guideTipRhizo',
+  };
+  const GUIDE_LAYER_SHORT: Record<PlantLayer, string> = {
+    tree: 'guideLayerTree', shrub: 'guideLayerShrub', herb: 'guideLayerHerb', climber: 'guideLayerClimber', rhizo: 'guideLayerRhizo',
+  };
+  const guide3dSeen = new Set<string>();
+  let guideWarnings: WarnItem[] = [];
+  let guideFilledBefore = new Set<PlantLayer>();
+  let guideWarn: WarnItem | null = null;
+
+  function renderSimpleGuide() {
+    if (!editing || !featureOn('simple-guide')) return;
+    const inB = !phaseB.classList.contains('hidden');
+    const placed = editing.placements;
+    const seen3d = guide3dSeen.has(editing.id);
+    const states = [inB ? 'done' : 'now', !inB ? 'todo' : placed.length ? 'done' : 'now', !inB || !placed.length ? 'todo' : seen3d ? 'done' : 'now'];
+    guideSteps.querySelectorAll<HTMLElement>('[data-step]').forEach((b, i) => {
+      b.dataset.state = states[i];
+      b.querySelector('.guide-num')!.textContent = states[i] === 'done' ? '✓' : String(i + 1);
+    });
+    const counts = new Map<PlantLayer, number>();
+    for (const pl of placed) {
+      const p = plantsById.get(pl.plantId);
+      if (p) counts.set(deriveLayer(p), (counts.get(deriveLayer(p)) ?? 0) + 1);
+    }
+    guideLayers.innerHTML = GUIDE_LAYERS.map(l => {
+      const n = counts.get(l) ?? 0;
+      const pop = n && !guideFilledBefore.has(l) ? ' guide-pop' : '';
+      return `<div class="text-center text-[10px] leading-tight text-stone-600 dark:text-stone-300">
+        <span class="mb-1 block h-8 rounded-md transition-opacity duration-500${pop}" style="background:${LAYER_STYLE[l].fill};opacity:${n ? 1 : 0.18}"></span>
+        ${escapeHtml(t(GUIDE_LAYER_SHORT[l]))}${n ? `<span class="block font-semibold text-stone-800 dark:text-stone-100">${n}</span>` : ''}</div>`;
+    }).join('');
+    guideFilledBefore = new Set(counts.keys());
+    guideStats.textContent = t('guideStats', { n: placed.length, layers: counts.size });
+    guideWarn = null;
+    let tip: string;
+    if (!inB) tip = t('guideTipDraw');
+    else if (!plantsById.size) tip = t('guideTipNoPlants');
+    else if (!placed.length) tip = t('guideTipStart');
+    else if (guideWarnings.length) { guideWarn = guideWarnings[0]; tip = guideWarn.text; }
+    else {
+      const missing = GUIDE_LAYERS.find(l => !counts.has(l));
+      tip = missing ? t(GUIDE_TIP_LAYER[missing]) : t(seen3d ? 'guideTipDone' : 'guideTipAll');
+    }
+    guideTip.innerHTML = `<span class="font-semibold">${escapeHtml(t('guideTipLabel'))}</span> ${escapeHtml(tip)}`
+      + (guideWarn ? ` <button type="button" id="guide-tip-show" class="font-semibold underline underline-offset-2 hover:no-underline">${escapeHtml(t('guideTipShow'))}</button>` : '');
+  }
+  guideTip.addEventListener('click', e => {
+    if (!guideWarn || !(e.target as HTMLElement).closest('#guide-tip-show')) return;
+    if (!plan3dContainer.hidden) btnView2d.click();
+    setWarnPin(guideWarn);
+    focusWarnArea(guideWarn);
+  });
+  guideSteps.addEventListener('click', e => {
+    const step = (e.target as HTMLElement).closest<HTMLElement>('[data-step]')?.dataset.step;
+    if (!editing || phaseB.classList.contains('hidden')) return;
+    if (step === '2') {
+      const filter = document.getElementById(plantsById.size ? 'picker-filter' : 'plant-search') as HTMLInputElement | null;
+      filter?.focus();
+    } else if (step === '3' && editing.placements.length && plan3dContainer.hidden) btnView3d.click();
+  });
+  btnView3d.addEventListener('click', () => {
+    if (!editing) return;
+    guide3dSeen.add(editing.id);
+    renderSimpleGuide();
+  });
+
+  // Mode switched (header menu) or the admin changed the feature table:
+  // drop tools and overlays that are now off, redraw what depends on them.
+  onFeaturesChange(() => {
+    if ((tool === 'lasso' && !featureOn('lasso')) || (tool === 'measure' && !featureOn('measure'))) setTool('select');
+    if (!featureOn('gps') && gpsWatch != null) stopGps();
+    if (!editing || phaseB.classList.contains('hidden')) { renderSimpleGuide(); return; }
+    renderPlanSvg();
+    void loadBuildings();
+    afterBuildingsChanged();
+    scheduleWarnings();
+  });
+
+  // ── Schnittstelle für private Experten-Module (lib/expert-api.ts) ───────
+  const planChangeListeners: ((plan: GardenPlan | null) => void)[] = [];
+  function notifyPlanChange() {
+    for (const cb of planChangeListeners) {
+      try { cb(editing); } catch (err) { console.warn('expert plan listener failed', err); }
+    }
+  }
+  providePageApi('gartenplan', {
+    getPlan: () => editing,
+    onPlanChange: cb => { planChangeListeners.push(cb); },
+    addPanel(featureId, title) {
+      const panel = document.createElement('details');
+      panel.open = true;
+      panel.dataset.feature = featureId;
+      panel.dataset.panel = featureId;
+      panel.className = 'group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700';
+      panel.innerHTML = `<summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100"></h2><span aria-hidden="true" class="text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-400">${escapeHtml(t('expertBadge'))}</span></summary><div></div>`;
+      panel.querySelector('h2')!.textContent = title;
+      document.querySelector('#phase-b aside')!.appendChild(panel);
+      return panel.querySelector('div')!;
+    },
+  });
 
 
   // ── Messen ─────────────────────────────────────────────────────────────
