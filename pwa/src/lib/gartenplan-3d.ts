@@ -76,6 +76,14 @@ export interface GardenPlan3DCallbacks {
   onAreaVertexDragEnd(areaId: string, index: number, xM: number, yM: number): void;
 }
 
+/** Water analysis (water.ts) for the 3D ground, in plan metres. `width` of a
+ *  flow segment in metres; a sink's water level lies `depthM` above its floor. */
+export interface Water3D {
+  flow: { x1: number; y1: number; x2: number; y2: number; width: number }[];
+  sinks: { xM: number; yM: number; rM: number; depthM: number }[];
+  swales: { x1: number; y1: number; x2: number; y2: number; width: number }[];
+}
+
 /** Function-coverage colouring (function-coverage.ts) for the 3D ground:
  *  cell centres with a CSS colour (hex or "hsl(h, s%, l%)"), gap rings. */
 export interface CoverageOverlay3D {
@@ -100,6 +108,8 @@ export interface GardenPlan3DView {
   setPreview(preview: SuggestionPreview3D | null): void;
   /** Shows (or with null hides) the function-coverage colouring. */
   setCoverage(overlay: CoverageOverlay3D | null): void;
+  /** Flow paths, sinks and swale suggestions draped on the ground (null hides them). */
+  setWater(water: Water3D | null): void;
   updateYears(years: number): void;
   refreshPlacements(): void;
   setArmedPlant(plantId: string | null): void;
@@ -351,7 +361,30 @@ export function createGardenPlan3DView(
   // blended into the fine grid over its outer margin so the plan area keeps
   // exactly the heights the plants stand on.
   const fine = terrain ? { minX: terrain.minX, minY: terrain.minY, maxX: terrain.minX + (terrain.nx - 1) * terrain.cellM, maxY: terrain.minY + (terrain.ny - 1) * terrain.cellM } : null;
-  const blendM = fine ? Math.max(5, Math.min(20, (fine.maxX - fine.minX) * 0.15)) : 1;
+  const blendM = fine ? Math.max(10, Math.min(40, (fine.maxX - fine.minX) * 0.15)) : 1;
+  // The coarse tiles and the fine grid (often an official 1 m model with its
+  // own height datum) differ by an offset of up to several metres; without
+  // removing it the blend band showed as a step in a square around the plan.
+  // Median difference along the inner edge of the band, per tile zoom.
+  const coarseOffset = new Map<number, number>();
+  function offsetFor(tz: number): number {
+    const hit = coarseOffset.get(tz);
+    if (hit !== undefined || !geo || !fine) return hit ?? 0;
+    const d: number[] = [];
+    const x0 = fine.minX + blendM, x1 = fine.maxX - blendM, z0 = fine.minY + blendM, z1 = fine.maxY - blendM;
+    for (let i = 0; i <= 40; i++) {
+      const f = i / 40;
+      for (const [x, z] of [[x0 + (x1 - x0) * f, z0], [x0 + (x1 - x0) * f, z1], [x0, z0 + (z1 - z0) * f], [x1, z0 + (z1 - z0) * f]]) {
+        const ll = planToLatLon({ xM: x, yM: z }, geo);
+        const e = terrainTiles.elevation(ll.lat, ll.lon, tz);
+        if (e !== null) d.push(ground(x, z) - (e - baseH));
+      }
+    }
+    d.sort((a, b) => a - b);
+    const off = d.length ? d[d.length >> 1] : 0;
+    coarseOffset.set(tz, off);
+    return off;
+  }
   function groundWide(x: number, z: number, tz: number): number {
     if (!geo || !fine) return ground(x, z);
     const inside = Math.min(x - fine.minX, fine.maxX - x, z - fine.minY, fine.maxY - z);
@@ -359,7 +392,7 @@ export function createGardenPlan3DView(
     const ll = planToLatLon({ xM: x, yM: z }, geo);
     const e = terrainTiles.elevation(ll.lat, ll.lon, tz);
     if (e === null) return ground(x, z);
-    const coarse = e - baseH;
+    const coarse = e - baseH + offsetFor(tz);
     if (inside <= 0) return coarse;
     const w = inside / blendM;
     return ground(x, z) * w + coarse * (1 - w);
@@ -949,6 +982,66 @@ export function createGardenPlan3DView(
     requestRender();
   }
 
+  // ── Water: ribbons draped on the ground (subdivided so they follow it),
+  // flat translucent discs at the water level of the sinks. Flow blue,
+  // swales orange like the 2D plan. ──
+  let waterGroup: THREE.Group | null = null;
+  function setWater(w: Water3D | null) {
+    if (waterGroup) {
+      waterGroup.traverse(obj => {
+        const m = obj as THREE.Mesh;
+        m.geometry?.dispose();
+        (m.material as THREE.Material | undefined)?.dispose();
+      });
+      scene.remove(waterGroup);
+      waterGroup = null;
+    }
+    if (w && (w.flow.length || w.sinks.length || w.swales.length)) {
+      const g = new THREE.Group();
+      const lift = 0.16 + (plan.areas?.length ?? 0) * 0.02;
+      const step = Math.max(0.5, (terrain?.cellM ?? 2) / 2);
+      const ribbon = (arr: number[], x1: number, z1: number, x2: number, z2: number, width: number, up: number) => {
+        const len = Math.hypot(x2 - x1, z2 - z1);
+        if (len < 1e-6) return;
+        const nx = -(z2 - z1) / len * width / 2, nz = (x2 - x1) / len * width / 2;
+        const n = Math.max(1, Math.ceil(len / step));
+        const at = (f: number, s: number): [number, number, number] => {
+          const x = x1 + (x2 - x1) * f + nx * s, z = z1 + (z2 - z1) * f + nz * s;
+          return [x, ground(x, z) + up, z];
+        };
+        for (let i = 0; i < n; i++) {
+          const a = at(i / n, -1), b = at(i / n, 1), c = at((i + 1) / n, 1), d = at((i + 1) / n, -1);
+          arr.push(...a, ...b, ...c, ...a, ...c, ...d);
+        }
+      };
+      const mesh = (pos: number[], color: number, opacity: number, order: number) => {
+        if (!pos.length) return;
+        const geom = new THREE.BufferGeometry();
+        geom.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+        const m = new THREE.Mesh(geom, new THREE.MeshBasicMaterial({ color, transparent: true, opacity, depthWrite: false, side: THREE.DoubleSide }));
+        m.renderOrder = order;
+        g.add(m);
+      };
+      const flow: number[] = [], swales: number[] = [], sinks: number[] = [];
+      for (const f of w.flow) ribbon(flow, f.x1, f.y1, f.x2, f.y2, f.width, lift);
+      for (const s of w.swales) ribbon(swales, s.x1, s.y1, s.x2, s.y2, s.width, lift + 0.03);
+      for (const s of w.sinks) {
+        const y = ground(s.xM, s.yM) + s.depthM + 0.05;
+        const n = 32;
+        for (let i = 0; i < n; i++) {
+          const a0 = (i / n) * Math.PI * 2, a1 = ((i + 1) / n) * Math.PI * 2;
+          sinks.push(s.xM, y, s.yM, s.xM + Math.cos(a0) * s.rM, y, s.yM + Math.sin(a0) * s.rM, s.xM + Math.cos(a1) * s.rM, y, s.yM + Math.sin(a1) * s.rM);
+        }
+      }
+      mesh(sinks, 0x0ea5e9, 0.45, 3);
+      mesh(flow, 0x0284c7, 0.8, 4);
+      mesh(swales, 0xd97706, 0.95, 5);
+      scene.add(g);
+      waterGroup = g;
+    }
+    requestRender();
+  }
+
   // ── Suggestion preview: translucent plant model at its current size, the
   // function's reach as a draped green disc, and the name above it. ──
   let previewGroup: THREE.Group | null = null;
@@ -1015,6 +1108,7 @@ export function createGardenPlan3DView(
     snapshot,
     setPreview,
     setCoverage,
+    setWater,
     updateYears(newYears: number) {
       years = newYears;
       rebuildPlacements();

@@ -1307,6 +1307,7 @@ import Layout from '../layouts/Layout.astro';
     view3d.setArmedPlant(armedPlantId);
     view3d.refreshAreas(selectedAreaId);
     view3d.setCoverage(coverage3d);
+    view3d.setWater(water3d);
     sunControls.hidden = false;
     if (!sunDateInput.value) {
       setSunNow();
@@ -3134,6 +3135,8 @@ import Layout from '../layouts/Layout.astro';
   // rain from OSM buildings × site precipitation. Computed once per terrain
   // grid (cached) and only while the layer is switched on.
   const waterToggle = document.getElementById('water-toggle')!;
+  /** Kept so a newly built 3D view gets the water too. */
+  let water3d: import('../lib/gartenplan-3d').Water3D | null = null;
   const waterInput = document.getElementById('g-water') as HTMLInputElement;
   const waterSection = document.getElementById('water-section')!;
   const waterBody = document.getElementById('water-body')!;
@@ -3161,8 +3164,8 @@ import Layout from '../layouts/Layout.astro';
     const on = !!editing?.geo && waterInput.checked;
     waterSection.hidden = !on;
     if (!layer) return;
-    if (!on || !editing) { layer.innerHTML = ''; return; }
-    if (!terrain) { layer.innerHTML = ''; waterBody.textContent = t('waterNoTerrain'); return; }
+    if (!on || !editing) { layer.innerHTML = ''; water3d = null; view3d?.setWater(null); return; }
+    if (!terrain) { layer.innerHTML = ''; water3d = null; view3d?.setWater(null); waterBody.textContent = t('waterNoTerrain'); return; }
     const fine = !!terrain.dgm;
     const w = waterAnalysis()!;
     const k = viewK();
@@ -3186,11 +3189,20 @@ import Layout from '../layouts/Layout.astro';
         parts.push(label(s.xM, s.yM, t('waterSinkLabel', { d: nf(s.depthM, 1) }), '#075985'));
       }
       for (const s of w.swales) {
-        parts.push(`<line x1="${s.x1 * U}" y1="${s.y1 * U}" x2="${s.x2 * U}" y2="${s.y2 * U}" stroke="#0d9488" stroke-width="${4 * k}" stroke-dasharray="${6 * k} ${3 * k}" stroke-linecap="round"/>`);
-        parts.push(label((s.x1 + s.x2) / 2, (s.y1 + s.y2) / 2 - 1.2, t('waterSwaleLabel'), '#0f766e'));
+        parts.push(`<line x1="${s.x1 * U}" y1="${s.y1 * U}" x2="${s.x2 * U}" y2="${s.y2 * U}" stroke="#d97706" stroke-width="${4 * k}" stroke-dasharray="${6 * k} ${3 * k}" stroke-linecap="round"/>`);
+        parts.push(label((s.x1 + s.x2) / 2, (s.y1 + s.y2) / 2 - 1.2, t('waterSwaleLabel'), '#b45309'));
       }
     }
     layer.innerHTML = parts.join('');
+    // the same in 3D: widths in metres, scaled a little with the plan size
+    const wScale = Math.max(1, Math.max(editing.areaWidthM, editing.areaHeightM) / 100);
+    water3d = {
+      flow: w.flow.map(f => ({ x1: f.x1, y1: f.y1, x2: f.x2, y2: f.y2,
+        width: (0.15 + 0.15 * Math.min(5, Math.max(1, Math.round(Math.log10(f.catchmentM2 / 150) * 2) + 1))) * wScale })),
+      sinks: fine ? w.sinks.map(s => ({ xM: s.xM, yM: s.yM, rM: Math.sqrt(s.areaM2 / Math.PI), depthM: s.depthM })) : [],
+      swales: fine ? w.swales.map(s => ({ x1: s.x1, y1: s.y1, x2: s.x2, y2: s.y2, width: 0.8 * wScale })) : [],
+    };
+    view3d?.setWater(water3d);
 
     // Panel
     const rows: string[] = [];
