@@ -37,12 +37,15 @@ function qualityScore(code) {
   return { E: 5, G: 4, F: 2 }[c] ?? 3;
 }
 
-/** "75-100'" / "6-12\"" / "3'" → metres, upper end of the range. */
+/** "75-100'" / "6-12\"" / "3'" → metres, middle of the range. The upper end
+ *  overstated the typical size: a standard apple (25-35') became 10.7 m
+ *  wide — and since PFAF gives no width there, that was what users saw. */
 export function parseLength(text) {
   const t = (text || '').trim();
   const nums = (t.match(/\d+(?:\.\d+)?/g) || []).map(Number);
   if (nums.length === 0) return null;
-  const feet = t.includes('"') ? Math.max(...nums) / 12 : Math.max(...nums);
+  const mid = (Math.min(...nums) + Math.max(...nums)) / 2;
+  const feet = t.includes('"') ? mid / 12 : mid;
   const m = feet * 0.3048;
   return Math.round(m * (m < 1 ? 100 : 10)) / (m < 1 ? 100 : 10);
 }

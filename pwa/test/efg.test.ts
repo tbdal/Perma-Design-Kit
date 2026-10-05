@@ -7,8 +7,8 @@ describe('EFG (Edible Forest Gardens) data', () => {
   });
 
   it('converts feet and inches to metres (upper end of the range)', () => {
-    expect(parseLength("75-100'")).toBe(30.5);
-    expect(parseLength('6-12"')).toBe(0.3);
+    expect(parseLength("75-100'")).toBe(26.7);
+    expect(parseLength('6-12"')).toBe(0.23);
     expect(parseLength("3'")).toBe(0.91);
     expect(parseLength('')).toBeNull();
   });
@@ -32,7 +32,7 @@ describe('EFG (Edible Forest Gardens) data', () => {
   it('uses the standard-size row for species listed per rootstock, and resolves synonyms', () => {
     const apple = lookupEfg('Malus domestica');
     expect(apple.commonName).toBe('apple');
-    expect(apple.heightM).toBe(10.7);
+    expect(apple.heightM).toBe(9.1);   // 25-35' standard apple: middle, not the upper end
     expect(apple.eatable).toBe(true);
   });
 

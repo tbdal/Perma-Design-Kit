@@ -66,3 +66,19 @@ test('settings: import a variety list as CSV, then delete it', async ({ page, er
   await expect(page.locator('#variety-lists')).toContainText('Noch keine Sortenliste');
   void errors;
 });
+
+test('search leaves out non-plants such as Homo erectus (lineage via Wikidata query)', async ({ page, errors }) => {
+  const ent = (id: string, latin: string, de: string) => ({ [id]: { labels: { de: { value: latin } }, descriptions: { de: { value: de } }, claims: { P225: [{ mainsnak: { datavalue: { value: latin } } }] } } });
+  await stubNetwork(page, {
+    wikidataSearch: route => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ query: { search: [{ title: 'Q101362' }, { title: 'Q161105' }] } }) }),
+    wikidataEntities: route => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ entities: { ...ent('Q101362', 'Homo erectus', 'Art der Gattung Homo'), ...ent('Q161105', 'Equisetum arvense', 'Art der Gattung Schachtelhalme') } }) }),
+    sparql: route => route.fulfill({ contentType: 'application/sparql-results+json', body: JSON.stringify({ results: { bindings: [{ item: { value: 'http://www.wikidata.org/entity/Q161105' } }] } }) }),
+  });
+  await page.goto('/');
+  await page.fill('#plant-search', 'erectus arvense');
+  await page.click('#btn-search');
+  const rows = page.locator('#search-results [data-idx]');
+  await expect(rows).toHaveCount(1);
+  await expect(rows).toContainText('Equisetum arvense');
+  void errors;
+});

@@ -59,8 +59,43 @@ const NON_PLANT_WORDS = [
   'beetle', 'butterfly', 'moth', 'spider', 'bee', 'wasp', 'ant', 'worm',
   'tier', 'säugetier', 'vogel', 'fisch', 'reptil', 'insekt', 'käfer',
   'schmetterling', 'spinne', 'wurm',
+  'human', 'hominin', 'homo', 'mensch', 'menschen', 'primate', 'primat', 'virus', 'bacterium', 'bakterie',
 ];
 const NON_PLANT_RE = new RegExp(`\\b(${NON_PLANT_WORDS.join('|')})s?\\b`);
+
+const SPARQL_URL = 'https://query.wikidata.org/sparql';
+/** Plantae and Fungi (mushrooms belong in a forest garden too). */
+const KINGDOMS = ['Q756', 'Q764'];
+
+/** Which of these Wikidata items are plants or fungi — their parent-taxon
+ *  chain (P171) reaches Plantae/Fungi? Descriptions alone let e.g. Homo
+ *  erectus ("Art der Gattung Homo") through. null when it can't be told in
+ *  time (offline, query service slow): then only the description filter runs. */
+export async function plantTaxa(ids: string[], signal?: AbortSignal, timeoutMs = 4000): Promise<Set<string> | null> {
+  if (!ids.length) return new Set();
+  const ctl = new AbortController();
+  const onAbort = () => ctl.abort();
+  signal?.addEventListener('abort', onAbort);
+  const timer = setTimeout(() => ctl.abort(), timeoutMs);
+  try {
+    const q = `SELECT ?item WHERE { VALUES ?item { ${ids.map(id => `wd:${id.replace(/[^A-Z0-9]/gi, '')}`).join(' ')} } VALUES ?k { ${KINGDOMS.map(k => `wd:${k}`).join(' ')} } ?item wdt:P171* ?k . }`;
+    const res = await fetch(SPARQL_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/sparql-results+json' },
+      body: new URLSearchParams({ query: q }),
+      signal: ctl.signal,
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return new Set<string>((data.results?.bindings ?? []).map((b: any) => String(b.item?.value ?? '').split('/').pop()));
+  } catch (e: any) {
+    if (signal?.aborted) throw e;
+    return null;
+  } finally {
+    clearTimeout(timer);
+    signal?.removeEventListener('abort', onAbort);
+  }
+}
 
 /** Return false if the description clearly identifies a non-plant organism. */
 function looksLikePlant(descDe: string, descEn: string): boolean {
@@ -163,6 +198,8 @@ export async function searchPlants(query: string): Promise<SearchResult[]> {
         const items = data.query?.search;
         if (items?.length) {
           const ids = items.map((s: any) => s.title).join('|');
+          // in parallel with the details, so it adds no waiting time
+          const taxaPromise = plantTaxa(items.map((s: any) => String(s.title)), signal);
           const detailUrl = new URL('https://www.wikidata.org/w/api.php');
           detailUrl.searchParams.set('action', 'wbgetentities');
           detailUrl.searchParams.set('ids', ids);
@@ -175,6 +212,7 @@ export async function searchPlants(query: string): Promise<SearchResult[]> {
           const detailRes = await fetch(detailUrl.toString(), { signal });
           if (detailRes.ok) {
             const detailData = await detailRes.json();
+            const plantIds = await taxaPromise;
             // Cultivars ("Conference", "Gravensteiner") are not plants of their
             // own here: they are listed after the species hits as "variety of
             // <species>" and added as that species with the variety set.
@@ -195,7 +233,9 @@ export async function searchPlants(query: string): Promise<SearchResult[]> {
               const latin = taxonClaim || '';
               // Skip if already found in local DB
               if (latin && localLatinNames.has(latin.toLowerCase())) continue;
-              // Skip obvious non-plants based on description
+              // Not a plant or fungus by its lineage (Homo erectus …); the
+              // description filter as well, and alone when the lineage is unknown.
+              if (plantIds && !plantIds.has(item.title)) continue;
               if (!looksLikePlant(descDe || '', descEn || '')) continue;
               results.push({
                 latinName: latin,
