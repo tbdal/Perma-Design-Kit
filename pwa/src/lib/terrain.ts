@@ -30,6 +30,14 @@ export interface ElevationGrid {
   dgm?: { region: Record<'de' | 'en', string>; resolutionM: number; attributionHtml: string };
 }
 
+/** Lowest and highest height of the grid. A loop on purpose: spreading a
+ *  1-m grid of a big plan (> 100 000 values) into Math.min/max overflows the stack. */
+export function gridRange(g: Pick<ElevationGrid, 'heights'>): { min: number; max: number } {
+  let min = Infinity, max = -Infinity;
+  for (const h of g.heights) { if (h < min) min = h; if (h > max) max = h; }
+  return { min, max };
+}
+
 /** Bilinear height at a plan point; clamped at the grid edge. */
 export function sampleGrid(g: ElevationGrid, xM: number, yM: number): number {
   const fx = Math.min(g.nx - 1, Math.max(0, (xM - g.minX) / g.cellM));

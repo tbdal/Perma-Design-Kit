@@ -9,7 +9,7 @@ import { polygonCentroid } from './gartenplan-render';
 import { enuToPlan, tilesForRect, planToLatLon } from './gartenplan-geo';
 import { OSM_TILES, sourceForGeo, tileUrl, fallbackTileUrl } from './gartenplan-background';
 import { sunPosition, sunDirectionEnu } from './sun-position';
-import { sampleGrid, terrainTiles, type ElevationGrid } from './terrain';
+import { sampleGrid, gridRange, terrainTiles, type ElevationGrid } from './terrain';
 import { ageAt, isPlanted } from './phases';
 
 /** Ground height (m, relative to the plan centre) at plan x/z. */
@@ -278,7 +278,7 @@ export function createGardenPlan3DView(
   const terrain = opts.terrain ?? null;
   const baseH = terrain ? sampleGrid(terrain, cx, cz) : 0;
   const ground: GroundFn = terrain ? (x, z) => sampleGrid(terrain, x, z) - baseH : FLAT;
-  const groundMin = terrain ? Math.min(...terrain.heights) - baseH : 0;
+  const groundMin = terrain ? gridRange(terrain).min - baseH : 0;
 
   // Logarithmic depth: ground, map, outline and areas lie millimetres apart
   // while the view reaches hundreds of metres — a linear depth buffer can't

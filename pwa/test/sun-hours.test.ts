@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sunSamples, sunHoursAt, sunClass, SEASON_DATES, type SunScene } from '../src/lib/sun-hours';
+import { sunSamples, sunHoursAt, sunClass, sunIndexConfig, SEASON_DATES, type SunScene, type Occluder } from '../src/lib/sun-hours';
 
 const LAT = 50, LON = 10;
 const flat: SunScene = { occluders: [], groundZ: () => 0 };
@@ -48,5 +48,35 @@ describe('sun hours', () => {
     expect(sunClass(7)).toBe('full');
     expect(sunClass(4)).toBe('mid');
     expect(sunClass(1)).toBe('shadow');
+  });
+});
+
+describe('sun hours: spatial index', () => {
+  it('gives the same hours as testing every occluder', () => {
+    // a dense random scene: crowns and buildings all around the probe points
+    let seed = 7;
+    const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+    const occluders: Occluder[] = [];
+    for (let i = 0; i < 150; i++) {
+      const x = rnd() * 200 - 50, y = rnd() * 200 - 50;
+      if (i % 3) occluders.push({ kind: 'crown', id: 'c' + i, x, y, r: 1 + rnd() * 6, zc: 2 + rnd() * 10, rz: 1 + rnd() * 4, transmit: 0.15 });
+      else {
+        const s = 4 + rnd() * 12;
+        occluders.push({ kind: 'prism', pts: [{ xM: x, yM: y }, { xM: x + s, yM: y }, { xM: x + s, yM: y + s * 0.7 }, { xM: x, yM: y + s * 0.7 }], z1: 3 + rnd() * 15, minX: x, minY: y, maxX: x + s, maxY: y + s * 0.7 });
+      }
+    }
+    const scene: SunScene = { occluders, groundZ: () => 0 };
+    const samples = sunSamples(SEASON_DATES(2026), 50.9, 7, 25, 30);
+    const probes = Array.from({ length: 40 }, () => ({ x: rnd() * 100, y: rnd() * 100 }));
+    const indexed = probes.map(p => sunHoursAt(p.x, p.y, scene, samples, 'c1'));
+    const saved = sunIndexConfig.minOccluders;
+    sunIndexConfig.minOccluders = Infinity;
+    try {
+      const plain = probes.map(p => sunHoursAt(p.x, p.y, scene, samples, 'c1'));
+      // only the early stop under 2 % light may sum up in another order
+      indexed.forEach((h, i) => expect(Math.abs(h - plain[i])).toBeLessThan(0.05));
+      expect(plain.some(h => h < 4)).toBe(true);   // the scene really casts shade
+      expect(plain.some(h => h > 8)).toBe(true);
+    } finally { sunIndexConfig.minOccluders = saved; }
   });
 });
