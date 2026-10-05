@@ -2,9 +2,10 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
-## Gartenplan: große Pläne, Gebäude-Cache 2026-10-05
+## Gartenplan: große Pläne, Gebäude-Cache, Dachformen 2026-10-05
 - [x] **Performance großer Pläne:** gemessen an 500 × 400 m mit 840 Pflanzen, ~2000 Gebäuden und NRW-1-m-Gelände. Besonnung über einen Raster-Index (16 s → 0,5 s), Schattenhinweise 10 s → 0,3 s, Zeitregler ohne Layout pro Marker (≈ 300 → 30 ms je Schritt); Stack-Überlauf bei 1-m-Gelände großer Pläne behoben (Hinweise, Besonnung und 3D fielen aus)
 - [x] **Overpass unzuverlässig:** Gebäude kommen über unseren Server (`/geo/overpass`, nginx-Cache 30 Tage, bei Ausfall die gespeicherte Kopie, Ausweichen zwischen den beiden overpass-api.de-Servern; nur eine Bbox wird angenommen, kein offener Proxy). Overpass-Fehlerantworten mit HTTP 200 werden erkannt und nicht mehr 30 Tage im Browser gespeichert. Die öffentlichen Instanzen bleiben direkter Rückfall
+- [x] **Gebäudehöhen/-formen:** Dächer aus OSM (`roof:shape` Sattel/Walm/Zelt/Pult, `roof:height`, `roof:angle`, `roof:orientation`, `roof:direction`), Wohnhäuser ohne Angabe mit geschätztem 40°-Satteldach; Wandhöhe und Dach getrennt, Schattenwurf zählt das Dach mit halber Höhe; alle Gebäude in 3D in einer Geometrie (statt eines Meshes pro Haus)
 
 ## Gartenplan-Ideen 1, 4, 5, 8 2026-10-05 #prüfen
 - [x] **1. Wasser im Gelände:** Schalter „Wasser“: Abflusswege (D8 auf gefülltem Gelände), Senken mit Tiefe/Fläche/Volumen und Swale-Vorschläge entlang der Höhenlinie – mit 1-m-Geländemodell; Regen vom Dach aus OSM-Gebäuden × Niederschlag

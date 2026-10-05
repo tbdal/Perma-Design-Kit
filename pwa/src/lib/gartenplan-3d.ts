@@ -10,6 +10,7 @@ import { enuToPlan, tilesForRect, planToLatLon } from './gartenplan-geo';
 import { OSM_TILES, sourceForGeo, tileUrl, fallbackTileUrl } from './gartenplan-background';
 import { sunPosition, sunDirectionEnu } from './sun-position';
 import { sampleGrid, gridRange, terrainTiles, type ElevationGrid } from './terrain';
+import { orientedBox, roofHeightAt, roofFaces, ringWithBreaks, type Roof } from './building-roof';
 import { ageAt, isPlanted } from './phases';
 
 /** Ground height (m, relative to the plan centre) at plan x/z. */
@@ -132,7 +133,7 @@ export interface View3DOptions {
   /** Called once when an aerial-photo tile failed and a fallback was used. */
   onTileFallback?: () => void;
   /** Building footprints (plan meters) with heights, e.g. from OSM. */
-  buildings?: { pts: { xM: number; yM: number }[]; heightM: number; holes?: { xM: number; yM: number }[][] }[];
+  buildings?: { pts: { xM: number; yM: number }[]; heightM: number; holes?: { xM: number; yM: number }[][]; roof?: Roof }[];
 }
 
 const DRAG_THRESHOLD_PX = 4;
@@ -460,28 +461,67 @@ export function createGardenPlan3DView(
   const drapeCell = terrain ? Math.max(0.5, terrain.cellM / 2) : 1e9;
   scene.add(buildBoundaryMesh(plan, ground, drapeCell));
 
-  // Buildings: footprint extruded upwards, standing on the lowest ground point
-  // of the footprint (so slopes don't leave them floating).
+  // Buildings: walls from the lowest ground point of the footprint (so slopes
+  // don't leave them floating) up to the roof edge, roofs from OSM roof:shape
+  // or a guessed gable (building-roof.ts). All buildings share one geometry —
+  // a big plan brings thousands, one mesh each meant thousands of draw calls.
   if (opts.buildings?.length) {
-    const mat = new THREE.MeshStandardMaterial({ color: 0xe7e5e4, roughness: 0.9 });
-    const roofMat = new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.8 });
-    const bGroup = new THREE.Group();
+    const walls: number[] = [], pitched: number[] = [], flat: number[] = [];
+    const push = (arr: number[], ...v: [number, number, number][]) => { for (const q of v) arr.push(q[0], q[1], q[2]); };
+    type P3 = [number, number, number];
+    /** Roof triangle, wound so its normal points up. */
+    const pushUp = (arr: number[], a: P3, b: P3, c: P3) => {
+      const ny = (c[0] - a[0]) * (b[2] - a[2]) - (c[2] - a[2]) * (b[0] - a[0]);
+      if (ny >= 0) push(arr, a, b, c); else push(arr, a, c, b);
+    };
+    const signedArea = (r: { xM: number; yM: number }[]) => r.reduce((acc, p, i) => { const q = r[(i + 1) % r.length]; return acc + p.xM * q.yM - q.xM * p.yM; }, 0);
+    /** Walls face outwards for this winding; holes the other way round. */
+    const wound = (r: { xM: number; yM: number }[], hole: boolean) => ((signedArea(r) > 0) !== hole ? [...r].reverse() : r);
     for (const b of opts.buildings) {
       const zs = b.pts.map(p => ground(p.xM, p.yM));
-      const base = Math.min(...zs), top = Math.max(...zs) + b.heightM;
-      // Shape in the XY plane with y = −plan y; rotateX(−90°) maps the
-      // extrusion (+z) to world up and shape y to world z = plan y.
-      const shape = new THREE.Shape(b.pts.map(p => new THREE.Vector2(p.xM, -p.yM)));
-      for (const h of b.holes ?? []) shape.holes.push(new THREE.Path(h.map(p => new THREE.Vector2(p.xM, -p.yM))));
-      const geom = new THREE.ExtrudeGeometry(shape, { depth: Math.max(1, top - base), bevelEnabled: false });
-      geom.rotateX(-Math.PI / 2);
-      const mesh = new THREE.Mesh(geom, [roofMat, mat]); // groups: 0 = caps (roof/floor), 1 = walls
-      mesh.position.y = base;
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      bGroup.add(mesh);
+      const base = Math.min(...zs);
+      const roof = b.roof && b.roof.shape !== 'flat' && !b.holes?.length ? b.roof : null;
+      const wallTop = Math.max(...zs) + Math.max(1, b.heightM - (roof?.heightM ?? 0));
+      const box = roof ? orientedBox(b.pts) : null;
+      const H = (p: { xM: number; yM: number }) => wallTop + (box ? roofHeightAt(roof!, box, p.xM, p.yM) : 0);
+      const V = (p: { xM: number; yM: number }, y: number): [number, number, number] => [p.xM, y, p.yM];
+      const ringWalls = (ring: { xM: number; yM: number }[]) => {
+        for (let i = 0; i < ring.length; i++) {
+          const p = ring[i], q = ring[(i + 1) % ring.length];
+          push(walls, V(p, base), V(q, base), V(q, H(q)), V(p, base), V(q, H(q)), V(p, H(p)));
+        }
+      };
+      ringWalls(wound(box ? ringWithBreaks(b.pts, roof!, box) : b.pts, false));
+      for (const h of b.holes ?? []) ringWalls(wound(h, true));
+      if (!box) {
+        const holes = (b.holes ?? []).map(h => h.map(p => new THREE.Vector2(p.xM, p.yM)));
+        const all = [...b.pts, ...(b.holes ?? []).flat()];
+        for (const [i, j, k] of THREE.ShapeUtils.triangulateShape(b.pts.map(p => new THREE.Vector2(p.xM, p.yM)), holes)) {
+          pushUp(flat, V(all[i], wallTop), V(all[j], wallTop), V(all[k], wallTop));
+        }
+      } else {
+        for (const face of roofFaces(b.pts, roof!, box)) {
+          for (const [i, j, k] of THREE.ShapeUtils.triangulateShape(face.map(p => new THREE.Vector2(p.xM, p.yM)), [])) {
+            pushUp(pitched, V(face[i], H(face[i])), V(face[j], H(face[j])), V(face[k], H(face[k])));
+          }
+        }
+      }
     }
-    scene.add(bGroup);
+    const geom = new THREE.BufferGeometry();
+    geom.setAttribute('position', new THREE.Float32BufferAttribute([...walls, ...pitched, ...flat], 3));
+    geom.addGroup(0, walls.length / 3, 0);
+    geom.addGroup(walls.length / 3, pitched.length / 3, 1);
+    geom.addGroup((walls.length + pitched.length) / 3, flat.length / 3, 2);
+    geom.computeVertexNormals();
+    const mats = [
+      new THREE.MeshStandardMaterial({ color: 0xe7e5e4, roughness: 0.9 }),
+      new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.8 }),
+      new THREE.MeshStandardMaterial({ color: 0x78716c, roughness: 0.9 }),
+    ];
+    const mesh = new THREE.Mesh(geom, mats);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    scene.add(mesh);
   }
 
   const plantsGroup = new THREE.Group();

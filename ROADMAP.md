@@ -37,7 +37,7 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 
 ## Gartenplan Ideen
 Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann 2 + 3 als Paket „Standortanalyse“.
-- [ ] **Gebäudehöhen/-formen:** ohne OSM-Höhe nach Typ geschätzt (Standard 7 m), alle Dächer flach — Höhen kalibrieren (z. B. `roof:shape`, 3D-Gebäudedaten der Länder/LoD2), Satteldächer
+- [ ] **Gebäude aus amtlichen 3D-Daten (LoD2):** Dachformen kommen jetzt aus OSM `roof:shape` bzw. geschätzt (Satteldach für Wohnhäuser); genauer wären die LoD2-Modelle der Länder (z. B. NRW offen) — als CityGML-Kacheln aber zu schwer für den Browser, bräuchte serverseitige Aufbereitung
 - [ ] **1-m-Gelände für weitere Länder:** bisher NRW, BB/BE, BW, HE, NI, NL. Bayern nur kostenpflichtiger WCS (DGM1 als Download offen), Sachsen/Sachsen-Anhalt lehnen ab (403), TH/SH/MV/RP/SL kein offener WCS gefunden — erneut prüfen oder Kacheln selbst bereitstellen
 - [ ] **Luftbild Sachsen-Anhalt beobachten:** `ST_LVermGeo_DOP_WMS_OpenData` antwortet seit 2026-10-04 vormittags mit 403 (auch Capabilities; INSPIRE-OI mit 500) — bei anhaltendem Ausfall beim LVermGeo nachfragen (service.lvermgeo@sachsen-anhalt.de) bzw. neue Adresse eintragen
 - [ ] Wachstumsmodelle detaillieren & validieren

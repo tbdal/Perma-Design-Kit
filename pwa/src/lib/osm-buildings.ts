@@ -1,6 +1,7 @@
 import type { GardenPlanGeo, GardenPlanPoint } from './types';
 import { latLonToPlan, planToLatLon, type PlanRect } from './gartenplan-geo';
 import { cachedFetch, hashKey, DAY_MS } from './geo-cache';
+import { orientedBox, nearlyRectangular, roofHeightFromPitch, type Roof, type RoofShape } from './building-roof';
 
 // Buildings around the garden from OpenStreetMap (Overpass API): footprints
 // in plan meters plus a height from `height`, `building:levels` or a guess
@@ -14,7 +15,8 @@ export const OVERPASS_ENDPOINTS = [
 ];
 export const BUILDINGS_ATTRIBUTION = 'Gebäude: © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>';
 
-export interface Building { pts: GardenPlanPoint[]; heightM: number; holes?: GardenPlanPoint[][]; }
+/** `heightM` is the total height including the roof; walls = heightM − roof.heightM. */
+export interface Building { pts: GardenPlanPoint[]; heightM: number; holes?: GardenPlanPoint[][]; roof?: Roof; }
 
 type LL = { lat: number; lon: number };
 const same = (a: LL, b: LL) => Math.abs(a.lat - b.lat) < 1e-9 && Math.abs(a.lon - b.lon) < 1e-9;
@@ -63,17 +65,71 @@ const TYPE_HEIGHT: Record<string, number> = {
   industrial: 10, warehouse: 9, barn: 8, farm_auxiliary: 6, stable: 6, service: 4,
 };
 
-/** Height in metres from OSM tags. */
+const num = (v?: string) => {
+  const m = v?.replace(',', '.').match(/-?\d+(\.\d+)?/);
+  return m ? Number(m[0]) : NaN;
+};
+
+/** Height in metres from OSM tags (total, without knowing the footprint). */
 export function buildingHeight(tags: Record<string, string>): number {
-  const num = (v?: string) => {
-    const m = v?.replace(',', '.').match(/-?\d+(\.\d+)?/);
-    return m ? Number(m[0]) : NaN;
-  };
   const h = num(tags.height);
   if (h > 0) return h;
   const lv = num(tags['building:levels']);
   if (lv > 0) return lv * LEVEL_M + (num(tags['roof:levels']) > 0 ? num(tags['roof:levels']) * LEVEL_M * 0.6 : 2);
   return TYPE_HEIGHT[tags.building] ?? 7;
+}
+
+const SHAPE_TAG: Record<string, RoofShape> = {
+  flat: 'flat', gabled: 'gabled', gambrel: 'gabled', mansard: 'gabled', saltbox: 'gabled', 'double_saltbox': 'gabled', 'quadruple_saltbox': 'gabled',
+  hipped: 'hipped', 'half-hipped': 'hipped', 'side_hipped': 'hipped',
+  pyramidal: 'pyramidal', cone: 'pyramidal', dome: 'pyramidal', onion: 'pyramidal', round: 'gabled',
+  skillion: 'skillion', lean_to: 'skillion',
+};
+/** Types that in Central Europe nearly always have a pitched roof. */
+const PITCHED_TYPES = new Set(['house', 'detached', 'semidetached_house', 'terrace', 'farm', 'bungalow', 'barn', 'farm_auxiliary', 'stable', 'chapel', 'church', 'cabin', 'hut']);
+const COMPASS: Record<string, number> = { N: 0, NNE: 22.5, NE: 45, ENE: 67.5, E: 90, ESE: 112.5, SE: 135, SSE: 157.5, S: 180, SSW: 202.5, SW: 225, WSW: 247.5, W: 270, WNW: 292.5, NW: 315, NNW: 337.5 };
+
+function areaM2(pts: GardenPlanPoint[]): number {
+  let a = 0;
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) a += (pts[j].xM + pts[i].xM) * (pts[j].yM - pts[i].yM);
+  return Math.abs(a / 2);
+}
+
+/** Total height and roof from OSM tags and the footprint. A missing
+ *  roof:shape on a house (or a small untyped building) becomes an estimated
+ *  40° gable along the long side; anything else stays flat. `rotationDeg`
+ *  turns roof:direction (compass) into the plan frame. */
+export function buildingShape(tags: Record<string, string>, pts: GardenPlanPoint[], rotationDeg = 0): { heightM: number; roof: Roof } {
+  const box = orientedBox(pts);
+  const tagged = SHAPE_TAG[(tags['roof:shape'] ?? '').trim()];
+  const lv = num(tags['building:levels']);
+  const smallUntyped = tags.building === 'yes' && !(lv > 3) && (() => { const a = areaM2(pts); return a >= 40 && a <= 250; })();
+  let shape: RoofShape = tagged ?? (PITCHED_TYPES.has(tags.building) || smallUntyped ? 'gabled' : 'flat');
+  const estimated = !tagged && shape !== 'flat';
+  if ((shape === 'hipped' || shape === 'pyramidal') && !nearlyRectangular(pts, box)) shape = 'gabled';
+  const across = tags['roof:orientation'] === 'across';
+  const dirRaw = tags['roof:direction'] ?? tags['roof:slope:direction'];
+  const dir = dirRaw == null ? NaN : (COMPASS[dirRaw.trim().toUpperCase()] ?? num(dirRaw));
+  const roof: Roof = { shape, heightM: 0 };
+  if (estimated) roof.estimated = true;
+  if (across) roof.across = true;
+  if (shape === 'skillion' && Number.isFinite(dir)) roof.directionDeg = ((dir - rotationDeg) % 360 + 360) % 360;
+
+  if (shape !== 'flat') {
+    const rh = num(tags['roof:height']), angle = num(tags['roof:angle']);
+    roof.heightM = rh > 0 ? rh
+      : angle > 0 && angle < 80 ? roofHeightFromPitch(shape, box, angle, across)
+      : Math.min(estimated ? 6 : 12, roofHeightFromPitch(shape, box, undefined, across));
+  }
+  const h = num(tags.height);
+  let total: number;
+  if (h > 0) total = h;
+  else if (lv > 0) total = lv * LEVEL_M + (shape === 'flat' ? (num(tags['roof:levels']) > 0 ? num(tags['roof:levels']) * LEVEL_M * 0.6 : 1) : roof.heightM);
+  else total = TYPE_HEIGHT[tags.building] ?? 7;
+  // the roof never takes more than 60 % of the building (walls stay visible)
+  roof.heightM = Math.min(roof.heightM, total * 0.6);
+  if (roof.heightM < 0.3) { roof.shape = 'flat'; roof.heightM = 0; delete roof.estimated; delete roof.directionDeg; }
+  return { heightM: total, roof };
 }
 
 interface OverpassElement {
@@ -95,8 +151,10 @@ export function parseBuildings(json: { elements?: OverpassElement[] }, geo: Gard
     const tags = el.tags ?? {};
     if (!tags.building || tags.building === 'no') continue;
     if (tags['building:part'] || tags.location === 'underground' || Number(tags.layer) < 0) continue;
-    const heightM = buildingHeight(tags);
-    if (el.type === 'way' && el.geometry && el.geometry.length >= 3) out.push({ pts: ring(el.geometry), heightM });
+    if (el.type === 'way' && el.geometry && el.geometry.length >= 3) {
+      const pts = ring(el.geometry);
+      if (pts.length >= 3) out.push({ pts, ...buildingShape(tags, pts, geo.rotationDeg) });
+    }
     if (el.type === 'relation') {
       // Outer and inner (courtyard) rings, each possibly split across ways.
       const outers = assembleRings((el.members ?? []).filter(m => m.role === 'outer' && m.geometry).map(m => m.geometry!)).map(ring);
@@ -104,7 +162,9 @@ export function parseBuildings(json: { elements?: OverpassElement[] }, geo: Gard
       for (const o of outers) {
         if (o.length < 3) continue;
         const holes = inners.filter(h => h.length >= 3 && inside(h[0], o));
-        out.push(holes.length ? { pts: o, heightM, holes } : { pts: o, heightM });
+        // courtyard buildings keep a flat roof
+        const heightM = buildingHeight(tags);
+        out.push(holes.length ? { pts: o, heightM, holes } : { pts: o, ...buildingShape(tags, o, geo.rotationDeg) });
       }
     }
   }
