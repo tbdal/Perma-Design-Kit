@@ -72,6 +72,7 @@ import Layout from '../layouts/Layout.astro';
       <label class="inline-flex items-center gap-1.5" data-i18n-title="mapGridTitle" title="Meterlinien ein-/ausblenden (G)"><input id="g-grid" type="checkbox" checked class="accent-green-700" /> <span data-i18n="mapGrid">Meterlinien</span></label>
       <label id="buildings-toggle" hidden class="inline-flex items-center gap-1.5" data-i18n-title="mapBuildingsTitle" title="Gebäude aus OpenStreetMap: in 3D und als Schattenwerfer für Besonnung und Hinweise"><input id="g-buildings" type="checkbox" checked class="accent-stone-600" /> <span data-i18n="mapBuildings">Gebäude</span></label>
       <label id="contours-toggle" hidden class="inline-flex items-center gap-1.5"><input id="g-contours" type="checkbox" checked class="accent-amber-700" /> <span data-i18n="mapContours">Höhenlinien</span></label>
+      <label id="water-toggle" hidden class="inline-flex items-center gap-1.5" data-i18n-title="mapWaterTitle" title="Abflusswege, Senken, Swale-Vorschläge und Regen vom Dach"><input id="g-water" type="checkbox" class="accent-sky-600" /> <span data-i18n="mapWater">Wasser</span></label>
       <label class="inline-flex items-center gap-1.5" data-i18n-title="mapZonesTitle" title="Permakultur-Zonen um das Haus und Sektoren (Sonne, Wind, Kaltluft)"><input id="g-zones" type="checkbox" class="accent-amber-600" /> <span data-i18n="mapZones">Zonen &amp; Sektoren</span></label>
       <span id="map-status" class="text-stone-500 dark:text-stone-400"></span>
       <span id="terrain-info" class="text-stone-600 dark:text-stone-300"></span>
@@ -300,6 +301,11 @@ import Layout from '../layouts/Layout.astro';
             <div id="coverage-body" class="space-y-2 text-xs"></div>
           </details>
 
+          <details data-panel="water" open id="water-section" hidden class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="waterHeading">Wasser</h2><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-stone-500 dark:text-stone-400 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
+            <div id="water-body" class="space-y-1.5 text-xs text-stone-700 dark:text-stone-200"></div>
+          </details>
+
           <details data-panel="zones" open id="zones-section" hidden class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="zonesHeading">Zonen &amp; Sektoren</h2><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-stone-500 dark:text-stone-400 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
             <p class="mb-2 text-[11px] text-stone-500 dark:text-stone-400" data-i18n="zonesIntro">Das Haus-Symbol ist das Zentrum – zum Verschieben ziehen. Zone 5 ist alles außerhalb von Zone 4.</p>
@@ -439,6 +445,7 @@ import Layout from '../layouts/Layout.astro';
   import { displayName, displayCommonName } from '../lib/plant-name';
   import { LAST_PLAN_KEY, planViewKey, readPlanView, writePlanView, type PlanView } from '../lib/plan-view';
   import { neighborHints } from '../lib/neighbors';
+  import { analyzeWater, roofRainM3, type WaterAnalysis } from '../lib/water';
   import { planYield, careTasks, buildIcs, type CareTask } from '../lib/yield-care';
   import { DEFAULT_ZONE_RADII, ZONE_COLORS, bearingVector, wedgePath, solsticeSectors } from '../lib/zones-sectors';
   import { fetchSiteClimate, notHardy, blossomFrostRisk, zoneLabel, doyLabel, plantZoneRange, COMPASS16, CLIMATE_ATTRIBUTION, type SiteClimate } from '../lib/site-climate';
@@ -1686,6 +1693,7 @@ import Layout from '../layouts/Layout.astro';
     planSvg.innerHTML = `
       <g class="basemap-layer"></g>
       <g id="contour-layer" pointer-events="none"></g>
+      <g id="water-layer" pointer-events="none"></g>
       <g id="coverage-layer" pointer-events="none"></g>
       <g id="plan-grid-layer">${gridDefsAndBackground(w, h, editing.gridSpacingM, 'plan-grid', k, pxPerUnit() * U)}</g>
       <g id="zones-layer" pointer-events="none"></g>
@@ -1707,6 +1715,7 @@ import Layout from '../layouts/Layout.astro';
     renderAreaHandles();
     renderWarnHover();
     renderZones();
+    renderWater();
     markerMap = new Map();
     const markersGroup = planSvg.querySelector('#plan-markers')!;
     for (const placement of editing.placements) {
@@ -2067,6 +2076,7 @@ import Layout from '../layouts/Layout.astro';
     renderContours();
     renderZones();
     renderWarnHover();
+    renderWater();
   }
   /** `base` zoomed by `factor` (>1 = in) around the SVG point cx/cy. */
   function zoomedView(base: typeof planView, factor: number, cx: number, cy: number): typeof planView {
@@ -2625,6 +2635,7 @@ import Layout from '../layouts/Layout.astro';
     // Never keep showing the previous plan's ground while the new one loads.
     terrain = null;
     renderContours();
+    renderWater();
     terrainInfo.textContent = t('terrainLoading');
     const maxDim = Math.max(plan.areaWidthM, plan.areaHeightM);
     // Margin covers the OSM buildings (150 m) so they stand on the same
@@ -2663,6 +2674,7 @@ import Layout from '../layouts/Layout.astro';
     const s = slopeInfo(terrain, (x, y) => boundary.length >= 3 ? pointInPolygon({ xM: x, yM: y }, boundary) : true, editing.geo?.rotationDeg ?? 0);
     siteSlope = s ? { slopeDeg: s.slopeDeg, aspectDeg: s.aspectDeg } : null;
     renderZones();
+    renderWater();
     if (!s) { terrainInfo.textContent = ''; return; }
     const fmt = (v: number, d = 1) => new Intl.NumberFormat(lang, { maximumFractionDigits: d }).format(v);
     terrainInfo.textContent = (s.aspectDeg === null
@@ -2843,6 +2855,91 @@ import Layout from '../layouts/Layout.astro';
   const fmtH = (h: number) => new Intl.NumberFormat(lang, { maximumFractionDigits: 1, minimumFractionDigits: 1 }).format(h);
   let sunMapToken = 0;
   let seasonCache: { key: string; samples: SunSample[] } | null = null;
+  // ── Wasser im Gelände (lib/water.ts) ──
+  // Flow paths, sinks and swale suggestions from the elevation grid; roof
+  // rain from OSM buildings × site precipitation. Computed once per terrain
+  // grid (cached) and only while the layer is switched on.
+  const waterToggle = document.getElementById('water-toggle')!;
+  const waterInput = document.getElementById('g-water') as HTMLInputElement;
+  const waterSection = document.getElementById('water-section')!;
+  const waterBody = document.getElementById('water-body')!;
+  try { waterInput.checked = localStorage.getItem('pgd-water') === '1'; } catch {}
+  let waterCache: { grid: unknown; result: WaterAnalysis } | null = null;
+  waterInput.addEventListener('change', () => {
+    try { localStorage.setItem('pgd-water', waterInput.checked ? '1' : '0'); } catch {}
+    renderWater();
+  });
+  function waterAnalysis(): WaterAnalysis | null {
+    if (!editing || !terrain) return null;
+    if (waterCache?.grid !== terrain) {
+      const plan = editing;
+      const b = plan.boundary;
+      waterCache = { grid: terrain, result: analyzeWater(terrain, {
+        rect: { minX: 0, minY: 0, maxX: plan.areaWidthM, maxY: plan.areaHeightM },
+        inside: b.length >= 3 ? (x, y) => pointInPolygon({ xM: x, yM: y }, b) : undefined,
+      }) };
+    }
+    return waterCache.result;
+  }
+  function renderWater() {
+    const layer = planSvg.querySelector('#water-layer');
+    waterToggle.hidden = !editing?.geo;
+    const on = !!editing?.geo && waterInput.checked;
+    waterSection.hidden = !on;
+    if (!layer) return;
+    if (!on || !editing) { layer.innerHTML = ''; return; }
+    if (!terrain) { layer.innerHTML = ''; waterBody.textContent = t('waterNoTerrain'); return; }
+    const fine = !!terrain.dgm;
+    const w = waterAnalysis()!;
+    const k = viewK();
+    const nf = (v: number, d = 0) => new Intl.NumberFormat(lang, { maximumFractionDigits: d }).format(v);
+    // Flow: width by catchment (log), one path per width class.
+    const byWidth = new Map<number, string[]>();
+    for (const f of w.flow) {
+      const cls = Math.min(5, Math.max(1, Math.round(Math.log10(f.catchmentM2 / 150) * 2) + 1));
+      const arr = byWidth.get(cls) ?? [];
+      arr.push(`M${f.x1 * U} ${f.y1 * U}L${f.x2 * U} ${f.y2 * U}`);
+      byWidth.set(cls, arr);
+    }
+    const parts = [...byWidth.entries()].map(([cls, d]) =>
+      `<path d="${d.join('')}" fill="none" stroke="#0284c7" stroke-opacity="${0.35 + cls * 0.1}" stroke-width="${(0.6 + cls * 0.7) * k}" stroke-linecap="round"/>`);
+    const label = (x: number, y: number, text: string, color: string) =>
+      `<text x="${x * U}" y="${y * U}" text-anchor="middle" dominant-baseline="central" font-size="${10 * k}" font-weight="600" fill="${color}" stroke="#fff" stroke-width="${3 * k}" paint-order="stroke">${escapeHtml(text)}</text>`;
+    if (fine) {
+      for (const s of w.sinks) {
+        const r = Math.sqrt(s.areaM2 / Math.PI);
+        parts.push(`<circle cx="${s.xM * U}" cy="${s.yM * U}" r="${r * U}" fill="#0ea5e9" fill-opacity="0.25" stroke="#0369a1" stroke-width="${1.2 * k}"/>`);
+        parts.push(label(s.xM, s.yM, t('waterSinkLabel', { d: nf(s.depthM, 1) }), '#075985'));
+      }
+      for (const s of w.swales) {
+        parts.push(`<line x1="${s.x1 * U}" y1="${s.y1 * U}" x2="${s.x2 * U}" y2="${s.y2 * U}" stroke="#0d9488" stroke-width="${4 * k}" stroke-dasharray="${6 * k} ${3 * k}" stroke-linecap="round"/>`);
+        parts.push(label((s.x1 + s.x2) / 2, (s.y1 + s.y2) / 2 - 1.2, t('waterSwaleLabel'), '#0f766e'));
+      }
+    }
+    layer.innerHTML = parts.join('');
+
+    // Panel
+    const rows: string[] = [];
+    rows.push(`<p>${escapeHtml(fine ? t('waterBasisFine', { region: terrain.dgm!.region[lang], res: nf(terrain.dgm!.resolutionM) }) : t('waterBasisCoarse'))}</p>`);
+    if (fine) {
+      rows.push(`<p><span class="font-medium">${escapeHtml(t('waterSinks'))}:</span> ${w.sinks.length ? escapeHtml(w.sinks.slice(0, 4).map(s => t('waterSinkItem', { d: nf(s.depthM, 1), a: nf(s.areaM2), v: nf(s.volumeM3) })).join(' · ')) : escapeHtml(t('waterNone'))}</p>`);
+      rows.push(`<p><span class="font-medium">${escapeHtml(t('waterSwales'))}:</span> ${w.swales.length ? escapeHtml(t('waterSwaleItems', { n: w.swales.length })) : escapeHtml(t('waterSwalesNone'))}</p>`);
+    }
+    // Roof rain (buildings in or right next to the plan)
+    const climate = currentClimate();
+    if (showBuildings()) {
+      const near = buildings.filter(b => b.pts.some(p => p.xM > -10 && p.yM > -10 && p.xM < editing!.areaWidthM + 10 && p.yM < editing!.areaHeightM + 10));
+      if (near.length) {
+        const area = near.reduce((s, b) => s + polygonAreaM2(b.pts), 0);
+        rows.push(`<p><span class="font-medium">${escapeHtml(t('waterRoof'))}:</span> ${escapeHtml(climate
+          ? t('waterRoofValue', { n: near.length, a: nf(area), m3: nf(roofRainM3(area, climate.precipMm)), mm: nf(climate.precipMm) })
+          : t('waterRoofNoClimate', { n: near.length, a: nf(area) }))}</p>`);
+      }
+    }
+    rows.push(`<p class="text-[10px] text-stone-500 dark:text-stone-400">${escapeHtml(t('waterNote'))}</p>`);
+    waterBody.innerHTML = rows.join('');
+  }
+
   // ── Ertrag & Pflege (lib/yield-care.ts) ──
   // Estimated harvest at the slider's age and a yearly care calendar (.ics).
   const yieldSection = document.getElementById('yield-section')!;
