@@ -97,3 +97,27 @@ test('buildings of the previous plan never show in the next one', async ({ page,
   await expect(attrib).toContainText('Gebäude', { timeout: 8000 });
   void errors;
 });
+
+test('hint click: first jumps to the area and marks it, second selects the plants', async ({ page, errors }) => {
+  await stubNetwork(page);
+  await seedNeighbourPlan(page);
+  await openPlan(page, 'np');
+  const hint = page.locator('#warnings-list button', { hasText: 'schlechte Nachbarn' });
+  const viewBefore = await page.getAttribute('#plan-svg', 'viewBox');
+  await hint.click();
+  await expect(hint).toHaveAttribute('aria-pressed', 'true');
+  // the juglone reach (16 m) is drawn as a dashed zone around the walnut
+  await expect(page.locator('#warn-layer circle[stroke-dasharray]')).toHaveCount(1);
+  expect(await page.getAttribute('#plan-svg', 'viewBox')).not.toBe(viewBefore);
+  const panelBefore = await page.textContent('#selected-panel');
+  // second click selects both plants
+  await hint.click();
+  await expect(page.locator('#selected-panel')).not.toHaveText(panelBefore ?? '');
+  // Esc clears the pinned mark (the hover preview stays while the hint has focus)
+  await page.keyboard.press('Escape');
+  await expect(hint).toHaveAttribute('aria-pressed', 'false');
+  await page.locator('#plan-search-hero').hover();
+  await hint.blur();
+  await expect(page.locator('#warn-layer circle')).toHaveCount(0);
+  void errors;
+});

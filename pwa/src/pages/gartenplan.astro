@@ -457,7 +457,7 @@ import Layout from '../layouts/Layout.astro';
   import { COVER_FUNCS, coverageGrid, coverageSummary, findGaps, suggestPlants, hasFunc, funcCount, influenceRadius, type CoverFunc } from '../lib/function-coverage';
   import { layoutPolyculture } from '../lib/polyculture-layout';
   import { shoppingRows, shoppingTotal, shoppingCsv, exportShoppingPDF, downloadText, type ShoppingLabels } from '../lib/plan-shopping';
-  import { crowdingWarnings, shadeWarnings, grownOccluders } from '../lib/plan-warnings';
+  import { crowdingWarnings, shadeWarnings, grownOccluders, WARN_YEARS } from '../lib/plan-warnings';
   import { fetchBuildings, BUILDINGS_ATTRIBUTION, type Building } from '../lib/osm-buildings';
   import { sunSamples, sunHoursAt, sunClass, planOccluders, planCells, SEASON_DATES, type SunScene, type SunSample, type SunClass, type Occluder } from '../lib/sun-hours';
   import { BOOL_FIELDS } from '../lib/plant-fields';
@@ -2066,6 +2066,7 @@ import Layout from '../layouts/Layout.astro';
     renderRowDraft();
     renderContours();
     renderZones();
+    renderWarnHover();
   }
   /** `base` zoomed by `factor` (>1 = in) around the SVG point cx/cy. */
   function zoomedView(base: typeof planView, factor: number, cx: number, cy: number): typeof planView {
@@ -3276,27 +3277,68 @@ import Layout from '../layouts/Layout.astro';
   const goodNeighborsHeading = document.getElementById('good-neighbors-heading')!;
   const goodNeighborsList = document.getElementById('good-neighbors-list')!;
   // Placements of the warning under the mouse/keyboard focus: ringed on the map.
+  // A hint can be hovered (temporary rings) or pinned by a first click: the
+  // map then jumps to it and keeps the affected area marked — the reach of
+  // an allelopathic plant, the full-grown crowns that collide … A second
+  // click on the same hint selects its plants; Esc clears the pin.
+  type WarnMark = { xM: number; yM: number; rM: number; kind: 'zone' | 'crown' };
+  type WarnItem = { key: string; ids: string[]; text: string; marks: WarnMark[]; tone: 'bad' | 'good' };
+  let hoverWarn: WarnItem | null = null;
+  let pinnedWarn: WarnItem | null = null;
   let hoverWarnIds: string[] = [];
-  function setWarnHover(ids: string[]) {
-    hoverWarnIds = ids;
+  const warnItemsByKey = new Map<string, WarnItem>();
+  function syncHotIds() { hoverWarnIds = (hoverWarn ?? pinnedWarn)?.ids ?? []; }
+  function setWarnHover(item: WarnItem | null) {
+    hoverWarn = item;
+    syncHotIds();
     renderWarnHover();
     refreshMarkerHighlight();
+  }
+  function setWarnPin(item: WarnItem | null) {
+    pinnedWarn = item;
+    syncHotIds();
+    renderWarnHover();
+    refreshMarkerHighlight();
+    warningsSection.querySelectorAll<HTMLButtonElement>('[data-key]').forEach(b => {
+      const on = !!item && b.dataset.key === item.key;
+      b.setAttribute('aria-pressed', String(on));
+      b.classList.toggle('ring-2', on);
+      b.classList.toggle(b.dataset.tone === 'good' ? 'ring-green-500' : 'ring-red-400', on);
+    });
+  }
+  function warnItemSvg(item: WarnItem, k: number, strong: boolean): string {
+    const color = item.tone === 'good' ? '#16a34a' : '#dc2626';
+    const pls = item.ids.map(id => editing!.placements.find(p => p.id === id)).filter((p): p is GardenPlanPlacement => !!p);
+    const marks = item.marks.map(m => m.kind === 'zone'
+      ? `<circle cx="${m.xM * U}" cy="${m.yM * U}" r="${m.rM * U}" fill="${color}" fill-opacity="${strong ? 0.1 : 0.06}" stroke="${color}" stroke-width="${2 * k}" stroke-dasharray="${8 * k} ${5 * k}"/>`
+      : `<circle cx="${m.xM * U}" cy="${m.yM * U}" r="${m.rM * U}" fill="${color}" fill-opacity="${strong ? 0.16 : 0.1}" stroke="${color}" stroke-width="${(strong ? 3 : 2.5) * k}"/>`).join('');
+    const line = pls.length >= 2
+      ? pls.slice(1).map(q => `<line x1="${pls[0].xM * U}" y1="${pls[0].yM * U}" x2="${q.xM * U}" y2="${q.yM * U}" stroke="${color}" stroke-width="${2 * k}" stroke-dasharray="${6 * k} ${4 * k}"/>`).join('')
+      : '';
+    return marks + line;
   }
   function renderWarnHover() {
     const g = planSvg.querySelector('#warn-layer');
     if (!g) return;
-    const pls = editing ? hoverWarnIds.map(id => editing!.placements.find(p => p.id === id)).filter((p): p is GardenPlanPlacement => !!p) : [];
-    if (!pls.length || !editing) { g.innerHTML = ''; return; }
+    if (!editing) { g.innerHTML = ''; return; }
     const k = viewK();
-    const rings = pls.map(pl => {
-      const p = plantsById.get(pl.plantId);
-      const r = (p ? displayRadiusM(p, editing!.yearsSincePlanting) : 0.2) * U + 6 * k;
-      return `<circle cx="${pl.xM * U}" cy="${pl.yM * U}" r="${r}" fill="#dc2626" fill-opacity="0.12" stroke="#dc2626" stroke-width="${2.5 * k}"/>`;
-    }).join('');
-    const line = pls.length === 2
-      ? `<line x1="${pls[0].xM * U}" y1="${pls[0].yM * U}" x2="${pls[1].xM * U}" y2="${pls[1].yM * U}" stroke="#dc2626" stroke-width="${2 * k}" stroke-dasharray="${6 * k} ${4 * k}"/>`
-      : '';
-    g.innerHTML = line + rings;
+    g.innerHTML = (pinnedWarn ? warnItemSvg(pinnedWarn, k, true) : '')
+      + (hoverWarn && hoverWarn.key !== pinnedWarn?.key ? warnItemSvg(hoverWarn, k, false) : '');
+  }
+  /** Centres the 2D view on a hint's marks and zooms so they fit (with margin). */
+  function focusWarnArea(item: WarnItem) {
+    if (!editing || !plan3dContainer.hidden || !planView.w || !item.marks.length) return;
+    const pad = 1.5;
+    const x0 = Math.min(...item.marks.map(m => m.xM - m.rM)) - pad, x1 = Math.max(...item.marks.map(m => m.xM + m.rM)) + pad;
+    const y0 = Math.min(...item.marks.map(m => m.yM - m.rM)) - pad, y1 = Math.max(...item.marks.map(m => m.yM + m.rM)) + pad;
+    const aspect = planView.h / planView.w;
+    let w = Math.max(8 * U, (x1 - x0) * U * 1.15);
+    if ((y1 - y0) * U * 1.15 > w * aspect) w = (y1 - y0) * U * 1.15 / aspect;
+    const h = w * aspect;
+    const cx = ((x0 + x1) / 2) * U, cy = ((y0 + y1) / 2) * U;
+    planView = { x: cx - w / 2, y: cy - h / 2, w, h };
+    applyPlanView();
+    renderWarnHover();
   }
   /** Pans (and zooms out if needed) so the given placements are in view. */
   function focusPlacements(ids: string[]) {
@@ -3315,6 +3357,12 @@ import Layout from '../layouts/Layout.astro';
     planView = { x: cx - w / 2, y: cy - h / 2, w, h };
     applyPlanView();
   }
+  document.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key !== 'Escape' || !pinnedWarn || document.querySelector('dialog[open]')) return;
+    const tgt = e.target as HTMLElement | null;
+    if (tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'TEXTAREA')) return;
+    setWarnPin(null);
+  });
   let warnTimer: ReturnType<typeof setTimeout> | null = null;
   function scheduleWarnings() {
     if (warnTimer) clearTimeout(warnTimer);
@@ -3356,38 +3404,57 @@ import Layout from '../layouts/Layout.astro';
     }
     renderYield();
     const neighbors = neighborHints(plan, plantsById);
-    const items = [
-      ...neighbors.bad.map(w => ({ ids: [w.source, w.target], text: t('warnBadNeighbor', {
+    // Full-grown crown of a placement (the hints look 30 years ahead).
+    const crown = (id: string): WarnMark[] => {
+      const pl = plan.placements.find(p => p.id === id);
+      const p = pl ? plantsById.get(pl.plantId) : undefined;
+      return pl ? [{ xM: pl.xM, yM: pl.yM, rM: p ? displayRadiusM(p, WARN_YEARS) : 0.5, kind: 'crown' }] : [];
+    };
+    const at = (id: string) => plan.placements.find(p => p.id === id);
+    const item = (key: string, ids: string[], text: string, marks: WarnMark[], tone: 'bad' | 'good' = 'bad'): WarnItem => ({ key, ids, text, marks, tone });
+    const items: WarnItem[] = [
+      ...neighbors.bad.map(w => item(`nb:${w.source}:${w.target}`, [w.source, w.target], t('warnBadNeighbor', {
         a: name(w.source), b: name(w.target), d: fmt1(w.distM), r: fmt1(w.radiusM), why: w.reason.label[lang === 'en' ? 'en' : 'de'],
-      }) })),
-      ...climateItems,
-      ...shade.map(w => ({ ids: [w.id], text: t('warnShade', { name: name(w.id), h: fmt1(w.hours), need: t(w.need === 'full' ? 'warnNeedFull' : 'warnNeedMid') }) })),
-      ...crowd.map(w => ({ ids: [w.a, w.b], text: t('warnCrowded', { a: name(w.a), b: name(w.b), d: fmt1(w.distM), min: fmt1(w.minM) }) })),
+      }), [{ xM: at(w.source)!.xM, yM: at(w.source)!.yM, rM: w.radiusM, kind: 'zone' }, ...crown(w.target)])),
+      ...climateItems.map(c => item(`cl:${c.ids.join(',')}:${c.text.slice(0, 12)}`, c.ids, c.text, c.ids.flatMap(crown))),
+      ...shade.map(w => item(`sh:${w.id}`, [w.id], t('warnShade', { name: name(w.id), h: fmt1(w.hours), need: t(w.need === 'full' ? 'warnNeedFull' : 'warnNeedMid') }), crown(w.id))),
+      ...crowd.map(w => item(`cr:${w.a}:${w.b}`, [w.a, w.b], t('warnCrowded', { a: name(w.a), b: name(w.b), d: fmt1(w.distM), min: fmt1(w.minM) }), [...crown(w.a), ...crown(w.b)])),
     ];
     const before = warnedIds;
     warnedIds = new Set(items.flatMap(i => i.ids));
     // Good neighbours: one line per fruiting plant with its helpers.
     const roleLabel = (r: string) => t(r === 'nitrogen' ? 'roleNitrogen' : r === 'nutrients' ? 'roleNutrients' : 'roleInsects');
-    const goodItems = neighbors.good.map(g => ({
-      ids: [g.target, ...g.helpers.map(h => h.id)],
-      text: t('goodNeighbor', { name: name(g.target), helpers: g.helpers.slice(0, 4).map(h => `${name(h.id)} (${roleLabel(h.role)})`).join(', ') }),
-    }));
+    const goodItems = neighbors.good.map(g => item(`gn:${g.target}`, [g.target, ...g.helpers.map(h => h.id)],
+      t('goodNeighbor', { name: name(g.target), helpers: g.helpers.slice(0, 4).map(h => `${name(h.id)} (${roleLabel(h.role)})`).join(', ') }),
+      [g.target, ...g.helpers.map(h => h.id)].flatMap(crown), 'good'));
+    warnItemsByKey.clear();
+    for (const i of [...items, ...goodItems]) warnItemsByKey.set(i.key, i);
     warningsSection.hidden = items.length === 0 && goodItems.length === 0;
     warningsCount.textContent = String(items.length);
     warningsList.innerHTML = items.slice(0, 30).map(i => `
-      <li><button type="button" data-ids="${i.ids.join(',')}" class="w-full rounded px-1.5 py-1 text-left hover:bg-red-50 dark:hover:bg-red-900/30">${escapeHtml(i.text)}</button></li>`).join('');
+      <li><button type="button" data-key="${escapeHtml(i.key)}" data-tone="bad" aria-pressed="false" class="w-full rounded px-1.5 py-1 text-left hover:bg-red-50 dark:hover:bg-red-900/30">${escapeHtml(i.text)}</button></li>`).join('');
     goodNeighborsHeading.hidden = goodItems.length === 0;
     goodNeighborsList.innerHTML = goodItems.slice(0, 20).map(i => `
-      <li><button type="button" data-ids="${i.ids.join(',')}" class="w-full rounded px-1.5 py-1 text-left hover:bg-green-50 dark:hover:bg-green-900/30"><span aria-hidden="true" class="text-green-700 dark:text-green-400">✓ </span>${escapeHtml(i.text)}</button></li>`).join('');
-    warningsSection.querySelectorAll<HTMLButtonElement>('[data-ids]').forEach(b => {
-      const ids = () => b.dataset.ids!.split(',');
-      b.addEventListener('mouseenter', () => setWarnHover(ids()));
-      b.addEventListener('focus', () => setWarnHover(ids()));
-      b.addEventListener('mouseleave', () => setWarnHover([]));
-      b.addEventListener('blur', () => setWarnHover([]));
+      <li><button type="button" data-key="${escapeHtml(i.key)}" data-tone="good" aria-pressed="false" class="w-full rounded px-1.5 py-1 text-left hover:bg-green-50 dark:hover:bg-green-900/30"><span aria-hidden="true" class="text-green-700 dark:text-green-400">✓ </span>${escapeHtml(i.text)}</button></li>`).join('');
+    warningsSection.querySelectorAll<HTMLButtonElement>('[data-key]').forEach(b => {
+      const it = () => warnItemsByKey.get(b.dataset.key!) ?? null;
+      b.addEventListener('mouseenter', () => setWarnHover(it()));
+      b.addEventListener('focus', () => setWarnHover(it()));
+      b.addEventListener('mouseleave', () => setWarnHover(null));
+      b.addEventListener('blur', () => setWarnHover(null));
     });
-    warningsSection.querySelectorAll<HTMLButtonElement>('[data-ids]').forEach(b => b.addEventListener('click', () => {
-      const ids = b.dataset.ids!.split(',');
+    // Keep a pinned hint across re-renders (positions may have changed).
+    setWarnPin(pinnedWarn ? warnItemsByKey.get(pinnedWarn.key) ?? null : null);
+    warningsSection.querySelectorAll<HTMLButtonElement>('[data-key]').forEach(b => b.addEventListener('click', () => {
+      const it = warnItemsByKey.get(b.dataset.key!);
+      if (!it) return;
+      // First click: jump there and mark the area (2D); second click: select the plants.
+      if (pinnedWarn?.key !== it.key && plan3dContainer.hidden) {
+        setWarnPin(it);
+        focusWarnArea(it);
+        return;
+      }
+      const ids = it.ids;
       focusPlacements(ids);
       multiSel.clear();
       if (ids.length > 1) { ids.forEach(id => multiSel.add(id)); selectedPlacementId = null; }

@@ -2,6 +2,10 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Gartenplan 2026-10-05 (2)
+- [x] Hinweise: erster Klick springt in der Karte zur Stelle und markiert den betroffenen Bereich (Wirkkreis bei schlechten Nachbarn, ausgewachsene Kronen bei „zu eng“, Krone bei Schatten/Klima, grün bei guten Nachbarn); zweiter Klick wählt die Pflanzen; Esc hebt die Markierung auf
+- [x] **9. Browser-Tests ins Repo:** 13 Playwright-Tests (`npm run e2e`, offline mit gestubbten Diensten) laufen bei jedem `npm run deploy` mit
+
 ## Gartenplan-Ideen 2, 3, 6, 7 2026-10-05
 - [x] **2. Standort-Klima:** 30 Jahre Wetterdaten (Open-Meteo/ERA5, über eigenen Server, Ort auf 0,1° gerundet) → Winterhärtezone, Frosttermine, frostfreie Tage, Niederschlag, Hauptwind im Kasten „Standortklima“; Hinweise „nicht winterhart“ und „Spätfrostgefahr für die Blüte“; Vorschläge ohne nicht winterharte Pflanzen
 - [x] **3. Zonen & Sektoren:** Schalter in der Kartenleiste; Zonen 0–4 um ein ziehbares Haus-Symbol (Radien einstellbar, im Plan gespeichert), Sektoren Sommer-/Wintersonne, Hauptwind, Kaltluft (hangabwärts)
