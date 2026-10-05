@@ -2,6 +2,16 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Bugs, Kalender, Wasser in 3D 2026-10-05
+- [x] **Malus domestica 10,7 m:** EFG-Größen nehmen die Mitte der Spanne statt der Obergrenze (Kulturapfel „standard“ 25–35' → 9,1 m); die 10,7 m kamen als Breite aus EFG, weil PFAF beim Apfel keine Breite angibt. Bestehende Pflanzen: neu anreichern
+- [x] **Homo erectus & Co.:** Wikidata-Treffer werden über die Abstammung geprüft (Pflanzen oder Pilze), parallel zur Detailabfrage; Textfilter als Rückfall um Mensch/Homo/Virus ergänzt
+- [x] **Wasser in 3D:** Abflusswege, Senken (Wasserspiegel) und Swales liegen im 3D-Gelände; Swales jetzt orange (2D und 3D), deutlich vom Wasserblau getrennt
+- [x] **Geländesprung um das 1-m-Raster (3D):** die groben Terrain-Tiles messen im Wald die Kronen mit (bei „topo nuss“ 18,6 m über dem BW-Modell) – der Versatz am Rand wird jetzt abgezogen, die Überblendung ist breiter
+- [x] **Schalter ohne Standort:** Gebäude, Höhenlinien und Wasser bleiben bei Plänen ohne Standort sichtbar (ausgegraut, Hinweis), ein Klick öffnet „Standort festlegen“
+- [x] **Kalender:** aktueller Monat im Überblick als weiße Karte, in der Tabelle durchgehend hinterlegt; Infobox „Wie funktioniert das?“ mit Anteil der Pflanzen mit Kalenderdaten und Erklärung von Überblick, Tabelle, Filtern und Datenquellen
+- [x] **Lizenz der Schriften:** OFL-1.1-Text für Archivo, Archivo Black und Raleway in `pwa/public/fonts/OFL.txt` (wird mit ausgeliefert), Verweis in `NOTICE`
+- [x] Erledigt aus „Karten“: Kartenhintergrund im Gartenplan-PDF (kam mit dem neuen Plan-PDF)
+
 ## Gartenplan: große Pläne, Gebäude-Cache, Dachformen 2026-10-05
 - [x] **Performance großer Pläne:** gemessen an 500 × 400 m mit 840 Pflanzen, ~2000 Gebäuden und NRW-1-m-Gelände. Besonnung über einen Raster-Index (16 s → 0,5 s), Schattenhinweise 10 s → 0,3 s, Zeitregler ohne Layout pro Marker (≈ 300 → 30 ms je Schritt); Stack-Überlauf bei 1-m-Gelände großer Pläne behoben (Hinweise, Besonnung und 3D fielen aus)
 - [x] **Overpass unzuverlässig:** Gebäude kommen über unseren Server (`/geo/overpass`, nginx-Cache 30 Tage, bei Ausfall die gespeicherte Kopie, Ausweichen zwischen den beiden overpass-api.de-Servern; nur eine Bbox wird angenommen, kein offener Proxy). Overpass-Fehlerantworten mit HTTP 200 werden erkannt und nicht mehr 30 Tage im Browser gespeichert. Die öffentlichen Instanzen bleiben direkter Rückfall

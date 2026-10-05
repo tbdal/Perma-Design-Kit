@@ -20,19 +20,16 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] Bundessortenamt anfragen, ob die „Gesamtliste Obst“ als Namensliste für die Sortenauswahl übernommen werden darf (vollständigste deutsche Liste, nur als PDF)
 
 ## bugs
-- [ ] Malus domestica -> 10,7m (von 35’ aus Toensmeier Malus Pumila?)
 - [ ] baumscheibe 2.6: richtige schriftart & position von höhe und breite (Jörn)
-- [ ] Homo erectus etc nicht auswählbar machen?
 
 
 ## APs
 ### AP4
-- [ ] Offene Folgepunkte aus dem Lizenz-Check: EOX-Sentinel (nur nicht-kommerziell), OSM-Kachelserver (geringer Traffic), Edible-Forest-Gardens-Tabelle (keine ausdrückliche Lizenz, schriftliche Erlaubnis einholen), Lizenztext der Schriften Archivo/Raleway (OFL) in `NOTICE` ergänzen — Details siehe „Lizenz & Datenquellen" unten
+- [ ] Offene Folgepunkte aus dem Lizenz-Check: EOX-Sentinel (nur nicht-kommerziell), OSM-Kachelserver (geringer Traffic), Edible-Forest-Gardens-Tabelle (keine ausdrückliche Lizenz, schriftliche Erlaubnis einholen) — Details siehe „Lizenz & Datenquellen" unten
 
 
 ## Karten
 - [ ] Sukzessive Pflanzung
-- [ ] Kartenhintergrund im Gartenplan-PDF (Canvas → `embedJpg`, Attribution auf der Seite)
 - [ ] kommerzieller Satellit mit offiziellem Key (Esri Location Platform / MapTiler / Mapbox Raster) erst bei Bedarf außerhalb der Ortho-Länder — Esri *ohne* Key ist nur nicht-kommerziell nutzbar
 
 ## Gartenplan Ideen
@@ -48,8 +45,6 @@ Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann
 - [x] Durchmesser auf Baumscheibe etwas runterschieben
       
 ### Re: Calendars
-- [ ] current month: highlight white!
-- [ ] infotextbox: WIP functionality 66%?; explain views
 
 ### Re: Polycultures
 - [ ] textbox: poly def. & links
