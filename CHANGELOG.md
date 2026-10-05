@@ -2,6 +2,13 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Gartenplan-Ideen 2, 3, 6, 7 2026-10-05
+- [x] **2. Standort-Klima:** 30 Jahre Wetterdaten (Open-Meteo/ERA5, über eigenen Server, Ort auf 0,1° gerundet) → Winterhärtezone, Frosttermine, frostfreie Tage, Niederschlag, Hauptwind im Kasten „Standortklima“; Hinweise „nicht winterhart“ und „Spätfrostgefahr für die Blüte“; Vorschläge ohne nicht winterharte Pflanzen
+- [x] **3. Zonen & Sektoren:** Schalter in der Kartenleiste; Zonen 0–4 um ein ziehbares Haus-Symbol (Radien einstellbar, im Plan gespeichert), Sektoren Sommer-/Wintersonne, Hauptwind, Kaltluft (hangabwärts)
+- [x] **6. Nachbarschaften:** schlechte Nachbarn (Walnuss/Hickory-Juglon, Fenchel, Wermut) als Hinweis, gute Nachbarschaften (Stickstoff, Nährstoffe, Bestäuber bei Obstgehölzen) als grüne Liste
+- [x] **7. Ertrag & Pflegekalender:** Ertragsschätzung (kg/Jahr) zum Jahre-Regler; Pflegekalender als iCal (Ernte, Schnitt, Mulch, Frostschutz der Blüte) mit jährlichen Terminen
+- Offen: Zonen/Sektoren in 3D und im Plan-PDF; Ertragswerte sind Richtwerte und könnten pro Pflanze überschreibbar werden
+
 ## Gartenplan 2026-10-05
 - [x] Bug: Nach dem Wechsel zu einem anderen Plan wurden manchmal die Gebäude (und kurz das Gelände) des vorherigen Plans angezeigt — jetzt gehören Gebäude/Gelände fest zu ihrem Plan und werden beim Wechsel sofort verworfen
 - [x] Pflanzensuche wie auf der Startseite auch im Gartenplan (nur in der Positionierungsansicht); eine gefundene Pflanze ist gleich zum Setzen ausgewählt

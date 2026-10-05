@@ -38,12 +38,8 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 ## Gartenplan Ideen
 Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann 2 + 3 als Paket „Standortanalyse“.
 - [ ] **1. Wasser im Gelände:** aus dem 1-m-DGM Abflusswege und Senken berechnen (wohin fließt Regen, wo sammelt er sich), Swales/Mulden entlang der Höhenlinien vorschlagen, Regenertrag von Dachflächen schätzen (OSM-Dachfläche × Jahresniederschlag)
-- [ ] **2. Standort-Klima automatisch:** Winterhärtezone, Frosttermine, Niederschlag (Open-Meteo / DWD) → Hinweise „nicht winterhart hier“, „Blüte vor letztem Frost“; Pflanzvorschläge passender
-- [ ] **3. Zonen & Sektoren:** Permakultur-Zonen 0–5 um das Haus als Ebene; Sektoren für Hauptwind (Windrose), Sommer-/Wintersonnenbogen, Kaltluft
 - [ ] **4. Plan-PDF mit Luftbild, Maßstab und Nordpfeil** zum Abstecken, auch großformatig (A3/A2, 1:100 / 1:200) — vgl. „Kartenhintergrund im Gartenplan-PDF“ unter Karten
 - [ ] **5. Feldmodus (Handy):** eigene GPS-Position im Plan, Absteckhilfe („noch 2,3 m nach NO zum Apfel“), Pflanzen vor Ort per GPS setzen/korrigieren
-- [ ] **6. Nachbarschaften / Allelopathie:** Hinweise auf gute und schlechte Nachbarn (z. B. Walnuss neben Apfel, Fenchel) im Abschnitt „Hinweise“
-- [ ] **7. Ertrag & Pflegekalender:** grobe Ertragsschätzung (kg/Jahr, nach Alter gestaffelt); Pflegetermine (Schnitt, Mulch, Ernte) als iCal-Export
 - [ ] **8. Bauabschnitte:** Pflanzjahr pro Pflanze („2027 Bäume, 2028 Unterpflanzung“); Zeitraffer und Pflanzliste berücksichtigen die Abschnitte
 - [ ] **9. Browser-Tests ins Repo:** die Playwright-Tests (bisher nur lokal beim Entwickeln) ins Repo und in `npm run deploy` aufnehmen, damit Rückschritte automatisch auffallen
 - [ ] **Performance großer Pläne prüfen:** Besonnungskarte, 1-m-Gelände (feineres Raster) und viele OSM-Gebäude nur an ~40-m-Gärten getestet; bei Plänen bis 500 m messen und ggf. Raster/Abtastung vergröbern oder in einen Worker auslagern
