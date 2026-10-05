@@ -2,6 +2,11 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Beispielprojekt 2026-10-05
+- [x] permadesignkit.org/example (und /beispiel) öffnet ein hinterlegtes Beispielprojekt: Übersicht, „Beispiel übernehmen“, danach öffnet der Startplan direkt; beim zweiten Besuch „Öffnen“ statt Doppel-Import. Hinterlegen: Link aus „Projekt als Link teilen“ → `npm run example:set -- "<Link>"` → deploy
+- [x] Teilen-Link nimmt auf Wunsch die Ansicht der Pläne mit (Kamera, Ausschnitt, 2D/3D, Sonnenstand, Einfärben) und einen Startplan
+- [x] Sonnenstand und Einfärben werden jetzt pro Plan gemerkt (wie Kamera und Ausschnitt)
+
 ## Fragen, Sorten, AP4 2026-10-05
 - [x] Sortenauswahl beim Bearbeiten einer Pflanze: Knopf im Sortenfeld zeigt eigene Sorten, aktive Sortenlisten und – ohne Liste – Wikidata live für die Art
 - [x] Sortenlisten in Einstellungen: Obstsorten aus Wikidata laden (rund 3800, CC0), CSV importieren, umbenennen, an/aus, exportieren, durchsuchen, Einträge hinzufügen/entfernen, löschen

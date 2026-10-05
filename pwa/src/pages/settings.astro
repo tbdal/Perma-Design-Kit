@@ -272,6 +272,10 @@ import Layout from '../layouts/Layout.astro';
         <label class="flex items-center gap-2"><input id="share-polycultures" type="checkbox" checked class="accent-green-600" /> <span data-i18n="shareIncludePolycultures">Polykulturen mitteilen</span></label>
         <label class="flex items-center gap-2"><input id="share-gardenplans" type="checkbox" checked class="accent-green-600" /> <span data-i18n="shareIncludeGardenPlans">Waldgartenpläne mitteilen</span></label>
         <label class="flex items-center gap-2"><input id="share-notes" type="checkbox" checked class="accent-green-600" /> <span data-i18n="shareIncludeNotes">Notizen mitteilen</span></label>
+        <label class="flex items-start gap-2"><input id="share-views" type="checkbox" checked class="mt-1 accent-green-600" /> <span><span data-i18n="shareIncludeViews">Ansicht der Pläne mitschicken</span><br /><span class="text-xs text-stone-500 dark:text-stone-400" data-i18n="shareViewsHint">Kamera, Ausschnitt, 2D/3D, Sonnenstand und Einfärben – so, wie du die Pläne zuletzt verlassen hast.</span></span></label>
+        <label class="flex flex-wrap items-center gap-2 pl-6 text-xs"><span data-i18n="shareStartPlan">Öffnet nach dem Übernehmen:</span>
+          <select id="share-start" class="rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2 py-1 text-xs"></select>
+        </label>
         <label class="flex items-start gap-2"><input id="share-location" type="checkbox" class="mt-1 accent-green-600" /> <span><span data-i18n="shareIncludeLocation">Standort der Waldgartenpläne mitteilen</span><br /><span class="text-xs text-stone-500 dark:text-stone-400" data-i18n="shareLocationHint">Zeigt, wo dein Garten liegt – oft deine Adresse. Ohne Standort kommen die Pläne ohne Kartenhintergrund an.</span></span></label>
       </fieldset>
       <div id="share-result" hidden class="space-y-2">
@@ -555,10 +559,23 @@ import Layout from '../layouts/Layout.astro';
   const shareUrlEl = document.getElementById('share-url') as HTMLTextAreaElement;
   const shareResult = document.getElementById('share-result')!;
   const shareNative = document.getElementById('share-native') as HTMLButtonElement;
-  const shareOpts = ['share-polycultures', 'share-gardenplans', 'share-notes', 'share-location']
+  const shareOpts = ['share-polycultures', 'share-gardenplans', 'share-notes', 'share-location', 'share-views']
     .map(id => document.getElementById(id) as HTMLInputElement);
+  const shareStart = document.getElementById('share-start') as HTMLSelectElement;
+  /** Start-plan choices: none, or one of the plans (default: the last opened one). */
+  async function fillShareStart() {
+    const [{ getAllGardenPlans }, { LAST_PLAN_KEY }] = await Promise.all([import('../lib/db'), import('../lib/plan-view')]);
+    const plans = await getAllGardenPlans();
+    let last: string | null = null;
+    try { last = localStorage.getItem(LAST_PLAN_KEY); } catch {}
+    shareStart.innerHTML = `<option value="">${escapeHtml(t('shareStartNone'))}</option>`
+      + plans.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name || '—')}</option>`).join('');
+    shareStart.value = plans.some(p => p.id === last) ? last! : (plans[0]?.id ?? '');
+  }
+  shareStart.addEventListener('change', () => { shareResult.hidden = true; });
   document.getElementById('btn-share-link')!.addEventListener('click', () => {
     shareResult.hidden = true;
+    void fillShareStart();
     shareDialog.showModal();
   });
   shareOpts.forEach(o => o.addEventListener('change', () => { shareResult.hidden = true; }));
@@ -566,17 +583,21 @@ import Layout from '../layouts/Layout.astro';
   if (location.hash === '#teilen') {
     history.replaceState(null, '', location.pathname);
     shareResult.hidden = true;
+    void fillShareStart();
     shareDialog.showModal();
   }
   document.getElementById('share-close')!.addEventListener('click', () => shareDialog.close());
   document.getElementById('share-create')!.addEventListener('click', async (e) => {
     await withButtonSpinner(e.currentTarget as HTMLButtonElement, async () => {
-      const [incPoly, incPlans, incNotes, incLoc] = shareOpts.map(o => o.checked);
+      const [incPoly, incPlans, incNotes, incLoc, incViews] = shareOpts.map(o => o.checked);
+      const { readPlanView } = await import('../lib/plan-view');
       const [{ encodeShare, shareUrl }, { getAllPolycultures, getAllGardenPlans }] = await Promise.all([import('../lib/share'), import('../lib/db')]);
       const [plants, polycultures, gardenPlans] = await Promise.all([
         getAllPlants(), incPoly ? getAllPolycultures() : Promise.resolve([]), incPlans ? getAllGardenPlans() : Promise.resolve([]),
       ]);
-      const data = await encodeShare({ plants, polycultures, gardenPlans }, { includeNotes: incNotes, includeLocation: incLoc });
+      const views = Object.fromEntries(gardenPlans.map(g => [g.id, readPlanView(g.id)]).filter(([, v]) => v));
+      const start = shareStart.value ? { planId: shareStart.value } : null;
+      const data = await encodeShare({ plants, polycultures, gardenPlans, views, start }, { includeNotes: incNotes, includeLocation: incLoc, includeViews: incViews });
       const url = shareUrl(location.origin, data);
       shareUrlEl.value = url;
       const kb = new Intl.NumberFormat(getLang(), { maximumFractionDigits: 1 }).format(url.length / 1024);

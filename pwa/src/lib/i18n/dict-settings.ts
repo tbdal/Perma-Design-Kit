@@ -198,4 +198,8 @@ export const settingsDict: Dict = {
   persistOff: { de: 'nicht aktiv – bei Speichermangel kann der Browser die Daten löschen', en: 'not active – the browser may delete the data when space runs low' },
   persistUnsupported: { de: 'vom Browser nicht unterstützt', en: 'not supported by this browser' },
   persistRequestDenied: { de: 'Der Browser hat abgelehnt oder entscheidet selbst. Regelmäßige Backups schützen deine Daten.', en: 'The browser declined or decides on its own. Regular backups keep your data safe.' },
+  shareIncludeViews: { de: 'Ansicht der Pläne mitschicken', en: 'Include the plans’ view' },
+  shareViewsHint: { de: 'Kamera, Ausschnitt, 2D/3D, Sonnenstand und Einfärben – so, wie du die Pläne zuletzt verlassen hast.', en: 'Camera, section, 2D/3D, sun position and colouring – as you last left the plans.' },
+  shareStartPlan: { de: 'Öffnet nach dem Übernehmen:', en: 'Opens after importing:' },
+  shareStartNone: { de: '– keinen Plan –', en: '– no plan –' },
 };

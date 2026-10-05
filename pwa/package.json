@@ -11,6 +11,7 @@
     "proxy": "node server/plant-proxy-server.mjs",
     "build": "astro build && node scripts/version-sw.mjs",
     "preview": "astro preview",
+    "example:set": "node scripts/set-example.mjs",
     "deploy": "bash scripts/deploy.sh",
     "astro": "astro",
     "test": "vitest run",

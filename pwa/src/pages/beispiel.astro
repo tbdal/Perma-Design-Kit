@@ -1,0 +1,18 @@
+---
+import Layout from '../layouts/Layout.astro';
+// Same page as /example (src/pages/example.astro); logic in lib/example-project.ts.
+---
+<Layout title="Perma Design Kit — Beispielprojekt">
+  <article class="mx-auto max-w-2xl space-y-3 text-stone-800 dark:text-stone-100">
+    <h1 class="text-2xl font-bold" data-i18n="shExampleTitle">Beispielprojekt</h1>
+    <p id="ex-status" role="status" class="text-sm text-stone-600 dark:text-stone-300" data-i18n="exLoading">Beispielprojekt wird geladen…</p>
+  </article>
+  <script>
+    import { applyStaticI18n, createT } from '../lib/i18n/core';
+    import { teilenDict } from '../lib/i18n/dict-teilen';
+    import { openExample } from '../lib/example-project';
+    applyStaticI18n(teilenDict);
+    const t = createT(teilenDict);
+    void openExample(document.getElementById('ex-status')!, { missing: t('exMissing'), failed: t('exFailed') });
+  </script>
+</Layout>

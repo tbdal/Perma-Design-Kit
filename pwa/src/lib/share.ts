@@ -1,6 +1,7 @@
 import { createEmptyPlant, type PlantData, type Polyculture, type GardenPlan } from './types';
 import { parseBackup, type ParsedBackup } from './sync';
 import { newId } from './id';
+import { sanitizePlanView, type PlanView } from './plan-view';
 
 // "Projekt als Link teilen": the whole project travels inside the link's
 // #fragment — deflate-compressed JSON, base64url-encoded. Nothing is stored
@@ -14,11 +15,16 @@ export interface ShareContent {
   plants: PlantData[];
   polycultures: Polyculture[];
   gardenPlans: GardenPlan[];
+  /** How each plan opens (camera, section, 2D/3D, sun, colouring), by plan id. */
+  views?: Record<string, PlanView>;
+  /** Plan the recipient lands in after importing. */
+  start?: { planId: string } | null;
 }
 
 export interface ShareOptions {
   includeNotes: boolean;     // plant/polyculture/plan notes
   includeLocation: boolean;  // garden plan geo anchor (≈ home address)
+  includeViews?: boolean;    // views + start plan (default: off)
 }
 
 /** Drops every plant field still at its createEmptyPlant() default —
@@ -44,7 +50,16 @@ export function sharePayload(c: ShareContent, o: ShareOptions): string {
     placements: o.includeNotes ? g.placements : g.placements.map(pl => ({ ...pl, notes: '' })),
     geo: o.includeLocation ? g.geo : null,
   }));
-  return JSON.stringify({ version: 1, shared: true, plants, polycultures, gardenPlans });
+  const planIds = new Set(gardenPlans.map(g => g.id));
+  const views = o.includeViews && c.views
+    ? Object.fromEntries(Object.entries(c.views).filter(([id]) => planIds.has(id)))
+    : null;
+  const start = o.includeViews && c.start && planIds.has(c.start.planId) ? c.start : null;
+  return JSON.stringify({
+    version: 1, shared: true, plants, polycultures, gardenPlans,
+    ...(views && Object.keys(views).length ? { views } : {}),
+    ...(start ? { start } : {}),
+  });
 }
 
 function toBase64Url(bytes: Uint8Array): string {
@@ -71,10 +86,29 @@ export async function encodeShare(c: ShareContent, o: ShareOptions): Promise<str
   return toBase64Url(await pipe(json, new CompressionStream('deflate-raw')));
 }
 
+export type DecodedShare = ParsedBackup & Pick<ShareContent, 'views' | 'start'>;
+
+/** Views + start plan of a share payload, validated (unknown plans dropped). */
+export function shareExtras(json: string, planIds: Set<string>): Pick<ShareContent, 'views' | 'start'> {
+  let raw: any;
+  try { raw = JSON.parse(json); } catch { return {}; }
+  const views: Record<string, PlanView> = {};
+  if (raw?.views && typeof raw.views === 'object') {
+    for (const [id, v] of Object.entries(raw.views)) {
+      const pv = planIds.has(id) ? sanitizePlanView(v) : null;
+      if (pv) views[id] = pv;
+    }
+  }
+  const startId = typeof raw?.start?.planId === 'string' && planIds.has(raw.start.planId) ? raw.start.planId : null;
+  return { ...(Object.keys(views).length ? { views } : {}), start: startId ? { planId: startId } : null };
+}
+
 /** Throws on a damaged or truncated link. */
-export async function decodeShare(data: string): Promise<ParsedBackup> {
+export async function decodeShare(data: string): Promise<DecodedShare> {
   const bytes = await pipe(fromBase64Url(data), new DecompressionStream('deflate-raw'));
-  return parseBackup(new TextDecoder().decode(bytes));
+  const json = new TextDecoder().decode(bytes);
+  const backup = parseBackup(json);
+  return { ...backup, ...shareExtras(json, new Set(backup.gardenPlans.map(g => g.id))) };
 }
 
 export function shareUrl(origin: string, data: string): string {
@@ -98,6 +132,9 @@ export interface MergedShare extends ShareContent {
    *  and were stored as copies (new id, name marked) instead of overwriting. */
   copiedPolycultures: number;
   copiedGardenPlans: number;
+  /** Everything in the link is already in the collection (same ids) — e.g.
+   *  the example project opened a second time: offer "open" instead of a copy. */
+  alreadyPresent: boolean;
 }
 
 /** Ids already used in the recipient's collection. */
@@ -153,5 +190,17 @@ export function mergeShared(incoming: ShareContent, existing: PlantData[], taken
       ...(g.plantPrices ? { plantPrices: Object.fromEntries(Object.entries(g.plantPrices).map(([id, v]) => [map(id), v])) } : {}),
     };
   });
-  return { plants, polycultures, gardenPlans, reusedPlants: incoming.plants.length - plants.length, copiedPolycultures, copiedGardenPlans };
+  // Views and the start plan follow their plan to its (possibly new) id.
+  const planIdMap = new Map(incoming.gardenPlans.map((g, i) => [g.id, gardenPlans[i].id]));
+  const views = incoming.views
+    ? Object.fromEntries(Object.entries(incoming.views).filter(([id]) => planIdMap.has(id)).map(([id, v]) => [planIdMap.get(id)!, v]))
+    : undefined;
+  const start = incoming.start && planIdMap.has(incoming.start.planId) ? { planId: planIdMap.get(incoming.start.planId)! } : null;
+  const alreadyPresent = (incoming.gardenPlans.length + incoming.polycultures.length) > 0
+    && copiedGardenPlans === incoming.gardenPlans.length && copiedPolycultures === incoming.polycultures.length
+    && plants.length === 0;
+  return {
+    plants, polycultures, gardenPlans, reusedPlants: incoming.plants.length - plants.length, copiedPolycultures, copiedGardenPlans,
+    ...(views && Object.keys(views).length ? { views } : {}), start, alreadyPresent,
+  };
 }

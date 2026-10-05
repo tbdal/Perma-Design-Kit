@@ -388,6 +388,7 @@ import Layout from '../layouts/Layout.astro';
   import { getAllPlants, getAllPolycultures, getAllGardenPlans, saveGardenPlan, deleteGardenPlan, importPlants } from '../lib/db';
   import { normalizeGardenPlan } from '../lib/plant-normalize';
   import { displayName, displayCommonName } from '../lib/plant-name';
+  import { LAST_PLAN_KEY, planViewKey, readPlanView, writePlanView, type PlanView } from '../lib/plan-view';
   import { createEmptyGardenPlan, type GardenPlan, type GardenPlanPlacement, type GardenPlanPoint, type GardenPlanArea, type Polyculture, type PlantData } from '../lib/types';
   import { displayRadiusM } from '../lib/growth-model';
   import { deriveLayer, LAYER_STYLE, LAYER_I18N, type PlantLayer } from '../lib/plant-layer';
@@ -509,7 +510,7 @@ import Layout from '../layouts/Layout.astro';
   // reload/crash/accidental tab-close mid-edit silently lost the drawn
   // boundary or any placed plants. Debounced so rapid mutations (dragging a
   // plant, moving the years slider) don't hammer IndexedDB on every event.
-  const LAST_PLAN_KEY = 'pgd-gartenplan-last-id';
+  // LAST_PLAN_KEY: from lib/plan-view (also set by the share import).
   let autosaveTimer: ReturnType<typeof setTimeout> | null = null;
   function scheduleAutosave() {
     if (!editing) return;
@@ -1308,6 +1309,13 @@ import Layout from '../layouts/Layout.astro';
     mapBar.classList.remove('hidden');
     syncMapBar();
     const savedView = restoreViewState();
+    if (savedView?.sun) {
+      sunDateInput.value = savedView.sun.date;
+      sunTimeInput.value = String(savedView.sun.minutes);
+    }
+    if (savedView?.coverage !== undefined && [...coverageSelect.options].some(o => o.value === savedView.coverage)) {
+      coverageSelect.value = savedView.coverage;
+    }
     renderAreasList();
     yearsInput.value = String(editing.yearsSincePlanting);
     yearsLabel.textContent = t('yearsSuffix', { years: editing.yearsSincePlanting });
@@ -1317,6 +1325,7 @@ import Layout from '../layouts/Layout.astro';
     renderSelectedPanel();
     fillPackageSelect();
     renderPlanSvg();
+    if (savedView?.coverage !== undefined) scheduleCoverage();
     if (savedView?.mode === '3d' && plan3dContainer.hidden) btnView3d.click();
     void loadTerrain();
     void loadBuildings();
@@ -1325,20 +1334,22 @@ import Layout from '../layouts/Layout.astro';
   }
 
   // ── Kamera merken ───────────────────────────────────────────────────────
-  // Per plan: the 2D section, the 3D camera and which view was open are kept
-  // in localStorage when the map is left (back to the list, reload, tab
-  // switch) and restored the next time the plan is opened.
-  type SavedView = { view2d: { x: number; y: number; w: number; h: number } | null; cam3d: import('../lib/gartenplan-3d').Camera3DState | null; mode: '2d' | '3d' };
-  const viewKey = (id: string) => `pgd-gartenplan-view-${id}`;
+  // Per plan: the 2D section, the 3D camera, which view was open, the sun
+  // date/time and the colouring are kept in localStorage when the map is left
+  // (back to the list, reload, tab switch) and restored the next time the
+  // plan is opened (lib/plan-view.ts — a share link can carry them, too).
+  type SavedView = PlanView;
+  const viewKey = planViewKey;
 
   function saveViewState() {
     if (!editing || phaseB.classList.contains('hidden')) return;
-    const state: SavedView = {
+    writePlanView(editing.id, {
       view2d: planView.w ? { ...planView } : null,
       cam3d: view3d?.getCameraState() ?? last3dCamera,
       mode: plan3dContainer.hidden ? '2d' : '3d',
-    };
-    try { localStorage.setItem(viewKey(editing.id), JSON.stringify(state)); } catch {}
+      sun: sunDateInput.value ? { date: sunDateInput.value, minutes: Number(sunTimeInput.value) } : null,
+      coverage: coverageSelect.value,
+    });
   }
 
   /** Restores the saved 2D section (else the whole plan) and primes the 3D
@@ -1349,8 +1360,7 @@ import Layout from '../layouts/Layout.astro';
     last3dCamera = null;
     last2dView = null;
     if (!editing) return null;
-    let saved: SavedView | null = null;
-    try { saved = JSON.parse(localStorage.getItem(viewKey(editing.id)) || 'null'); } catch {}
+    const saved: SavedView | null = readPlanView(editing.id);
     const v = saved?.view2d;
     if (v && [v.x, v.y, v.w, v.h].every(Number.isFinite) && v.w > 0) {
       // The canvas may have another shape now: same center and width, new aspect.

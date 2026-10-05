@@ -3,8 +3,17 @@ import Layout from '../layouts/Layout.astro';
 ---
 <Layout title="Perma Design Kit — Geteiltes Projekt">
   <article class="mx-auto max-w-3xl space-y-4 text-stone-800 dark:text-stone-100">
-    <h1 class="text-2xl font-bold" data-i18n="shTitle">Geteiltes Projekt</h1>
+    <h1 id="sh-title" class="text-2xl font-bold" data-i18n="shTitle">Geteiltes Projekt</h1>
+    <p id="sh-example-intro" hidden class="text-sm text-stone-600 dark:text-stone-300" data-i18n="shExampleIntro">Ein Beispielprojekt mit Pflanzen, Polykulturen und Waldgartenplänen. Übernimm es in deine App, um es anzusehen und damit zu experimentieren – deine eigenen Daten bleiben unverändert.</p>
     <p id="sh-status" class="text-sm text-stone-600 dark:text-stone-300" data-i18n="shLoading">Link wird gelesen…</p>
+
+    <section id="sh-present" hidden class="space-y-3 rounded-xl bg-green-50 dark:bg-green-900/30 p-5 ring-1 ring-green-200 dark:ring-green-800">
+      <p class="text-sm" data-i18n="shAlreadyPresent">Dieses Projekt ist schon in deiner App.</p>
+      <div class="flex flex-wrap gap-2">
+        <button id="sh-open-existing" type="button" data-i18n="shOpenProject" class="rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white shadow hover:bg-green-800">Öffnen</button>
+        <button id="sh-import-copy" type="button" data-i18n="shImportCopy" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-4 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Trotzdem als Kopie übernehmen</button>
+      </div>
+    </section>
 
     <section id="sh-content" hidden class="space-y-4 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
       <p id="sh-summary" class="text-base font-semibold"></p>
@@ -54,7 +63,8 @@ import Layout from '../layouts/Layout.astro';
     import type { PlantData } from '../lib/types';
     import { escapeHtml, withButtonSpinner } from '../lib/html';
     import { displayName } from '../lib/plant-name';
-    import type { ParsedBackup } from '../lib/sync';
+    import { LAST_PLAN_KEY, writePlanView } from '../lib/plan-view';
+    import type { DecodedShare } from '../lib/share';
 
     applyStaticI18n(teilenDict);
     const t = createT(teilenDict);
@@ -72,7 +82,7 @@ import Layout from '../layouts/Layout.astro';
     async function main() {
       const data = shareDataFromHash(location.hash);
       if (!data) { status.textContent = t('shNoLink'); return; }
-      let shared: ParsedBackup;
+      let shared: DecodedShare;
       try {
         shared = await decodeShare(data);
       } catch {
@@ -81,6 +91,36 @@ import Layout from '../layouts/Layout.astro';
       }
       status.hidden = true;
       content.hidden = false;
+      // /example → /teilen/?beispiel=1#d=…: same import, friendlier wording.
+      const isExample = new URLSearchParams(location.search).has('beispiel');
+      if (isExample) {
+        document.getElementById('sh-title')!.textContent = t('shExampleTitle');
+        document.getElementById('sh-example-intro')!.hidden = false;
+        document.getElementById('sh-import')!.textContent = t('shExampleImport');
+      }
+      /** Saved camera/section/sun per plan + the plan /gartenplan opens. */
+      const applyViews = (views: DecodedShare['views'], start: DecodedShare['start']) => {
+        for (const [id, v] of Object.entries(views ?? {})) writePlanView(id, v);
+        if (start) { try { localStorage.setItem(LAST_PLAN_KEY, start.planId); } catch {} }
+      };
+      const taken = async () => ({
+        polycultureIds: (await getAllPolycultures()).map(x => x.id),
+        gardenPlanIds: (await getAllGardenPlans()).map(x => x.id),
+      });
+      // Opened before and already imported (same ids): open it instead of
+      // stacking up copies; a copy stays possible.
+      if (mergeShared(shared, await getAllPlants(), await taken()).alreadyPresent) {
+        document.getElementById('sh-present')!.hidden = false;
+        content.hidden = true;
+        document.getElementById('sh-open-existing')!.addEventListener('click', () => {
+          applyViews(shared.views, shared.start);
+          location.href = shared.gardenPlans.length ? '/gartenplan' : '/';
+        });
+        document.getElementById('sh-import-copy')!.addEventListener('click', () => {
+          document.getElementById('sh-present')!.hidden = true;
+          content.hidden = false;
+        });
+      }
       document.getElementById('sh-summary')!.textContent = t('shSummary', {
         plants: shared.plants.length, polycultures: shared.polycultures.length, plans: shared.gardenPlans.length,
       });
@@ -94,17 +134,23 @@ import Layout from '../layouts/Layout.astro';
           try {
             // Never overwrites: plants you have win, plans/polycultures with an id you
             // already use come in as copies (see mergeShared).
-            const merged = mergeShared(shared, await getAllPlants(), {
-              polycultureIds: (await getAllPolycultures()).map(x => x.id),
-              gardenPlanIds: (await getAllGardenPlans()).map(x => x.id),
-            }, t('shCopySuffix'));
+            const merged = mergeShared(shared, await getAllPlants(), await taken(), t('shCopySuffix'));
             await importPlants(merged.plants);
             if (merged.polycultures.length) await importPolycultures(merged.polycultures);
             if (merged.gardenPlans.length) await importGardenPlans(merged.gardenPlans);
+            applyViews(merged.views, merged.start);
             history.replaceState(null, '', location.pathname);
             content.hidden = true;
             document.getElementById('sh-done')!.hidden = false;
-            document.getElementById('sh-to-plans')!.hidden = merged.gardenPlans.length === 0;
+            const toPlans = document.getElementById('sh-to-plans') as HTMLAnchorElement;
+            toPlans.hidden = merged.gardenPlans.length === 0;
+            const startPlan = merged.start && merged.gardenPlans.find(g => g.id === merged.start!.planId);
+            if (startPlan) {
+              // The start plan opens directly (LAST_PLAN_KEY), so make that the main button.
+              toPlans.textContent = t('shOpenPlan', { name: startPlan.name || '—' });
+              toPlans.className = 'rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white shadow hover:bg-green-800';
+              toPlans.parentElement!.prepend(toPlans);
+            }
             document.getElementById('sh-done-text')!.textContent = t('shDone', {
               plants: merged.plants.length, reused: merged.reusedPlants,
               polycultures: merged.polycultures.length, plans: merged.gardenPlans.length,
