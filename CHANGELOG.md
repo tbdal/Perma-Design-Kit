@@ -2,6 +2,9 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Modus „Team“ 2026-10-06
+- [x] **Team als vierter Modus** neben Einfach, Klassisch und Experte: eigene Spalte auf `/admin/` (auch in der „Alle“-Zeile jeder Gruppe), standardmäßig alle Funktionen außer dem Einstieg des einfachen Modus. Nur für Zugänge mit Rolle Team oder Admin; im Menü nur für sie sichtbar, Experten-Zugänge landen stattdessen im Experten-Modus. Private Funktionen können in Experte und Team an sein. Die Sonderregel „Rolle Team sieht im Experten-Modus alles“ entfällt dafür
+
 ## Rolle „Team“, Funktionsgruppen 2026-10-05
 - [x] **Rolle „Team“:** neben „Experte“ und „Admin“; Team-Zugänge sehen im Experten-Modus alle Funktionen, auch die auf der Admin-Seite ausgeschalteten und alle privaten (nur der Einstieg des einfachen Modus bleibt weg). In „Einfach“ und „Klassisch“ sehen sie, was alle sehen. Vergeben auf `/admin/` oder mit `npm run user -- add <name> --team`
 - [x] **Admin-Seite in Gruppen:** Funktionen stehen in einklappbaren Gruppen (zuerst „Waldgartenplan“), jede mit einer Zeile „Alle“, die die ganze Gruppe in einem Modus ein- oder ausschaltet; zugeklappte Gruppen bleiben zugeklappt

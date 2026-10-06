@@ -11,13 +11,21 @@
 //   classic — the full public app as it was before modes existed
 //   expert  — classic + private features (code only on the VPS, src/expert/),
 //             only after login
+//   team    — for the team: by default every feature (also the private ones),
+//             only for accounts with role team or admin
 //
 // Pure module (no DOM): imported by Layout.astro at build time, by ui-mode.ts
 // in the browser and by the tests. Keep the mode logic in sync with
 // public/boot.js, which applies it before first paint.
 
-export type UiMode = 'simple' | 'classic' | 'expert';
-export const UI_MODES: readonly UiMode[] = ['simple', 'classic', 'expert'];
+export type UiMode = 'simple' | 'classic' | 'expert' | 'team';
+export const UI_MODES: readonly UiMode[] = ['simple', 'classic', 'expert', 'team'];
+/** Modes that need a login — the only ones in which private features can be on. */
+export const LOGIN_MODES: readonly UiMode[] = ['expert', 'team'];
+
+export type Role = 'expert' | 'team' | 'admin';
+/** Roles that may use team mode. */
+export const TEAM_ROLES: readonly Role[] = ['team', 'admin'];
 
 export const MODE_KEY = 'pdk-mode';
 /** Admin overrides as last fetched from /api/features (offline fallback). */
@@ -31,7 +39,7 @@ export interface FeatureDef {
   en: string;
   /** Modes in which the feature is on unless the admin overrides it. */
   modes: readonly UiMode[];
-  /** Code lives only in the private repo (src/expert/): can only ever be on in expert mode. */
+  /** Code lives only in the private repo (src/expert/): can only ever be on in expert or team mode. */
   private?: boolean;
   /** Group on the admin page (FEATURE_GROUPS); without one: 'other'. */
   group?: string;
@@ -46,7 +54,7 @@ export const FEATURE_GROUPS: Record<string, { de: string; en: string }> = {
 /** Admin overrides: feature id → modes in which it is on ([] = off everywhere). */
 export type FeatureConfig = Record<string, UiMode[]>;
 
-const FULL: readonly UiMode[] = ['classic', 'expert'];
+const FULL: readonly UiMode[] = ['classic', 'expert', 'team'];
 
 export const FEATURES: readonly FeatureDef[] = [
   { id: 'simple-guide', de: 'Einstieg: Schritte, Schichten sammeln, ein Tipp', en: 'Getting started: steps, layer collection, one tip', modes: ['simple'], group: 'gartenplan' },
@@ -77,21 +85,16 @@ export const isUiMode = (v: unknown): v is UiMode => typeof v === 'string' && (U
 /** Feature ids allowed in a config: lowercase words with dashes (the server applies the same rule). */
 export const FEATURE_ID_RE = /^[a-z0-9][a-z0-9-]{0,39}$/;
 
-/** Logged-in role 'team': in expert mode every feature is on, whatever the admin
- *  set — except these, which only make sense in simple mode. */
-export const TEAM_HIDDEN: readonly string[] = ['simple-guide'];
-
-/** Modes in which a feature is on, after admin overrides. Private features are never on outside expert mode. */
+/** Modes in which a feature is on, after admin overrides. Private features are never on outside the login modes. */
 export function modesFor(id: string, config: FeatureConfig = {}, defs: readonly FeatureDef[] = FEATURES): UiMode[] {
   const def = defs.find(d => d.id === id);
   const modes = config[id] ?? def?.modes ?? [];
-  return modes.filter(m => !def?.private || m === 'expert');
+  return modes.filter(m => !def?.private || LOGIN_MODES.includes(m));
 }
 
 /** Ids of all features that are off in the given mode (defaults plus any ids only the config knows). */
-export function offFeatures(mode: UiMode, config: FeatureConfig = {}, defs: readonly FeatureDef[] = FEATURES, team = false): string[] {
+export function offFeatures(mode: UiMode, config: FeatureConfig = {}, defs: readonly FeatureDef[] = FEATURES): string[] {
   const ids = new Set([...defs.map(d => d.id), ...Object.keys(config)]);
-  if (team && mode === 'expert') return [...ids].filter(id => TEAM_HIDDEN.includes(id));
   return [...ids].filter(id => !modesFor(id, config, defs).includes(mode));
 }
 
@@ -117,9 +120,17 @@ export function initialMode(stored: string | null, returningVisitor: boolean): U
   return returningVisitor ? 'classic' : 'simple';
 }
 
-/** The mode actually in effect: expert needs a login, otherwise the full public app. */
-export function effectiveMode(mode: UiMode, loggedIn: boolean): UiMode {
-  return mode === 'expert' && !loggedIn ? 'classic' : mode;
+/** Whether an account with this role (null = logged out) may use the mode. */
+export function modeAllowed(mode: UiMode, role: Role | null): boolean {
+  if (mode === 'team') return !!role && TEAM_ROLES.includes(role);
+  if (mode === 'expert') return !!role;
+  return true;
+}
+
+/** The mode actually in effect: team falls back to expert (logged in) or classic, expert to classic. */
+export function effectiveMode(mode: UiMode, role: Role | null): UiMode {
+  if (modeAllowed(mode, role)) return mode;
+  return role ? 'expert' : 'classic';
 }
 
 /** CSS that hides every element carrying an off feature. */

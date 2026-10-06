@@ -3,12 +3,12 @@
 // the pure rules live in features.ts; public/boot.js already applied the
 // stored mode before first paint, this module keeps it up to date.
 import {
-  AUTH_KEY, FEATURE_CONFIG_KEY, FEATURES, MODE_KEY, TEAM_HIDDEN,
+  AUTH_KEY, FEATURE_CONFIG_KEY, FEATURES, LOGIN_MODES, MODE_KEY,
   effectiveMode, featureCss, initialMode, isUiMode, modesFor, offFeatures, sanitizeFeatureConfig,
-  type FeatureConfig, type FeatureDef, type UiMode,
+  type FeatureConfig, type FeatureDef, type Role, type UiMode,
 } from './features';
 
-export interface AuthInfo { name: string; role: 'expert' | 'team' | 'admin' }
+export interface AuthInfo { name: string; role: Role }
 
 const CHANGE_EVENT = 'pdk-features-change';
 
@@ -38,7 +38,7 @@ const allDefs = (): readonly FeatureDef[] => [...FEATURES, ...extraDefs];
 export const getAuth = (): AuthInfo | null => auth;
 export const getFeatureConfig = (): FeatureConfig => ({ ...config });
 
-/** The chosen mode, as stored (may be 'expert' while logged out). */
+/** The chosen mode, as stored (may be expert/team while logged out). */
 export function chosenMode(): UiMode {
   let stored: string | null = null;
   let returning = false;
@@ -48,13 +48,10 @@ export function chosenMode(): UiMode {
 
 /** The mode in effect on this page. */
 export function currentMode(): UiMode {
-  return effectiveMode(chosenMode(), !!auth);
+  return effectiveMode(chosenMode(), auth?.role ?? null);
 }
 
-const isTeam = () => auth?.role === 'team';
-
 export function featureOn(id: string): boolean {
-  if (isTeam() && currentMode() === 'expert') return !TEAM_HIDDEN.includes(id);
   return modesFor(id, config, allDefs()).includes(currentMode());
 }
 
@@ -81,7 +78,7 @@ function featureSheet(): CSSStyleSheet | null {
 export function applyFeatures(): void {
   const mode = currentMode();
   document.documentElement.dataset.mode = mode;
-  featureSheet()?.replaceSync(featureCss(offFeatures(mode, config, allDefs(), isTeam())));
+  featureSheet()?.replaceSync(featureCss(offFeatures(mode, config, allDefs())));
   document.dispatchEvent(new CustomEvent(CHANGE_EVENT, { detail: { mode } }));
 }
 
@@ -89,12 +86,15 @@ export function onFeaturesChange(cb: (mode: UiMode) => void): void {
   document.addEventListener(CHANGE_EVENT, e => cb((e as CustomEvent<{ mode: UiMode }>).detail.mode));
 }
 
-/** Switches the mode. Entering or leaving expert mode reloads the page, so private code is mounted or gone. */
+/** Whether private code runs in this mode (expert, team). */
+export const isLoginMode = (mode: UiMode): boolean => LOGIN_MODES.includes(mode);
+
+/** Switches the mode. Entering or leaving a login mode reloads the page, so private code is mounted or gone. */
 export function setMode(mode: UiMode): void {
   const before = currentMode();
   try { localStorage.setItem(MODE_KEY, mode); } catch { /* ignore */ }
   const after = currentMode();
-  if ((before === 'expert') !== (after === 'expert')) location.reload();
+  if (isLoginMode(before) || isLoginMode(after)) location.reload();
   else applyFeatures();
 }
 
@@ -109,12 +109,14 @@ export async function refreshAuth(): Promise<AuthInfo | null> {
 }
 
 function setAuth(next: AuthInfo | null): void {
+  const before = auth;
   const changed = JSON.stringify(next) !== JSON.stringify(auth);
   auth = next;
   writeJson(AUTH_KEY, next);
   if (changed) {
-    // Logged out elsewhere (or the session expired) while in expert mode: back to the public app.
-    if (!next && chosenMode() === 'expert') location.reload();
+    // Logged out elsewhere, session expired or role changed while in a login mode: reload into what is allowed.
+    const was = effectiveMode(chosenMode(), before?.role ?? null);
+    if (isLoginMode(was) !== isLoginMode(currentMode())) location.reload();
     else applyFeatures();
   }
 }
@@ -160,7 +162,7 @@ export async function logout(): Promise<void> {
   auth = null;
   writeJson(AUTH_KEY, null);
   await dropPrivateCache();
-  if (chosenMode() === 'expert') { try { localStorage.setItem(MODE_KEY, 'classic'); } catch { /* ignore */ } }
+  if (isLoginMode(chosenMode())) { try { localStorage.setItem(MODE_KEY, 'classic'); } catch { /* ignore */ } }
   location.reload();
 }
 

@@ -120,6 +120,8 @@ export const layoutDict: Dict = {
   modeClassicDesc: { de: 'Alle Werkzeuge, wie bisher', en: 'All tools, as before' },
   modeExpert: { de: 'Experte', en: 'Expert' },
   modeExpertDesc: { de: 'Klassisch plus Funktionen in Erprobung (mit Zugang)', en: 'Classic plus features being tried out (needs access)' },
+  modeTeam: { de: 'Team', en: 'Team' },
+  modeTeamDesc: { de: 'Alle Funktionen zum Testen (nur Team)', en: 'Every feature, for testing (team only)' },
   modeLogin: { de: 'Anmelden', en: 'Log in' },
   modeLogout: { de: 'Abmelden', en: 'Log out' },
   modeAdmin: { de: 'Funktionen verwalten', en: 'Manage features' },

@@ -34,17 +34,18 @@
     var get = function (k) { try { return localStorage.getItem(k); } catch (_) { return null; } };
     var parse = function (s) { try { return s ? JSON.parse(s) : null; } catch (_) { return null; } };
     var mode = get('pdk-mode');
-    if (mode !== 'simple' && mode !== 'classic' && mode !== 'expert') {
+    if (mode !== 'simple' && mode !== 'classic' && mode !== 'expert' && mode !== 'team') {
       mode = get('pdk-welcome-seen') ? 'classic' : 'simple';
       try { localStorage.setItem('pdk-mode', mode); } catch (_) {}
     }
     var auth = parse(get('pdk-auth'));
-    if (mode === 'expert' && !(auth && auth.name)) mode = 'classic';
+    // effectiveMode() in features.ts: team needs role team/admin, expert any login.
+    var role = auth && auth.name ? auth.role : null;
+    if (mode === 'team' && role !== 'team' && role !== 'admin') mode = role ? 'expert' : 'classic';
+    if (mode === 'expert' && !role) mode = 'classic';
     root.dataset.mode = mode;
     var defaults = parse(root.getAttribute('data-feature-defaults')) || {};
     var config = parse(get('pdk-feature-config')) || {};
-    // Role 'team' sees every feature in expert mode (TEAM_HIDDEN in features.ts aside).
-    var team = mode === 'expert' && !!auth && auth.role === 'team';
     var css = '';
     var seen = {};
     var ids = Object.keys(defaults).concat(Object.keys(config));
@@ -53,7 +54,7 @@
       if (seen[id] || !/^[a-z0-9][a-z0-9-]{0,39}$/.test(id)) continue;
       seen[id] = 1;
       var modes = Array.isArray(config[id]) ? config[id] : (defaults[id] || []);
-      if (team ? id === 'simple-guide' : modes.indexOf(mode) < 0) css += '[data-feature~="' + id + '"]{display:none!important}\n';
+      if (modes.indexOf(mode) < 0) css += '[data-feature~="' + id + '"]{display:none!important}\n';
     }
     var sheet = new CSSStyleSheet();
     sheet.replaceSync(css);

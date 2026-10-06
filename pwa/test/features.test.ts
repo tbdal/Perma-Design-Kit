@@ -31,6 +31,7 @@ describe('feature table', () => {
     expect(offFeatures('simple')).toEqual(FEATURES.filter(f => f.id !== 'simple-guide').map(f => f.id));
     expect(offFeatures('classic')).toEqual(['simple-guide']);
     expect(offFeatures('expert')).toEqual(['simple-guide']);
+    expect(offFeatures('team')).toEqual(['simple-guide']);
   });
 });
 
@@ -47,11 +48,10 @@ describe('admin overrides', () => {
     expect(offFeatures('classic', {}, defs)).toContain('waldrand');
   });
 
-  it('team accounts see every feature in expert mode, also ones switched off', () => {
-    const defs: FeatureDef[] = [...FEATURES, { id: 'waldrand', de: 'W', en: 'W', modes: [], private: true }];
-    expect(offFeatures('expert', { water: [], zones: [] }, defs, true)).toEqual(['simple-guide']);
-    // in simple/classic, team sees what everyone sees
-    expect(offFeatures('classic', { water: [] }, defs, true)).toContain('water');
+  it('team mode is configured like any other mode; private features can be on there too', () => {
+    const defs: FeatureDef[] = [...FEATURES, { id: 'waldrand', de: 'W', en: 'W', modes: ['team'], private: true }];
+    expect(offFeatures('team', { water: ['classic'] }, defs)).toEqual(['simple-guide', 'water']);
+    expect(modesFor('waldrand', { waldrand: ['classic', 'team'] }, defs)).toEqual(['team']);
   });
 
   it('every feature has a known group', () => {
@@ -79,9 +79,16 @@ describe('mode choice', () => {
   });
 
   it('expert needs a login', () => {
-    expect(effectiveMode('expert', false)).toBe('classic');
-    expect(effectiveMode('expert', true)).toBe('expert');
-    expect(effectiveMode('simple', false)).toBe('simple');
+    expect(effectiveMode('expert', null)).toBe('classic');
+    expect(effectiveMode('expert', 'expert')).toBe('expert');
+    expect(effectiveMode('simple', null)).toBe('simple');
+  });
+
+  it('team mode needs role team or admin', () => {
+    expect(effectiveMode('team', 'team')).toBe('team');
+    expect(effectiveMode('team', 'admin')).toBe('team');
+    expect(effectiveMode('team', 'expert')).toBe('expert');
+    expect(effectiveMode('team', null)).toBe('classic');
   });
 
   it('builds the hiding css and the boot defaults', () => {

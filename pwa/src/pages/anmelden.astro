@@ -71,8 +71,10 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
         error.textContent = t(res.reason === 'credentials' ? 'acErrCredentials' : res.reason === 'rate' ? 'acErrRate' : 'acErrServer');
         return;
       }
-      if (params.get('mode') === 'expert') {
-        try { localStorage.setItem('pdk-mode', 'expert'); } catch { /* ignore */ }
+      const wanted = params.get('mode');
+      if (wanted === 'expert' || wanted === 'team') {
+        // effectiveMode() falls back to expert if this account may not use team mode.
+        try { localStorage.setItem('pdk-mode', wanted); } catch { /* ignore */ }
         location.href = next;
         return;
       }

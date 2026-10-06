@@ -19,7 +19,7 @@ export const accessDict: Dict = {
   acPrivacy: { de: 'Datenschutz', en: 'Privacy' },
 
   adTitle: { de: 'Funktionen und Modi', en: 'Features and modes' },
-  adIntro: { de: 'Hier legst du fest, in welchen Modi eine Funktion erscheint. Eine Funktion kann in mehreren Modi aktiv sein; „Aus“ blendet sie überall aus. Funktionen mit „nur VPS“ kommen aus dem privaten Repo und gibt es nur im Experten-Modus.', en: 'Choose in which modes each feature appears. A feature can be on in several modes; “Off” hides it everywhere. Features marked “VPS only” come from the private repo and only exist in expert mode.' },
+  adIntro: { de: 'Hier legst du fest, in welchen Modi eine Funktion erscheint. Eine Funktion kann in mehreren Modi aktiv sein; „Aus“ blendet sie überall aus. Funktionen mit „nur VPS“ kommen aus dem privaten Repo und gibt es nur in den Modi Experte und Team.', en: 'Choose in which modes each feature appears. A feature can be on in several modes; “Off” hides it everywhere. Features marked “VPS only” come from the private repo and only exist in expert and team mode.' },
   adNeedAdmin: { de: 'Diese Seite ist nur für Admins.', en: 'This page is for admins only.' },
   adLoginLink: { de: 'Anmelden', en: 'Log in' },
   adFeature: { de: 'Funktion', en: 'Feature' },
@@ -40,7 +40,7 @@ export const accessDict: Dict = {
   adRoleExpert: { de: 'Experte', en: 'Expert' },
   adRoleAdmin: { de: 'Admin', en: 'Admin' },
   adRoleTeam: { de: 'Team', en: 'Team' },
-  adRolesHint: { de: 'Experte: Funktionen wie oben eingestellt. Team: im Experten-Modus alle Funktionen, auch ausgeschaltete. Admin: wie Experte, dazu diese Seite.', en: 'Expert: features as set above. Team: every feature in expert mode, including switched-off ones. Admin: like expert, plus this page.' },
+  adRolesHint: { de: 'Experte: Modus Experte. Team: dazu der Modus Team. Admin: wie Team, dazu diese Seite.', en: 'Expert: expert mode. Team: also team mode. Admin: like team, plus this page.' },
   adSince: { de: 'seit', en: 'since' },
   adSetPassword: { de: 'Neues Passwort', en: 'New password' },
   adRemove: { de: 'Entfernen', en: 'Remove' },

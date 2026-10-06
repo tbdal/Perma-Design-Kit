@@ -14,9 +14,9 @@ import { fileURLToPath } from 'node:url';
 
 export const SESSION_COOKIE = 'pdk_s';
 export const SESSION_DAYS = 90;
-/** expert: private features as the admin set them; team: every feature in expert mode; admin: like expert + /admin/. */
+/** expert: expert mode; team: expert + team mode; admin: like team + /admin/. */
 export const ROLES = ['expert', 'team', 'admin'];
-const MODES = ['simple', 'classic', 'expert'];
+const MODES = ['simple', 'classic', 'expert', 'team'];
 const FEATURE_ID_RE = /^[a-z0-9][a-z0-9-]{0,39}$/;
 export const NAME_RE = /^[\p{L}\p{N}][\p{L}\p{N} ._-]{0,39}$/u;
 export const MIN_PASSWORD = 10;

@@ -42,7 +42,7 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
               <option value="admin" data-i18n="adRoleAdmin">Admin</option>
             </select>
           </label>
-          <p class="text-[11px] text-stone-500 dark:text-stone-400" data-i18n="adRolesHint">Experte: Funktionen wie oben eingestellt. Team: im Experten-Modus alle Funktionen, auch ausgeschaltete. Admin: wie Experte, dazu diese Seite.</p>
+          <p class="text-[11px] text-stone-500 dark:text-stone-400" data-i18n="adRolesHint">Experte: Modus Experte. Team: dazu der Modus Team. Admin: wie Team, dazu diese Seite.</p>
           <button type="submit" data-i18n="adAddUser" class={`${btn} bg-green-700 text-white hover:bg-green-800`}>Zugang anlegen</button>
           <p id="user-status" role="status" class="text-sm text-stone-600 dark:text-stone-300"></p>
         </form>
@@ -54,7 +54,7 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
     import { applyStaticI18n, createT, getLang } from '../lib/i18n/core';
     import { accessDict } from '../lib/i18n/dict-access';
     import { layoutDict } from '../lib/i18n/dict-layout';
-    import { FEATURES, FEATURE_GROUPS, UI_MODES, sanitizeFeatureConfig, type FeatureConfig, type FeatureDef, type UiMode } from '../lib/features';
+    import { FEATURES, FEATURE_GROUPS, LOGIN_MODES, UI_MODES, sanitizeFeatureConfig, type FeatureConfig, type FeatureDef, type UiMode } from '../lib/features';
     import { refreshAuth } from '../lib/ui-mode';
     import { loadExpertModule } from '../lib/expert-loader';
     import { escapeHtml } from '../lib/html';
@@ -62,7 +62,7 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
     applyStaticI18n(accessDict);
     const t = createT(layoutDict, accessDict);
     const lang = getLang();
-    const MODE_KEY: Record<UiMode, string> = { simple: 'modeSimple', classic: 'modeClassic', expert: 'modeExpert' };
+    const MODE_KEY: Record<UiMode, string> = { simple: 'modeSimple', classic: 'modeClassic', expert: 'modeExpert', team: 'modeTeam' };
 
     const rows = document.getElementById('feature-groups')!;
     /** Groups the admin folded away (kept on this device). */
@@ -94,7 +94,7 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
     }
 
     const modesOf = (d: FeatureDef, cfg: FeatureConfig): UiMode[] =>
-      (cfg[d.id] ?? [...d.modes]).filter(m => !d.private || m === 'expert');
+      (cfg[d.id] ?? [...d.modes]).filter(m => !d.private || LOGIN_MODES.includes(m));
     const same = (a: UiMode[], b: readonly UiMode[]) => a.length === b.length && a.every(m => b.includes(m));
 
     function changedCount() {
@@ -108,7 +108,7 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
 
     const groupOf = (d: FeatureDef) => d.group || 'other';
     const groupLabel = (g: string) => FEATURE_GROUPS[g]?.[lang] ?? g;
-    const settable = (d: FeatureDef, mode: UiMode) => !d.private || mode === 'expert';
+    const settable = (d: FeatureDef, mode: UiMode) => !d.private || LOGIN_MODES.includes(mode);
 
     function setModes(def: FeatureDef, modes: UiMode[]) {
       modes = UI_MODES.filter(m => modes.includes(m) && settable(def, m));
@@ -162,7 +162,7 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
         const on = modesOf(d, draft);
         const changed = !same(on, d.modes);
         const cell = (mode: UiMode) => {
-          const disabled = d.private && mode !== 'expert';
+          const disabled = !settable(d, mode);
           return `<td class="px-2 py-2 text-center"><input type="checkbox" data-id="${d.id}" data-mode="${mode}" ${on.includes(mode) ? 'checked' : ''} ${disabled ? 'disabled' : ''}
             aria-label="${escapeHtml(`${d[lang]}: ${t(MODE_KEY[mode])}`)}" class="h-4 w-4 accent-green-700 disabled:opacity-30" /></td>`;
         };

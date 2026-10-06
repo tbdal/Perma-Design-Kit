@@ -80,7 +80,7 @@ test('admin overrides from the server apply; admin page edits them', async ({ pa
   await setMode(page, 'simple');
   const json = (body: unknown) => ({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
   await page.route('**/api/auth/me', r => r.fulfill(json({ name: 'Ann', role: 'admin' })));
-  await page.route('**/api/features', r => r.fulfill(json({ features: { areas: ['simple', 'classic', 'expert'] } })));
+  await page.route('**/api/features', r => r.fulfill(json({ features: { areas: ['simple', 'classic', 'expert', 'team'] } })));
   await page.route('**/api/admin/users', r => r.fulfill(json({ users: [{ name: 'Ann', role: 'admin', created: '2026-10-05T00:00:00Z' }] })));
   let saved: unknown = null;
   await page.route('**/api/admin/features', async r => {
@@ -112,6 +112,6 @@ test('admin overrides from the server apply; admin page edits them', async ({ pa
   await page.click('#features-save');
   await expect(page.locator('#features-status')).toContainText('Übernommen');
   // "Alle" off in simple also took the guide and the server's "areas" override out of simple mode
-  expect(saved).toEqual({ features: { 'simple-guide': [], water: ['simple', 'classic', 'expert'], zones: [] } });
+  expect(saved).toEqual({ features: { 'simple-guide': [], water: ['simple', 'classic', 'expert', 'team'], zones: [] } });
   void errors;
 });
