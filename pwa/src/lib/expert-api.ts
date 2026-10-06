@@ -7,7 +7,7 @@
 // may use through providePageApi(). Without src/expert/ nothing of this runs
 // and the public build is unchanged.
 import type { FeatureDef } from './features';
-import type { GardenPlan, PlantData } from './types';
+import type { GardenPlan, GardenPlanPoint, PlantData } from './types';
 import type { Lang } from './i18n/core';
 import type { Scene3DLayer } from './gartenplan-3d';
 import type { Occluder } from './sun-hours';
@@ -47,7 +47,10 @@ export interface GartenplanApi {
    *  metres; `px` = metres per screen pixel, for line widths and text sizes. Redrawn
    *  with the plan and by refresh(); the returned function redraws just the overlays. */
   addPlanOverlay(featureId: string, draw: (px: number) => string): () => void;
-  /** The plants the plan refers to, by id. */
+  /** Waits for the next tap on the 2D plan and gives its point (plan metres);
+   *  null when cancelled (Esc, another pick, editor closed, 3D view open). */
+  pickPoint(): Promise<GardenPlanPoint | null>;
+  /** All plants of the user's list, by id (the plan's placements refer to them). */
   plantsById(): Map<string, PlantData>;
   /** Ground height (m above sea level) at a plan point, or null without terrain data. */
   groundAt(xM: number, yM: number): number | null;

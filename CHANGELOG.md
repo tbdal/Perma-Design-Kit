@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Schnittstellen für Experten-Module: Punkt im Plan wählen 2026-10-06
+- [x] **Waldgartenplan:** Experten-Module können einen Punkt im 2D-Plan antippen lassen (`pickPoint`, Esc bricht ab) #minor
+
 ## Waldgartenplan: Rahmen unter der Planfläche 2026-10-06
 - [x] **Rahmen als x m × y m:** im Feld „Ausgewählt“ des Umrisses steht der Rahmen (Raster) direkt unter der Planfläche, als „60 m × 25 m“; die Projekt-Kacheln zeigen zuerst die Planfläche in m², dann „Rahmen 60 m × 25 m“ #minor
 

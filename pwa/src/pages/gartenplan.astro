@@ -1033,6 +1033,7 @@ import Layout from '../layouts/Layout.astro';
   }
 
   function closeEditor() {
+    finishPick(null);
     saveViewState();
     stopSunPlay();
     destroyMapDrawer();
@@ -2454,6 +2455,7 @@ import Layout from '../layouts/Layout.astro';
    *  the armed plant, otherwise select the tapped area / clear selection. */
   function onCanvasTap(e: PointerEvent, target: Element | null) {
     if (!editing) return;
+    if (pendingPick) { finishPick(clientToMeters(planSvg, e.clientX, e.clientY)); return; }
     if (rowDraft) { addRowPoint(e); return; }
     if (packageArmed) { placePackage(e); return; }
     if (areaDraft) { addAreaDraftPoint(e); return; }
@@ -4128,6 +4130,19 @@ import Layout from '../layouts/Layout.astro';
   const pluginLayers: { featureId: string; layer: Scene3DLayer }[] = [];
   const pluginOccluderFns: { featureId: string; fn: (groundZ: (x: number, y: number) => number) => Occluder[] }[] = [];
   const pluginOverlays: { featureId: string; draw: (px: number) => string }[] = [];
+  // One-shot point picking for plugins: the next tap on the 2D plan, Esc cancels.
+  let pendingPick: ((p: GardenPlanPoint | null) => void) | null = null;
+  function finishPick(p: GardenPlanPoint | null) {
+    const done = pendingPick;
+    if (!done) return;
+    pendingPick = null;
+    planSvg.style.cursor = '';
+    document.removeEventListener('keydown', pickEscape, true);
+    done(p);
+  }
+  function pickEscape(e: KeyboardEvent) {
+    if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); finishPick(null); }
+  }
   /** Plugin drawings on the 2D plan: markup in metres, `px` = metres per screen pixel. */
   function renderPluginOverlays() {
     const g = planSvg.querySelector('#plugin-layer');
@@ -4154,6 +4169,15 @@ import Layout from '../layouts/Layout.astro';
     addSunOccluders(featureId, fn) { pluginOccluderFns.push({ featureId, fn }); },
     addPlanOverlay(featureId, draw) { pluginOverlays.push({ featureId, draw }); renderPluginOverlays(); return renderPluginOverlays; },
     plantsById: () => plantsById,
+    pickPoint() {
+      finishPick(null);
+      if (!editing || !plan3dContainer.hidden) return Promise.resolve(null);
+      return new Promise(resolve => {
+        pendingPick = resolve;
+        planSvg.style.cursor = 'crosshair';
+        document.addEventListener('keydown', pickEscape, true);
+      });
+    },
     groundAt: (xM, yM) => (terrain && editing?.geo ? sampleGrid(terrain, xM, yM) : null),
     refresh() {
       if (!editing) return;
