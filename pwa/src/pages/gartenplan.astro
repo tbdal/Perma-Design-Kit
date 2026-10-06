@@ -530,7 +530,7 @@ import Layout from '../layouts/Layout.astro';
   import { growPlanToFit } from '../lib/gartenplan-extent';
   import type { PlanRect } from '../lib/gartenplan-geo';
   import { compassLabel, sunPosition } from '../lib/sun-position';
-  import { browserTimeZone, timeZoneAt, wallClock, zonedDate, zoneLabel } from '../lib/plan-time';
+  import { browserTimeZone, timeZoneAt, timeZoneLabel, wallClock, zonedDate } from '../lib/plan-time';
   import { COVER_FUNCS, coverageGrid, coverageSummary, findGaps, suggestPlants, hasFunc, funcCount, influenceRadius, type CoverFunc } from '../lib/function-coverage';
   import { layoutPolyculture } from '../lib/polyculture-layout';
   import { shoppingRows, shoppingTotal, shoppingCsv, exportShoppingPDF, downloadText, type ShoppingLabels } from '../lib/plan-shopping';
@@ -1543,7 +1543,7 @@ import Layout from '../layouts/Layout.astro';
     const at = sunMoment();
     sunTimeLabel.textContent = `${pad(Math.floor(mins / 60))}:${pad(mins % 60)}`;
     // Located plans name the zone, e.g. "MESZ" or "WEST" for a garden in Portugal.
-    if (at && editing?.geo) sunTimeLabel.textContent += ` ${zoneLabel(at, sunTz, lang)}`;
+    if (at && editing?.geo) sunTimeLabel.textContent += ` ${timeZoneLabel(at, sunTz, lang)}`;
     if (!view3d || !at) return;
     const p = view3d.setSunTime(at, sunTz);
     const where = editing?.geo ? '' : ' · ' + t('sunNoLocation');

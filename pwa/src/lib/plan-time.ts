@@ -64,7 +64,7 @@ export function zonedDate(y: number, m: number, d: number, h: number, min: numbe
 }
 
 /** Short name of the zone at this instant, e.g. "MESZ" / "CEST", or "GMT+1". */
-export function zoneLabel(date: Date, tz: string, lang: string): string {
+export function timeZoneLabel(date: Date, tz: string, lang: string): string {
   const part = new Intl.DateTimeFormat(lang, { timeZone: tz, timeZoneName: 'short' }).formatToParts(date).find(p => p.type === 'timeZoneName');
   return part?.value ?? tz;
 }

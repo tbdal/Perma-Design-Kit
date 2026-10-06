@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { timeZoneAt, wallClock, zonedDate, zoneLabel, zoneOffsetMin } from '../src/lib/plan-time';
+import { timeZoneAt, timeZoneLabel, wallClock, zonedDate, zoneOffsetMin } from '../src/lib/plan-time';
 import { sunSamples } from '../src/lib/sun-hours';
 import { sunPosition } from '../src/lib/sun-position';
 import { sourceLabel } from '../src/lib/types';
@@ -27,7 +27,7 @@ describe('clock time at the garden', () => {
     expect(wallClock(t, 'Europe/Berlin')).toEqual({ y: 2026, m: 6, d: 21, h: 12, min: 0 });
     expect(wallClock(t, 'Europe/Lisbon')).toEqual({ y: 2026, m: 6, d: 21, h: 11, min: 0 });
     expect(zoneOffsetMin(t, 'Europe/Berlin')).toBe(120);
-    expect(zoneLabel(t, 'Europe/Berlin', 'de')).toBe('MESZ');
+    expect(timeZoneLabel(t, 'Europe/Berlin', 'de')).toBe('MESZ');
   });
 
   it('noon at a garden in Portugal is noon there, not in the browser’s zone', () => {
