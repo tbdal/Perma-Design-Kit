@@ -79,3 +79,18 @@ test('a new build waits, announces itself and takes over on "reload"', async ({ 
   }
   expect(errors).toEqual([]);
 });
+
+test('a second tab learns that the data changed and offers a reload', async ({ page, context, errors }) => {
+  await stubNetwork(page);
+  await page.goto('/');
+  const other = await context.newPage();
+  await stubNetwork(other);
+  await loadSamples(other);
+
+  await expect(page.locator('#stale-banner')).toBeVisible();
+  await expect(other.locator('#stale-banner')).toBeHidden();
+  await Promise.all([page.waitForEvent('load'), page.click('#stale-reload')]);
+  await expect(page.locator('#plant-list [data-id]').first()).toBeAttached();
+  await expect(page.locator('#stale-banner')).toBeHidden();
+  expect(errors).toEqual([]);
+});

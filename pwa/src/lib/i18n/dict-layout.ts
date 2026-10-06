@@ -4,6 +4,7 @@ export const layoutDict: Dict = {
   installBannerText: { de: 'Perma Design Kit auf den Startbildschirm legen?', en: 'Add Perma Design Kit to your home screen?' },
   updateBannerText: { de: 'Eine neue Version von Perma Design Kit ist da.', en: 'A new version of Perma Design Kit is available.' },
   updateBannerReload: { de: 'Neu laden', en: 'Reload' },
+  staleBannerText: { de: 'Deine Daten wurden in einem anderen Tab geändert. Lade neu, bevor du hier weiterarbeitest.', en: 'Your data was changed in another tab. Reload before you continue working here.' },
   installBtn: { de: 'Installieren', en: 'Install' },
   closeBtn: { de: 'Schließen', en: 'Close' },
   footerReport: { de: 'Fehler melden', en: 'Report a problem' },

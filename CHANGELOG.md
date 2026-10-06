@@ -11,7 +11,10 @@ Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerb
 - [x] **iPad** bekommt den Installier-Hinweis jetzt auch (iPadOS meldet sich als Mac). #bugs
 - [x] **Hinweis zum Speicher auf iOS:** die App auf dem Home-Bildschirm hat einen eigenen, leeren Speicher (vorher Backup anlegen), und im Safari-Tab kann iOS Daten nach 7 Tagen ohne Besuch löschen. #minor
 - [x] Im Entwicklungsserver wird kein Service Worker mehr registriert (ein vorhandener wird abgemeldet). #minor
-- [x] Browser-Tests: `e2e/offline.e2e.ts` (alle Seiten offline, Icons, Update-Ablauf). #minor
+- [x] **Mehrere Tabs:** ändert ein Tab die Daten, lädt ein anderer beim Zurückkehren neu oder zeigt (wenn er gerade sichtbar ist oder ein Dialog offen ist) den Hinweis „in einem anderen Tab geändert“. Bisher überschrieb ein älterer Tab beim nächsten Speichern den neueren Stand, z. B. einen ganzen Waldgartenplan. #bugs
+- [x] **Dauerhafter Speicher nach dem Installieren:** direkt nach der Installation wird der Browser um dauerhaften Speicher gebeten. #minor
+- [x] **Hilfe:** Abschnitt „App installieren“ erklärt Offline-Betrieb, den Versionshinweis, den getrennten Speicher auf iOS und das Verhalten mit mehreren Tabs. #minor
+- [x] Browser-Tests: `e2e/offline.e2e.ts` (alle Seiten offline, Icons, Update-Ablauf, zweiter Tab). #minor
 
 ## Backup und Sync zuverlässiger 2026-10-06
 - [x] **Mehr im Backup:** eigene (per CSV importierte) Sortenlisten und die Ansicht jedes Waldgartenplans (2D-Ausschnitt, 3D-Kamera, Sonne, Einfärben) reisen jetzt mit. Die Wikidata-Sortenliste bleibt draußen — sie ist groß und mit einem Klick neu geladen. #major

@@ -61,6 +61,12 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
       <button id="update-reload" type="button" data-i18n="updateBannerReload" class="shrink-0 rounded-md bg-white px-3 py-1 text-xs font-semibold text-green-800 transition hover:bg-stone-100">Neu laden</button>
     </div>
 
+    <!-- Daten in einem anderen Tab geändert (lib/data-channel.ts) -->
+    <div id="stale-banner" hidden role="status" class="flex items-center justify-between gap-3 bg-amber-100 dark:bg-amber-900/40 px-4 py-2 text-sm text-amber-900 dark:text-amber-100 sm:px-6">
+      <span data-i18n="staleBannerText">Deine Daten wurden in einem anderen Tab geändert. Lade neu, bevor du hier weiterarbeitest.</span>
+      <button id="stale-reload" type="button" data-i18n="updateBannerReload" class="shrink-0 rounded-md bg-white dark:bg-stone-800 px-3 py-1 text-xs font-semibold text-amber-900 dark:text-amber-100 ring-1 ring-amber-300 dark:ring-amber-800 hover:bg-amber-50 dark:hover:bg-stone-700">Neu laden</button>
+    </div>
+
     <!-- Dauerhafter Speicher: erklärt, bevor der Browser (Firefox) fragt -->
     <div id="persist-banner" hidden class="flex flex-wrap items-center justify-between gap-3 bg-green-100 dark:bg-green-900/40 px-4 py-2 text-sm text-green-950 dark:text-green-50 sm:px-6">
       <span id="persist-banner-text" class="min-w-0 flex-1" data-i18n="persistBannerText">Deine Pflanzen und Pläne liegen nur in diesem Browser. Damit er sie bei Speichermangel nicht löscht, bitte ihn um dauerhaften Speicher – manche Browser fragen dann nach.</span>
@@ -519,6 +525,7 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
     </script>
     <script>
       import { getLang, setLang, createT, applyStaticI18n, type Lang } from '../lib/i18n/core';
+      import { onForeignChange, staleAction } from '../lib/data-channel';
       import { getContrast, setContrast, applyContrast, getFontSize, setFontSize, applyFontSize, type ContrastPref, type FontSizePref } from '../lib/settings';
       import { layoutDict } from '../lib/i18n/dict-layout';
       import { installBrokenImageCleanup } from '../lib/html';
@@ -580,6 +587,19 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
           }
         });
       });
+
+      // Another tab changed the data: this tab's copy in memory is old, and
+      // saving from it would overwrite the newer state (lib/data-channel.ts).
+      (function () {
+        const banner = document.getElementById('stale-banner');
+        let reloadOnReturn = false;
+        onForeignChange(() => {
+          if (staleAction(document.hidden, !!document.querySelector('dialog[open]')) === 'reload-on-return') reloadOnReturn = true;
+          else if (banner) banner.hidden = false;
+        });
+        document.addEventListener('visibilitychange', () => { if (!document.hidden && reloadOnReturn) location.reload(); });
+        document.getElementById('stale-reload')?.addEventListener('click', () => location.reload());
+      })();
 
       // Service worker (public/sw.js): keeps the whole build for offline use.
       // A new build installs in the background and waits; the banner lets the
@@ -831,6 +851,8 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
       });
 
       window.addEventListener('appinstalled', () => {
+        // An installed app is what browsers grant persistent storage to — ask right away (no prompt in Chrome).
+        navigator.storage?.persist?.().catch(() => {});
         if (installBanner) installBanner.hidden = true;
         if (iosPopup) iosPopup.hidden = true;
         lsSet('install-dismissed', '1');
