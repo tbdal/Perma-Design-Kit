@@ -70,9 +70,10 @@ Versions published before the switch (the commit tagged `fsl-start`, 2026-10-04)
 ## Authors
 
 - **Jörn Müller** ([@permagruen](https://github.com/permagruen), [permagruen.de](https://www.permagruen.de)) — original idea, plant lists, help texts, ideas, roadmap, ..
-- **Andreas Linder** ([@tbdal](https://github.com/tbdal)) — Perma Design Kit PWA, ideas, roadmap..
+- **Andi Linder** ([@tbdal](https://github.com/tbdal)) — Perma Design Kit PWA, ideas, roadmap..
+- **Jens Steger** ([@js32](https://github.com/js32)) — PWA foundations, UX and roadmap
+
 
 ## Based on
 
 - [PermacultureTreeGuildsDesigner](https://github.com/SZzip/PermacultureTreeGuildsDesigner) by Sebastian Schucht ([@SZzip](https://github.com/SZzip)) — the original PowerShell tooling, preserved in `legacy/`
-- [Perma-Guild-Forge](https://github.com/js32/Perma-Guild-Forge) by Jens Steger ([@js32](https://github.com/js32)) — PWA foundations
