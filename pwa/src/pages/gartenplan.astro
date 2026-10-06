@@ -536,6 +536,7 @@ import Layout from '../layouts/Layout.astro';
   import { crowdingWarnings, shadeWarnings, grownOccluders, WARN_YEARS } from '../lib/plan-warnings';
   import { fetchBuildings, BUILDINGS_ATTRIBUTION, type Building } from '../lib/osm-buildings';
   import { sunSamples, sunHoursAt, sunClass, planOccluders, planCells, SEASON_DATES, type SunScene, type SunSample, type SunClass, type Occluder } from '../lib/sun-hours';
+  import type { Scene3DLayer } from '../lib/gartenplan-3d';
   import { BOOL_FIELDS } from '../lib/plant-fields';
   import { orthoFor } from '../lib/ortho-sources';
   import { dgmFor, refineWithDgm } from '../lib/dgm';
@@ -1459,6 +1460,7 @@ import Layout from '../layouts/Layout.astro';
       rotationDeg: geo?.rotationDeg ?? 0,
       terrain: geo ? terrain : null,
       buildings: showBuildings() ? buildings : [],
+      layers: pluginLayers.filter(l => featureOn(l.featureId)).map(l => l.layer),
       onTileFallback: noteOrthoFallback,
     });
     if (from2d) camera3dAtEnter = view3d.getCameraState();
@@ -3754,7 +3756,7 @@ import Layout from '../layouts/Layout.astro';
       z: groundZ, minX: tg.minX, minY: tg.minY, maxX: tg.minX + (tg.nx - 1) * tg.cellM, maxY: tg.minY + (tg.ny - 1) * tg.cellM,
       maxZ: terrainMaxZ!.z, stepM: Math.max(1, tg.cellM),
     } : null;
-    const occluders = [...planOccluders(editing!, plantsById, editing!.yearsSincePlanting, groundZ), ...buildingOccluders(groundZ)];
+    const occluders = [...planOccluders(editing!, plantsById, editing!.yearsSincePlanting, groundZ), ...buildingOccluders(groundZ), ...pluginOccluders(groundZ)];
     return { scene: { occluders, groundZ, terrain: tr } };
   }
 
@@ -3932,7 +3934,7 @@ import Layout from '../layouts/Layout.astro';
     };
     const crowd = crowdingWarnings(plan, plantsById);
     const { scene } = sunContext();
-    const grown = { ...scene, occluders: [...grownOccluders(plan, plantsById, scene.groundZ), ...buildingOccluders(scene.groundZ)] };
+    const grown = { ...scene, occluders: [...grownOccluders(plan, plantsById, scene.groundZ), ...buildingOccluders(scene.groundZ), ...pluginOccluders(scene.groundZ)] };
     const shade = shadeWarnings(plan, plantsById, grown, seasonSamples());
     const fmt1 = (v: number) => new Intl.NumberFormat(lang, { maximumFractionDigits: 1 }).format(v);
     // Site climate: per plant (all its placements), not per placement.
@@ -4113,6 +4115,12 @@ import Layout from '../layouts/Layout.astro';
 
   // ── Schnittstelle für private Experten-Module (lib/expert-api.ts) ───────
   const planChangeListeners: ((plan: GardenPlan | null) => void)[] = [];
+  // Plugin hooks (expert-api.ts): extra 3D content and shade casters.
+  const pluginLayers: { featureId: string; layer: Scene3DLayer }[] = [];
+  const pluginOccluderFns: { featureId: string; fn: (groundZ: (x: number, y: number) => number) => Occluder[] }[] = [];
+  function pluginOccluders(groundZ: (x: number, y: number) => number): Occluder[] {
+    return pluginOccluderFns.filter(o => featureOn(o.featureId)).flatMap(o => { try { return o.fn(groundZ); } catch { return []; } });
+  }
   function notifyPlanChange() {
     for (const cb of planChangeListeners) {
       try { cb(editing); } catch (err) { console.warn('expert plan listener failed', err); }
@@ -4120,6 +4128,17 @@ import Layout from '../layouts/Layout.astro';
   }
   providePageApi('gartenplan', {
     getPlan: () => editing,
+    add3dLayer(featureId, layer) {
+      pluginLayers.push({ featureId, layer });
+      if (!plan3dContainer.hidden && featureOn(featureId)) btnView3d.click();
+    },
+    addSunOccluders(featureId, fn) { pluginOccluderFns.push({ featureId, fn }); },
+    refresh() {
+      if (!editing) return;
+      scheduleWarnings();
+      if (coverageSelect.value.startsWith('sun')) scheduleCoverage();
+      if (!plan3dContainer.hidden) btnView3d.click();
+    },
     onPlanChange: cb => { planChangeListeners.push(cb); },
     addPanel(featureId, title) {
       const panel = document.createElement('details');

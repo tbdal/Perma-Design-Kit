@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Schnittstellen für Experten-Module: 3D und Schatten 2026-10-06
+- [x] **Waldgartenplan:** Experten-Module können eigene Inhalte in die 3D-Ansicht legen (samt Schattenbereich) und zusätzliche Schattenwerfer für Besonnung und Hinweise beisteuern; `refresh()` zeichnet danach neu #minor
+
 ## Architektur & Entwicklungsablauf im Repo 2026-10-06
 - [x] **Übersicht als PDF:** `docs/architektur-entwicklungsablauf.pdf` (Architektur, Datenfluss, Server, Tooling, Entwicklungsablauf mit Diagrammen); die README verlinkt es und fasst den Ablauf und die Changelog-Stichworte kurz zusammen #minor
 

@@ -9,6 +9,8 @@
 import type { FeatureDef } from './features';
 import type { GardenPlan, PlantData } from './types';
 import type { Lang } from './i18n/core';
+import type { Scene3DLayer } from './gartenplan-3d';
+import type { Occluder } from './sun-hours';
 
 export interface ExpertContext {
   /** Path of the current page, e.g. '/gartenplan'. */
@@ -37,6 +39,12 @@ export interface GartenplanApi {
   onPlanChange(cb: (plan: GardenPlan | null) => void): void;
   /** Adds a collapsible box to the sidebar (hidden whenever the feature is off); returns its body. */
   addPanel(featureId: string, title: string): HTMLElement;
+  /** Scene content added whenever the 3D view is built (while the feature is on). */
+  add3dLayer(featureId: string, layer: Scene3DLayer): void;
+  /** Extra shade casters for sun hours and shade hints (while the feature is on); groundZ = absolute ground height. */
+  addSunOccluders(featureId: string, occluders: (groundZ: (x: number, y: number) => number) => Occluder[]): void;
+  /** Redraw what depends on plugin data: the 3D view, sun hours, hints. */
+  refresh(): void;
 }
 
 /** What the plant list (index.astro) offers plugins. */

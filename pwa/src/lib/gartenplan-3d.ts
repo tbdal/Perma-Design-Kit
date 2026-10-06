@@ -144,7 +144,23 @@ export interface View3DOptions {
   onTileFallback?: () => void;
   /** Building footprints (plan meters) with heights, e.g. from OSM. */
   buildings?: { pts: { xM: number; yM: number }[]; heightM: number; holes?: { xM: number; yM: number }[][]; roof?: Roof }[];
+  /** Extra scene content from plugins (expert-api.ts add3dLayer). */
+  layers?: Scene3DLayer[];
 }
+
+/** What a plugin layer gets: the scene in plan metres (x = xM, z = yM, y up). */
+export interface Scene3DContext {
+  THREE: typeof THREE;
+  scene: THREE.Scene;
+  plan: GardenPlan;
+  /** Ground height at plan x/y, relative to the plan centre (as the scene uses it). */
+  ground(xM: number, yM: number): number;
+  requestRender(): void;
+  /** Widen the sun's shadow area so objects up to this distance from the plan centre cast shadows. */
+  coverShadow(radiusM: number): void;
+}
+/** Adds content; may return a cleanup, called when the view is disposed. */
+export type Scene3DLayer = (ctx: Scene3DContext) => void | (() => void);
 
 const DRAG_THRESHOLD_PX = 4;
 
@@ -314,14 +330,25 @@ export function createGardenPlan3DView(
   // biases scale with the texel size against acne / striped artifacts.
   let shadowR = maxDim * 0.75;
   for (const b of opts.buildings ?? []) for (const p of b.pts) shadowR = Math.max(shadowR, Math.hypot(p.xM - cx, p.yM - cz) + 5);
-  shadowR = Math.min(shadowR, 450);
-  const mapSize = shadowR > 60 ? Math.min(4096, renderer.capabilities.maxTextureSize) : 2048;
-  sun.shadow.mapSize.set(mapSize, mapSize);
-  const texel = (2 * shadowR) / mapSize;
-  const sunDist = Math.max(maxDim * 3, shadowR * 2);
-  Object.assign(sun.shadow.camera, { left: -shadowR, right: shadowR, top: shadowR, bottom: -shadowR, near: 0.5, far: sunDist + shadowR * 2 });
-  sun.shadow.bias = -0.0002;
-  sun.shadow.normalBias = texel * 1.5;
+  let sunDist = 0;
+  function fitShadow(r: number) {
+    shadowR = Math.min(Math.max(shadowR, r), 450);
+    const mapSize = shadowR > 60 ? Math.min(4096, renderer.capabilities.maxTextureSize) : 2048;
+    if (sun.shadow.mapSize.x !== mapSize) {
+      sun.shadow.mapSize.set(mapSize, mapSize);
+      sun.shadow.map?.dispose();
+      sun.shadow.map = null as any; // re-created at the new size on the next render
+    }
+    const texel = (2 * shadowR) / mapSize;
+    const d = sunDist;
+    sunDist = Math.max(maxDim * 3, shadowR * 2);
+    if (d > 0 && d !== sunDist) sun.position.sub(sun.target.position).multiplyScalar(sunDist / d).add(sun.target.position);
+    Object.assign(sun.shadow.camera, { left: -shadowR, right: shadowR, top: shadowR, bottom: -shadowR, near: 0.5, far: sunDist + shadowR * 2 });
+    sun.shadow.camera.updateProjectionMatrix();
+    sun.shadow.bias = -0.0002;
+    sun.shadow.normalBias = texel * 1.5;
+  }
+  fitShadow(shadowR);
   sun.shadow.radius = 2; // soft edges (PCF)
   sun.target.position.set(cx, 0, cz);
   scene.add(sun, sun.target);
@@ -735,6 +762,15 @@ export function createGardenPlan3DView(
     });
   }
   controls.addEventListener('change', requestRender);
+
+  // Plugin layers (expert-api.ts): each adds its own objects to the scene.
+  const layerCleanups: (() => void)[] = [];
+  for (const layer of opts.layers ?? []) {
+    try {
+      const done = layer({ THREE, scene, plan, ground: (x, y) => ground(x, y), requestRender, coverShadow: r => { fitShadow(r); requestRender(); } });
+      if (typeof done === 'function') layerCleanups.push(done);
+    } catch (err) { console.warn('3D layer failed', err); }
+  }
 
   // ── Interaction: raycasting for place/drag, letting OrbitControls handle
   // everything else untouched (see CHANGELOG.md "Gartenplan: 3D-Ansicht mit
@@ -1152,6 +1188,7 @@ export function createGardenPlan3DView(
       requestRender();
     },
     dispose() {
+      for (const done of layerCleanups) { try { done(); } catch { /* plugin */ } }
       resizeObserver.disconnect();
       if (tileTimer) clearTimeout(tileTimer);
       container.removeEventListener('pointerdown', onContainerPointerDown, { capture: true } as any);
