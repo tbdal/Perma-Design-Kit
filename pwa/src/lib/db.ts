@@ -203,3 +203,18 @@ export async function deleteVarietyList(id: string): Promise<void> {
   const db = await getDB();
   await db.delete('varietyLists', id);
 }
+
+// ── Everything ──────────────────────────────────────────────────────────────
+
+/** Empties every store ("Alle Daten löschen"). */
+export async function clearAllData(): Promise<void> {
+  const db = await getDB();
+  const tx = db.transaction(['plants', 'polycultures', 'gardenPlans', 'varietyLists'], 'readwrite');
+  await Promise.all([
+    tx.objectStore('plants').clear(),
+    tx.objectStore('polycultures').clear(),
+    tx.objectStore('gardenPlans').clear(),
+    tx.objectStore('varietyLists').clear(),
+    tx.done,
+  ]);
+}

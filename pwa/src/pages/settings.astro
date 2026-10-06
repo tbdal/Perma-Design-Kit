@@ -165,19 +165,21 @@ import Layout from '../layouts/Layout.astro';
   </section>
 
   <!-- Sync -->
-  <section class="mb-8 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+  <section id="sync-section" class="mb-8 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
     <h2 class="text-lg font-semibold text-stone-800 dark:text-stone-100" data-i18n="sectionSync">Sync</h2>
-    <p class="mt-1 text-xs text-stone-500 dark:text-stone-400" data-i18n="syncSubtitle">Pflanzen und Polykulturen in einen externen Speicher sichern — manuell oder automatisch beim Verlassen der App.</p>
+    <p class="mt-1 text-xs text-stone-500 dark:text-stone-400" data-i18n="syncSubtitle">Pflanzen, Polykulturen, Waldgartenpläne und eigene Sortenlisten in einen externen Speicher sichern — manuell oder automatisch beim Verlassen der App.</p>
 
     <!-- Auto-Sync Toggle -->
     <div class="mt-5 flex items-start justify-between gap-4">
       <div class="min-w-0">
         <p id="auto-sync-label" class="text-sm font-medium text-stone-700 dark:text-stone-200" data-i18n="autoSyncLabel">Automatisch synchronisieren</p>
         <p class="mt-0.5 text-xs text-stone-500 dark:text-stone-400" data-i18n="autoSyncDesc">
-          Beim Tab-Wechsel oder Schließen automatisch zum ersten konfigurierten Anbieter synchronisieren
-          (Priorität: WebDAV → GitHub Gist).
+          Beim Tab-Wechsel oder Schließen automatisch zum ersten konfigurierten Anbieter hochladen, wenn sich etwas
+          geändert hat (Priorität: WebDAV → GitHub Gist). Liegt dort ein Backup von einem anderen Gerät, wird
+          nichts überschrieben — du bekommst einen Hinweis.
         </p>
         <p id="last-sync-info" class="mt-1 text-xs text-stone-500 dark:text-stone-400"></p>
+        <p id="sync-problem-info" hidden role="status" class="mt-1 text-xs font-medium text-red-700 dark:text-red-400"></p>
       </div>
       <label class="relative inline-flex shrink-0 cursor-pointer items-center">
         <input type="checkbox" id="auto-sync-toggle" aria-labelledby="auto-sync-label" class="peer sr-only" />
@@ -302,10 +304,14 @@ import Layout from '../layouts/Layout.astro';
     isAnalyticsOptedOut, setAnalyticsOptOut,
     type AppSettings, type ViewMode, type CardVariant, type ThemePref, type DesignPref,
   } from '../lib/settings';
-  import { getAllPlants, importPlants, clearAllPlants, importPolycultures, importGardenPlans, getVarietyLists, saveVarietyList, deleteVarietyList } from '../lib/db';
+  import { getAllPlants, clearAllData, getVarietyLists, saveVarietyList, deleteVarietyList } from '../lib/db';
   import { fetchWikidataVarieties, parseVarietyCsv, varietyListToCsv, dedupeEntries, speciesKey, VARIETY_CSV_TEMPLATE, WIKIDATA_LIST_ID, type VarietyList } from '../lib/varieties';
   import { newId } from '../lib/id';
-  import { buildBackupJson, parseBackup, rememberSyncAt, isAutoSyncEnabled, GIST_FILENAME, GIST_FILENAME_LEGACY } from '../lib/sync';
+  import {
+    buildBackup, buildBackupJson, parseBackup, backupIsEmpty, applyBackup, rememberBackupAt, rememberPulled, isAutoSyncEnabled,
+    webdavPush, webdavPull, gistPush, gistPull, getSyncProblem, clearSyncProblem, forgetSyncState,
+    GIST_FILENAME, type WebdavCreds,
+  } from '../lib/sync';
   import { escapeHtml, withButtonSpinner } from '../lib/html';
   import { createT, applyStaticI18n, getLang } from '../lib/i18n/core';
   import { settingsDict } from '../lib/i18n/dict-settings';
@@ -530,10 +536,42 @@ import Layout from '../layouts/Layout.astro';
       at = localStorage.getItem('last-auto-sync-at');
       provider = localStorage.getItem('last-auto-sync-provider');
     } catch {}
-    if (!at) { el.textContent = ''; return; }
-    const providerLabel = provider === 'webdav' ? 'WebDAV' : provider === 'gist' ? 'GitHub Gist' : provider ?? '';
-    el.textContent = t('lastSyncPrefix', { date: new Date(at).toLocaleString(getLang() === 'en' ? 'en-US' : 'de-DE') })
-      + (providerLabel ? t('lastSyncVia', { provider: providerLabel }) : '');
+    const label = (p: string | null) => p === 'webdav' ? 'WebDAV' : p === 'gist' ? 'GitHub Gist' : '';
+    // Older versions also stored manual downloads here — only real sync targets count.
+    el.textContent = at && label(provider)
+      ? t('lastSyncPrefix', { date: new Date(at).toLocaleString(getLang() === 'en' ? 'en-US' : 'de-DE') }) + t('lastSyncVia', { provider: label(provider) })
+      : '';
+    const problemEl = document.getElementById('sync-problem-info');
+    if (!problemEl) return;
+    const problem = getSyncProblem();
+    problemEl.hidden = !problem;
+    if (problem) problemEl.textContent = problem.kind === 'conflict'
+      ? t('syncProblemConflict', { provider: label(problem.provider) })
+      : t('syncProblemError', { provider: label(problem.provider), msg: problem.message });
+  }
+
+  /** Shared by every way a backup comes in (file, file access, WebDAV, Gist):
+   *  checks it, asks once with what it contains, then merges it in. Returns
+   *  the summary text, or null if the user cancelled. Throws on an unusable backup. */
+  async function restoreFromText(text: string): Promise<string | null> {
+    let backup;
+    try { backup = parseBackup(text); } catch { throw new Error(t('restoreInvalid')); }
+    if (backupIsEmpty(backup)) throw new Error(t('restoreEmpty'));
+    const parts = {
+      plants: backup.plants.length,
+      guildPart: backup.polycultures.length ? t('restoreGuildPart', { n: backup.polycultures.length }) : '',
+      gardenPlanPart: backup.gardenPlans.length ? t('restoreGardenPlanPart', { n: backup.gardenPlans.length }) : '',
+      varietyPart: backup.varietyLists.length ? t('restoreVarietyPart', { n: backup.varietyLists.length }) : '',
+    };
+    if (!confirm(t('restoreConfirm', { ...parts, settingsPart: backup.settings ? t('restoreSettingsPart') : '' }))) return null;
+    await applyBackup(backup);
+    if (backup.settings) {
+      settings = loadSettings();
+      renderSources(); renderPrefs();
+    }
+    await renderStats();
+    if (backup.varietyLists.length) await renderVarietyLists();
+    return t('restoreToast', parts);
   }
 
   function downloadBackupBlob(blob: Blob, filename: string) {
@@ -545,10 +583,14 @@ import Layout from '../layouts/Layout.astro';
   }
 
   document.getElementById('btn-backup')!.addEventListener('click', async () => {
-    const { blob, filename } = await buildBackupBlob();
-    downloadBackupBlob(blob, filename);
-    rememberSyncAt('manual');
-    renderLastBackup();
+    try {
+      const { blob, filename } = await buildBackupBlob();
+      downloadBackupBlob(blob, filename);
+      rememberBackupAt();
+      renderLastBackup();
+    } catch (err) {
+      alert(t('genericError', { msg: err instanceof Error ? err.message : String(err) }));
+    }
   });
 
   // ── Projekt als Link teilen ─────────────────────────────────────────────
@@ -627,11 +669,11 @@ import Layout from '../layouts/Layout.astro';
       try {
         if ((navigator as any).canShare?.({ files: [file] })) {
           await navigator.share({ files: [file], title: 'Perma Design Kit Backup' });
-          rememberSyncAt('share');
+          rememberBackupAt();
           renderLastBackup();
         } else {
           downloadBackupBlob(blob, filename);
-          rememberSyncAt('manual');
+          rememberBackupAt();
           renderLastBackup();
         }
       } catch (err) {
@@ -643,6 +685,7 @@ import Layout from '../layouts/Layout.astro';
   // ── Sync: Auto-Sync Toggle ───────────────────────────────────────────────
   autoSyncToggle.addEventListener('change', () => {
     try { localStorage.setItem('auto-sync-enabled', autoSyncToggle.checked ? 'true' : 'false'); } catch {}
+    if (!autoSyncToggle.checked) { clearSyncProblem(); renderLastSyncInfo(); }
   });
 
   // ── Sync: WebDAV ─────────────────────────────────────────────────────────
@@ -658,10 +701,8 @@ import Layout from '../layouts/Layout.astro';
       webdavPass.value = localStorage.getItem('webdav-pass') || '';
     } catch {}
   }
-  function authHeader(): string {
-    const raw = `${webdavUser.value}:${webdavPass.value}`;
-    return 'Basic ' + btoa(unescape(encodeURIComponent(raw)));
-  }
+  const webdavCreds = (): WebdavCreds => ({ url: webdavUrl.value.trim(), user: webdavUser.value.trim(), pass: webdavPass.value });
+
   function setWebdavStatus(msg: string, kind: 'ok' | 'err' | 'idle' = 'idle') {
     webdavStatus.textContent = msg;
     webdavStatus.className = 'text-xs ' + (
@@ -684,6 +725,7 @@ import Layout from '../layouts/Layout.astro';
       localStorage.removeItem('webdav-user');
       localStorage.removeItem('webdav-pass');
       webdavUrl.value = ''; webdavUser.value = ''; webdavPass.value = '';
+      forgetSyncState('webdav'); renderLastSyncInfo();
       setWebdavStatus(t('webdavCredsCleared'), 'idle');
     } catch {}
   });
@@ -692,16 +734,9 @@ import Layout from '../layouts/Layout.astro';
     if (!webdavUrl.value || !webdavUser.value) { setWebdavStatus(t('webdavMissingFields'), 'err'); return; }
     setWebdavStatus(t('webdavUploading'));
     try {
-      const json = await buildBackupJson();
-      const res = await fetch(webdavUrl.value, {
-        method: 'PUT',
-        headers: { 'Authorization': authHeader(), 'Content-Type': 'application/json' },
-        body: json,
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-      rememberSyncAt('webdav');
-      renderLastBackup();
-      setWebdavStatus(t('webdavUploaded', { status: res.status }), 'ok');
+      const status = await webdavPush(webdavCreds(), await buildBackup());
+      renderLastBackup(); renderLastSyncInfo();
+      setWebdavStatus(t('webdavUploaded', { status }), 'ok');
     } catch (err) {
       setWebdavStatus(t('webdavErrorUpload', { msg: (err as Error).message }), 'err');
     }
@@ -709,29 +744,14 @@ import Layout from '../layouts/Layout.astro';
 
   document.getElementById('btn-webdav-pull')!.addEventListener('click', async () => {
     if (!webdavUrl.value || !webdavUser.value) { setWebdavStatus(t('webdavMissingFields'), 'err'); return; }
-    if (!confirm(t('webdavConfirmPull'))) return;
     setWebdavStatus(t('webdavDownloading'));
     try {
-      const res = await fetch(webdavUrl.value, {
-        method: 'GET',
-        headers: { 'Authorization': authHeader() },
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-      const {
-        plants: restoredPlants, polycultures: restoredPolycultures,
-        gardenPlans: restoredGardenPlans, settings: restoredSettings,
-      } = parseBackup(await res.text());
-      if (restoredPlants.length === 0) throw new Error(t('invalidBackupFormat'));
-      await importPlants(restoredPlants);
-      if (restoredPolycultures.length) await importPolycultures(restoredPolycultures);
-      if (restoredGardenPlans.length) await importGardenPlans(restoredGardenPlans);
-      if (restoredSettings) {
-        saveSettings(restoredSettings as AppSettings);
-        settings = loadSettings();
-        renderSources(); renderPrefs();
-      }
-      await renderStats();
-      setWebdavStatus(t('restoredCount', { plants: restoredPlants.length, guilds: restoredPolycultures.length, gardenPlans: restoredGardenPlans.length }), 'ok');
+      const text = await webdavPull(webdavCreds());
+      const summary = await restoreFromText(text);
+      if (summary === null) { setWebdavStatus(''); return; }
+      rememberPulled('webdav', text);
+      renderLastSyncInfo();
+      setWebdavStatus(summary, 'ok');
     } catch (err) {
       setWebdavStatus(t('webdavErrorDownload', { msg: (err as Error).message }), 'err');
     }
@@ -764,7 +784,7 @@ import Layout from '../layouts/Layout.astro';
         const writable = await handle.createWritable();
         await writable.write(blob);
         await writable.close();
-        rememberSyncAt('fsa');
+        rememberBackupAt();
         renderLastBackup();
         setFsaStatus(t('fsaSaved'), 'ok');
       } catch (err) {
@@ -780,23 +800,8 @@ import Layout from '../layouts/Layout.astro';
         });
         const file = await handle.getFile();
         const text = await (file as File).text();
-        const { plants, polycultures, gardenPlans, settings: restoredSettings } = parseBackup(text);
-        if (plants.length === 0) throw new Error(t('fsaInvalidFormat'));
-        if (!confirm(t('fsaConfirmRead', {
-          plants: plants.length,
-          guildPart: polycultures.length ? t('restoreGuildPart', { n: polycultures.length }) : '',
-          gardenPlanPart: gardenPlans.length ? t('restoreGardenPlanPart', { n: gardenPlans.length }) : '',
-        }))) return;
-        await importPlants(plants);
-        if (polycultures.length) await importPolycultures(polycultures);
-        if (gardenPlans.length) await importGardenPlans(gardenPlans);
-        if (restoredSettings) {
-          saveSettings(restoredSettings as AppSettings);
-          settings = loadSettings();
-          renderSources(); renderPrefs();
-        }
-        await renderStats();
-        setFsaStatus(t('restoredCount', { plants: plants.length, guilds: polycultures.length, gardenPlans: gardenPlans.length }), 'ok');
+        const summary = await restoreFromText(text);
+        if (summary !== null) setFsaStatus(summary, 'ok');
       } catch (err) {
         if ((err as Error).name !== 'AbortError') setFsaStatus(t('genericError', { msg: String(err) }), 'err');
       }
@@ -836,6 +841,7 @@ import Layout from '../layouts/Layout.astro';
       localStorage.removeItem('gist-token');
       localStorage.removeItem('gist-id');
       gistTokenInput.value = ''; gistIdInput.value = '';
+      forgetSyncState('gist'); renderLastSyncInfo();
       setGistStatus(t('gistTokenCleared'), 'idle');
     } catch {}
   });
@@ -845,30 +851,14 @@ import Layout from '../layouts/Layout.astro';
     if (!token) { setGistStatus(t('gistTokenMissing'), 'err'); return; }
     setGistStatus(t('gistUploading'));
     try {
-      const content = await buildBackupJson();
       const id = gistIdInput.value.trim();
-      const res = await fetch(id ? `https://api.github.com/gists/${id}` : 'https://api.github.com/gists', {
-        method: id ? 'PATCH' : 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'X-GitHub-Api-Version': '2022-11-28',
-        },
-        body: JSON.stringify({
-          description: 'Perma Design Kit Backup',
-          public: false,
-          files: { [GIST_FILENAME]: { content } },
-        }),
-      });
-      if (!res.ok) throw new Error(`GitHub API ${res.status}: ${await res.text()}`);
-      const result = await res.json();
+      const gistId = await gistPush({ token, id }, await buildBackup());
       if (!id) {
-        gistIdInput.value = result.id;
-        try { localStorage.setItem('gist-id', result.id); } catch {}
+        gistIdInput.value = gistId;
+        try { localStorage.setItem('gist-id', gistId); } catch {}
       }
-      rememberSyncAt('gist');
-      renderLastBackup();
-      setGistStatus(t('gistUploaded', { id: String(result.id).slice(0, 8) }), 'ok');
+      renderLastBackup(); renderLastSyncInfo();
+      setGistStatus(t('gistUploaded', { id: gistId.slice(0, 8) }), 'ok');
     } catch (err) {
       setGistStatus(t('gistErrorUpload', { msg: (err as Error).message }), 'err');
     }
@@ -878,33 +868,15 @@ import Layout from '../layouts/Layout.astro';
     const token = gistTokenInput.value.trim();
     const id = gistIdInput.value.trim();
     if (!token || !id) { setGistStatus(t('gistTokenIdMissing'), 'err'); return; }
-    if (!confirm(t('gistConfirmPull'))) return;
     setGistStatus(t('gistDownloading'));
     try {
-      const res = await fetch(`https://api.github.com/gists/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'X-GitHub-Api-Version': '2022-11-28',
-        },
-      });
-      if (!res.ok) throw new Error(`GitHub API ${res.status}`);
-      const gist = await res.json();
-      // Prefer the current filename; fall back to the one earlier versions
-      // (Perma Guild Forge) wrote, so existing synced Gists still import.
-      const raw: string | undefined = gist.files?.[GIST_FILENAME]?.content ?? gist.files?.[GIST_FILENAME_LEGACY]?.content;
-      if (!raw) throw new Error(t('gistFileNotFound', { filename: GIST_FILENAME }));
-      const { plants, polycultures, gardenPlans, settings: restoredSettings } = parseBackup(raw);
-      if (plants.length === 0) throw new Error(t('invalidBackupFormat'));
-      await importPlants(plants);
-      if (polycultures.length) await importPolycultures(polycultures);
-      if (gardenPlans.length) await importGardenPlans(gardenPlans);
-      if (restoredSettings) {
-        saveSettings(restoredSettings as AppSettings);
-        settings = loadSettings();
-        renderSources(); renderPrefs();
-      }
-      await renderStats();
-      setGistStatus(t('restoredCount', { plants: plants.length, guilds: polycultures.length, gardenPlans: gardenPlans.length }), 'ok');
+      const text = await gistPull({ token, id });
+      if (text === null) throw new Error(t('gistFileNotFound', { filename: GIST_FILENAME }));
+      const summary = await restoreFromText(text);
+      if (summary === null) { setGistStatus(''); return; }
+      rememberPulled('gist', text);
+      renderLastSyncInfo();
+      setGistStatus(summary, 'ok');
     } catch (err) {
       setGistStatus(t('gistErrorDownload', { msg: (err as Error).message }), 'err');
     }
@@ -916,26 +888,8 @@ import Layout from '../layouts/Layout.astro';
     const file = input.files?.[0];
     if (!file) return;
     try {
-      const text = await file.text();
-      const { plants, polycultures, gardenPlans, settings: restoreSettings } = parseBackup(text);
-      if (plants.length === 0) {
-        throw new Error(t('restoreNoPlants'));
-      }
-      const guildPart = polycultures.length ? t('restoreGuildPart', { n: polycultures.length }) : '';
-      const gardenPlanPart = gardenPlans.length ? t('restoreGardenPlanPart', { n: gardenPlans.length }) : '';
-      const settingsPart = restoreSettings ? t('restoreSettingsPart') : '';
-      const msg = t('restoreConfirm', { plants: plants.length, guildPart, gardenPlanPart, settingsPart });
-      if (!confirm(msg)) { input.value = ''; return; }
-      await importPlants(plants);
-      if (polycultures.length) await importPolycultures(polycultures);
-      if (gardenPlans.length) await importGardenPlans(gardenPlans);
-      if (restoreSettings) {
-        saveSettings(restoreSettings as AppSettings);
-        settings = loadSettings();
-        renderSources(); renderPrefs();
-      }
-      showToast(t('restoreToast', { plants: plants.length, guildPart, gardenPlanPart }));
-      await renderStats();
+      const summary = await restoreFromText(await file.text());
+      if (summary !== null) showToast(summary);
     } catch (err) {
       alert(t('restoreFailed', { msg: err instanceof Error ? err.message : String(err) }));
     } finally {
@@ -1114,8 +1068,7 @@ import Layout from '../layouts/Layout.astro';
   document.getElementById('btn-clear-all')!.addEventListener('click', async () => {
     if (!confirm(t('clearAllConfirm1'))) return;
     if (!confirm(t('clearAllConfirm2'))) return;
-    await clearAllPlants();
-    for (const l of await getVarietyLists().catch(() => [])) await deleteVarietyList(l.id);
+    await clearAllData();
     try { localStorage.clear(); } catch {}
     location.href = '/';
   });

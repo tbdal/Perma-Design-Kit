@@ -15,6 +15,9 @@ export const layoutDict: Dict = {
   backupReminderNever: { de: 'Noch kein Backup angelegt — jetzt sichern?', en: 'No backup yet — back up now?' },
   backupReminderGoto: { de: 'Zu den Daten', en: 'Go to data' },
   backupReminderDismiss: { de: 'Heute ausblenden', en: 'Hide for today' },
+  syncProblemError: { de: 'Auto-Sync zu {provider} fehlgeschlagen: {msg}', en: 'Auto-sync to {provider} failed: {msg}' },
+  syncProblemConflict: { de: 'Auto-Sync angehalten: Bei {provider} liegt ein Backup von einem anderen Gerät.', en: 'Auto-sync paused: {provider} holds a backup from another device.' },
+  syncProblemGoto: { de: 'Zum Sync', en: 'Go to sync' },
 
   skipToContent: { de: 'Zum Inhalt springen', en: 'Skip to content' },
   homeLink: { de: 'Perma Design Kit – Startseite', en: 'Perma Design Kit – home' },

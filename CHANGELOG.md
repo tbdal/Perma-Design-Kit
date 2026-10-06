@@ -2,6 +2,17 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Backup und Sync zuverlässiger 2026-10-06
+- [x] **Mehr im Backup:** eigene (per CSV importierte) Sortenlisten und die Ansicht jedes Waldgartenplans (2D-Ausschnitt, 3D-Kamera, Sonne, Einfärben) reisen jetzt mit. Die Wikidata-Sortenliste bleibt draußen — sie ist groß und mit einem Klick neu geladen.
+- [x] **Backups ohne Pflanzen** lassen sich einlesen (bisher abgelehnt, auch wenn Pläne oder Polykulturen drin waren).
+- [x] **Einlesen einheitlich:** Datei, Datei-Zugriff, WebDAV und Gist nutzen denselben Weg (`restoreFromText()` → `applyBackup()`), mit einer Rückfrage, die zeigt, was im Backup steckt, und ehrlich sagt, dass zusammengeführt wird (gleiche ID wird überschrieben, alles andere bleibt).
+- [x] **Auto-Sync überschreibt keine fremden Stände mehr:** vor dem Hochladen wird geprüft, ob auf dem Server noch das Backup liegt, das dieses Gerät zuletzt geschrieben oder gelesen hat. Sonst wird nichts hochgeladen und ein Hinweis erscheint (Kopfzeile + Einstellungen); „abrufen“ oder „hochladen“ löst das auf. Hochgeladen wird nur noch, wenn sich die Daten geändert haben.
+- [x] **Auto-Sync-Fehler sichtbar:** fehlgeschlagene Uploads stehen als Hinweis in der Kopfzeile und unter Einstellungen → Sync, bis der nächste Sync klappt. Kleine Backups (< 60 KB) werden mit `keepalive` gesendet und überleben so das Schließen des Tabs.
+- [x] **Gist-Backups über 1 MB** werden vollständig gelesen (die API schneidet den Inhalt ab; jetzt über `raw_url`).
+- [x] **„Alle Daten löschen“** löscht jetzt wirklich alles — auch Polykulturen und Waldgartenpläne blieben bisher stehen.
+- [x] **Anzeige „Letzter Sync“** nennt nur noch WebDAV/Gist (ein normaler Download stand dort als „via manual“).
+- [x] Tests: `test/sync.test.ts` (Rundlauf Sichern → Einlesen, Zusammenführen, Auto-Sync mit Konflikt und Fehler).
+
 ## Suche in englischer Oberfläche 2026-10-06
 - [x] **Suchergebnisse auf Englisch:** bei englischer Oberfläche zeigt die Pflanzensuche den englischen Namen (sonst nur den lateinischen) statt des deutschen, dazu die englische Wikidata-Beschreibung und englische Quellenhinweise. Neu hinzugefügte Pflanzen übernehmen den englischen Namen
 
