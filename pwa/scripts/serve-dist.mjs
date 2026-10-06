@@ -25,8 +25,17 @@ async function resolve(pathname) {
   return null;
 }
 
+// For the update test (e2e/offline.e2e.ts): /__test/next-build?on=1 makes
+// /sw.js look like the one of a later deploy (another cache name) until ?on=0.
+let nextBuild = false;
+
 createServer(async (req, res) => {
-  const { pathname } = new URL(req.url ?? '/', 'http://localhost');
+  const { pathname, searchParams } = new URL(req.url ?? '/', 'http://localhost');
+  if (pathname === '/__test/next-build') {
+    nextBuild = searchParams.get('on') === '1';
+    res.writeHead(204); res.end();
+    return;
+  }
   const file = await resolve(pathname);
   if (!file) { res.writeHead(404, { 'Content-Type': 'text/plain' }); res.end('not found'); return; }
   // nginx redirects /example to /example/ — keep relative links working the same way.
@@ -36,5 +45,6 @@ createServer(async (req, res) => {
     return;
   }
   res.writeHead(200, { 'Content-Type': TYPES[extname(file)] ?? 'application/octet-stream', 'Cache-Control': 'no-cache' });
-  res.end(await readFile(file));
+  const body = await readFile(file);
+  res.end(nextBuild && pathname === '/sw.js' ? body.toString().replace(/pgd-[0-9a-f]{12}/, 'pgd-nextbuild000') : body);
 }).listen(port, '127.0.0.1', () => console.log(`serving dist/ on http://127.0.0.1:${port}`));

@@ -4,6 +4,15 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Offline und Installieren (PWA) 2026-10-06
+- [x] **Ganze App offline:** der Service Worker speichert beim ersten Besuch den kompletten Build (alle Seiten, Skripte, Styles, Schriften, Artenliste) und liefert ihn danach aus dem Speicher — vorher lag nur die Startseite ohne CSS und JavaScript im Cache. Die 5 MB große Baumscheiben-Vorlage wird einmal geholt und bleibt über Deploys hinweg erhalten; unveränderte Dateien werden bei einem neuen Build nicht erneut geladen. #major
+- [x] **Hinweis „Neue Version“:** ein neuer Build wird im Hintergrund geladen und wartet; ein Banner bietet „Neu laden“ an. Offene Tabs behalten bis dahin ihren Stand (bisher konnten nach einem Deploy nachgeladene Teile wie Karte, 3D oder PDF fehlschlagen). Ohne Klick übernimmt die neue Version, sobald alle Tabs geschlossen sind. #major
+- [x] **App-Icons:** PNG-Icons (192/512 px, maskable) im Manifest und ein `apple-touch-icon` — auf dem iPhone gab es bisher nur ein Bildschirmfoto als Icon. Neu erzeugen mit `npm run icons`. #minor
+- [x] **iPad** bekommt den Installier-Hinweis jetzt auch (iPadOS meldet sich als Mac). #bugs
+- [x] **Hinweis zum Speicher auf iOS:** die App auf dem Home-Bildschirm hat einen eigenen, leeren Speicher (vorher Backup anlegen), und im Safari-Tab kann iOS Daten nach 7 Tagen ohne Besuch löschen. #minor
+- [x] Im Entwicklungsserver wird kein Service Worker mehr registriert (ein vorhandener wird abgemeldet). #minor
+- [x] Browser-Tests: `e2e/offline.e2e.ts` (alle Seiten offline, Icons, Update-Ablauf). #minor
+
 ## Backup und Sync zuverlässiger 2026-10-06
 - [x] **Mehr im Backup:** eigene (per CSV importierte) Sortenlisten und die Ansicht jedes Waldgartenplans (2D-Ausschnitt, 3D-Kamera, Sonne, Einfärben) reisen jetzt mit. Die Wikidata-Sortenliste bleibt draußen — sie ist groß und mit einem Klick neu geladen. #major
 - [x] **Backups ohne Pflanzen** lassen sich einlesen (bisher abgelehnt, auch wenn Pläne oder Polykulturen drin waren). #bugs

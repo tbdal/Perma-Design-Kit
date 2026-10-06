@@ -2,6 +2,8 @@ import type { Dict } from './core';
 
 export const layoutDict: Dict = {
   installBannerText: { de: 'Perma Design Kit auf den Startbildschirm legen?', en: 'Add Perma Design Kit to your home screen?' },
+  updateBannerText: { de: 'Eine neue Version von Perma Design Kit ist da.', en: 'A new version of Perma Design Kit is available.' },
+  updateBannerReload: { de: 'Neu laden', en: 'Reload' },
   installBtn: { de: 'Installieren', en: 'Install' },
   closeBtn: { de: 'Schließen', en: 'Close' },
   footerReport: { de: 'Fehler melden', en: 'Report a problem' },
@@ -115,6 +117,7 @@ export const layoutDict: Dict = {
   iosInstallShare: { de: 'Teilen', en: 'Share' },
   iosInstallStep2: { de: 'und dann auf', en: 'at the bottom of Safari, then' },
   iosInstallAddToHome: { de: '„Zum Home-Bildschirm"', en: '"Add to Home Screen"' },
+  iosInstallStorageNote: { de: 'Die App auf dem Home-Bildschirm hat ihren eigenen, leeren Speicher: Lege vorher hier ein Backup an (Einstellungen → Daten) und lies es dort ein. Im Safari-Tab kann iOS deine Daten nach 7 Tagen ohne Besuch löschen — in der installierten App nicht.', en: 'The app on the home screen has its own, empty storage: make a backup here first (Settings → Data) and read it in there. In a Safari tab iOS may delete your data after 7 days without a visit — not in the installed app.' },
 
   modeMenuLabel: { de: 'Ansicht: Einfach, Klassisch oder Experte', en: 'View: simple, classic or expert' },
   modeMenuHeading: { de: 'Ansicht', en: 'View' },
