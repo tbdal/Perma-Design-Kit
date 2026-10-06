@@ -43,7 +43,15 @@ export interface GartenplanApi {
   add3dLayer(featureId: string, layer: Scene3DLayer): void;
   /** Extra shade casters for sun hours and shade hints (while the feature is on); groundZ = absolute ground height. */
   addSunOccluders(featureId: string, occluders: (groundZ: (x: number, y: number) => number) => Occluder[]): void;
-  /** Redraw what depends on plugin data: the 3D view, sun hours, hints. */
+  /** A drawing on the 2D plan (above everything, not clickable): SVG markup in plan
+   *  metres; `px` = metres per screen pixel, for line widths and text sizes. Redrawn
+   *  with the plan and by refresh(); the returned function redraws just the overlays. */
+  addPlanOverlay(featureId: string, draw: (px: number) => string): () => void;
+  /** The plants the plan refers to, by id. */
+  plantsById(): Map<string, PlantData>;
+  /** Ground height (m above sea level) at a plan point, or null without terrain data. */
+  groundAt(xM: number, yM: number): number | null;
+  /** Redraw what depends on plugin data: 2D overlays, the 3D view, sun hours, hints. */
   refresh(): void;
 }
 

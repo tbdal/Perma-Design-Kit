@@ -1979,7 +1979,8 @@ import Layout from '../layouts/Layout.astro';
       <g id="row-draft" pointer-events="none"></g>
       <g id="lasso-layer" pointer-events="none"></g>
       <g id="measure-layer" pointer-events="none"></g>
-      <g id="gps-layer" pointer-events="none"></g>`;
+      <g id="gps-layer" pointer-events="none"></g>
+      <g id="plugin-layer" pointer-events="none"></g>`;
     renderBasemap(planSvg);
     renderContours();
     renderCoverage();
@@ -2023,6 +2024,7 @@ import Layout from '../layouts/Layout.astro';
       markersGroup.appendChild(group);
       markerMap.set(placement.id, group);
     }
+    renderPluginOverlays();
     renderSimpleGuide();
     notifyPlanChange();
   }
@@ -2354,6 +2356,7 @@ import Layout from '../layouts/Layout.astro';
     if (grid) grid.innerHTML = gridDefsAndBackground(editing.areaWidthM, editing.areaHeightM, editing.gridSpacingM, 'plan-grid', k, pxPerUnit() * U, editing.gridRotationDeg ?? 0);
     planSvg.querySelector('#plan-boundary')?.setAttribute('stroke-width', String(2 * k));
     renderMeasure();
+    renderPluginOverlays();
     for (const pl of editing.placements) {
       const g = markerMap.get(pl.id);
       if (g) updateMarkerShape(g, pl, plantsById.get(pl.plantId));
@@ -4118,6 +4121,16 @@ import Layout from '../layouts/Layout.astro';
   // Plugin hooks (expert-api.ts): extra 3D content and shade casters.
   const pluginLayers: { featureId: string; layer: Scene3DLayer }[] = [];
   const pluginOccluderFns: { featureId: string; fn: (groundZ: (x: number, y: number) => number) => Occluder[] }[] = [];
+  const pluginOverlays: { featureId: string; draw: (px: number) => string }[] = [];
+  /** Plugin drawings on the 2D plan: markup in metres, `px` = metres per screen pixel. */
+  function renderPluginOverlays() {
+    const g = planSvg.querySelector('#plugin-layer');
+    if (!g || !editing) return;
+    const px = viewK() / U;
+    g.innerHTML = pluginOverlays.filter(o => featureOn(o.featureId)).map(o => {
+      try { return `<g transform="scale(${U})">${o.draw(px)}</g>`; } catch { return ''; }
+    }).join('');
+  }
   function pluginOccluders(groundZ: (x: number, y: number) => number): Occluder[] {
     return pluginOccluderFns.filter(o => featureOn(o.featureId)).flatMap(o => { try { return o.fn(groundZ); } catch { return []; } });
   }
@@ -4133,8 +4146,12 @@ import Layout from '../layouts/Layout.astro';
       if (!plan3dContainer.hidden && featureOn(featureId)) btnView3d.click();
     },
     addSunOccluders(featureId, fn) { pluginOccluderFns.push({ featureId, fn }); },
+    addPlanOverlay(featureId, draw) { pluginOverlays.push({ featureId, draw }); renderPluginOverlays(); return renderPluginOverlays; },
+    plantsById: () => plantsById,
+    groundAt: (xM, yM) => (terrain && editing?.geo ? sampleGrid(terrain, xM, yM) : null),
     refresh() {
       if (!editing) return;
+      renderPluginOverlays();
       scheduleWarnings();
       if (coverageSelect.value.startsWith('sun')) scheduleCoverage();
       if (!plan3dContainer.hidden) btnView3d.click();
