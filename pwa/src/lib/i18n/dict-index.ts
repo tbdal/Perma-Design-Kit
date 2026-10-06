@@ -183,6 +183,8 @@ export const indexDict: Dict = {
   varietyLoading: { de: 'Frage Wikidata nach Sorten …', en: 'Asking Wikidata for varieties …' },
   varietyFailed: { de: 'Wikidata nicht erreichbar. Eigene Sorte ins Feld schreiben.', en: 'Wikidata unreachable. Type your own variety.' },
   varietyMore: { de: '{n} weitere – Suchbegriff eingeben', en: '{n} more – type to narrow down' },
+  varietyNoLists: { de: 'Noch keine Sortenlisten geladen – mit einer Liste stehen hier viel mehr Sorten zur Auswahl.', en: 'No variety lists loaded yet – with a list you get many more varieties to pick from.' },
+  varietyNoListsLink: { de: 'In den Einstellungen laden', en: 'Load them in Settings' },
   fieldNotes: { de: 'Notizen', en: 'Notes' },
   fieldGroups: { de: 'Gruppen (kommagetrennt)', en: 'Groups (comma-separated)' },
   fieldGroupsPlaceholder: { de: 'z.B. Vorgarten, Waldgarten Nord', en: 'e.g. front yard, north food forest' },

@@ -55,6 +55,36 @@ test('variety picker offers own and list varieties and fills the field', async (
   void errors;
 });
 
+test('variety picker opens on click into the field; typing filters; hint without lists', async ({ page, errors }) => {
+  await stubNetwork(page);
+  await loadSamples(page);
+  const latin = await withDb<string>(page, `return (await all('plants'))[0].latinName;`);
+  await page.goto('/?view=list');
+  await page.locator('table tbody tr').filter({ hasText: latin }).locator('.btn-edit').click();
+  // no list loaded yet: the panel says where to get them
+  await page.click('#f-varietyName');
+  await expect(page.locator('.vp-hint')).toBeVisible();
+  await expect(page.locator('.vp-hint a')).toHaveAttribute('href', '/settings/#sortenlisten');
+  await expect(page.locator('.vp-filter')).toBeHidden();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.vp-list')).toBeHidden();
+  await expect(page.locator('#plant-dialog')).toBeVisible();
+
+  await withDb(page, `await put('varietyLists', { id: 'l1', name: 'Testliste', source: 'csv', license: 'test', importedAt: new Date().toISOString(), enabled: true,
+    entries: [{ name: 'Rote Sorte', species: arg.toLowerCase().split(' ').slice(0, 2).join(' ') }, { name: 'Gelbe Sorte', species: arg.toLowerCase().split(' ').slice(0, 2).join(' ') }] });`, latin);
+  await page.locator('#plant-dialog h2, #dialog-title').first().click();
+  await page.click('#f-varietyName');
+  await expect(page.locator('.vp-list [role=option]')).toHaveCount(2);
+  await expect(page.locator('.vp-hint')).toBeHidden();
+  await page.keyboard.type('rot');
+  await expect(page.locator('.vp-list [role=option]')).toHaveCount(1);
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#f-varietyName')).toHaveValue('Rote Sorte');
+  await expect(page.locator('.vp-list')).toBeHidden();
+  void errors;
+});
+
 test('settings: import a variety list as CSV, then delete it', async ({ page, errors }) => {
   await stubNetwork(page);
   await page.goto('/settings/');
