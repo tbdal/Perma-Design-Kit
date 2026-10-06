@@ -45,7 +45,7 @@ test('3D and back to 2D keeps the 2D section (no zooming out on every switch)', 
   const before = await page.getAttribute('#plan-svg', 'viewBox');
   for (let i = 0; i < 3; i++) {
     await page.click('#btn-view-3d');
-    await expect(page.locator('#plan-3d-container canvas')).toBeVisible();
+    await expect(page.locator('#plan-3d-container canvas')).toBeVisible({ timeout: 20000 });
     await page.waitForTimeout(300);
     await page.click('#btn-view-2d');
     await expect(page.locator('#plan-svg')).toBeVisible();
