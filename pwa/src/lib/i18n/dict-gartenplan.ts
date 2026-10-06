@@ -11,7 +11,7 @@ export const gartenplanDict: Dict = {
   planUnnamed: { de: 'Unbenannter Waldgartenplan', en: 'Unnamed forest garden plan' },
   linkedPolycultureLabel: { de: 'Polykultur:', en: 'Polyculture:' },
   placementCount: { de: '{count} Pflanze(n) platziert', en: '{count} plant(s) placed' },
-  areaSizeLabel: { de: '{w}×{h} m', en: '{w}×{h} m' },
+  areaSizeLabel: { de: 'Rahmen {w} m × {h} m', en: 'frame {w} m × {h} m' },
 
   // ── Editor shared ─────────────────────────────────────────────────────
   btnBackToList: { de: '← Zurück zur Liste', en: '← Back to list' },

@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Waldgartenplan: Rahmen unter der Planfläche 2026-10-06
+- [x] **Rahmen als x m × y m:** im Feld „Ausgewählt“ des Umrisses steht der Rahmen (Raster) direkt unter der Planfläche, als „60 m × 25 m“; die Projekt-Kacheln zeigen zuerst die Planfläche in m², dann „Rahmen 60 m × 25 m“ #minor
+
 ## Waldgartenplan: Planfläche und Meterlinien am Umriss 2026-10-06
 - [x] **Planfläche = gezeichnete Fläche:** im Feld „Ausgewählt“ des Garten-Umrisses steht als Planfläche jetzt die Fläche des gezeichneten Umrisses in m²; das Rechteck außenrum heißt „Rahmen (Raster)“ #minor
 - [x] **Meterlinien nur im Umriss:** die Linien enden am gezeichneten Umriss (auch im PDF), der graue Rahmen außenrum entfällt; die Meterzahlen am Rand bleiben. Ohne Umriss wie bisher über den ganzen Plan #minor
