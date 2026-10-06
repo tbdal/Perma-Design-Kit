@@ -2,6 +2,9 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Sortenauswahl beim Klick ins Feld 2026-10-06
+- [x] **Sortenfeld im Pflanzen-Editor:** ein Klick ins Feld zeigt sofort die Sortenauswahl; Tippen filtert die Liste (Pfeiltasten + Enter wählen, freie Eingabe bleibt möglich). Sind noch keine Sortenlisten geladen, steht dort ein Hinweis mit Link zu Einstellungen → Sortenlisten (öffnet in neuem Tab, das Formular bleibt offen)
+
 ## Modus „Team“ 2026-10-06
 - [x] **Team als vierter Modus** neben Einfach, Klassisch und Experte: eigene Spalte auf `/admin/` (auch in der „Alle“-Zeile jeder Gruppe), standardmäßig alle Funktionen außer dem Einstieg des einfachen Modus. Nur für Zugänge mit Rolle Team oder Admin; im Menü nur für sie sichtbar, Experten-Zugänge landen stattdessen im Experten-Modus. Private Funktionen können in Experte und Team an sein. Die Sonderregel „Rolle Team sieht im Experten-Modus alles“ entfällt dafür
 
