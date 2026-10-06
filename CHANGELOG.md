@@ -4,6 +4,10 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Sonnenstand in Ortszeit, Quellen auf Englisch 2026-10-06
+- [x] **Waldgartenplan – Sonne in Ortszeit:** Datum und Uhrzeit beim Sonnenstand (3D, Sonnenbahn mit Stundenmarken, Besonnung „an diesem Tag“) gelten jetzt in der Zeitzone des Gartens, samt Sommerzeit — die Zeitzone kommt aus den Koordinaten des Plans (offline, `@photostructure/tz-lookup`, CC0). Bisher galt immer die Zeitzone des Browsers, d. h. praktisch nur MEZ/MESZ. Bei Plänen mit Standort steht die Zone neben der Uhrzeit (z. B. „14:30 WEST“); „Jetzt“ ist die aktuelle Uhrzeit am Garten. Pläne ohne Standort bleiben bei der Zeit des Browsers #bugs
+- [x] **Englische Oberfläche:** die Datenquelle heißt dort „Manual“ bzw. „Sample“ statt „Manuell“/„Beispiel“ (Tooltip und Kürzel im Pflanzen-Editor) #bugs
+
 ## Pflanzen-Editor per Link 2026-10-06
 - [x] **Neue Pflanze per Link:** `/?new=1` öffnet den Editor für eine neue Pflanze, vorbelegt aus einer Vorlage (`from=<id>`, deren Datenquellen bleiben erhalten) und/oder mit `latin`, `common`, `variety`, `group`; `return=<pfad>` springt nach Speichern oder Abbrechen dorthin zurück (auch mit `edit=<id>`). Experten-Module können das Zurückspringen abwarten lassen (`holdLeave`) #minor
 

@@ -180,6 +180,14 @@ export const SOURCE_LABEL: Record<DataSource, string> = {
   sample:   'Beispiel',
 };
 
+/** Source names that differ in English (the others are proper names). */
+const SOURCE_LABEL_EN: Partial<Record<DataSource, string>> = { manual: 'Manual', sample: 'Sample' };
+
+/** Name of a data source in the interface language ("Manuell" / "Manual"). */
+export function sourceLabel(source: DataSource, lang: string): string {
+  return (lang === 'en' && SOURCE_LABEL_EN[source]) || SOURCE_LABEL[source];
+}
+
 export const SOURCE_COLOR: Record<DataSource, string> = {
   wikidata: 'bg-blue-100 text-blue-700',
   efg:      'bg-amber-100 text-amber-800',

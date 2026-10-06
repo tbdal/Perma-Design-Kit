@@ -456,7 +456,7 @@ import Layout from '../layouts/Layout.astro';
   import { getAllPlants, savePlant, deletePlant, importPlants } from '../lib/db';
   import { showUndoToast } from '../lib/undo-toast';
   import { displayName } from '../lib/plant-name';
-  import { createEmptyPlant, type PlantData, type DataSource, SOURCE_LABEL, SOURCE_COLOR } from '../lib/types';
+  import { createEmptyPlant, type PlantData, type DataSource, sourceLabel, SOURCE_COLOR } from '../lib/types';
   import { samplePlants } from '../lib/sample-data';
   import { crawfordPlants } from '../lib/sample-data-crawford';
   import { importFromCSV, buildCSV, buildCSVTemplate } from '../lib/csv';
@@ -592,8 +592,8 @@ import Layout from '../layouts/Layout.astro';
         const href = plant ? sourceLink(source, plant) : null;
         const badge = document.createElement(href ? 'a' : 'span');
         badge.className = `src-badge ml-1 inline-block rounded px-1 py-px text-[10px] font-semibold leading-none align-middle ${SOURCE_COLOR[source]}${href ? ' hover:underline' : ''}`;
-        badge.title = t('formBadgeSource', { source: SOURCE_LABEL[source] }) + (href ? ` — ${t('formBadgeOpenSource', { source: SOURCE_LABEL[source] })}` : '');
-        badge.textContent = SOURCE_LABEL[source][0];
+        badge.title = t('formBadgeSource', { source: sourceLabel(source, getLang()) }) + (href ? ` — ${t('formBadgeOpenSource', { source: sourceLabel(source, getLang()) })}` : '');
+        badge.textContent = sourceLabel(source, getLang())[0];
         if (href) {
           (badge as HTMLAnchorElement).href = href;
           badge.setAttribute('target', '_blank');
@@ -654,8 +654,8 @@ import Layout from '../layouts/Layout.astro';
       .filter(s => SOURCE_OUTLINE[s])
       .map(s => {
         const cls = `inline-block rounded border px-1.5 py-px text-[10px] font-medium ${SOURCE_OUTLINE[s]}`;
-        const title = t('sourceTitle', { source: SOURCE_LABEL[s] });
-        const titleLink = t('sourceTitleLink', { source: SOURCE_LABEL[s] });
+        const title = t('sourceTitle', { source: sourceLabel(s, getLang()) });
+        const titleLink = t('sourceTitleLink', { source: sourceLabel(s, getLang()) });
         const href = sourceLink(s, p);
         return href
           ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener" class="${cls} hover:underline" title="${escapeHtml(titleLink)}">${SOURCE_SHORT[s]}</a>`

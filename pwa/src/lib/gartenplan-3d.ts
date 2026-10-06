@@ -8,6 +8,7 @@ import { pointInPolygon } from './gartenplan-geometry';
 import { polygonCentroid } from './gartenplan-render';
 import { enuToPlan, tilesForRect, planToLatLon } from './gartenplan-geo';
 import { OSM_TILES, sourceForGeo, tileUrl, fallbackTileUrl } from './gartenplan-background';
+import { browserTimeZone, wallClock, zonedDate } from './plan-time';
 import { sunPosition, sunDirectionEnu } from './sun-position';
 import { sampleGrid, gridRange, terrainTiles, type ElevationGrid } from './terrain';
 import { orientedBox, roofHeightAt, roofFaces, ringWithBreaks, type Roof } from './building-roof';
@@ -117,8 +118,8 @@ export interface GardenPlan3DView {
   /** Rebuilds the area shapes (after add/rename/recolor/delete/vertex edit)
    *  and shows vertex handles on `selectedAreaId`. */
   refreshAreas(selectedAreaId: string | null): void;
-  /** Moves the sun (light, shadows, sky, sun path) to the given moment. */
-  setSunTime(date: Date): { bearingDeg: number; altitudeDeg: number };
+  /** Moves the sun (light, shadows, sky, sun path) to the given moment; `timeZone` = the garden's, for the hour marks on the sun path (default: the browser's). */
+  setSunTime(date: Date, timeZone?: string): { bearingDeg: number; altitudeDeg: number };
   getCameraState(): Camera3DState;
   /** Jump to a straight top view or an oblique view from the south. */
   setViewPreset(preset: 'top' | 'oblique'): void;
@@ -698,7 +699,7 @@ export function createGardenPlan3DView(
     return new THREE.Vector3(h.xM, d.up, h.yM);
   }
 
-  function rebuildSunPath(date: Date) {
+  function rebuildSunPath(date: Date, tz: string) {
     sunPathGroup.traverse(o => {
       const m = o as THREE.Mesh;
       m.geometry?.dispose();
@@ -708,8 +709,9 @@ export function createGardenPlan3DView(
     });
     sunPathGroup.clear();
     const center = new THREE.Vector3(cx, 0, cz);
-    const day = new Date(date);
-    day.setHours(0, 0, 0, 0);
+    // Midnight on the garden's clocks, so the hour marks show its local time.
+    const w = wallClock(date, tz);
+    const day = zonedDate(w.y, w.m, w.d, 0, 0, tz);
     const pts: THREE.Vector3[] = [];
     for (let min = 0; min <= 24 * 60; min += 10) {
       const t = new Date(day.getTime() + min * 60000);
@@ -734,9 +736,10 @@ export function createGardenPlan3DView(
   }
 
   const SKY_DAY = new THREE.Color(0xbfdbfe), SKY_GOLD = new THREE.Color(0xfcd9a8), SKY_NIGHT = new THREE.Color(0x1e293b);
-  function setSunTime(date: Date) {
-    const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
-    if (key !== sunPathDay) { sunPathDay = key; rebuildSunPath(date); }
+  function setSunTime(date: Date, tz = browserTimeZone()) {
+    const w = wallClock(date, tz);
+    const key = `${w.y}-${w.m}-${w.d}|${tz}`;
+    if (key !== sunPathDay) { sunPathDay = key; rebuildSunPath(date, tz); }
     const p = sunPosition(date, opts.latLon.lat, opts.latLon.lon);
     const dir = sunVector(p.bearingDeg, p.altitudeDeg);
     const up = p.altitudeDeg > 0;

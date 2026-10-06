@@ -1,5 +1,6 @@
 import type { GardenPlan, GardenPlanPoint, PlantData } from './types';
 import { sunPosition, sunDirectionEnu } from './sun-position';
+import { zonedDate } from './plan-time';
 import { enuToPlan } from './gartenplan-geo';
 import { displayRadiusM } from './growth-model';
 import { deriveLayer } from './plant-layer';
@@ -35,15 +36,17 @@ export const SEASON_DATES = (year: number) => [3, 4, 5, 6, 7, 8].map(m => new Da
  *  blocked by fences, hedges and neighbouring houses the plan doesn't know. */
 export const MIN_SUN_ALT_DEG = 10;
 
-/** Sun samples every `stepMin` minutes over the given days (local time). The
+/** Sun samples every `stepMin` minutes over the given days (their calendar
+ *  date; the day runs from midnight in `timeZone`, default the browser's). The
  *  hours are averaged over the days, so the sum of all samples is the mean
  *  time the sun stands higher than MIN_SUN_ALT_DEG. */
-export function sunSamples(dates: Date[], lat: number, lon: number, rotationDeg: number, stepMin = 20): SunSample[] {
+export function sunSamples(dates: Date[], lat: number, lon: number, rotationDeg: number, stepMin = 20, timeZone?: string): SunSample[] {
   const out: SunSample[] = [];
   const w = stepMin / 60 / dates.length;
   for (const d of dates) {
+    const start = timeZone ? zonedDate(d.getFullYear(), d.getMonth() + 1, d.getDate(), 0, 0, timeZone).getTime() : 0;
     for (let m = stepMin / 2; m < 24 * 60; m += stepMin) {
-      const t = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, m);
+      const t = timeZone ? new Date(start + m * 60000) : new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, m);
       const p = sunPosition(t, lat, lon);
       if (p.altitudeDeg < MIN_SUN_ALT_DEG) continue;
       const e = sunDirectionEnu(p.bearingDeg, p.altitudeDeg);
