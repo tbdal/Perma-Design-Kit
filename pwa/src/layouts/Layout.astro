@@ -873,6 +873,27 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
           document.getElementById('header-extra')!.appendChild(wrap);
           return panel;
         },
+        addNavLink(featureId, label, href, opts = {}) {
+          const ref = document.querySelector<HTMLAnchorElement>(`a[data-nav="${CSS.escape(opts.after ?? '')}"]`)
+            ?? [...document.querySelectorAll<HTMLAnchorElement>('a[data-nav]')].pop()!;
+          const a = document.createElement('a');
+          a.href = href;
+          a.dataset.feature = featureId;
+          // Look of the regular links (the first one; the forest-garden link is dimmed as experimental).
+          const base = document.querySelector<HTMLAnchorElement>('a[data-nav]')!;
+          a.className = base.className.split(/\s+/).filter(c => !['bg-green-800', 'dark:bg-green-900', 'text-white'].includes(c)).join(' ');
+          a.textContent = label;
+          ref.after(a);
+          const url = new URL(href, location.href);
+          const mark = () => {
+            const on = url.pathname.replace(/\/$/, '') === location.pathname.replace(/\/$/, '') && (!url.hash || url.hash === location.hash);
+            a.classList.toggle('bg-green-800', on); a.classList.toggle('dark:bg-green-900', on); a.classList.toggle('text-white', on);
+            if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+          };
+          mark();
+          window.addEventListener('hashchange', mark);
+          return a;
+        },
       });
 
       onFeaturesChange(sync);

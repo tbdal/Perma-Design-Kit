@@ -4,6 +4,10 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Schnittstellen für Experten-Module: Link in der Navigation, Pflanze per Link öffnen 2026-10-06
+- [x] **Navigation:** Experten-Module können einen eigenen Link in die Hauptnavigation setzen (`addNavLink`, z. B. hinter „Waldgartenplan“), hervorgehoben auf der passenden Seite #minor
+- [x] **Pflanzen:** `/?edit=<id>` öffnet die Pflanze direkt im Editor #minor
+
 ## Schnittstellen für Experten-Module: Punkt im Plan wählen 2026-10-06
 - [x] **Waldgartenplan:** Experten-Module können einen Punkt im 2D-Plan antippen lassen (`pickPoint`, Esc bricht ab) #minor
 

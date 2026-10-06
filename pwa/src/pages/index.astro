@@ -1253,16 +1253,9 @@ import Layout from '../layouts/Layout.astro';
     });
 
     listEl.querySelectorAll('.btn-edit').forEach(btn => {
-      btn.addEventListener('click', async () => {
+      btn.addEventListener('click', () => {
         const id = (btn.closest('[data-id]') as HTMLElement).dataset.id!;
-        const plant = cachedPlants.find(p => p.id === id);
-        if (plant) {
-          editingPlant = plant;
-          (document.getElementById('dialog-title') as HTMLElement).textContent = t('dialogTitleEdit');
-          fillForm(plant);
-          dialog.showModal();
-          notifyEditorOpen();
-        }
+        openEditor(id);
       });
     });
 
@@ -1313,6 +1306,18 @@ import Layout from '../layouts/Layout.astro';
   }
 
   // ── Dialog ────────────────────────────────────────────────────────────────────
+
+  /** Opens the editor for a stored plant; false if there is none with this id. */
+  function openEditor(id: string): boolean {
+    const plant = cachedPlants.find(p => p.id === id);
+    if (!plant) return false;
+    editingPlant = plant;
+    (document.getElementById('dialog-title') as HTMLElement).textContent = t('dialogTitleEdit');
+    fillForm(plant);
+    dialog.showModal();
+    notifyEditorOpen();
+    return true;
+  }
 
   document.getElementById('btn-add')!.addEventListener('click', () => {
     editingPlant = null;
@@ -1794,5 +1799,13 @@ import Layout from '../layouts/Layout.astro';
   });
 
   updateViewButtons();
-  renderList();
+  // ?edit=<id> opens that plant in the editor (links from other pages); the parameter is dropped afterwards.
+  void renderList().then(() => {
+    const url = new URL(location.href);
+    const id = url.searchParams.get('edit');
+    if (!id) return;
+    url.searchParams.delete('edit');
+    history.replaceState(history.state, '', url);
+    openEditor(id);
+  });
 </script>
