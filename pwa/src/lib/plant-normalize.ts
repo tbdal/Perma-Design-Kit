@@ -6,6 +6,7 @@ import { newId } from './id';
 import { sanitizeZones } from './zones-sectors';
 import { clampPhase } from './phases';
 import { normalizeGridAngle } from './gartenplan-geometry';
+import type { VarietyEntry, VarietyList } from './varieties';
 
 // Everything that arrives from outside the app — JSON import, backup restore,
 // Gist/WebDAV pull, CSV — goes through here before it touches IndexedDB. Each
@@ -175,4 +176,34 @@ export function normalizePolycultures(raw: unknown): Polyculture[] {
 
 export function normalizeGardenPlans(raw: unknown): GardenPlan[] {
   return Array.isArray(raw) ? raw.map(normalizeGardenPlan).filter((x): x is GardenPlan => x !== null) : [];
+}
+
+/** A variety list from a backup. Entries without a name or species are dropped. */
+export function normalizeVarietyList(raw: unknown): VarietyList | null {
+  if (!isObject(raw) || !Array.isArray(raw.entries)) return null;
+  const entries = raw.entries.filter(isObject).map((e): VarietyEntry | null => {
+    const name = str(e.name, '').trim(), species = str(e.species, '').trim().toLowerCase();
+    if (!name || !species) return null;
+    const synonyms = Array.isArray(e.synonyms) ? e.synonyms.filter((x): x is string => typeof x === 'string' && !!x.trim()) : [];
+    return {
+      name,
+      species,
+      ...(synonyms.length ? { synonyms } : {}),
+      ...(typeof e.wikidataId === 'string' && /^Q\d+$/.test(e.wikidataId) ? { wikidataId: e.wikidataId } : {}),
+    };
+  }).filter((e): e is VarietyEntry => e !== null);
+  if (!entries.length) return null;
+  return {
+    id: nonEmptyStr(raw.id, newId()),
+    name: str(raw.name, '').slice(0, 120),
+    source: raw.source === 'wikidata' ? 'wikidata' : 'csv',
+    license: str(raw.license, ''),
+    importedAt: typeof raw.importedAt === 'string' && !Number.isNaN(Date.parse(raw.importedAt)) ? raw.importedAt : new Date().toISOString(),
+    enabled: raw.enabled !== false,
+    entries,
+  };
+}
+
+export function normalizeVarietyLists(raw: unknown): VarietyList[] {
+  return Array.isArray(raw) ? raw.map(normalizeVarietyList).filter((x): x is VarietyList => x !== null) : [];
 }

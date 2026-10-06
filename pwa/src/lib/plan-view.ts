@@ -43,3 +43,15 @@ export function readPlanView(planId: string): PlanView | null {
 export function writePlanView(planId: string, view: PlanView): void {
   try { localStorage.setItem(planViewKey(planId), JSON.stringify(view)); } catch { /* storage full or blocked */ }
 }
+
+/** Views keyed by plan id (backup, share link), validated; views of unknown plans are dropped. */
+export function sanitizePlanViews(raw: unknown, planIds: Set<string>): Record<string, PlanView> {
+  const views: Record<string, PlanView> = {};
+  if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+    for (const [id, v] of Object.entries(raw)) {
+      const pv = planIds.has(id) ? sanitizePlanView(v) : null;
+      if (pv) views[id] = pv;
+    }
+  }
+  return views;
+}
