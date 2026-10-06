@@ -25,6 +25,19 @@ For deployment and proxy setup see [`pwa/SETUP.md`](pwa/SETUP.md).
 - **CSV import/export** — round-trip compatible format
 - **PWA / Offline** — service worker, installable
 
+## Architecture & development workflow
+
+[`docs/architektur-entwicklungsablauf.pdf`](docs/architektur-entwicklungsablauf.pdf) (German, 8 pages) gives an overview of the architecture, data flow, server, tooling and the development workflow, with diagrams.
+
+In short:
+
+1. Each task is done on its own branch (a git worktree under `.claude/worktrees/` when working with Claude Code).
+2. Before committing: `npm run check` and `npm test` (from `pwa/`).
+3. Commit, merge to `main`, push to GitHub; contributions from others come in as pull requests.
+4. `npm run deploy` on the server only ships a clean `main` that equals `origin/main`: it runs check, unit and browser tests, builds and copies `dist/` to the web root.
+
+Entries in [`CHANGELOG.md`](CHANGELOG.md) (newest first) end with a tag: `#bugs` (fix), `#minor` (small improvement) or `#major` (big feature).
+
 ## Roadmap
 
 See [`ROADMAP.md`](ROADMAP.md) for the current state and planned features.

@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Architektur & Entwicklungsablauf im Repo 2026-10-06
+- [x] **Übersicht als PDF:** `docs/architektur-entwicklungsablauf.pdf` (Architektur, Datenfluss, Server, Tooling, Entwicklungsablauf mit Diagrammen); die README verlinkt es und fasst den Ablauf und die Changelog-Stichworte kurz zusammen #minor
+
 ## Meterlinien drehen, Namensfilter per Taste 2026-10-06
 - [x] **Meterlinien drehen:** im Waldgartenplan lassen sich die Meterlinien neben „Meterlinien“ um bis zu ±45° drehen, z. B. passend zu einem schrägen Grundstück; „am Umriss“ richtet sie an der längsten Kante des Umrisses aus. Nur die Linien drehen sich (auch im PDF), Punkte rasten an den gedrehten Kreuzungen ein; die Meterzahlen am Rand entfallen dann #minor
 - [x] **Taste F auf der Pflanzenseite:** springt ins Feld „Name filtern…“ (auch in der Kürzel-Übersicht unter ? und in der Hilfe) #minor
