@@ -1,0 +1,16 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<!-- Empty page for expert modules (lib/expert-api.ts): they render into
+     #expert-page after login; everyone else sees the note below. -->
+<Layout title="Perma Design Kit — Intern" wide>
+  <div id="expert-page" class="space-y-4 text-stone-800 dark:text-stone-100">
+    <p class="text-sm text-stone-500 dark:text-stone-400" data-i18n="internNote">Diese Seite ist nur nach Anmeldung im passenden Modus sichtbar.</p>
+    <p class="text-sm"><a href="/anmelden/?next=/intern/" class="font-medium text-green-700 dark:text-green-400 underline underline-offset-2" data-i18n="modeLogin">Anmelden</a></p>
+  </div>
+  <script>
+    import { applyStaticI18n } from '../lib/i18n/core';
+    import { layoutDict } from '../lib/i18n/dict-layout';
+    applyStaticI18n(layoutDict);
+  </script>
+</Layout>

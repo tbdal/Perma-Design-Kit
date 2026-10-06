@@ -37,6 +37,25 @@ test('placement view: search only there, neighbours, yield, zones', async ({ pag
   void errors;
 });
 
+test('3D and back to 2D keeps the 2D section (no zooming out on every switch)', async ({ page, errors }) => {
+  await stubNetwork(page);
+  await seedNeighbourPlan(page);
+  await openPlan(page, 'np');
+  await page.waitForTimeout(500);
+  const before = await page.getAttribute('#plan-svg', 'viewBox');
+  for (let i = 0; i < 3; i++) {
+    await page.click('#btn-view-3d');
+    await expect(page.locator('#plan-3d-container canvas')).toBeVisible();
+    await page.waitForTimeout(300);
+    await page.click('#btn-view-2d');
+    await expect(page.locator('#plan-svg')).toBeVisible();
+  }
+  const vb = (s: string | null) => (s ?? '').split(' ').map(Number);
+  const [a, b] = [vb(before), vb(await page.getAttribute('#plan-svg', 'viewBox'))];
+  expect(Math.abs(b[2] - a[2]) / a[2]).toBeLessThan(0.01);
+  void errors;
+});
+
 test('care calendar downloads as iCal', async ({ page, errors }) => {
   await stubNetwork(page);
   await seedNeighbourPlan(page);

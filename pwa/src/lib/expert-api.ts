@@ -62,9 +62,16 @@ export interface PflanzenApi {
   addDataMenuButton(featureId: string, label: string, onClick: () => void): HTMLButtonElement;
 }
 
+/** What every page (Layout.astro) offers plugins. */
+export interface LayoutApi {
+  /** A menu button in the header, left of the view menu; returns the (empty) drop-down panel. Hidden whenever the feature is off. accent = a colour set apart from the regular menus. */
+  addHeaderMenu(featureId: string, label: string, opts?: { accent?: boolean }): HTMLElement;
+}
+
 export interface PageApis {
   gartenplan: GartenplanApi;
   pflanzen: PflanzenApi;
+  layout: LayoutApi;
 }
 
 const apis = new Map<string, unknown>();

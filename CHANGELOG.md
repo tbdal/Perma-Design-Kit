@@ -2,6 +2,9 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+## Waldgartenplan: zurück von 3D zu 2D 2026-10-06
+- [x] **3D → 2D zoomte heraus:** bei jedem Wechsel zurück wurde die Karte um etwa das 1,4-Fache kleiner (das Seitenverhältnis wurde gemessen, solange die 2D-Karte noch verborgen war). Jetzt zeigt 2D wieder genau den Ausschnitt von vorher, wenn die 3D-Kamera nicht bewegt wurde; sonst den Bereich, auf den die Kamera schaute
+
 ## Sortenauswahl beim Klick ins Feld 2026-10-06
 - [x] **Sortenfeld im Pflanzen-Editor:** ein Klick ins Feld zeigt sofort die Sortenauswahl; Tippen filtert die Liste (Pfeiltasten + Enter wählen, freie Eingabe bleibt möglich). Sind noch keine Sortenlisten geladen, steht dort ein Hinweis mit Link zu Einstellungen → Sortenlisten (öffnet in neuem Tab, das Formular bleibt offen)
 

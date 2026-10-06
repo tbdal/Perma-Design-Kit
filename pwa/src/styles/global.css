@@ -177,19 +177,19 @@ html[data-design="horizont"] .site-header .hz-wordmark {
   color: #0f1208;
   text-shadow: 0 0 5px #e6f58a, 0 0 1px #e6f58a;
 }
-html[data-design="horizont"] .site-header :where(a[data-nav], #mode-toggle, #lang-toggle, #display-toggle, #theme-toggle, a[href="/settings"]) {
+html[data-design="horizont"] .site-header :where(a[data-nav], #mode-toggle, .header-extra-toggle:not(.header-extra-accent), #lang-toggle, #display-toggle, #theme-toggle, a[href="/settings"]) {
   color: var(--hz-ink);
   font-weight: 600;
   border-radius: 999px;
 }
-html[data-design="horizont"] .site-header :where(a[data-nav], #mode-toggle, #lang-toggle, #display-toggle, #theme-toggle, a[href="/settings"]):hover {
+html[data-design="horizont"] .site-header :where(a[data-nav], #mode-toggle, .header-extra-toggle:not(.header-extra-accent), #lang-toggle, #display-toggle, #theme-toggle, a[href="/settings"]):hover {
   background: rgb(255 255 255 / 0.35);
   color: #0f1208;
 }
 html[data-design="horizont"] .site-header a[data-nav="/gartenplan"] { color: #4f5b30; }
 @media (max-width: 639px) {
   html[data-design="horizont"] .site-header .hz-wordmark { font-size: 11px; }
-  html[data-design="horizont"] .site-header :where(a[data-nav], #mode-toggle, #lang-toggle, #display-toggle, #theme-toggle, a[href="/settings"]) {
+  html[data-design="horizont"] .site-header :where(a[data-nav], #mode-toggle, .header-extra-toggle:not(.header-extra-accent), #lang-toggle, #display-toggle, #theme-toggle, a[href="/settings"]) {
     font-weight: 500;
     padding-left: 0.45rem;
     padding-right: 0.45rem;

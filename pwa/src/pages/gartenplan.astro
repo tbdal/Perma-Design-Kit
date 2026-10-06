@@ -1346,23 +1346,32 @@ import Layout from '../layouts/Layout.astro';
 
   btnView2d.addEventListener('click', () => {
     if (!editing) return;
-    if (view3d) {
+    const rect3d = view3d?.getViewRect() ?? null;
+    if (view3d) last3dCamera = view3d.getCameraState();
+    const camera3dUnmoved = !!(view3d && camera3dAtEnter && sameCamera(view3d.getCameraState(), camera3dAtEnter));
+    stopSunPlay();
+    sunControls.hidden = true;
+    view3d?.dispose();
+    view3d = null;
+    // Show the 2D canvas before measuring it: while hidden it has no size and
+    // canvasAspect() falls back to the plan's aspect, which zoomed the map
+    // out a little on every 3D → 2D switch.
+    plan3dContainer.hidden = true;
+    planSvg.classList.remove('hidden');
+    canvasRectCache = null;
+    if (rect3d && view2dAtEnter3d && camera3dUnmoved) {
+      // Only looked at in 3D (camera not moved): back to exactly the 2D section from before.
+      planView = { ...view2dAtEnter3d };
+      last2dView = { ...planView };
+    } else if (rect3d) {
       // Keep the perspective: 2D shows what the 3D camera was looking at.
-      last3dCamera = view3d.getCameraState();
-      const r = view3d.getViewRect();
+      const r = rect3d;
       const aspect = canvasAspect();
       const w = Math.max((r.maxX - r.minX), (r.maxY - r.minY) / aspect) * U;
       const cxU = (r.minX + r.maxX) / 2 * U, cyU = (r.minY + r.maxY) / 2 * U;
       planView = { x: cxU - w / 2, y: cyU - w * aspect / 2, w, h: w * aspect };
       last2dView = { ...planView };
     }
-    stopSunPlay();
-    sunControls.hidden = true;
-    view3d?.dispose();
-    view3d = null;
-    plan3dContainer.hidden = true;
-    planSvg.classList.remove('hidden');
-    canvasRectCache = null;
     zoomControls.hidden = false;
     setViewToggleActive(true);
     renderPlanSvg();
@@ -1384,6 +1393,8 @@ import Layout from '../layouts/Layout.astro';
     // down onto the section 2D showed.
     const unchanged2d = last2dView && ['x', 'y', 'w', 'h'].every(k => Math.abs((last2dView as any)[k] - (planView as any)[k]) < 1e-6);
     const camera = view3d?.getCameraState() ?? (unchanged2d ? last3dCamera : null);
+    const from2d = !view3d; // not a rebuild of an open 3D view
+    if (from2d) view2dAtEnter3d = { ...planView };
     view3d?.dispose();
     const geo = editing.geo;
     view3d = createGardenPlan3DView(plan3dContainer, editing, plantsById, {
@@ -1430,6 +1441,7 @@ import Layout from '../layouts/Layout.astro';
       buildings: showBuildings() ? buildings : [],
       onTileFallback: noteOrthoFallback,
     });
+    if (from2d) camera3dAtEnter = view3d.getCameraState();
     view3d.setArmedPlant(armedPlantId);
     view3d.refreshAreas(selectedAreaId);
     view3d.setCoverage(coverage3d);
@@ -1456,6 +1468,11 @@ import Layout from '../layouts/Layout.astro';
   const sunPlayBtn = document.getElementById('sun-play') as HTMLButtonElement;
   let last3dCamera: import('../lib/gartenplan-3d').Camera3DState | null = null;
   let last2dView: { x: number; y: number; w: number; h: number } | null = null;
+  /** The 2D section and the 3D camera when 3D was opened: unmoved camera → back to that section. */
+  let view2dAtEnter3d: { x: number; y: number; w: number; h: number } | null = null;
+  let camera3dAtEnter: import('../lib/gartenplan-3d').Camera3DState | null = null;
+  const sameCamera = (a: import('../lib/gartenplan-3d').Camera3DState, b: import('../lib/gartenplan-3d').Camera3DState) =>
+    [...a.position, ...a.target].every((v, i) => Math.abs(v - [...b.position, ...b.target][i]) < 1e-6);
   let sunPlayTimer: ReturnType<typeof setInterval> | null = null;
 
   const pad = (n: number) => String(n).padStart(2, '0');

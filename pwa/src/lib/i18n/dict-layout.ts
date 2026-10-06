@@ -125,5 +125,6 @@ export const layoutDict: Dict = {
   modeLogin: { de: 'Anmelden', en: 'Log in' },
   modeLogout: { de: 'Abmelden', en: 'Log out' },
   modeAdmin: { de: 'Funktionen verwalten', en: 'Manage features' },
+  internNote: { de: 'Diese Seite ist nur nach Anmeldung im passenden Modus sichtbar.', en: 'This page is only visible after logging in, in the matching mode.' },
   modeLoggedInAs: { de: 'Angemeldet als {name}', en: 'Logged in as {name}' },
 };

@@ -101,6 +101,8 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
         </div>
 
         <div class="ml-auto flex items-center gap-1">
+          <!-- Menus added by expert modules (lib/expert-api.ts, LayoutApi.addHeaderMenu) -->
+          <div id="header-extra" class="contents"></div>
           <!-- Ansicht: Einfach / Klassisch / Experte (src/lib/ui-mode.ts) -->
           <div class="relative">
             <button id="mode-toggle" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="mode-menu" data-i18n-title="modeMenuLabel" title="Ansicht: Einfach, Klassisch oder Experte" class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm font-medium text-green-100 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900">
@@ -795,7 +797,7 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
       import { modeAllowed } from '../lib/features';
       import { applyFeatures, currentMode, featureOn, getAuth, isLoginMode, logout, onFeaturesChange, refreshAuth, refreshFeatureConfig, registerFeatures, setMode } from '../lib/ui-mode';
       import { hasExpertCode, loadExpertModule } from '../lib/expert-loader';
-      import { pageApi } from '../lib/expert-api';
+      import { pageApi, providePageApi } from '../lib/expert-api';
 
       const t = createT(layoutDict);
       const toggle = document.getElementById('mode-toggle')!;
@@ -836,6 +838,41 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
         setMode(mode);
       }));
       document.getElementById('mode-logout')!.addEventListener('click', () => void logout());
+
+      // Header menus for expert modules: same look as the menus here, hidden with the feature.
+      const headerMenus: HTMLElement[] = [];
+      document.addEventListener('click', () => headerMenus.forEach(m => { m.hidden = true; }));
+      providePageApi('layout', {
+        addHeaderMenu(featureId, label, opts = {}) {
+          const wrap = document.createElement('div');
+          wrap.className = 'relative';
+          wrap.dataset.feature = featureId;
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.setAttribute('aria-haspopup', 'true');
+          button.setAttribute('aria-expanded', 'false');
+          button.className = opts.accent
+            // Set apart from the regular menus (e.g. tools only for the team).
+            ? 'header-extra-toggle header-extra-accent inline-flex items-center gap-1 rounded-full bg-amber-300 px-3 py-1 text-sm font-semibold text-amber-950 shadow-sm ring-1 ring-amber-500/60 transition hover:bg-amber-200 dark:bg-amber-400 dark:hover:bg-amber-300'
+            : 'header-extra-toggle inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm font-medium text-green-100 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900';
+          button.textContent = label;
+          const panel = document.createElement('div');
+          panel.hidden = true;
+          panel.className = 'absolute right-0 z-50 mt-1 w-64 space-y-0.5 rounded-lg bg-white dark:bg-stone-800 p-2 text-sm text-stone-700 dark:text-stone-200 shadow-lg ring-1 ring-stone-200 dark:ring-stone-700';
+          panel.addEventListener('click', e => e.stopPropagation());
+          button.addEventListener('click', e => {
+            e.stopPropagation();
+            const open = panel.hidden;
+            headerMenus.forEach(m => { m.hidden = true; });
+            panel.hidden = !open;
+            button.setAttribute('aria-expanded', String(open));
+          });
+          headerMenus.push(panel);
+          wrap.append(button, panel);
+          document.getElementById('header-extra')!.appendChild(wrap);
+          return panel;
+        },
+      });
 
       onFeaturesChange(sync);
       applyFeatures();
