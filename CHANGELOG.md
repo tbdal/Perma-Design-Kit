@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Pflanzen-Editor per Link 2026-10-06
+- [x] **Neue Pflanze per Link:** `/?new=1` öffnet den Editor für eine neue Pflanze, vorbelegt aus einer Vorlage (`from=<id>`, deren Datenquellen bleiben erhalten) und/oder mit `latin`, `common`, `variety`, `group`; `return=<pfad>` springt nach Speichern oder Abbrechen dorthin zurück (auch mit `edit=<id>`). Experten-Module können das Zurückspringen abwarten lassen (`holdLeave`) #minor
+
 ## Offline und Installieren (PWA) 2026-10-06
 - [x] **Ganze App offline:** der Service Worker speichert beim ersten Besuch den kompletten Build (alle Seiten, Skripte, Styles, Schriften, Artenliste) und liefert ihn danach aus dem Speicher — vorher lag nur die Startseite ohne CSS und JavaScript im Cache. Die 5 MB große Baumscheiben-Vorlage wird einmal geholt und bleibt über Deploys hinweg erhalten; unveränderte Dateien werden bei einem neuen Build nicht erneut geladen. #major
 - [x] **Hinweis „Neue Version“:** ein neuer Build wird im Hintergrund geladen und wartet; ein Banner bietet „Neu laden“ an. Offene Tabs behalten bis dahin ihren Stand (bisher konnten nach einem Deploy nachgeladene Teile wie Karte, 3D oder PDF fehlschlagen). Ohne Klick übernimmt die neue Version, sobald alle Tabs geschlossen sind. #major

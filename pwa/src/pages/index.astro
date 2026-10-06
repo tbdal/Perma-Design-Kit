@@ -503,6 +503,10 @@ import Layout from '../layouts/Layout.astro';
   const dotCodes = initialPrefs?.dotCodes ?? false;
   let selectedIds = new Set<string>();
   let editingPlant: PlantData | null = null;
+  /** Template of a new plant opened with ?new=1&from=<id> (its sources carry over). */
+  let newTemplate: PlantData | null = null;
+  /** Saves that must finish before ?return= leaves the page (see PflanzenApi.holdLeave). */
+  const leaveHolds: Promise<unknown>[] = [];
   const listChangeListeners: ((plants: PlantData[]) => void)[] = [];
   let cachedPlants: PlantData[] = [];
   let lastCheckedId: string | null = null;
@@ -674,12 +678,13 @@ import Layout from '../layouts/Layout.astro';
   }
 
   function readForm(): PlantData {
-    const orig = editingPlant;
+    // A new plant from a template (?new=1&from=<id>) keeps the template's sources for unchanged fields.
+    const orig = editingPlant ?? newTemplate;
     const p = createEmptyPlant();
     p.id = el('id').value || p.id;
     p._sources = orig?._sources ? { ...orig._sources } : {};
     // Editing must not reset the add date ('' stays '' for older plants).
-    if (orig) p.createdAt = orig.createdAt ?? '';
+    if (editingPlant) p.createdAt = editingPlant.createdAt ?? '';
 
     for (const f of textFields) {
       const val = el(f).value;
@@ -1312,6 +1317,7 @@ import Layout from '../layouts/Layout.astro';
     const plant = cachedPlants.find(p => p.id === id);
     if (!plant) return false;
     editingPlant = plant;
+    newTemplate = null;
     (document.getElementById('dialog-title') as HTMLElement).textContent = t('dialogTitleEdit');
     fillForm(plant);
     dialog.showModal();
@@ -1321,6 +1327,7 @@ import Layout from '../layouts/Layout.astro';
 
   document.getElementById('btn-add')!.addEventListener('click', () => {
     editingPlant = null;
+    newTemplate = null;
     (document.getElementById('dialog-title') as HTMLElement).textContent = t('dialogTitleNew');
     fillForm(createEmptyPlant());
     dialog.showModal();
@@ -1366,6 +1373,7 @@ import Layout from '../layouts/Layout.astro';
       b.addEventListener('click', () => onClick(cachedPlants.filter(p => selectedIds.has(p.id))));
       return b;
     },
+    holdLeave: (p) => { leaveHolds.push(p); },
     addDataMenuButton: (featureId, label, onClick) => {
       const b = slotButton('data-menu-extra', featureId, label, 'block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700');
       b.addEventListener('click', () => onClick());
@@ -1373,6 +1381,7 @@ import Layout from '../layouts/Layout.astro';
     },
   });
   document.getElementById('btn-cancel')!.addEventListener('click', () => dialog.close());
+  dialog.addEventListener('close', () => { newTemplate = null; });
   form.addEventListener('submit', async (e) => { e.preventDefault(); await savePlant(readForm()); dialog.close(); renderList(); });
 
   // ── View toggle + Bulk actions ────────────────────────────────────────────────
@@ -1799,13 +1808,48 @@ import Layout from '../layouts/Layout.astro';
   });
 
   updateViewButtons();
-  // ?edit=<id> opens that plant in the editor (links from other pages); the parameter is dropped afterwards.
+  // Links from other pages (parameters are dropped once read):
+  //  ?edit=<id>                 opens that plant in the editor;
+  //  ?new=1[&from=<id>][&latin=…&common=…&variety=…&group=…]
+  //                             opens the editor for a new plant, prefilled from a template plant and/or the values;
+  //  &return=<path>             goes back there when the editor closes (saved or cancelled).
   void renderList().then(() => {
     const url = new URL(location.href);
-    const id = url.searchParams.get('edit');
-    if (!id) return;
-    url.searchParams.delete('edit');
+    const q = url.searchParams;
+    const id = q.get('edit');
+    const isNew = q.get('new') === '1';
+    if (!id && !isNew) return;
+    const back = q.get('return') ?? '';
+    const read = (k: string) => (q.get(k) ?? '').trim();
+    const vals = { from: read('from'), latin: read('latin'), common: read('common'), variety: read('variety'), group: read('group') };
+    for (const k of ['edit', 'new', 'from', 'latin', 'common', 'variety', 'group', 'return']) q.delete(k);
     history.replaceState(history.state, '', url);
-    openEditor(id);
+    let opened = false;
+    if (id) opened = openEditor(id);
+    else {
+      const tpl = cachedPlants.find(p => p.id === vals.from) ?? null;
+      const empty = createEmptyPlant();
+      const plant: PlantData = tpl
+        ? { ...structuredClone(tpl), id: empty.id, createdAt: empty.createdAt, printCount: empty.printCount, varietyName: '' }
+        : empty;
+      if (vals.latin) plant.latinName = vals.latin;
+      if (vals.common) plant.commonName = vals.common;
+      if (vals.variety) plant.varietyName = vals.variety;
+      if (vals.group) plant.groups = [vals.group];
+      editingPlant = null;
+      newTemplate = tpl;
+      (document.getElementById('dialog-title') as HTMLElement).textContent = t('dialogTitleNew');
+      fillForm(plant);
+      dialog.showModal();
+      notifyEditorOpen();
+      opened = true;
+    }
+    // Only paths on this site, never another origin.
+    if (opened && /^\/(?!\/)/.test(back)) {
+      dialog.addEventListener('close', async () => {
+        await Promise.allSettled(leaveHolds);
+        location.assign(back);
+      }, { once: true });
+    }
   });
 </script>

@@ -79,6 +79,8 @@ export interface PflanzenApi {
   addBulkButton(featureId: string, label: string, onClick: (plants: PlantData[]) => void): HTMLButtonElement;
   /** An entry in the "Daten" menu. */
   addDataMenuButton(featureId: string, label: string, onClick: () => void): HTMLButtonElement;
+  /** When the editor was opened with ?return=<path>, leaving waits for this (e.g. data saved along with the plant). */
+  holdLeave(p: Promise<unknown>): void;
 }
 
 /** What every page (Layout.astro) offers plugins. */
