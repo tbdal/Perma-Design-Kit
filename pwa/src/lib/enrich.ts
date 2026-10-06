@@ -186,6 +186,7 @@ export async function createPlantFromSearch(result: SearchResult): Promise<{ pla
   plant._sources = {};
   plant.latinName = result.latinName;
   plant.commonName = result.commonName;
+  if (result.commonNameEn) plant.commonNameEn = result.commonNameEn;
   if (plant.latinName) plant._sources.latinName = 'manual';
   if (plant.commonName && plant.commonName !== plant.latinName) plant._sources.commonName = 'manual';
 

@@ -1,7 +1,7 @@
 import { savePlant } from './db';
 import { createPlantFromSearch } from './enrich';
 import { announce, escapeHtml } from './html';
-import { createT } from './i18n/core';
+import { createT, getLang } from './i18n/core';
 import { searchDict } from './i18n/dict-search';
 import { searchPlants } from './plant-search';
 import type { PlantData } from './types';
@@ -81,7 +81,7 @@ export function initPlantSearchUi(o: PlantSearchUiOptions) {
         return `
         <div id="search-result-${i}" role="option" aria-selected="false" class="flex items-center justify-between gap-2 px-4 py-2.5 hover:bg-stone-50 dark:hover:bg-stone-800 transition" data-idx="${i}">
           <div class="min-w-0">
-            <p class="truncate text-sm font-medium text-stone-800 dark:text-stone-100">${escapeHtml(r.commonName || r.latinName)}</p>
+            <p class="truncate text-sm font-medium text-stone-800 dark:text-stone-100">${escapeHtml((getLang() === 'en' ? r.commonNameEn : r.commonName) || r.latinName)}</p>
             ${r.latinName ? `<p class="truncate text-xs italic text-stone-500 dark:text-stone-400">${escapeHtml(r.latinName)}</p>` : ''}
             ${r.description ? `<p class="truncate text-xs text-stone-500 dark:text-stone-400">${escapeHtml(r.description)}</p>` : ''}
             ${dupe ? `<p class="text-xs font-medium text-amber-600 dark:text-amber-400">${escapeHtml(t('searchAlreadyAdded'))}</p>` : ''}

@@ -1,5 +1,6 @@
 import { parseHabit, type PlantData } from './types';
 import { isSourceEnabled } from './settings';
+import { getLang } from './i18n/core';
 import { cultivarOf, isCultivarEntity } from './varieties';
 
 // ── Local plant database ─────────────────────────────────────────────────────
@@ -29,13 +30,16 @@ function searchDB(db: DBEntry[], query: string): SearchResult[] {
     .map(p => ({
       latinName: p.latinName,
       commonName: p.commonName || p.latinName,
-      description: 'Lokale Datenbank',
+      description: getLang() === 'en' ? 'Local database' : 'Lokale Datenbank',
     }));
 }
 
 export interface SearchResult {
   latinName: string;
+  /** German common name (stored on the plant). */
   commonName: string;
+  /** English common name, if known; the English UI shows this instead of the German one. */
+  commonNameEn?: string;
   wikidataId?: string;
   description?: string;
   /** Set for a Wikidata cultivar hit (e.g. "Conference"): the result then
@@ -244,7 +248,8 @@ export async function searchPlants(query: string): Promise<SearchResult[]> {
                 latinName: latin,
                 commonName: bestCommonName(entity, latin),
                 wikidataId: item.title,
-                description: descDe || descEn || '',
+                commonNameEn: bestEnglishName(entity, latin),
+                description: (getLang() === 'en' ? descEn || descDe : descDe || descEn) || '',
               });
             }
             results.push(...varietyHits);
@@ -268,7 +273,8 @@ export async function searchPlants(query: string): Promise<SearchResult[]> {
           results.push({
             latinName: data.latinName || query,
             commonName: data.commonName || '',
-            description: `Quelle: ${data.source.toUpperCase()}`,
+            commonNameEn: getLang() === 'en' ? data.commonName || '' : '',
+            description: `${getLang() === 'en' ? 'Source' : 'Quelle'}: ${data.source.toUpperCase()}`,
           });
         }
       }
