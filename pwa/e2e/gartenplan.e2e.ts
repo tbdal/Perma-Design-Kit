@@ -263,3 +263,24 @@ test('grid lines turn with the outline; the meter numbers step aside', async ({ 
   await expect.poll(() => withDb<number>(page, `return (await all('gardenPlans')).find(p => p.id === 'np').gridRotationDeg;`)).toBe(9.5);
   void errors;
 });
+
+test.describe('sun in the garden’s local time', () => {
+  test.use({ timezoneId: 'Europe/Berlin' });
+  test('a plan in Lisbon uses Lisbon time, not the browser’s Berlin time', async ({ page, errors }) => {
+    await stubNetwork(page);
+    await seedNeighbourPlan(page, { geo: { lat: 38.72, lon: -9.14, rotationDeg: 0, basemap: 'none', opacity: 0.6 } });
+    await openPlan(page, 'np');
+    await page.click('#btn-view-3d');
+    await expect(page.locator('#plan-3d-container canvas')).toBeVisible({ timeout: 20000 });
+    await page.fill('#sun-date', '2026-06-21');
+    await page.locator('#sun-date').dispatchEvent('input');
+    await page.locator('#sun-time').evaluate((el: HTMLInputElement) => { el.value = '840'; el.dispatchEvent(new Event('input', { bubbles: true })); });
+    // 14:00 in Lisbon (summer time, UTC+1) — the zone name comes once the lookup has loaded.
+    await expect(page.locator('#sun-time-label')).toHaveText(/^14:00 (WESZ|GMT\+1|UTC\+1)$/);
+    // Solar noon in Lisbon is about 13:37 local time: at 14:00 the sun is already west of south.
+    const bearing = Number((await page.locator('#sun-info').innerText()).match(/Sonne (\d+)°/)?.[1]);
+    expect(bearing).toBeGreaterThan(180);
+    expect(bearing).toBeLessThan(230);
+    void errors;
+  });
+});
