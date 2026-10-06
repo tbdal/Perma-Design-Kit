@@ -7,7 +7,7 @@
 // may use through providePageApi(). Without src/expert/ nothing of this runs
 // and the public build is unchanged.
 import type { FeatureDef } from './features';
-import type { GardenPlan } from './types';
+import type { GardenPlan, PlantData } from './types';
 import type { Lang } from './i18n/core';
 
 export interface ExpertContext {
@@ -39,8 +39,32 @@ export interface GartenplanApi {
   addPanel(featureId: string, title: string): HTMLElement;
 }
 
+/** What the plant list (index.astro) offers plugins. */
+export interface PflanzenApi {
+  /** All plants as last loaded for the list. */
+  getPlants(): PlantData[];
+  /** The plant open in the editor dialog (null = a new, unsaved plant). */
+  getEditingPlant(): PlantData | null;
+  /** The editor form's current, unsaved state. */
+  readEditorForm(): PlantData;
+  /** Groups currently selected in the list's group filter. */
+  activeGroups(): string[];
+  onEditorOpen(cb: (plant: PlantData | null) => void): void;
+  /** Called after the list reloaded its plants from the database. */
+  onListChange(cb: (plants: PlantData[]) => void): void;
+  /** A block in the editor dialog, above its buttons (hidden whenever the feature is off). */
+  addEditorSection(featureId: string): HTMLElement;
+  /** A button left of the editor's Cancel/Save. */
+  addEditorButton(featureId: string, label: string, onClick: () => void): HTMLButtonElement;
+  /** A button in the bulk bar; gets the selected plants. */
+  addBulkButton(featureId: string, label: string, onClick: (plants: PlantData[]) => void): HTMLButtonElement;
+  /** An entry in the "Daten" menu. */
+  addDataMenuButton(featureId: string, label: string, onClick: () => void): HTMLButtonElement;
+}
+
 export interface PageApis {
   gartenplan: GartenplanApi;
+  pflanzen: PflanzenApi;
 }
 
 const apis = new Map<string, unknown>();

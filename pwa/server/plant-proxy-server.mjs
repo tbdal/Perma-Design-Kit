@@ -7,6 +7,8 @@
 // deployment — the frontend (src/lib/plant-search.ts) always calls the relative path and
 // has no knowledge of where this process runs.
 import { createServer } from 'node:http';
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { parsePfafHtml, pfafNameCandidates } from './pfaf-parse.mjs';
 import { lookupEfg, efgIndex } from './efg.mjs';
 import { createAuthHandler, createStore } from './auth.mjs';
@@ -282,8 +284,25 @@ async function lookup(name) {
 // /api/auth/, /api/admin/ and /api/features. Same-origin only, no CORS.
 const handleAuth = createAuthHandler({ store: createStore(), isAllowedOrigin });
 
+// Private server routes under /api/x/ from the expert repo (src/expert/server/,
+// only on the VPS), loaded when this checkout has it. Logged-in accounts only.
+const expertServerUrl = new URL('../src/expert/server/index.mjs', import.meta.url);
+const expertServer = existsSync(fileURLToPath(expertServerUrl))
+  ? await import(expertServerUrl.href).catch((err) => { console.error('expert server module failed to load:', err); return null; })
+  : null;
+
+async function handleExpert(req, res, url) {
+  const send = (status, body) => { res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(body)); };
+  if (!expertServer) return send(404, { error: 'not-found' });
+  if (req.method !== 'GET' && req.method !== 'HEAD' && !isAllowedOrigin(req.headers.origin || null)) return send(403, { error: 'origin' });
+  const session = handleAuth.session(req);
+  if (!session) return send(401, { error: 'login' });
+  return expertServer.handle(req, res, url, { session, ip: clientIp(req) });
+}
+
 async function handleRequest(req, res) {
   const url = new URL(req.url, `http://${req.headers.host}`);
+  if (url.pathname.startsWith('/api/x/')) return handleExpert(req, res, url);
   if (await handleAuth(req, res, url, clientIp(req))) return;
   const origin = req.headers.origin || null;
   const headers = corsHeaders(origin);

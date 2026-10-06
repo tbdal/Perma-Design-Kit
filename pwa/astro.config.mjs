@@ -70,7 +70,7 @@ export default defineConfig({
       // server's address.
       proxy: {
         // Expert mode: login, accounts, feature table (server/auth.mjs, same process).
-        '^/api/(auth|admin)/|^/api/features$': {
+        '^/api/(auth|admin|x)/|^/api/features$': {
           target: `http://127.0.0.1:${process.env.PLANT_PROXY_PORT || 8787}`,
           changeOrigin: true,
           xfwd: true,

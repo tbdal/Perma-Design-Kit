@@ -48,6 +48,7 @@ export interface FeatureDef {
 /** Groups on the admin page, in this order (unknown groups follow, then 'other'). */
 export const FEATURE_GROUPS: Record<string, { de: string; en: string }> = {
   gartenplan: { de: 'Waldgartenplan', en: 'Forest garden plan' },
+  pflanzen: { de: 'Pflanzen', en: 'Plants' },
   other: { de: 'Sonstiges', en: 'Other' },
 };
 

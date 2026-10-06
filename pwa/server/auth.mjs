@@ -236,7 +236,7 @@ export function createAuthHandler({ store, isAllowedOrigin = () => true, now = (
     return { name: user.name, role: user.role };
   }
 
-  return async function handle(req, res, url, ip) {
+  async function handle(req, res, url, ip) {
     const path = url.pathname;
     if (!path.startsWith('/api/auth/') && !path.startsWith('/api/admin/') && path !== '/api/features') return false;
     const method = req.method;
@@ -304,5 +304,8 @@ export function createAuthHandler({ store, isAllowedOrigin = () => true, now = (
     }
     send(res, 404, { error: 'not-found' });
     return true;
-  };
+  }
+  /** The logged-in account of a request ({ name, role }) or null — for other route handlers. */
+  handle.session = session;
+  return handle;
 }

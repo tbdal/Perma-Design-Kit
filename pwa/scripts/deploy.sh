@@ -65,4 +65,10 @@ npx playwright test --reporter=line
 rsync -a --delete dist/ /var/www/permadesignkit.org/
 chown -R www-data:www-data /var/www/permadesignkit.org
 
+# The plant proxy also serves the expert login and the private /api/x/ routes
+# (server code may have changed with this deploy): restart it if it runs here.
+if systemctl cat plant-proxy.service >/dev/null 2>&1; then
+  systemctl restart plant-proxy && echo "Restarted plant-proxy"
+fi
+
 echo "Deployed $(git rev-parse --short HEAD) to https://permadesignkit.org"

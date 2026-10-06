@@ -75,6 +75,7 @@ import Layout from '../layouts/Layout.astro';
           <button id="btn-load-samples-crawford" data-i18n="menuLoadSamplesCrawford" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Beispieldaten laden (Crawford)</button>
           <button id="btn-load-master" data-i18n="menuLoadMaster" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Standard-Artenliste laden (≈190 Arten)</button>
           <hr class="my-1 border-stone-200 dark:border-stone-700">
+          <div id="data-menu-extra"></div>
           <button id="btn-enrich-all" data-i18n="menuEnrichAll" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Lade alle fehlenden Daten</button>
         </div>
       </details>
@@ -269,6 +270,7 @@ import Layout from '../layouts/Layout.astro';
     <button id="btn-bulk-delete" data-i18n="bulkDelete" class="rounded-lg bg-red-100 dark:bg-red-900/40 px-3 py-1.5 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/60">Löschen</button>
     <button id="btn-bulk-json" data-i18n="bulkJson" class="rounded-lg bg-stone-200 dark:bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 hover:bg-stone-300 dark:hover:bg-stone-700">JSON</button>
     <button id="btn-bulk-csv" data-i18n="bulkCsv" class="rounded-lg bg-stone-200 dark:bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 hover:bg-stone-300 dark:hover:bg-stone-700">CSV</button>
+    <span id="bulk-extra" class="contents"></span>
     <button id="btn-bulk-pdf" data-i18n="bulkPdf" class="rounded-lg bg-stone-200 dark:bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 hover:bg-stone-300 dark:hover:bg-stone-700">PDF</button>
   </div>
 
@@ -436,7 +438,10 @@ import Layout from '../layouts/Layout.astro';
         </div>
       </div>
 
+      <!-- Slots for expert modules (lib/expert-api.ts, PflanzenApi). -->
+      <div id="editor-extra" class="mt-5 space-y-3 empty:hidden"></div>
       <div class="mt-5 flex justify-end gap-2">
+        <span id="editor-extra-buttons" class="mr-auto flex flex-wrap gap-2 empty:hidden"></span>
         <button type="button" id="btn-cancel" data-i18n="btnCancel" class="rounded-lg px-4 py-2 text-sm font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-300 dark:ring-stone-600 transition hover:bg-stone-100 dark:hover:bg-stone-700">Abbrechen</button>
         <button type="submit" data-i18n="btnSave" class="rounded-lg bg-green-700 px-5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">Speichern</button>
       </div>
@@ -471,6 +476,7 @@ import Layout from '../layouts/Layout.astro';
   import { renderBaumscheibeCardHtml } from '../lib/baumscheibe-render';
   import { createT, applyStaticI18n, getLang } from '../lib/i18n/core';
   import { indexDict } from '../lib/i18n/dict-index';
+  import { providePageApi } from '../lib/expert-api';
   import { searchDict } from '../lib/i18n/dict-search';
   import { plantDetailDict } from '../lib/i18n/dict-plant-detail';
 
@@ -497,6 +503,7 @@ import Layout from '../layouts/Layout.astro';
   const dotCodes = initialPrefs?.dotCodes ?? false;
   let selectedIds = new Set<string>();
   let editingPlant: PlantData | null = null;
+  const listChangeListeners: ((plants: PlantData[]) => void)[] = [];
   let cachedPlants: PlantData[] = [];
   let lastCheckedId: string | null = null;
   let sortField: SortField = 'createdAt';
@@ -894,6 +901,7 @@ import Layout from '../layouts/Layout.astro';
 
   async function renderList() {
     cachedPlants = await getAllPlants();
+    for (const cb of listChangeListeners) { try { cb(cachedPlants); } catch (err) { console.warn('expert list listener failed', err); } }
 
 
     if (cachedPlants.length === 0) {
@@ -1253,6 +1261,7 @@ import Layout from '../layouts/Layout.astro';
           (document.getElementById('dialog-title') as HTMLElement).textContent = t('dialogTitleEdit');
           fillForm(plant);
           dialog.showModal();
+          notifyEditorOpen();
         }
       });
     });
@@ -1310,6 +1319,53 @@ import Layout from '../layouts/Layout.astro';
     (document.getElementById('dialog-title') as HTMLElement).textContent = t('dialogTitleNew');
     fillForm(createEmptyPlant());
     dialog.showModal();
+    notifyEditorOpen();
+  });
+
+  // ── Schnittstelle für private Experten-Module (lib/expert-api.ts) ───────
+  const editorOpenListeners: ((plant: PlantData | null) => void)[] = [];
+  function notifyEditorOpen() {
+    for (const cb of editorOpenListeners) {
+      try { cb(editingPlant); } catch (err) { console.warn('expert editor listener failed', err); }
+    }
+  }
+  const slotButton = (slot: string, featureId: string, label: string, cls: string) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.dataset.feature = featureId;
+    b.className = cls;
+    b.textContent = label;
+    document.getElementById(slot)!.appendChild(b);
+    return b;
+  };
+  providePageApi('pflanzen', {
+    getPlants: () => cachedPlants,
+    getEditingPlant: () => editingPlant,
+    readEditorForm: () => readForm(),
+    activeGroups: () => [...filters.groups],
+    onEditorOpen: cb => { editorOpenListeners.push(cb); },
+    onListChange: cb => { listChangeListeners.push(cb); },
+    addEditorSection(featureId) {
+      const el = document.createElement('section');
+      el.dataset.feature = featureId;
+      document.getElementById('editor-extra')!.appendChild(el);
+      return el;
+    },
+    addEditorButton: (featureId, label, onClick) => {
+      const b = slotButton('editor-extra-buttons', featureId, label, 'rounded-lg px-3 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-800');
+      b.addEventListener('click', () => onClick());
+      return b;
+    },
+    addBulkButton: (featureId, label, onClick) => {
+      const b = slotButton('bulk-extra', featureId, label, 'rounded-lg bg-stone-200 dark:bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 hover:bg-stone-300 dark:hover:bg-stone-700');
+      b.addEventListener('click', () => onClick(cachedPlants.filter(p => selectedIds.has(p.id))));
+      return b;
+    },
+    addDataMenuButton: (featureId, label, onClick) => {
+      const b = slotButton('data-menu-extra', featureId, label, 'block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700');
+      b.addEventListener('click', () => onClick());
+      return b;
+    },
   });
   document.getElementById('btn-cancel')!.addEventListener('click', () => dialog.close());
   form.addEventListener('submit', async (e) => { e.preventDefault(); await savePlant(readForm()); dialog.close(); renderList(); });
