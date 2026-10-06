@@ -116,6 +116,7 @@ export const hilfeDict: Dict = {
   shortcutsIntroEnd: { de: ', das schließt überall den offenen Dialog).', en: ', which closes any open dialog everywhere).' },
   shortcutFocusSearch: { de: 'Suche fokussieren', en: 'Focus search' },
   shortcutCloseDialog: { de: 'Offenen Dialog schließen', en: 'Close open dialog' },
+  shortcutFilterName: { de: 'Liste nach Namen filtern', en: 'Filter the list by name' },
   shortcutNewPlant: { de: 'Neue Pflanze', en: 'New plant' },
   shortcutTiles: { de: 'Kachelansicht', en: 'Tile view' },
   shortcutList: { de: 'Listenansicht', en: 'List view' },

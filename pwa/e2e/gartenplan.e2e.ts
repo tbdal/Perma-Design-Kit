@@ -247,3 +247,16 @@ test('without a location the map switches stay visible, greyed out, and offer to
   await expect(page.locator('#locate-dialog')).toBeVisible();
   void errors;
 });
+
+test('grid lines turn with the outline; the meter numbers step aside', async ({ page, errors }) => {
+  await stubNetwork(page);
+  await seedNeighbourPlan(page, { boundary: [{ xM: 1, yM: 1 }, { xM: 25, yM: 5 }, { xM: 25, yM: 15 }, { xM: 1, yM: 11 }] });
+  await openPlan(page, 'np');
+  await expect(page.locator('#plan-grid-layer text').first()).toBeAttached();
+  await page.click('#btn-grid-align');
+  await expect(page.locator('#g-grid-rot')).toHaveValue('9.5');
+  await expect(page.locator('#plan-grid-layer pattern')).toHaveAttribute('patternTransform', 'rotate(9.5)');
+  await expect(page.locator('#plan-grid-layer text')).toHaveCount(0);
+  await expect.poll(() => withDb<number>(page, `return (await all('gardenPlans')).find(p => p.id === 'np').gridRotationDeg;`)).toBe(9.5);
+  void errors;
+});

@@ -4,6 +4,10 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Meterlinien drehen, Namensfilter per Taste 2026-10-06
+- [x] **Meterlinien drehen:** im Waldgartenplan lassen sich die Meterlinien neben „Meterlinien“ um bis zu ±45° drehen, z. B. passend zu einem schrägen Grundstück; „am Umriss“ richtet sie an der längsten Kante des Umrisses aus. Nur die Linien drehen sich (auch im PDF), Punkte rasten an den gedrehten Kreuzungen ein; die Meterzahlen am Rand entfallen dann #minor
+- [x] **Taste F auf der Pflanzenseite:** springt ins Feld „Name filtern…“ (auch in der Kürzel-Übersicht unter ? und in der Hilfe) #minor
+
 ## Suche in englischer Oberfläche 2026-10-06
 - [x] **Suchergebnisse auf Englisch:** bei englischer Oberfläche zeigt die Pflanzensuche den englischen Namen (sonst nur den lateinischen) statt des deutschen, dazu die englische Wikidata-Beschreibung und englische Quellenhinweise. Neu hinzugefügte Pflanzen übernehmen den englischen Namen #bugs
 

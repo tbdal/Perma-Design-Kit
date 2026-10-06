@@ -81,6 +81,10 @@ import Layout from '../layouts/Layout.astro';
         <select id="g-coverage" class="rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs"></select>
       </label>
       <label class="inline-flex items-center gap-1.5" data-i18n-title="mapGridTitle" title="Meterlinien ein-/ausblenden (G)"><input id="g-grid" type="checkbox" checked class="accent-green-700" /> <span data-i18n="mapGrid">Meterlinien</span></label>
+      <span class="inline-flex items-center gap-1" data-i18n-title="gridRotTitle" title="Meterlinien drehen, z. B. passend zu einem schrägen Grundstück (nur die Linien drehen sich)">
+        <input id="g-grid-rot" type="number" min="-45" max="45" step="1" value="0" data-i18n-aria-label="gridRotLabel" aria-label="Drehung der Meterlinien in Grad" class="w-14 rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1 py-0.5 text-xs" />°
+        <button id="btn-grid-align" type="button" data-i18n="gridAlign" data-i18n-title="gridAlignTitle" title="Meterlinien an der längsten Kante des Umrisses ausrichten" class="rounded-md bg-stone-100 dark:bg-stone-700 px-1.5 py-0.5 text-xs ring-1 ring-stone-200 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">am Umriss</button>
+      </span>
       <label data-feature="buildings" id="buildings-toggle" hidden class="inline-flex items-center gap-1.5" data-i18n-title="mapBuildingsTitle" title="Gebäude aus OpenStreetMap: in 3D und als Schattenwerfer für Besonnung und Hinweise"><input id="g-buildings" type="checkbox" checked class="accent-stone-600" /> <span data-i18n="mapBuildings">Gebäude</span></label>
       <label data-feature="terrain" id="contours-toggle" hidden class="inline-flex items-center gap-1.5"><input id="g-contours" type="checkbox" checked class="accent-amber-700" /> <span data-i18n="mapContours">Höhenlinien</span></label>
       <label data-feature="water" id="water-toggle" hidden class="inline-flex items-center gap-1.5" data-i18n-title="mapWaterTitle" title="Abflusswege, Senken, Swale-Vorschläge und Regen vom Dach"><input id="g-water" type="checkbox" class="accent-sky-600" /> <span data-i18n="mapWater">Wasser</span></label>
@@ -518,7 +522,7 @@ import Layout from '../layouts/Layout.astro';
   import { displayRadiusM } from '../lib/growth-model';
   import { deriveLayer, LAYER_STYLE, LAYER_I18N, type PlantLayer } from '../lib/plant-layer';
   import { blobPathD } from '../lib/blob-shape';
-  import { pointInPolygon, formatMeters, polygonAreaM2, polygonPerimeterM, pointsAlongPolyline } from '../lib/gartenplan-geometry';
+  import { pointInPolygon, formatMeters, polygonAreaM2, polygonPerimeterM, pointsAlongPolyline, nearestGridPoint, gridAngleAlongOutline, normalizeGridAngle } from '../lib/gartenplan-geometry';
   import { areasSvg, AREA_PALETTE, uiScale, polygonCentroid } from '../lib/gartenplan-render';
   import { planFromLatLngPolygon, planToLatLon } from '../lib/gartenplan-geo';
   import type { MapDrawer } from '../lib/gartenplan-mapdraw';
@@ -742,6 +746,7 @@ import Layout from '../layouts/Layout.astro';
     for (const id of [...multiSel]) if (!prev.placements.some(p => p.id === id)) multiSel.delete(id);
     yearsInput.value = String(prev.yearsSincePlanting);
     yearsLabel.textContent = t('yearsSuffix', { years: prev.yearsSincePlanting });
+    gridRotInput.value = String(prev.gridRotationDeg ?? 0);
     syncMapBar();
     renderAreasList();
     renderUnplacedList();
@@ -785,10 +790,9 @@ import Layout from '../layouts/Layout.astro';
     if (!ctm) return pt;
     const screenPxPerSvgUnit = Math.sqrt(ctm.a * ctm.a + ctm.b * ctm.b);
     const toleranceM = (SNAP_TOLERANCE_PX / screenPxPerSvgUnit) / SVG_UNITS_PER_METER;
-    const nearestX = Math.round(pt.xM / spacingM) * spacingM;
-    const nearestY = Math.round(pt.yM / spacingM) * spacingM;
-    const dist = Math.hypot(pt.xM - nearestX, pt.yM - nearestY);
-    return dist <= toleranceM ? { xM: nearestX, yM: nearestY } : pt;
+    const near = nearestGridPoint(pt, spacingM, editing?.gridRotationDeg ?? 0);
+    const dist = Math.hypot(pt.xM - near.xM, pt.yM - near.yM);
+    return dist <= toleranceM ? near : pt;
   }
 
   /** Ray-casting point-in-polygon test, coordinates in meters. */
@@ -833,7 +837,22 @@ import Layout from '../layouts/Layout.astro';
     refreshBasemaps();
   });
 
-  function gridDefsAndBackground(widthM: number, heightM: number, spacingM: number, patternId: string, k = 1, pxPerM = 0): string {
+  // Turned grid ("Meterlinien drehen"): only the lines turn, the plan stays.
+  const gridRotInput = document.getElementById('g-grid-rot') as HTMLInputElement;
+  function setGridRotation(deg: number) {
+    if (!editing) return;
+    const a = normalizeGridAngle(deg);
+    if (a) editing.gridRotationDeg = a; else delete editing.gridRotationDeg;
+    gridRotInput.value = String(a);
+    rescaleUi();
+    scheduleAutosave();
+  }
+  gridRotInput.addEventListener('change', () => setGridRotation(Number(gridRotInput.value) || 0));
+  document.getElementById('btn-grid-align')!.addEventListener('click', () => {
+    if (editing) setGridRotation(gridAngleAlongOutline(editing.boundary));
+  });
+
+  function gridDefsAndBackground(widthM: number, heightM: number, spacingM: number, patternId: string, k = 1, pxPerM = 0, rotationDeg = 0): string {
     // Zoomed out, the grid would turn into a carpet of lines and the meter
     // numbers into solid bars: thin both out to ≥ 12 px / ≥ 40 px apart.
     const labelStepM = pxPerM ? niceStep(spacingM, 40 / pxPerM) : spacingM;
@@ -841,12 +860,12 @@ import Layout from '../layouts/Layout.astro';
     const spacingU = spacingM * SVG_UNITS_PER_METER;
     return `
       <defs>
-        <pattern id="${patternId}" width="${spacingU}" height="${spacingU}" patternUnits="userSpaceOnUse">
+        <pattern id="${patternId}" width="${spacingU}" height="${spacingU}" patternUnits="userSpaceOnUse"${rotationDeg ? ` patternTransform="rotate(${rotationDeg})"` : ''}>
           <path d="M ${spacingU} 0 L 0 0 0 ${spacingU}" fill="none" stroke="#d6d3d1" stroke-width="${k}"/>
         </pattern>
       </defs>
       <rect width="${widthM * SVG_UNITS_PER_METER}" height="${heightM * SVG_UNITS_PER_METER}" fill="${gridInput.checked ? `url(#${patternId})` : 'transparent'}" stroke="#a8a29e" stroke-width="${2 * k}"/>
-      ${gridTickLabels(widthM, heightM, labelStepM, k)}`;
+      ${rotationDeg ? '' : gridTickLabels(widthM, heightM, labelStepM, k)}`;
   }
 
   // ── Listenansicht ──────────────────────────────────────────────────────
@@ -977,6 +996,7 @@ import Layout from '../layouts/Layout.astro';
     fWidth.value = String(editing.areaWidthM);
     fHeight.value = String(editing.areaHeightM);
     fGridSpacing.value = String(editing.gridSpacingM);
+    gridRotInput.value = String(editing.gridRotationDeg ?? 0);
     syncMapBar();
     fPolyculture.innerHTML = `<option value="">${t('linkedPolycultureNone')}</option>` + polycultures
       .map(pc => `<option value="${pc.id}" ${pc.id === editing!.polycultureId ? 'selected' : ''}>${escapeHtml(pc.name || t('planUnnamed'))}</option>`)
@@ -1945,7 +1965,7 @@ import Layout from '../layouts/Layout.astro';
       <g id="contour-layer" pointer-events="none"></g>
       <g id="water-layer" pointer-events="none"></g>
       <g id="coverage-layer" pointer-events="none"></g>
-      <g id="plan-grid-layer">${gridDefsAndBackground(w, h, editing.gridSpacingM, 'plan-grid', k, pxPerUnit() * U)}</g>
+      <g id="plan-grid-layer">${gridDefsAndBackground(w, h, editing.gridSpacingM, 'plan-grid', k, pxPerUnit() * U, editing.gridRotationDeg ?? 0)}</g>
       <g id="zones-layer" pointer-events="none"></g>
       <polygon id="plan-boundary" points="${pointsAttr}" fill="#15803d" fill-opacity="0.08" stroke="#15803d" stroke-width="${2 * k}"/>
       <g id="plan-areas-layer">${areasSvg(editing.areas, selectedAreaId, k, true)}</g>
@@ -2329,7 +2349,7 @@ import Layout from '../layouts/Layout.astro';
     if (!editing) return;
     const k = viewK();
     const grid = planSvg.querySelector('#plan-grid-layer');
-    if (grid) grid.innerHTML = gridDefsAndBackground(editing.areaWidthM, editing.areaHeightM, editing.gridSpacingM, 'plan-grid', k, pxPerUnit() * U);
+    if (grid) grid.innerHTML = gridDefsAndBackground(editing.areaWidthM, editing.areaHeightM, editing.gridSpacingM, 'plan-grid', k, pxPerUnit() * U, editing.gridRotationDeg ?? 0);
     planSvg.querySelector('#plan-boundary')?.setAttribute('stroke-width', String(2 * k));
     renderMeasure();
     for (const pl of editing.placements) {

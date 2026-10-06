@@ -19,11 +19,11 @@ export function uiScale(widthM: number): number {
   return Math.max(1, widthM / 7);
 }
 
-function gridDefsAndBackground(widthM: number, heightM: number, spacingM: number, patternId: string, k = 1): string {
+function gridDefsAndBackground(widthM: number, heightM: number, spacingM: number, patternId: string, k = 1, rotationDeg = 0): string {
   const spacingU = spacingM * SVG_UNITS_PER_METER;
   return `
     <defs>
-      <pattern id="${patternId}" width="${spacingU}" height="${spacingU}" patternUnits="userSpaceOnUse">
+      <pattern id="${patternId}" width="${spacingU}" height="${spacingU}" patternUnits="userSpaceOnUse"${rotationDeg ? ` patternTransform="rotate(${rotationDeg})"` : ''}>
         <path d="M ${spacingU} 0 L 0 0 0 ${spacingU}" fill="none" stroke="#d6d3d1" stroke-width="${k}"/>
       </pattern>
     </defs>
@@ -57,7 +57,7 @@ export function renderGardenPlanInnerSvg(plan: GardenPlan, plantsById: Map<strin
       </g>`;
   }).join('');
   return `
-    ${gridDefsAndBackground(plan.areaWidthM, plan.areaHeightM, plan.gridSpacingM, 'export-grid', k)}
+    ${gridDefsAndBackground(plan.areaWidthM, plan.areaHeightM, plan.gridSpacingM, 'export-grid', k, plan.gridRotationDeg ?? 0)}
     <polygon points="${pointsAttr}" fill="#15803d" fill-opacity="0.08" stroke="#15803d" stroke-width="${2 * k}"/>
     ${areasSvg(plan.areas ?? [], null, k)}
     <g>${markers}</g>`;

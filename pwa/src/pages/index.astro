@@ -1771,6 +1771,7 @@ import Layout from '../layouts/Layout.astro';
     }
     if (inField || e.metaKey || e.ctrlKey || e.altKey) return;
     if (e.key === '/') { e.preventDefault(); searchInput.focus(); searchInput.select(); return; }
+    if (e.key === 'f' && filterTextEl.offsetParent) { e.preventDefault(); filterTextEl.focus(); filterTextEl.select(); return; }
     if (e.key === 'n') { e.preventDefault(); document.getElementById('btn-add')!.click(); return; }
     if (e.key === 'g') { e.preventDefault(); document.getElementById('btn-view-grid')!.click(); return; }
     if (e.key === 'l') { e.preventDefault(); document.getElementById('btn-view-list')!.click(); return; }

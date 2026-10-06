@@ -108,6 +108,9 @@ export interface GardenPlan {
   areaWidthM: number;
   areaHeightM: number;
   gridSpacingM: number;          // 0.5 | 1 | 2
+  /** Grid lines turned clockwise by this many degrees (−45…45), e.g. along
+   *  a slanted plot; absent/0 = along the plan axes. Only the grid turns. */
+  gridRotationDeg?: number;
   boundary: GardenPlanPoint[];   // polygon vertices, meters, plan-local origin (top-left)
   placements: GardenPlanPlacement[];
   yearsSincePlanting: number;    // last slider position — persisted so reopening restores the view

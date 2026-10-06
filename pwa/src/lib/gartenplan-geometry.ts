@@ -29,6 +29,36 @@ export function polygonAreaM2(pts: GardenPlanPoint[]): number {
   return Math.abs(a) / 2;
 }
 
+/** A grid angle in degrees folded into (−45, 45] — a square grid looks the
+ *  same every 90°. Rounded to 0.1°. */
+export function normalizeGridAngle(deg: number): number {
+  if (!Number.isFinite(deg)) return 0;
+  let a = ((deg % 90) + 90) % 90;  // 0 … <90
+  if (a > 45) a -= 90;
+  return Math.round(a * 10) / 10 || 0;
+}
+
+/** Grid angle that lines the grid up with the longest edge of an outline
+ *  (clockwise degrees, plan y pointing down); 0 without an outline. */
+export function gridAngleAlongOutline(pts: GardenPlanPoint[]): number {
+  let best = 0, bestLen = 0;
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    const dx = pts[i].xM - pts[j].xM, dy = pts[i].yM - pts[j].yM;
+    const len = Math.hypot(dx, dy);
+    if (len > bestLen) { bestLen = len; best = Math.atan2(dy, dx) * 180 / Math.PI; }
+  }
+  return pts.length >= 2 ? normalizeGridAngle(best) : 0;
+}
+
+/** Nearest crossing of a grid with `spacingM` turned by `deg` around the plan origin. */
+export function nearestGridPoint(pt: GardenPlanPoint, spacingM: number, deg = 0): GardenPlanPoint {
+  const r = deg * Math.PI / 180, c = Math.cos(r), s = Math.sin(r);
+  // into the grid's own frame (turn back by deg), round, turn forward again
+  const u = Math.round((pt.xM * c + pt.yM * s) / spacingM) * spacingM;
+  const v = Math.round((-pt.xM * s + pt.yM * c) / spacingM) * spacingM;
+  return { xM: u * c - v * s, yM: u * s + v * c };
+}
+
 /** Closed polygon perimeter in m. */
 export function polygonPerimeterM(pts: GardenPlanPoint[]): number {
   let s = 0;

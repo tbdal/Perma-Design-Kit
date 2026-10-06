@@ -112,3 +112,12 @@ test('search leaves out non-plants such as Homo erectus (lineage via Wikidata qu
   await expect(rows).toContainText('Equisetum arvense');
   void errors;
 });
+
+test('key f jumps into the name filter', async ({ page, errors }) => {
+  await stubNetwork(page);
+  await loadSamples(page);
+  await page.goto('/?view=list');
+  await page.locator('body').press('f');
+  await expect(page.locator('#filter-text')).toBeFocused();
+  void errors;
+});

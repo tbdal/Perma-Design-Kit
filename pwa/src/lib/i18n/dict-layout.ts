@@ -100,6 +100,7 @@ export const layoutDict: Dict = {
   shortcutsOverview: { de: 'Diese Übersicht', en: 'This overview' },
   shortcutsFocusSearch: { de: 'Suche fokussieren', en: 'Focus search' },
   shortcutsCloseDialog: { de: 'Offenen Dialog schließen', en: 'Close open dialog' },
+  shortcutsFilterName: { de: 'Liste nach Namen filtern', en: 'Filter the list by name' },
   shortcutsNewPlant: { de: 'Neue Pflanze', en: 'New plant' },
   shortcutsViewSwitch: { de: 'Kacheln / Liste / Karten', en: 'Tiles / List / Cards' },
   shortcutsShiftClick: { de: 'Bereich von letzter bis aktueller Checkbox auswählen', en: 'Select range from last to current checkbox' },
