@@ -4,6 +4,10 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Waldgartenplan: Planfläche und Meterlinien am Umriss 2026-10-06
+- [x] **Planfläche = gezeichnete Fläche:** im Feld „Ausgewählt“ des Garten-Umrisses steht als Planfläche jetzt die Fläche des gezeichneten Umrisses in m²; das Rechteck außenrum heißt „Rahmen (Raster)“ #minor
+- [x] **Meterlinien nur im Umriss:** die Linien enden am gezeichneten Umriss (auch im PDF), der graue Rahmen außenrum entfällt; die Meterzahlen am Rand bleiben. Ohne Umriss wie bisher über den ganzen Plan #minor
+
 ## Schnittstellen für Experten-Module: 3D und Schatten 2026-10-06
 - [x] **Waldgartenplan:** Experten-Module können eigene Inhalte in die 3D-Ansicht legen (samt Schattenbereich) und zusätzliche Schattenwerfer für Besonnung und Hinweise beisteuern; `refresh()` zeichnet danach neu #minor
 - [x] **Waldgartenplan:** außerdem eigene Zeichnungen auf dem 2D-Plan (`addPlanOverlay`), die Pflanzen des Plans und die Geländehöhe an einem Punkt #minor

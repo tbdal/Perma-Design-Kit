@@ -257,6 +257,9 @@ test('grid lines turn with the outline; the meter numbers step aside', async ({ 
   await expect(page.locator('#g-grid-rot')).toHaveValue('9.5');
   await expect(page.locator('#plan-grid-layer pattern')).toHaveAttribute('patternTransform', 'rotate(9.5)');
   await expect(page.locator('#plan-grid-layer text')).toHaveCount(0);
+  // grid lines only inside the drawn outline
+  await expect(page.locator('#plan-grid-layer clipPath polygon')).toHaveCount(1);
+  await expect(page.locator('#plan-grid-layer rect[clip-path]')).toHaveCount(1);
   await expect.poll(() => withDb<number>(page, `return (await all('gardenPlans')).find(p => p.id === 'np').gridRotationDeg;`)).toBe(9.5);
   void errors;
 });
