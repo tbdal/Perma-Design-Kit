@@ -2,8 +2,10 @@
 
 Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung innerhalb ihres ursprünglichen Roadmap-Abschnitts. Offene Punkte stehen weiterhin in `ROADMAP.md`.
 
+Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
+
 ## Suche in englischer Oberfläche 2026-10-06
-- [x] **Suchergebnisse auf Englisch:** bei englischer Oberfläche zeigt die Pflanzensuche den englischen Namen (sonst nur den lateinischen) statt des deutschen, dazu die englische Wikidata-Beschreibung und englische Quellenhinweise. Neu hinzugefügte Pflanzen übernehmen den englischen Namen
+- [x] **Suchergebnisse auf Englisch:** bei englischer Oberfläche zeigt die Pflanzensuche den englischen Namen (sonst nur den lateinischen) statt des deutschen, dazu die englische Wikidata-Beschreibung und englische Quellenhinweise. Neu hinzugefügte Pflanzen übernehmen den englischen Namen #bugs
 
 ## Waldgartenplan: zurück von 3D zu 2D 2026-10-06
 - [x] **3D → 2D zoomte heraus:** bei jedem Wechsel zurück wurde die Karte um etwa das 1,4-Fache kleiner (das Seitenverhältnis wurde gemessen, solange die 2D-Karte noch verborgen war). Jetzt zeigt 2D wieder genau den Ausschnitt von vorher, wenn die 3D-Kamera nicht bewegt wurde; sonst den Bereich, auf den die Kamera schaute
