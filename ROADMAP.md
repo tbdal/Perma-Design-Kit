@@ -38,8 +38,6 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] **Einfacher Modus prüfen:** mit 2–3 Neulingen ausprobieren — reichen die drei Schritte, fehlt etwas (z. B. Flächen für Teich/Beete)?
 
 ## Gartenplan Ideen
-- [ ] **Waldränder in 3D:** Waldflächen im Umkreis von ~150 m um den Plan als Bäume in ihrer ausgewachsenen Höhe zeigen und als Schattenwerfer in die Besonnungskarte nehmen (Hinweis, wenn ein Beet viele Sonnenstunden an den Waldrand verliert). In drei Stufen: (A) Waldflächen + Laub/Nadel aus OSM über `/geo/overpass`; (B) Hauptbaumart aus der Thünen-Baumartenkarte 2017/18 (10 m, CC BY 4.0, DOI 10.3220/DATA20221214084846), serverseitig zugeschnitten, Endhöhe über eine Referenzart in `plants-db.json`; (C) heutige Kronenhöhe aus dem nDOM, wo offen (NRW `wcs_nw_ndom`, dl-de/zero; BW nDOM1 prüfen), Umschalter „heute“/„ausgewachsen“. 3D als `InstancedMesh` je Wuchsform. Konzept: Doc „Einfacher Modus, Experten-Modus und Waldränder in 3D“ (2026-10-05)
-- [ ] Wachstumsmodelle detaillieren & validieren
 Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann 2 + 3 als Paket „Standortanalyse“.
 - [ ] **Gebäude aus amtlichen 3D-Daten (LoD2):** Dachformen kommen jetzt aus OSM `roof:shape` bzw. geschätzt (Satteldach für Wohnhäuser); genauer wären die LoD2-Modelle der Länder (z. B. NRW offen) — als CityGML-Kacheln aber zu schwer für den Browser, bräuchte serverseitige Aufbereitung
 - [ ] **1-m-Gelände für weitere Länder:** bisher NRW, BB/BE, BW, HE, NI, NL. Bayern nur kostenpflichtiger WCS (DGM1 als Download offen), Sachsen/Sachsen-Anhalt lehnen ab (403), TH/SH/MV/RP/SL kein offener WCS gefunden — erneut prüfen oder Kacheln selbst bereitstellen
@@ -64,7 +62,6 @@ Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann
   - [ ] lizenz
   - [ ] bild
 - [x] lizenz auf github: fair-use — FSL-1.1-MIT seit 2026-10-04 (Tag `fsl-start`), Lizenzgeber Andreas + Jörn; Sebastian & Jens nur verlinkt
-  - [ ] Jens & Sebastian um Lizenzänderung bitten?
 - [ ] naturadb anrufen (Anfrage: Erlaubnis für gemeinnützige, nicht-kommerzielle Nutzung der Daten?)
 - [x] Toensmeier: können wir seine Daten dafür nutzen? Anfrage ist raus@Joern: US-Recht verbietet Nutzung der Tabellendaten nicht
 
@@ -100,7 +97,6 @@ Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann
 ### sonst
 - [ ] lizenzen manuell prüfen & unsere festlegen
 - [ ] führung durch die webseite beim ersten aufruf der webseite
-- [ ] nutzen prüfen, ist alles vorhanden, was in Baumscheibe angezeigt wird?#
 - [ ] polykulturen-tab entwickeln
 - [ ] Finanzierungsmodell für die zukünftigen laufenden Kosten (Hosting, Software, Orga/Kommunikation, Bugfixing, Verbesserung & Erweiterung der Software) ausdenken: z.B. erst implementieren wenn Break-Even (transparente und ehrliche Kommunikation!) erreicht ist: "Countdown-Crowdfunding"
 
