@@ -191,7 +191,7 @@ import Layout from '../layouts/Layout.astro';
       <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-3">
           <label class="text-sm font-medium text-stone-600 dark:text-stone-300" for="g-years" data-i18n="labelYearsSincePlanting">Jahre seit Pflanzung</label>
-          <input id="g-years" type="range" min="0" max="30" step="1" value="0" class="w-48" />
+          <input id="g-years" type="range" min="0" max="80" step="1" value="0" class="w-48 sm:w-72" />
           <span id="years-label" class="w-20 text-sm font-medium text-stone-700 dark:text-stone-200"></span>
           <button id="growth-play" type="button" data-i18n="growthPlay" data-i18n-title="growthPlayTitle" title="Zeitraffer: den Garten über die Jahre wachsen lassen" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700 text-xs">▶ Wachstum</button>
         </div>
@@ -4400,7 +4400,7 @@ import Layout from '../layouts/Layout.astro';
   document.getElementById('btn-snapshot')!.addEventListener('click', () => void saveSnapshot());
 
   // ── Zeitraffer (Wachstum) ──────────────────────────────────────────────
-  // Plays the years slider from 0 to its end (one year per 0.35 s — shorter
+  // Plays the years slider from 0 to its end (one year per 0.25 s — shorter
   // than the undo debounce, so a whole run is one undo step). At the end a
   // click starts over; moving the slider by hand stops it.
   const growthBtn = document.getElementById('growth-play') as HTMLButtonElement;
@@ -4424,7 +4424,7 @@ import Layout from '../layouts/Layout.astro';
       if (next > max) { stopGrowth(); return; }
       setYears(next);
       if (next >= max) stopGrowth();
-    }, 350);
+    }, 250);
   });
   yearsInput.addEventListener('pointerdown', stopGrowth);
   yearsInput.addEventListener('keydown', stopGrowth);

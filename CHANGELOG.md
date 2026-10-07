@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Wachstum bis 80 Jahre 2026-10-07
+- [x] **Waldgartenplan – Wachstum:** der Regler „Jahre seit Pflanzung“ reicht jetzt bis 80 statt 30 Jahre (etwas breiter, damit einzelne Jahre greifbar bleiben), der Zeitraffer „▶ Wachstum“ läuft bis zum Ende des Reglers und ist dafür etwas schneller (0,25 s pro Jahr) #minor #prüfen
+
 ## Sonnenstand in Ortszeit, Quellen auf Englisch 2026-10-06
 - [x] **Waldgartenplan – Sonne in Ortszeit:** Datum und Uhrzeit beim Sonnenstand (3D, Sonnenbahn mit Stundenmarken, Besonnung „an diesem Tag“) gelten jetzt in der Zeitzone des Gartens, samt Sommerzeit — die Zeitzone kommt aus den Koordinaten des Plans (offline, `@photostructure/tz-lookup`, CC0). Bisher galt immer die Zeitzone des Browsers, d. h. praktisch nur MEZ/MESZ. Bei Plänen mit Standort steht die Zone neben der Uhrzeit (z. B. „14:30 WEST“); „Jetzt“ ist die aktuelle Uhrzeit am Garten. Pläne ohne Standort bleiben bei der Zeit des Browsers #bugs
 - [x] **Englische Oberfläche:** die Datenquelle heißt dort „Manual“ bzw. „Sample“ statt „Manuell“/„Beispiel“ (Tooltip und Kürzel im Pflanzen-Editor) #bugs
