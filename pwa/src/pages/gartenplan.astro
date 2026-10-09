@@ -4265,6 +4265,19 @@ import Layout from '../layouts/Layout.astro';
       areaId: selectedAreaId,
     }),
     onSelectionChange: cb => { selectionListeners.push(cb); },
+    setSelection(ids) {
+      if (!editing) return;
+      const known = ids.filter(id => editing!.placements.some(p => p.id === id));
+      multiSel.clear();
+      selectedPlacementId = null;
+      if (known.length > 1) known.forEach(id => multiSel.add(id));
+      else if (known.length === 1) selectedPlacementId = known[0];
+      if (known.length && selectedAreaId) { selectedAreaId = null; markSelectedArea(); }
+      view3d?.setSelectedPlacement(selectedPlacementId);
+      refreshMarkerHighlight();
+      renderSelectedPanel();
+    },
+    projectToScreen: (xM, yM) => (view3d && !plan3dContainer.hidden ? view3d.projectToScreen(xM, yM) : null),
     addPanel(featureId, title) {
       const panel = document.createElement('details');
       panel.open = true;
@@ -4307,25 +4320,30 @@ import Layout from '../layouts/Layout.astro';
     if (n === 0) { g.innerHTML = ''; return; }
     const k = viewK();
     const pts = measurePts.map(p => `${p.xM * U},${p.yM * U}`).join(' ');
-    const label = (x: number, y: number, text: string, size = 12) =>
-      `<text x="${x * U}" y="${y * U}" text-anchor="middle" dominant-baseline="central" font-size="${size * k}" font-weight="600" fill="#7c2d12" stroke="#fff" stroke-width="${3 * k}" paint-order="stroke">${escapeHtml(text)}</text>`;
+    const label = (x: number, y: number, text: string, size = 10, dx = 0, dy = 0, anchor = 'middle') =>
+      `<text x="${x * U + dx * k}" y="${y * U + dy * k}" text-anchor="${anchor}" dominant-baseline="central" font-size="${size * k}" font-weight="600" fill="#7c2d12" stroke="#fff" stroke-width="${2.5 * k}" paint-order="stroke">${escapeHtml(text)}</text>`;
     let svg = measureClosed
-      ? `<polygon points="${pts}" fill="#f97316" fill-opacity="0.15" stroke="#ea580c" stroke-width="${2 * k}"/>`
-      : `<polyline points="${pts}" fill="none" stroke="#ea580c" stroke-width="${2 * k}" stroke-dasharray="${6 * k} ${3 * k}"/>`;
+      ? `<polygon points="${pts}" fill="#f97316" fill-opacity="0.15" stroke="#ea580c" stroke-width="${1.25 * k}"/>`
+      : `<polyline points="${pts}" fill="none" stroke="#ea580c" stroke-width="${1.25 * k}" stroke-dasharray="${4 * k} ${2.5 * k}"/>`;
     const segs = measureClosed ? n : n - 1;
     let total = 0;
     for (let i = 0; i < segs; i++) {
       const a = measurePts[i], b = measurePts[(i + 1) % n];
       const d = Math.hypot(b.xM - a.xM, b.yM - a.yM);
       total += d;
-      svg += label((a.xM + b.xM) / 2, (a.yM + b.yM) / 2, formatMeters(d, lang), 11);
+      svg += label((a.xM + b.xM) / 2, (a.yM + b.yM) / 2, formatMeters(d, lang), 9.5);
     }
-    svg += measurePts.map((p, i) => `<circle cx="${p.xM * U}" cy="${p.yM * U}" r="${(i === 0 && n >= 3 && !measureClosed ? 6 : 4) * k}" fill="#fff" stroke="#ea580c" stroke-width="${2 * k}"/>`).join('');
+    svg += measurePts.map((p, i) => `<circle cx="${p.xM * U}" cy="${p.yM * U}" r="${(i === 0 && n >= 3 && !measureClosed ? 4 : 2.5) * k}" fill="#fff" stroke="#ea580c" stroke-width="${1.25 * k}"/>`).join('');
+    // Total length next to the last point (with two or more segments).
+    if (!measureClosed && segs >= 2) {
+      const last = measurePts[n - 1];
+      svg += label(last.xM, last.yM, t('measureTotal', { len: formatMeters(total, lang) }), 11, 8, -10, 'start');
+    }
     const fmt1 = (v: number) => new Intl.NumberFormat(lang, { maximumFractionDigits: 1 }).format(v);
     if (measureClosed) {
       const c = polygonCentroid(measurePts);
       const area = polygonAreaM2(measurePts);
-      svg += label(c.xM, c.yM, `${fmt1(area)} m²`, 14);
+      svg += label(c.xM, c.yM, `${fmt1(area)} m²`, 12);
       measureReadout.textContent = t('measureArea', { area: fmt1(area), perim: formatMeters(polygonPerimeterM(measurePts), lang) });
     } else {
       measureReadout.textContent = n === 1 ? t('measureStart') : t('measureLength', { len: formatMeters(total, lang) });

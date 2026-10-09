@@ -121,6 +121,9 @@ export interface GardenPlan3DView {
   /** Moves the sun (light, shadows, sky, sun path) to the given moment; `timeZone` = the garden's, for the hour marks on the sun path (default: the browser's). */
   setSunTime(date: Date, timeZone?: string): { bearingDeg: number; altitudeDeg: number };
   getCameraState(): Camera3DState;
+  /** Where a plan point (on the ground) appears on screen, in client
+   *  coordinates; null when it is behind the camera. */
+  projectToScreen(xM: number, yM: number): { x: number; y: number } | null;
   /** Jump to a straight top view or an oblique view from the south. */
   setViewPreset(preset: 'top' | 'oblique'): void;
   /** Ground rectangle (plan meters) roughly visible around the camera target
@@ -1169,6 +1172,12 @@ export function createGardenPlan3DView(
       else camera.position.set(t.x, d * 0.55, t.z + d * 0.83);
       controls.update();
       requestRender();
+    },
+    projectToScreen(xM: number, yM: number) {
+      const v = new THREE.Vector3(xM, ground(xM, yM), yM).project(camera);
+      if (v.z > 1) return null;
+      const r = renderer.domElement.getBoundingClientRect();
+      return { x: r.left + (v.x + 1) / 2 * r.width, y: r.top + (1 - v.y) / 2 * r.height };
     },
     getCameraState(): Camera3DState {
       return { position: camera.position.toArray() as [number, number, number], target: controls.target.toArray() as [number, number, number] };

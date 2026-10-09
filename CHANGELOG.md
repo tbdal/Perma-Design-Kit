@@ -4,6 +4,10 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Messen und Plan-Hooks 2026-10-09
+- [x] **Waldgartenplan – Messen:** neben dem letzten Punkt steht jetzt auch die Gesamtlänge („gesamt 14,88 m“); Punkte, Linien und Beschriftungen sind feiner gezeichnet #bugs #prüfen
+- [x] **Waldgartenplan – Zusatzmodule:** Module können die Auswahl setzen und Plan-Punkte auf den Bildschirm der 3D-Ansicht umrechnen #minor #prüfen
+
 ## Angemeldete Funktionen nach einem Update 2026-10-09
 - [x] **Nach einem Deploy fehlten angemeldete Funktionen:** Tabs, die noch die vorige Version zeigten (bis „Neu laden“), fanden die nur nach Anmeldung geladenen Dateien nicht mehr – Menüs und Tastenkürzel dieser Funktionen fehlten dann still. Der Deploy behält diese Dateien jetzt 30 Tage, und lädt das Modul trotz Anmeldung nicht, wechselt die Seite einmal selbst auf die neue Version #bugs #prüfen
 

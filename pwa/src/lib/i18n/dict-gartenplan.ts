@@ -184,6 +184,7 @@ export const gartenplanDict: Dict = {
   toolMeasure: { de: 'Messen (M)', en: 'Measure (M)' },
   measureStart: { de: 'Weitere Punkte setzen · Klick auf den ersten Punkt schließt die Fläche', en: 'Add more points · click the first point to close the area' },
   measureLength: { de: 'Länge {len}', en: 'Length {len}' },
+  measureTotal: { de: 'gesamt {len}', en: 'total {len}' },
   measureArea: { de: 'Fläche {area} m² · Umfang {perim}', en: 'Area {area} m² · perimeter {perim}' },
   mapBuildings: { de: 'Gebäude', en: 'Buildings' },
   mapBuildingsTitle: { de: 'Gebäude aus OpenStreetMap: in 3D und als Schattenwerfer für Besonnung und Hinweise', en: 'Buildings from OpenStreetMap: in 3D and casting shade for the sunlight map and hints' },

@@ -66,6 +66,10 @@ export interface GartenplanApi {
   getSelection(): { placementIds: string[]; areaId: string | null };
   /** Called whenever the selection changes. */
   onSelectionChange(cb: () => void): void;
+  /** Selects these placements (one, several or none), as a click or the lasso would. */
+  setSelection(placementIds: string[]): void;
+  /** Where a plan point appears on screen in the 3D view (client coordinates); null in 2D or behind the camera. */
+  projectToScreen(xM: number, yM: number): { x: number; y: number } | null;
 }
 
 /** What the plant list (index.astro) offers plugins. */
