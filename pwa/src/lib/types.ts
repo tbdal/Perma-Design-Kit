@@ -123,6 +123,9 @@ export interface GardenPlan {
   startYear?: number;
   /** Permaculture zones around a centre (lib/zones-sectors.ts); absent = never set up. */
   zones?: import('./zones-sectors').PlanZones;
+  /** Data of optional modules (expert-api.ts setPluginData), by feature id;
+   *  plain JSON, travels with backups and share links. */
+  ext?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
 }

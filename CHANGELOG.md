@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Schnittstelle für Zusatzmodule im Waldgartenplan 2026-10-09
+- [x] **Waldgartenplan – Zusatzmodule:** Module können eigene Daten mit dem Plan speichern (`ext`, reist mit Sicherung und Teilen-Link), einzelne Pflanzen und Flächen in 2D und 3D ausblenden und die aktuelle Auswahl lesen. Flächen liegen dafür im Plan-SVG jeweils in einer eigenen Gruppe; das Lasso nimmt ausgeblendete Pflanzen nicht mit #minor #prüfen
+
 ## Wachstum bis 80 Jahre 2026-10-07
 - [x] **Waldgartenplan – Wachstum:** der Regler „Jahre seit Pflanzung“ reicht jetzt bis 80 statt 30 Jahre (etwas breiter, damit einzelne Jahre greifbar bleiben), der Zeitraffer „▶ Wachstum“ läuft bis zum Ende des Reglers und ist dafür etwas schneller (0,25 s pro Jahr) #minor #prüfen
 

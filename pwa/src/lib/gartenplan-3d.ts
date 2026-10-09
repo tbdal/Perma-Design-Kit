@@ -147,6 +147,8 @@ export interface View3DOptions {
   buildings?: { pts: { xM: number; yM: number }[]; heightM: number; holes?: { xM: number; yM: number }[][]; roof?: Roof }[];
   /** Extra scene content from plugins (expert-api.ts add3dLayer). */
   layers?: Scene3DLayer[];
+  /** Placements and areas (by id) left out of the scene, e.g. hidden by a plugin. */
+  hidden?: (id: string) => boolean;
 }
 
 /** What a plugin layer gets: the scene in plan metres (x = xM, z = yM, y up). */
@@ -607,7 +609,7 @@ export function createGardenPlan3DView(
     }
     areasGroup.clear();
     handlesGroup.clear();
-    (plan.areas ?? []).forEach((area, i) => areasGroup.add(buildAreaObject(area, i, area.id === selectedAreaId, labelH, ground, drapeCell)));
+    (plan.areas ?? []).forEach((area, i) => opts.hidden?.(area.id) || areasGroup.add(buildAreaObject(area, i, area.id === selectedAreaId, labelH, ground, drapeCell)));
     const sel = (plan.areas ?? []).find(a => a.id === selectedAreaId);
     sel?.points.forEach((p, i) => {
       // Invisible, larger pick sphere around a small visible knob.
@@ -637,6 +639,7 @@ export function createGardenPlan3DView(
     plantsGroup.clear();
     for (const placement of plan.placements) {
       if (!isPlanted(placement, years)) continue;   // later construction phase
+      if (opts.hidden?.(placement.id)) continue;
       const mesh = buildPlantMesh(placement, plantsById.get(placement.plantId), ageAt(placement, years));
       mesh.traverse(o => { if (o.name !== 'selection-ring' && (o as THREE.Mesh).isMesh) { o.castShadow = true; o.receiveShadow = true; } });
       mesh.position.y = ground(placement.xM, placement.yM);

@@ -139,9 +139,19 @@ export function normalizeGardenPlan(raw: unknown): GardenPlan | null {
     ...(finite(raw.startYear) != null && finite(raw.startYear)! >= 1900 && finite(raw.startYear)! <= 2200 ? { startYear: Math.round(finite(raw.startYear)!) } : {}),
     ...(isObject(raw.plantPrices) ? { plantPrices: Object.fromEntries(Object.entries(raw.plantPrices)
       .filter(([, v]) => typeof v === 'number' && Number.isFinite(v) && v >= 0) as [string, number][]) } : {}),
+    ...(normalizeExt(raw.ext) ? { ext: normalizeExt(raw.ext)! } : {}),
     createdAt: str(raw.createdAt, d.createdAt),
     updatedAt: str(raw.updatedAt, d.updatedAt),
   };
+}
+
+/** Module data of a plan: a plain JSON object of at most 256 kB (it is copied as is). */
+function normalizeExt(raw: unknown): Record<string, unknown> | null {
+  if (!isObject(raw) || Object.keys(raw).length === 0) return null;
+  try {
+    const json = JSON.stringify(raw);
+    return json.length <= 256 * 1024 ? JSON.parse(json) : null;
+  } catch { return null; }
 }
 
 function normalizeGardenPlanArea(raw: unknown, point: (v: unknown) => { xM: number; yM: number } | null): GardenPlanArea | null {

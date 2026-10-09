@@ -104,9 +104,9 @@ export function areasSvg(areas: GardenPlanArea[], selectedId: string | null, k =
     const pts = a.points.map(p => `${p.xM * u},${p.yM * u}`).join(' ');
     const c = polygonCentroid(a.points);
     const sel = a.id === selectedId;
-    return `
+    return `<g data-area="${a.id}">
       <polygon${interactive ? ` data-area-id="${a.id}" style="cursor:pointer"` : ''} points="${pts}" fill="${a.color}" fill-opacity="0.3" stroke="${a.color}" stroke-width="${(sel ? 5 : 2.5) * k}"${sel ? ` stroke-dasharray="${10 * k} ${6 * k}"` : ''}/>
-      ${a.name ? `<text pointer-events="none" x="${c.xM * u}" y="${c.yM * u}" text-anchor="middle" dominant-baseline="middle" font-size="${11 * k}" font-weight="600" fill="#1c1917" fill-opacity="0.7" stroke="#ffffff" stroke-opacity="0.6" stroke-width="${2.5 * k}" paint-order="stroke">${escapeHtml(a.name)}</text>` : ''}`;
+      ${a.name ? `<text pointer-events="none" x="${c.xM * u}" y="${c.yM * u}" text-anchor="middle" dominant-baseline="middle" font-size="${11 * k}" font-weight="600" fill="#1c1917" fill-opacity="0.7" stroke="#ffffff" stroke-opacity="0.6" stroke-width="${2.5 * k}" paint-order="stroke">${escapeHtml(a.name)}</text>` : ''}</g>`;
   }).join('')}</g>`;
 }
 

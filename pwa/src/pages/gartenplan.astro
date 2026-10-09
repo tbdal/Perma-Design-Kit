@@ -663,6 +663,17 @@ import Layout from '../layouts/Layout.astro';
   let armedPlantId: string | null = null;
   let unplacedPlantIds: string[] = []; // page-local — not persisted structurally
   let selectedPlacementId: string | null = null;
+  /** Plugins listening for selection changes (expert-api onSelectionChange); called once per task. */
+  const selectionListeners: (() => void)[] = [];
+  let selectionNotifyQueued = false;
+  function queueSelectionNotify() {
+    if (selectionNotifyQueued || !selectionListeners.length) return;
+    selectionNotifyQueued = true;
+    queueMicrotask(() => {
+      selectionNotifyQueued = false;
+      for (const cb of selectionListeners) { try { cb(); } catch (err) { console.warn('selection listener failed', err); } }
+    });
+  }
   let view3d: import('../lib/gartenplan-3d').GardenPlan3DView | null = null;
   let markerMap = new Map<string, SVGGElement>();
 
@@ -1469,6 +1480,7 @@ import Layout from '../layouts/Layout.astro';
       terrain: geo ? terrain : null,
       buildings: showBuildings() ? buildings : [],
       layers: pluginLayers.filter(l => featureOn(l.featureId)).map(l => l.layer),
+      hidden: hiddenByPlugin,
       onTileFallback: noteOrthoFallback,
     });
     if (from2d) camera3dAtEnter = view3d.getCameraState();
@@ -1845,6 +1857,7 @@ import Layout from '../layouts/Layout.astro';
   }
 
   function renderSelectedPanel() {
+    queueSelectionNotify();
     if (gpsPos) renderGps();
     if (editing && multiSel.size) { renderMultiPanel(); return; }
     if (editing && (selectedAreaId || editBoundary)) { renderSelectedShapePanel(); return; }
@@ -2552,6 +2565,7 @@ import Layout from '../layouts/Layout.astro';
   }
 
   function markSelectedArea() {
+    queueSelectionNotify();
     areasList.querySelectorAll<HTMLElement>('[data-area-id]').forEach(li => {
       const on = li.dataset.areaId === selectedAreaId;
       ['bg-white', 'dark:bg-stone-800', 'ring-1', 'ring-green-500'].forEach(c => li.classList.toggle(c, on));
@@ -2858,7 +2872,7 @@ import Layout from '../layouts/Layout.astro';
     multiSel.clear();
     selectedPlacementId = null;
     if (l.pts.length >= 3) {
-      for (const pl of editing.placements) if (pointInPolygon(pl, l.pts)) multiSel.add(pl.id);
+      for (const pl of editing.placements) if (!hiddenByPlugin(pl.id) && pointInPolygon(pl, l.pts)) multiSel.add(pl.id);
     }
     if (multiSel.size && selectedAreaId) { selectedAreaId = null; markSelectedArea(); }
     refreshMarkerHighlight();
@@ -4160,6 +4174,22 @@ import Layout from '../layouts/Layout.astro';
   const pluginLayers: { featureId: string; layer: Scene3DLayer }[] = [];
   const pluginOccluderFns: { featureId: string; fn: (groundZ: (x: number, y: number) => number) => Occluder[] }[] = [];
   const pluginOverlays: { featureId: string; draw: (px: number) => string }[] = [];
+  // Placements and areas plugins hide (setHidden): a style rule keeps them out
+  // of the 2D plan across redraws; the 3D view leaves them out when built.
+  const pluginHidden = new Map<string, Set<string>>();
+  const hiddenStyle = document.createElement('style');
+  document.head.appendChild(hiddenStyle);
+  function hiddenByPlugin(id: string): boolean {
+    for (const [featureId, ids] of pluginHidden) if (ids.has(id) && featureOn(featureId)) return true;
+    return false;
+  }
+  function updateHiddenStyle() {
+    const ids = [...new Set([...pluginHidden].filter(([f]) => featureOn(f)).flatMap(([, s]) => [...s]))];
+    hiddenStyle.textContent = ids.length
+      ? `${ids.map(id => `#plan-markers [data-placement-id="${CSS.escape(id)}"],#plan-areas-layer [data-area="${CSS.escape(id)}"]`).join(',')}{display:none}`
+      : '';
+  }
+  onFeaturesChange(updateHiddenStyle);
   // One-shot point picking for plugins: the next tap on the 2D plan, Esc cancels.
   let pendingPick: ((p: GardenPlanPoint | null) => void) | null = null;
   function finishPick(p: GardenPlanPoint | null) {
@@ -4217,6 +4247,24 @@ import Layout from '../layouts/Layout.astro';
       if (!plan3dContainer.hidden) btnView3d.click();
     },
     onPlanChange: cb => { planChangeListeners.push(cb); },
+    getPluginData: <T,>(featureId: string) => editing?.ext?.[featureId] as T | undefined,
+    setPluginData(featureId, data) {
+      if (!editing) return;
+      const ext = { ...(editing.ext ?? {}) };
+      if (data === undefined) delete ext[featureId]; else ext[featureId] = data;
+      if (Object.keys(ext).length) editing.ext = ext; else delete editing.ext;
+      scheduleAutosave();
+    },
+    setHidden(featureId, ids) {
+      pluginHidden.set(featureId, new Set(ids));
+      updateHiddenStyle();
+      if (!plan3dContainer.hidden) btnView3d.click();
+    },
+    getSelection: () => ({
+      placementIds: multiSel.size ? [...multiSel] : selectedPlacementId ? [selectedPlacementId] : [],
+      areaId: selectedAreaId,
+    }),
+    onSelectionChange: cb => { selectionListeners.push(cb); },
     addPanel(featureId, title) {
       const panel = document.createElement('details');
       panel.open = true;

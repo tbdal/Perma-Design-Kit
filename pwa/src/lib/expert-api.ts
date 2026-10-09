@@ -56,6 +56,16 @@ export interface GartenplanApi {
   groundAt(xM: number, yM: number): number | null;
   /** Redraw what depends on plugin data: 2D overlays, the 3D view, sun hours, hints. */
   refresh(): void;
+  /** This feature's data stored with the open plan (plan.ext[featureId]); undefined when none. */
+  getPluginData<T = unknown>(featureId: string): T | undefined;
+  /** Stores this feature's data with the open plan (saved like any plan edit); undefined removes it. */
+  setPluginData(featureId: string, data: unknown): void;
+  /** Placements and areas (by id) not drawn in 2D and 3D while the feature is on; replaces the feature's earlier set. */
+  setHidden(featureId: string, ids: Iterable<string>): void;
+  /** What is selected on the plan: placements (single or multi-selection) and the selected area. */
+  getSelection(): { placementIds: string[]; areaId: string | null };
+  /** Called whenever the selection changes. */
+  onSelectionChange(cb: () => void): void;
 }
 
 /** What the plant list (index.astro) offers plugins. */

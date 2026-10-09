@@ -83,4 +83,12 @@ describe('normalizeGardenPlan', () => {
     expect(g.areas[1].color).toBe('#22c55e');
     expect(normalizeGardenPlan({ id: 'g' })!.areas).toEqual([]);
   });
+
+  it('keeps module data (ext) as plain JSON, drops it when empty, not an object or too large', () => {
+    const ext = { mod: { list: [{ id: 'x', on: true }] } };
+    expect(normalizeGardenPlan({ id: 'g', ext })!.ext).toEqual(ext);
+    expect('ext' in normalizeGardenPlan({ id: 'g', ext: {} })!).toBe(false);
+    expect('ext' in normalizeGardenPlan({ id: 'g', ext: [1] })!).toBe(false);
+    expect('ext' in normalizeGardenPlan({ id: 'g', ext: { big: 'x'.repeat(300 * 1024) } })!).toBe(false);
+  });
 });
