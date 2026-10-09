@@ -2273,11 +2273,16 @@ import Layout from '../layouts/Layout.astro';
     return editing ? editing.areaHeightM / editing.areaWidthM : 1;
   }
   /** Whole plan in view, centered; the rest of the canvas shows surroundings. */
+  /** Pixels on the left of the 2D canvas covered by something floating
+   *  (expert-api setViewInset): "show whole plan" keeps the plan right of it. */
+  let viewInsetLeftPx = 0;
   function resetPlanViewState() {
     if (!editing) return;
     const W = editing.areaWidthM * U, H = editing.areaHeightM * U, a = canvasAspect();
-    const w = Math.max(W, H / a), h = w * a;
-    planView = { x: (W - w) / 2, y: (H - h) / 2, w, h };
+    const cw = planSvg.getBoundingClientRect().width;
+    const s = cw > 0 ? Math.min(0.5, viewInsetLeftPx / cw) : 0;
+    const w = Math.max(W / (1 - s), H / a), h = w * a;
+    planView = { x: -w * s + (w * (1 - s) - W) / 2, y: (H - h) / 2, w, h };
   }
   /** Plan rectangle that is actually visible. The viewBox only matches the
    *  canvas shape right after sizing; if the canvas changed since (sidebar
@@ -4276,6 +4281,10 @@ import Layout from '../layouts/Layout.astro';
       view3d?.setSelectedPlacement(selectedPlacementId);
       refreshMarkerHighlight();
       renderSelectedPanel();
+    },
+    setViewInset(px) {
+      viewInsetLeftPx = Math.max(0, px.left ?? 0);
+      if (editing && plan3dContainer.hidden) { resetPlanViewState(); applyPlanView(); }
     },
     projectToScreen: (xM, yM) => (view3d && !plan3dContainer.hidden ? view3d.projectToScreen(xM, yM) : null),
     addPanel(featureId, title) {

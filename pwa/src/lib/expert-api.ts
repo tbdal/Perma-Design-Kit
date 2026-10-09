@@ -68,6 +68,8 @@ export interface GartenplanApi {
   onSelectionChange(cb: () => void): void;
   /** Selects these placements (one, several or none), as a click or the lasso would. */
   setSelection(placementIds: string[]): void;
+  /** Room on the 2D canvas covered by a floating panel (px): fitting the whole plan keeps it clear. */
+  setViewInset(px: { left?: number }): void;
   /** Where a plan point appears on screen in the 3D view (client coordinates); null in 2D or behind the camera. */
   projectToScreen(xM: number, yM: number): { x: number; y: number } | null;
 }
