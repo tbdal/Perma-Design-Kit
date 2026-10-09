@@ -51,7 +51,6 @@ Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann
 ### Re: Calendars
 
 ### Re: Polycultures
-- [ ] show textbox: definition of terms/concepts: & links
 - [ ] anchor species is not always a central element!
 - [ ] make companion search criteria definable!
 - [ ] add functions that are covered by outside guilds
