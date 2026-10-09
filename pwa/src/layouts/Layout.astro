@@ -987,11 +987,33 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
       // Only for people who logged in on this device (no extra request for everyone else).
       if (getAuth()) void refreshAuth();
 
+      /** The expert module did not load although logged in: most likely this
+       *  tab runs an older build whose /x/ chunks are gone. Take the waiting
+       *  new build (or look for one) and reload — once per session. */
+      function switchToNewBuild() {
+        if (!('serviceWorker' in navigator)) return;
+        try { if (sessionStorage.getItem('pdk-x-update')) return; sessionStorage.setItem('pdk-x-update', '1'); } catch { return; }
+        navigator.serviceWorker.getRegistration().then(reg => {
+          if (!reg) return;
+          const take = (w: ServiceWorker | null) => {
+            if (!w) return;
+            navigator.serviceWorker.addEventListener('controllerchange', () => location.reload());
+            w.postMessage('SKIP_WAITING');
+          };
+          if (reg.waiting) { take(reg.waiting); return; }
+          reg.addEventListener('updatefound', () => {
+            const next = reg.installing;
+            next?.addEventListener('statechange', () => { if (next.state === 'installed') take(reg.waiting); });
+          });
+          reg.update().catch(() => {});
+        }).catch(() => {});
+      }
+
       // Expert mode: load the private module (only in builds that contain
       // src/expert/; its chunks come from /x/, which needs the login cookie).
       if (hasExpertCode && isLoginMode(currentMode())) {
         loadExpertModule().then(async mod => {
-          if (!mod) return;
+          if (!mod) { if (getAuth()) switchToNewBuild(); return; }
           registerFeatures(mod.features);
           await mod.mount({
             page: location.pathname.replace(/\/$/, '') || '/',

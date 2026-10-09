@@ -62,7 +62,15 @@ node scripts/check-private.mjs dist
 # Needs Playwright's Chromium once: npx playwright install chromium
 npx playwright test --reporter=line
 
-rsync -a --delete dist/ /var/www/permadesignkit.org/
+# /x/ (private chunks) keeps the files of earlier builds: a tab still running
+# the previous build (the service worker holds it until "Neu laden") would
+# otherwise get a 404 for its chunks and lose the whole expert module. Its
+# public chunks are in the worker's cache; /x/ never is. Old ones go after 30 days.
+rsync -a --delete --exclude '/x/' dist/ /var/www/permadesignkit.org/
+if [[ -d dist/x ]]; then
+  rsync -a dist/x/ /var/www/permadesignkit.org/x/
+  find /var/www/permadesignkit.org/x -type f -mtime +30 -delete
+fi
 chown -R www-data:www-data /var/www/permadesignkit.org
 
 # The plant proxy also serves the expert login and the private /api/x/ routes

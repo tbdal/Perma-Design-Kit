@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Angemeldete Funktionen nach einem Update 2026-10-09
+- [x] **Nach einem Deploy fehlten angemeldete Funktionen:** Tabs, die noch die vorige Version zeigten (bis „Neu laden“), fanden die nur nach Anmeldung geladenen Dateien nicht mehr – Menüs und Tastenkürzel dieser Funktionen fehlten dann still. Der Deploy behält diese Dateien jetzt 30 Tage, und lädt das Modul trotz Anmeldung nicht, wechselt die Seite einmal selbst auf die neue Version #bugs #prüfen
+
 ## Schnittstelle für Zusatzmodule im Waldgartenplan 2026-10-09
 - [x] **Waldgartenplan – Zusatzmodule:** Module können eigene Daten mit dem Plan speichern (`ext`, reist mit Sicherung und Teilen-Link), einzelne Pflanzen und Flächen in 2D und 3D ausblenden und die aktuelle Auswahl lesen. Flächen liegen dafür im Plan-SVG jeweils in einer eigenen Gruppe; das Lasso nimmt ausgeblendete Pflanzen nicht mit #minor #prüfen
 
