@@ -54,7 +54,6 @@ Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann
 - [ ] anchor species is not always a central element!
 - [ ] make companion search criteria definable!
 - [ ] add functions that are covered by outside guilds
-- [ ] add members from plant list, not just auto-generated suggestions
 
 
 ### Re: RECHTLICH/LIZENZ
