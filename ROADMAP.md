@@ -19,7 +19,6 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 - [ ] Bundessortenamt anfragen, ob die „Gesamtliste Obst“ als Namensliste für die Sortenauswahl übernommen werden darf (vollständigste deutsche Liste, nur als PDF)
 
 ## bugs
-- [ ] baumscheibe 2.6: richtige schriftart & position von höhe und breite (Jörn)
 
 
 ## APs
