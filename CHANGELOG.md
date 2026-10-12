@@ -5,6 +5,8 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
 ## Sync-Schnittstelle 2026-10-12
+- [x] **Menüs von Zusatzmodulen:** schließen sich jetzt nach dem Klick auf einen Eintrag, auch wenn der nur zu einem anderen Abschnitt derselben Seite springt #bugs #prüfen
+- [x] **Sync – Zusatzmodule:** können einen Konflikt melden und den Stand des letzten Abgleichs lesen; der Hinweis-Banner erscheint sofort #minor #prüfen
 - [x] **Sync – Zusatzmodule:** Module können ein weiteres Sync-Ziel anmelden (eigener Inhalt, eigener Konflikt-Abgleich, Anzeige im Hinweis-Banner) und einen Block unter Einstellungen → Sync einfügen #minor #prüfen
 
 ## Messen und Plan-Hooks 2026-10-09

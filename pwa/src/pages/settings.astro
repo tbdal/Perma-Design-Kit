@@ -312,7 +312,7 @@ import Layout from '../layouts/Layout.astro';
   import { newId } from '../lib/id';
   import {
     buildBackup, buildBackupJson, parseBackup, backupIsEmpty, applyBackup, rememberBackupAt, rememberPulled, isAutoSyncEnabled,
-    webdavPush, webdavPull, gistPush, gistPull, getSyncProblem, clearSyncProblem, forgetSyncState, syncProviderLabel,
+    webdavPush, webdavPull, gistPush, gistPull, getSyncProblem, clearSyncProblem, forgetSyncState, syncProviderLabel, SYNC_PROBLEM_EVENT,
     GIST_FILENAME, type WebdavCreds,
   } from '../lib/sync';
   import { escapeHtml, withButtonSpinner } from '../lib/html';
@@ -1085,6 +1085,8 @@ import Layout from '../layouts/Layout.astro';
   void renderVarietyLists();
   renderLastBackup();
   renderLastSyncInfo();
+
+  window.addEventListener(SYNC_PROBLEM_EVENT, renderLastSyncInfo);
 
   providePageApi('einstellungen', {
     addSyncSection(featureId, title) {

@@ -499,7 +499,7 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
       }, true);
     </script>
     <script>
-      import { autoSyncIfConfigured, getSyncProblem, syncProviderLabel } from '../lib/sync';
+      import { autoSyncIfConfigured, getSyncProblem, syncProviderLabel, SYNC_PROBLEM_EVENT } from '../lib/sync';
       import { createT } from '../lib/i18n/core';
       import { layoutDict } from '../lib/i18n/dict-layout';
       // Auto-sync runs while the tab is hidden, so a failure or a foreign
@@ -518,6 +518,7 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
           : t('syncProblemError', { provider, msg: problem.message });
       }
       renderSyncProblem();
+      window.addEventListener(SYNC_PROBLEM_EVENT, renderSyncProblem);
       document.addEventListener('visibilitychange', () => {
         if (document.hidden) autoSyncIfConfigured().then(renderSyncProblem, () => {});
         else renderSyncProblem();
@@ -945,7 +946,11 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
           const panel = document.createElement('div');
           panel.hidden = true;
           panel.className = 'absolute right-0 z-50 mt-1 w-64 space-y-0.5 rounded-lg bg-white dark:bg-stone-800 p-2 text-sm text-stone-700 dark:text-stone-200 shadow-lg ring-1 ring-stone-200 dark:ring-stone-700';
-          panel.addEventListener('click', e => e.stopPropagation());
+          panel.addEventListener('click', e => {
+            e.stopPropagation();
+            // A link that only changes the #hash (same page) would leave the menu standing.
+            if ((e.target as Element).closest('a')) { panel.hidden = true; button.setAttribute('aria-expanded', 'false'); }
+          });
           button.addEventListener('click', e => {
             e.stopPropagation();
             const open = panel.hidden;

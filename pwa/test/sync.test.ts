@@ -31,7 +31,7 @@ const store: Record<string, string> = {};
 
 import {
   buildBackup, parseBackup, applyBackup, backupIsEmpty, autoSyncIfConfigured, getSyncProblem,
-  webdavPush, rememberPulled, forgetSyncState, registerSyncTarget, syncProviderLabel, syncMarker,
+  webdavPush, rememberPulled, forgetSyncState, registerSyncTarget, syncProviderLabel, syncMarker, syncFingerprint, reportSyncConflict,
   type BuiltBackup,
 } from '../src/lib/sync';
 import { loadSettings, saveSettings } from '../src/lib/settings';
@@ -284,6 +284,14 @@ describe('auto-sync (registered target)', () => {
     t.remote = null; t.fail = 'HTTP 413';
     expect(await autoSyncIfConfigured()).toMatchObject({ ok: false, provider: 'extra', error: 'HTTP 413' });
     expect(getSyncProblem()).toMatchObject({ kind: 'error', provider: 'extra' });
+  });
+
+  it('a target can report a conflict; its fingerprint is readable', async () => {
+    const t = target();
+    await autoSyncIfConfigured();
+    expect(syncFingerprint('extra')).toBe(t.remote!.fingerprint);
+    reportSyncConflict('extra');
+    expect(getSyncProblem()).toMatchObject({ kind: 'conflict', provider: 'extra' });
   });
 
   it('uploads what the target builds', async () => {

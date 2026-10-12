@@ -61,12 +61,23 @@ export function getSyncProblem(): SyncProblem | null {
   } catch { return null; }
 }
 
+/** Fired on window whenever the sync problem is set or cleared (the header banner listens). */
+export const SYNC_PROBLEM_EVENT = 'pdk-sync-problem';
+const announceProblem = () => { try { window.dispatchEvent(new Event(SYNC_PROBLEM_EVENT)); } catch {} };
+
 export function clearSyncProblem() {
   ls.del(PROBLEM_KEY);
+  announceProblem();
 }
 
 function setSyncProblem(kind: SyncProblem['kind'], provider: SyncProvider, message: string) {
   ls.set(PROBLEM_KEY, JSON.stringify({ kind, provider, message, at: new Date().toISOString() } satisfies SyncProblem));
+  announceProblem();
+}
+
+/** A target found a backup there that this device has not seen and cannot take over by itself. */
+export function reportSyncConflict(provider: SyncProvider) {
+  setSyncProblem('conflict', provider, '');
 }
 
 /** Call when a provider's credentials are removed: the remembered remote state no longer applies. */
@@ -79,6 +90,11 @@ export function forgetSyncState(provider: SyncProvider) {
 /** The remote backup (`exportedAt`) this device last wrote or read there; null if none. */
 export function syncMarker(provider: SyncProvider): string | null {
   return ls.get(markerKey(provider));
+}
+
+/** Fingerprint of the data this device last uploaded there (or took over unchanged); null if none. */
+export function syncFingerprint(provider: SyncProvider): string | null {
+  return ls.get(fingerprintKey(provider));
 }
 
 /** This device and the remote now hold the same backup (after a push or a pull). */
