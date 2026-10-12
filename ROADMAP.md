@@ -50,7 +50,6 @@ Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann
 ### Re: Calendars
 
 ### Re: Polycultures
-- [ ] make companion search criteria definable!
 
 
 ### Re: RECHTLICH/LIZENZ
