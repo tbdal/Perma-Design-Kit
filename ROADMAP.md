@@ -66,7 +66,6 @@ Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann
 - [ ] unfarbige Felder in Baumscheibe
 - [ ] medicinal & material sinnvoll auf Baumscheibe?
 - [ ] plantlist-icon nutzen?
-- [ ] new functions: barrier
 - [ ] Zirkeldreher-Tool: Prüfen ob wir uns da was abkucken können, v.a. was garden plan angeht
 - [x] domain permadesignkit.org gekauft
 - [x] Tabelle: Baum/Strauch/Krautebene als Spalte und Filter/sortierfunktion
