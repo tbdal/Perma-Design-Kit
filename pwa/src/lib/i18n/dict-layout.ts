@@ -100,7 +100,7 @@ export const layoutDict: Dict = {
   scGpUndo: { de: 'Rückgängig', en: 'Undo' },
   scGpRedo: { de: 'Wiederholen', en: 'Redo' },
   scGp3dViews: { de: '3D: Draufsicht ↔ Schrägansicht', en: '3D: top ↔ oblique view' },
-  scGpYears: { de: 'Weniger / mehr Jahre seit Pflanzung', en: 'Fewer / more years since planting' },
+  scGpYears: { de: 'Weniger / mehr Jahre seit Projektbeginn', en: 'Fewer / more years since project start' },
   scGpDelete: { de: 'Markierte Pflanze(n) bzw. Fläche entfernen', en: 'Remove selected plant(s) or area' },
   scGpEsc: { de: 'Abbrechen / Markierung aufheben', en: 'Cancel / clear selection' },
   shortcutsOverview: { de: 'Diese Übersicht', en: 'This overview' },

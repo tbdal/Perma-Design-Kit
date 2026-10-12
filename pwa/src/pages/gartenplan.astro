@@ -190,7 +190,7 @@ import Layout from '../layouts/Layout.astro';
     <div id="phase-b" class="hidden">
       <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-3">
-          <label class="text-sm font-medium text-stone-600 dark:text-stone-300" for="g-years" data-i18n="labelYearsSincePlanting">Jahre seit Pflanzung</label>
+          <label class="text-sm font-medium text-stone-600 dark:text-stone-300" for="g-years" data-i18n="labelYearsSincePlanting">Jahre seit Projektbeginn</label>
           <input id="g-years" type="range" min="0" max="80" step="1" value="0" class="w-48 sm:w-72" />
           <span id="years-label" class="min-w-20 whitespace-nowrap text-sm font-medium text-stone-700 dark:text-stone-200"></span>
           <button id="growth-play" type="button" data-i18n="growthPlay" data-i18n-title="growthPlayTitle" title="Zeitraffer: den Garten über die Jahre wachsen lassen" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700 text-xs">▶ Wachstum</button>
@@ -343,7 +343,7 @@ import Layout from '../layouts/Layout.astro';
 
           <details data-feature="phases" data-panel="phases" open id="phases-section" hidden class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="phasesHeading">Bauabschnitte</h2><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-stone-500 dark:text-stone-400 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
-            <label class="flex items-center gap-2 text-xs"><span data-i18n="phasesStart">Pflanzbeginn</span><input id="phases-start" type="number" min="1900" max="2200" step="1" class="w-20 rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs" /></label>
+            <label class="flex items-center gap-2 text-xs"><span data-i18n="phasesStart">Projektbeginn</span><input id="phases-start" type="number" min="1900" max="2200" step="1" class="w-20 rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs" /></label>
             <ul id="phases-list" class="mt-2 space-y-0.5 text-xs"></ul>
             <p class="mt-1 text-[10px] text-stone-500 dark:text-stone-400" data-i18n="phasesHint">Pflanzjahr unter „Ausgewählt“ setzen (auch für eine Mehrfachauswahl). Jahre-Regler und Zeitraffer zeigen die Abschnitte nacheinander.</p>
           </details>
@@ -513,7 +513,7 @@ import Layout from '../layouts/Layout.astro';
   import { neighborHints } from '../lib/neighbors';
   import { wayTo, arrived } from '../lib/field-mode';
   import { latLonToPlan } from '../lib/gartenplan-geo';
-  import { ageAt, isPlanted, phaseLabel, phaseGroups, phaseOf, clampPhase, MAX_PHASE } from '../lib/phases';
+  import { ageAt, isPlanted, phaseLabel, phaseGroups, phaseOf, clampPhase, MAX_PHASE, MIN_PHASE } from '../lib/phases';
   import { analyzeWater, roofRainM3, type WaterAnalysis } from '../lib/water';
   import { planYield, careTasks, buildIcs, type CareTask } from '../lib/yield-care';
   import { DEFAULT_ZONE_RADII, ZONE_COLORS, bearingVector, wedgePath, solsticeSectors } from '../lib/zones-sectors';
@@ -1910,7 +1910,7 @@ import Layout from '../layouts/Layout.astro';
     selectedPanel.innerHTML = `
       <p class="mb-2 text-sm font-medium text-stone-800 dark:text-stone-100">${t('multiSelected', { n: sel.length })}</p>
       <ul class="space-y-0.5 text-xs text-stone-700 dark:text-stone-200">${rows}</ul>
-      <label data-feature="phases" class="mt-2 flex items-center gap-2 text-xs"><span class="font-medium text-stone-500 dark:text-stone-400">${t('phaseLabelAll')}</span>${phaseSelectHtml('multi-phase', sel.every(pl => phaseOf(pl) === phaseOf(sel[0])) ? phaseOf(sel[0]) : -1)}</label>
+      <label data-feature="phases" class="mt-2 flex items-center gap-2 text-xs"><span class="font-medium text-stone-500 dark:text-stone-400">${t('phaseLabelAll')}</span>${phaseSelectHtml('multi-phase', sel.every(pl => phaseOf(pl) === phaseOf(sel[0])) ? phaseOf(sel[0]) : null)}</label>
       <p class="mt-2 text-[11px] text-stone-500 dark:text-stone-400">${t('multiHint')}</p>
       <div class="mt-2 flex flex-wrap gap-2">
         <button id="btn-multi-remove" class="rounded-md bg-red-100 dark:bg-red-900/40 px-2.5 py-1 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/60">${t('multiRemove')}</button>
@@ -1927,8 +1927,8 @@ import Layout from '../layouts/Layout.astro';
     });
     document.getElementById('btn-multi-clear')!.addEventListener('click', () => { multiSel.clear(); refreshMarkerHighlight(); renderSelectedPanel(); });
     document.getElementById('multi-phase')!.addEventListener('change', (e) => {
-      const v = Number((e.target as HTMLSelectElement).value);
-      if (v >= 0) setPhase(sel, v);
+      const raw = (e.target as HTMLSelectElement).value;
+      if (raw !== '') setPhase(sel, Number(raw));
     });
   }
 
@@ -2131,7 +2131,7 @@ import Layout from '../layouts/Layout.astro';
   }
 
   /** Years slider label with the calendar year ("2017 · 37 Jahre"); without a
-   *  Pflanzbeginn counted from this year (the start field's placeholder). */
+   *  project start counted from this year (the start field's placeholder). */
   function yearsText(plan: GardenPlan): string {
     const start = plan.startYear ?? new Date().getFullYear();
     return `${start + plan.yearsSincePlanting} · ${t('yearsSuffix', { years: plan.yearsSincePlanting })}`;
@@ -3323,15 +3323,22 @@ import Layout from '../layouts/Layout.astro';
   const phasesSection = document.getElementById('phases-section')!;
   const phasesStart = document.getElementById('phases-start') as HTMLInputElement;
   const phasesList = document.getElementById('phases-list')!;
-  function phaseSelectHtml(id: string, value: number): string {
-    // With a start year every calendar year up to the slider's end is offered, else 0…15 (+ the current value).
-    const opts = Array.from({ length: editing?.startYear ? MAX_PHASE + 1 : 16 }, (_, i) => i);
-    if (value > opts.length - 1) opts.push(value);
-    return `<select id="${id}" class="${'rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs'}">${value < 0 ? `<option value="-1" selected>${escapeHtml(t('phaseMixed'))}</option>` : ''}${opts.map(i =>
-      `<option value="${i}" ${i === value ? 'selected' : ''}>${escapeHtml(phaseLabel(editing ?? {}, i, t('phaseStartWord')))}</option>`).join('')}</select>`;
+  /** Calendar year of a phase: from the project start, else counted from this
+   *  year (as the years slider does); years before the start are marked Bestand. */
+  function phaseYearText(ph: number): string {
+    const label = phaseLabel({ startYear: editing?.startYear ?? new Date().getFullYear() }, ph);
+    return ph < 0 ? `${label} (${t('phaseExisting')})` : label;
+  }
+  /** `value` null = a multi-selection with mixed years. */
+  function phaseSelectHtml(id: string, value: number | null): string {
+    // Every year from 50 years before the start (existing plants) to the slider's end, newest last.
+    const opts = Array.from({ length: MAX_PHASE - MIN_PHASE + 1 }, (_, i) => MIN_PHASE + i);
+    return `<select id="${id}" class="${'rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs'}">${value === null ? `<option value="" selected>${escapeHtml(t('phaseMixed'))}</option>` : ''}${opts.map(i =>
+      `<option value="${i}" ${i === value ? 'selected' : ''}>${escapeHtml(phaseYearText(i))}</option>`).join('')}</select>`;
   }
   function setPhase(pls: GardenPlanPlacement[], v: number) {
-    for (const pl of pls) { if (v > 0) pl.phaseYear = Math.min(MAX_PHASE, v); else delete pl.phaseYear; }
+    const ph = clampPhase(v);
+    for (const pl of pls) { if (ph) pl.phaseYear = ph; else delete pl.phaseYear; }
     refreshMarkerHighlight();
     view3d?.refreshPlacements();
     renderPhases();
@@ -3349,7 +3356,7 @@ import Layout from '../layouts/Layout.astro';
     // Rebuilt only when it changed: a re-render right under the pointer would swallow the click.
     const html = groups.map(([ph, pls]) => `
       <li><button type="button" data-phase="${ph}" class="flex w-full items-center justify-between gap-2 rounded px-1.5 py-0.5 text-left hover:bg-stone-100 dark:hover:bg-stone-800 ${ph <= years ? '' : 'text-stone-400'}">
-        <span class="font-medium">${escapeHtml(phaseLabel(editing!, ph, t('phaseStartWord')))}</span>
+        <span class="font-medium">${escapeHtml(phaseYearText(ph))}</span>
         <span>${escapeHtml(t('phaseCount', { n: pls.length }))}${ph <= years ? '' : ' · ' + escapeHtml(t('phaseLater'))}</span></button></li>`).join('');
     if (phasesList.dataset.html === html) return;
     phasesList.dataset.html = html;

@@ -706,7 +706,7 @@ export async function exportGardenPlanPDF(plan: GardenPlan, plantsById: Map<stri
   const scaleText = opts.scale ? `Maßstab 1:${opts.scale} (${opts.paper}, in Originalgröße drucken)` : `Maßstab ≈ 1:${Math.round(scaleDen)} (${opts.paper})`;
 
   const title = plan.name || 'Waldgartenplan';
-  const caption = `${plan.yearsSincePlanting} Jahre seit Pflanzung · ${plan.areaWidthM}×${plan.areaHeightM} m · ${scaleText} · exportiert ${new Date().toLocaleDateString('de-DE')}`;
+  const caption = `${plan.yearsSincePlanting} Jahre seit Projektbeginn · ${plan.areaWidthM}×${plan.areaHeightM} m · ${scaleText} · exportiert ${new Date().toLocaleDateString('de-DE')}`;
   page.drawText(pdfSafe(title), { x: pt(GARDENPLAN_MARGIN_MM.side), y: pt(pageHmm - 14), size: 16, font: fontBold });
   page.drawText(pdfSafe(caption), { x: pt(GARDENPLAN_MARGIN_MM.side), y: pt(pageHmm - 20), size: 8, font, color: rgb(0.4, 0.4, 0.4) });
 

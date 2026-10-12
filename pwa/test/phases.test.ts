@@ -13,25 +13,32 @@ describe('phases', () => {
     expect(ageAt(pl('x', 2), 5)).toBe(3);
     expect(isPlanted(pl('x', 2), 1)).toBe(false);
     expect(isPlanted(pl('x', 2), 2)).toBe(true);
+    // existing plant, planted 10 years before the start
+    expect(ageAt(pl('x', -10), 0)).toBe(10);
+    expect(isPlanted(pl('x', -10), 0)).toBe(true);
   });
   it('labels phases as calendar years when a start year is set', () => {
     expect(phaseLabel({ startYear: 2027 }, 1)).toBe('2028');
     expect(phaseLabel({}, 0)).toBe('Start');
     expect(phaseLabel({}, 3)).toBe('+3');
+    expect(phaseLabel({}, -3)).toBe('−3');
+    expect(phaseLabel({ startYear: 2026 }, -46)).toBe('1980');
   });
   it('groups placements by phase', () => {
     expect(phaseGroups({ placements: [pl('a', 1), pl('b'), pl('c', 1)] }).map(([p, l]) => `${p}:${l.length}`)).toEqual(['0:1', '1:2']);
   });
   it('clamps stored values', () => {
     expect(clampPhase(2.4)).toBe(2);
-    expect(clampPhase(-1)).toBeUndefined();
+    expect(clampPhase(-1)).toBe(-1);
+    expect(clampPhase(-99)).toBe(-50);
     expect(clampPhase(0)).toBeUndefined();
+    expect(clampPhase(Number.NaN)).toBeUndefined();
     expect(clampPhase(99)).toBe(80);
   });
   it('survive normalisation (backup, share link)', () => {
     const n = normalizeGardenPlan({ ...createEmptyGardenPlan(), startYear: 2027, placements: [pl('a', 2), pl('b', -3)] })!;
     expect(n.startYear).toBe(2027);
-    expect(n.placements.map(p => p.phaseYear)).toEqual([2, undefined]);
+    expect(n.placements.map(p => p.phaseYear)).toEqual([2, -3]);
   });
 });
 

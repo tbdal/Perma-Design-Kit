@@ -96,8 +96,9 @@ export const gartenplanDict: Dict = {
   waterRoofNoClimate: { de: '{n} Gebäude, {a} m² Dach – Menge folgt, sobald das Standortklima geladen ist', en: '{n} buildings, {a} m² roof – amount follows once the site climate is loaded' },
   waterNote: { de: 'Abflusswege nach dem steilsten Gefälle, Senken nach dem Auffüllen des Geländes, Dachertrag mit Abflussbeiwert 0,8. Vorschläge zum Prüfen vor Ort, keine Planung.', en: 'Flow along the steepest descent, sinks from filling the terrain, roof yield with runoff coefficient 0.8. Suggestions to check on site, not a design.' },
   phasesHeading: { de: 'Bauabschnitte', en: 'Construction phases' },
-  phasesStart: { de: 'Pflanzbeginn', en: 'First planting' },
-  phasesHint: { de: 'Neue Pflanzen werden in dem Jahr gepflanzt, das der Jahre-Regler unter dem Plan zeigt – erst Regler auf das Jahr stellen, dann pflanzen. Nachträglich ändern: Pflanzjahr unter „Ausgewählt“ (auch für eine Mehrfachauswahl).', en: 'New plants are planted in the year the years slider below the plan shows – set the slider to the year first, then plant. To change it later: planting year under “Selected” (also for a multi-selection).' },
+  phasesStart: { de: 'Projektbeginn', en: 'Project start' },
+  phaseExisting: { de: 'Bestand', en: 'existing' },
+  phasesHint: { de: 'Neue Pflanzen werden in dem Jahr gepflanzt, das der Jahre-Regler unter dem Plan zeigt – erst Regler auf das Jahr stellen, dann pflanzen. Nachträglich ändern: Pflanzjahr unter „Ausgewählt“ (auch für eine Mehrfachauswahl) – Jahre vor dem Projektbeginn (bis 50 Jahre zurück) markieren Bestandspflanzen, die schon da sind.', en: 'New plants are planted in the year the years slider below the plan shows – set the slider to the year first, then plant. To change it later: planting year under “Selected” (also for a multi-selection) – years before the project start (up to 50 years back) mark existing plants that are already there.' },
   phaseLabel: { de: 'Pflanzjahr', en: 'Planting year' },
   phaseLabelAll: { de: 'Pflanzjahr für alle', en: 'Planting year for all' },
   phaseStartWord: { de: 'Start', en: 'Start' },
@@ -382,7 +383,7 @@ export const gartenplanDict: Dict = {
   confirmRedrawArea: { de: 'Fläche neu zeichnen? Das löscht die bisherige Umrandung, alle eingezeichneten Flächen und alle platzierten Pflanzen.', en: 'Redraw the area? This clears the current boundary, all drawn areas and all placed plants.' },
 
   // ── Phase B: placement + growth slider ───────────────────────────────
-  labelYearsSincePlanting: { de: 'Jahre seit Pflanzung', en: 'Years since planting' },
+  labelYearsSincePlanting: { de: 'Jahre seit Projektbeginn', en: 'Years since project start' },
   yearsSuffix: { de: '{years} Jahre', en: '{years} years' },
   pickerHeading: { de: 'Pflanzen', en: 'Plants' },
   pickerFilterPlaceholder: { de: 'Pflanze filtern…', en: 'Filter plants…' },
@@ -434,6 +435,6 @@ export const gartenplanDict: Dict = {
   guideTipClimber: { de: 'Noch fehlt eine Kletterpflanze. Sie nutzt die Höhe an Bäumen oder Zäunen, ohne Platz am Boden zu brauchen.', en: 'A climber is still missing. It uses the height of trees or fences without needing ground space.' },
   guideTipRhizo: { de: 'Fehlt nur noch die Wurzelschicht, zum Beispiel Topinambur oder Meerrettich. Sie lockert den Boden.', en: 'Only the root layer is missing, for example Jerusalem artichoke or horseradish. It loosens the soil.' },
   guideTipAll: { de: 'Alle fünf Schichten sind belegt. Sieh dir deinen Waldgarten jetzt in 3D an.', en: 'All five layers are filled. Now look at your forest garden in 3D.' },
-  guideTipDone: { de: 'Alle Schichten belegt. Mit dem Regler „Jahre seit Pflanzung“ siehst du, wie dein Garten wächst.', en: 'All layers filled. The “years since planting” slider shows how your garden grows.' },
+  guideTipDone: { de: 'Alle Schichten belegt. Mit dem Regler „Jahre seit Projektbeginn“ siehst du, wie dein Garten wächst.', en: 'All layers filled. The “years since project start” slider shows how your garden grows.' },
   expertBadge: { de: 'Experte', en: 'Expert' },
 };

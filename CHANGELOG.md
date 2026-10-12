@@ -4,6 +4,10 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Bauabschnitte: Bestandspflanzen 2026-10-12
+- [x] **Bauabschnitte:** das Pflanzjahr lässt sich nachträglich bis 50 Jahre vor den Projektbeginn setzen; solche Pflanzen sind als „Bestand“ markiert und stehen beim Projektbeginn schon entsprechend groß im Plan #bugs #prüfen
+- [x] **Begriffe:** „Jahre seit Pflanzung“ heißt jetzt „Jahre seit Projektbeginn“, „Pflanzbeginn“ heißt „Projektbeginn“ #minor #prüfen
+
 ## Bauabschnitte: pflanzen im gewählten Jahr 2026-10-12
 - [x] **Bauabschnitte:** neue Pflanzen kommen in das Jahr, das der Jahre-Regler unter dem Plan zeigt (vorher immer ins Startjahr) – erst Jahr wählen, dann pflanzen; gilt auch für Reihen, Polykulturen, GPS und Lücken-Vorschläge. Der Jahre-Regler zeigt neben den Jahren nach Start das Kalenderjahr („2017 · 37 Jahre“; ohne Pflanzbeginn ab dem laufenden Jahr gezählt) #bugs #prüfen
 
