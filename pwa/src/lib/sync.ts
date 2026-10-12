@@ -13,7 +13,8 @@ export const GIST_FILENAME = 'perma-design-kit-backup.json';
  *  fallback so existing synced Gists still import correctly. */
 export const GIST_FILENAME_LEGACY = 'perma-guild-forge-backup.json';
 
-export type SyncProvider = 'webdav' | 'gist';
+/** The built-in targets, or the id of one added with registerSyncTarget(). */
+export type SyncProvider = 'webdav' | 'gist' | (string & {});
 export interface WebdavCreds { url: string; user: string; pass: string }
 export interface GistCreds { token: string; id: string }
 
@@ -39,6 +40,7 @@ export function rememberBackupAt() {
 // the second to skip uploads when nothing changed.
 
 const markerKey = (p: SyncProvider) => `sync-marker-${p}`;
+const PROVIDER_RE = /^[a-z][a-z0-9-]{0,31}$/;
 const fingerprintKey = (p: SyncProvider) => `sync-fingerprint-${p}`;
 const PROBLEM_KEY = 'auto-sync-problem';
 
@@ -53,7 +55,7 @@ export interface SyncProblem {
 export function getSyncProblem(): SyncProblem | null {
   try {
     const p = JSON.parse(ls.get(PROBLEM_KEY) || 'null');
-    return p && (p.kind === 'error' || p.kind === 'conflict') && (p.provider === 'webdav' || p.provider === 'gist')
+    return p && (p.kind === 'error' || p.kind === 'conflict') && typeof p.provider === 'string' && PROVIDER_RE.test(p.provider)
       ? { kind: p.kind, provider: p.provider, message: String(p.message ?? ''), at: String(p.at ?? '') }
       : null;
   } catch { return null; }
@@ -74,8 +76,13 @@ export function forgetSyncState(provider: SyncProvider) {
   if (getSyncProblem()?.provider === provider) clearSyncProblem();
 }
 
+/** The remote backup (`exportedAt`) this device last wrote or read there; null if none. */
+export function syncMarker(provider: SyncProvider): string | null {
+  return ls.get(markerKey(provider));
+}
+
 /** This device and the remote now hold the same backup (after a push or a pull). */
-function rememberRemote(provider: SyncProvider, exportedAt: string, fingerprint?: string) {
+export function rememberRemote(provider: SyncProvider, exportedAt: string, fingerprint?: string) {
   const now = new Date().toISOString();
   ls.set(markerKey(provider), exportedAt);
   if (fingerprint) ls.set(fingerprintKey(provider), fingerprint);
@@ -93,7 +100,8 @@ export interface BuiltBackup {
   fingerprint: string;
 }
 
-async function sha256Hex(text: string): Promise<string> {
+/** Hex SHA-256 of a text; '' if hashing is unavailable. */
+export async function sha256Hex(text: string): Promise<string> {
   try {
     const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
     return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('');
@@ -291,19 +299,49 @@ function remoteIsKnown(provider: SyncProvider, remoteExportedAt: string): boolea
   return known === remoteExportedAt;
 }
 
+/** A further sync target (added by a module): auto-sync tries the enabled ones
+ *  first, before WebDAV and Gist, whether or not the general auto-sync is on. */
+export interface SyncTarget {
+  id: string;
+  label: string;
+  /** Configured and switched on for this device. */
+  enabled(): boolean;
+  /** What to upload; default buildBackup(). The fingerprint decides whether anything changed. */
+  build?(): Promise<BuiltBackup>;
+  /** `exportedAt` of the backup there now; null if there is none. */
+  remoteExportedAt(): Promise<string | null>;
+  /** Uploads; throws on failure. Auto-sync remembers the new remote state afterwards. */
+  push(backup: BuiltBackup, keepalive: boolean): Promise<unknown>;
+}
+
+const targets: SyncTarget[] = [];
+
+export function registerSyncTarget(target: SyncTarget) {
+  const i = targets.findIndex(t => t.id === target.id);
+  if (i >= 0) targets[i] = target; else targets.push(target);
+}
+
+/** Display name of a sync target ('' when unknown). */
+export function syncProviderLabel(provider: string | null): string {
+  if (provider === 'webdav') return 'WebDAV';
+  if (provider === 'gist') return 'GitHub Gist';
+  return targets.find(t => t.id === provider)?.label ?? '';
+}
+
 async function autoSyncTo(
   provider: SyncProvider,
-  read: () => Promise<string | null>,
+  remoteExportedAt: () => Promise<string | null>,
   push: (backup: BuiltBackup) => Promise<unknown>,
+  build: () => Promise<BuiltBackup> = buildBackup,
 ): Promise<SyncResult> {
   try {
-    const backup = await buildBackup();
+    const backup = await build();
     const problem = getSyncProblem();
     if (backup.fingerprint && backup.fingerprint === ls.get(fingerprintKey(provider)) && !problem) {
       return { ok: true, provider, skipped: true };
     }
-    const remote = await read();
-    if (remote !== null && !remoteIsKnown(provider, exportedAtOf(remote))) {
+    const remote = await remoteExportedAt();
+    if (remote !== null && !remoteIsKnown(provider, remote)) {
       setSyncProblem('conflict', provider, '');
       return { ok: false, provider, conflict: true };
     }
@@ -316,11 +354,16 @@ async function autoSyncTo(
   }
 }
 
+const stampOf = (read: () => Promise<string | null>) => async () => {
+  const text = await read();
+  return text === null ? null : exportedAtOf(text);
+};
+
 let running: Promise<SyncResult> | null = null;
 
-/** Uploads the backup to the first configured provider (WebDAV, then Gist) if
- *  auto-sync is on, the data changed and the remote is the state this device
- *  last saw. Failures and conflicts are kept for getSyncProblem(). */
+/** Uploads the backup to the first enabled registered target, or — if
+ *  auto-sync is on — to the first configured provider (WebDAV, then Gist),
+ *  when the data changed and the remote is the state this device last saw. Failures and conflicts are kept for getSyncProblem(). */
 export function autoSyncIfConfigured(): Promise<SyncResult> {
   if (running) return running;
   running = runAutoSync().finally(() => { running = null; });
@@ -328,9 +371,17 @@ export function autoSyncIfConfigured(): Promise<SyncResult> {
 }
 
 async function runAutoSync(): Promise<SyncResult> {
-  if (!isAutoSyncEnabled()) return { ok: true, provider: null };
   // Offline is not a failure worth a warning — the next change of tab retries.
   if (typeof navigator !== 'undefined' && navigator.onLine === false) return { ok: true, provider: null, skipped: true };
+
+  const target = targets.find(t => t.enabled());
+  if (target) {
+    return autoSyncTo(target.id, () => target.remoteExportedAt(), async b => {
+      await target.push(b, true);
+      rememberRemote(target.id, b.exportedAt, b.fingerprint);
+    }, target.build ? () => target.build!() : undefined);
+  }
+  if (!isAutoSyncEnabled()) return { ok: true, provider: null };
 
   const webdav: WebdavCreds = {
     url: (ls.get('webdav-url') || '').trim(),
@@ -338,12 +389,12 @@ async function runAutoSync(): Promise<SyncResult> {
     pass: ls.get('webdav-pass') || '',
   };
   if (webdav.url && webdav.user) {
-    return autoSyncTo('webdav', () => webdavRead(webdav, true), b => webdavPush(webdav, b, true));
+    return autoSyncTo('webdav', stampOf(() => webdavRead(webdav, true)), b => webdavPush(webdav, b, true));
   }
 
   const gist: GistCreds = { token: (ls.get('gist-token') || '').trim(), id: (ls.get('gist-id') || '').trim() };
   if (gist.token && gist.id) {
-    return autoSyncTo('gist', () => gistRead(gist, true), b => gistPush(gist, b, true));
+    return autoSyncTo('gist', stampOf(() => gistRead(gist, true)), b => gistPush(gist, b, true));
   }
 
   return { ok: true, provider: null };

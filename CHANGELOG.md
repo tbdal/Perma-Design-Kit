@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Sync-Schnittstelle 2026-10-12
+- [x] **Sync – Zusatzmodule:** Module können ein weiteres Sync-Ziel anmelden (eigener Inhalt, eigener Konflikt-Abgleich, Anzeige im Hinweis-Banner) und einen Block unter Einstellungen → Sync einfügen #minor #prüfen
+
 ## Messen und Plan-Hooks 2026-10-09
 - [x] **Waldgartenplan – Messen:** neben dem letzten Punkt steht jetzt auch die Gesamtlänge („gesamt 14,88 m“); Punkte, Linien und Beschriftungen sind feiner gezeichnet #bugs #prüfen
 - [x] **Waldgartenplan – Zusatzmodule:** Module können die Auswahl setzen und Plan-Punkte auf den Bildschirm der 3D-Ansicht umrechnen #minor #prüfen

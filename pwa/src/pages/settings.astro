@@ -187,6 +187,9 @@ import Layout from '../layouts/Layout.astro';
       </label>
     </div>
 
+    <!-- Sync targets added by modules (lib/expert-api.ts, EinstellungenApi.addSyncSection) -->
+    <div id="sync-extra"></div>
+
     <!-- WebDAV -->
     <details class="mt-5 rounded-lg border border-stone-200 dark:border-stone-700 p-4">
       <summary class="cursor-pointer text-sm font-semibold text-stone-700 dark:text-stone-200" data-i18n="webdavSummary">WebDAV (z.B. Nextcloud)</summary>
@@ -309,10 +312,11 @@ import Layout from '../layouts/Layout.astro';
   import { newId } from '../lib/id';
   import {
     buildBackup, buildBackupJson, parseBackup, backupIsEmpty, applyBackup, rememberBackupAt, rememberPulled, isAutoSyncEnabled,
-    webdavPush, webdavPull, gistPush, gistPull, getSyncProblem, clearSyncProblem, forgetSyncState,
+    webdavPush, webdavPull, gistPush, gistPull, getSyncProblem, clearSyncProblem, forgetSyncState, syncProviderLabel,
     GIST_FILENAME, type WebdavCreds,
   } from '../lib/sync';
   import { escapeHtml, withButtonSpinner } from '../lib/html';
+  import { providePageApi } from '../lib/expert-api';
   import { createT, applyStaticI18n, getLang } from '../lib/i18n/core';
   import { settingsDict } from '../lib/i18n/dict-settings';
 
@@ -536,7 +540,7 @@ import Layout from '../layouts/Layout.astro';
       at = localStorage.getItem('last-auto-sync-at');
       provider = localStorage.getItem('last-auto-sync-provider');
     } catch {}
-    const label = (p: string | null) => p === 'webdav' ? 'WebDAV' : p === 'gist' ? 'GitHub Gist' : '';
+    const label = syncProviderLabel;
     // Older versions also stored manual downloads here — only real sync targets count.
     el.textContent = at && label(provider)
       ? t('lastSyncPrefix', { date: new Date(at).toLocaleString(getLang() === 'en' ? 'en-US' : 'de-DE') }) + t('lastSyncVia', { provider: label(provider) })
@@ -1081,6 +1085,24 @@ import Layout from '../layouts/Layout.astro';
   void renderVarietyLists();
   renderLastBackup();
   renderLastSyncInfo();
+
+  providePageApi('einstellungen', {
+    addSyncSection(featureId, title) {
+      const details = document.createElement('details');
+      details.dataset.feature = featureId;
+      details.className = 'mt-5 rounded-lg border border-stone-200 dark:border-stone-700 p-4';
+      const summary = document.createElement('summary');
+      summary.className = 'cursor-pointer text-sm font-semibold text-stone-700 dark:text-stone-200';
+      summary.textContent = title;
+      const body = document.createElement('div');
+      details.append(summary, body);
+      document.getElementById('sync-extra')!.appendChild(details);
+      return body;
+    },
+    restoreFromText,
+    refreshSyncInfo() { renderLastBackup(); renderLastSyncInfo(); },
+  });
+
   loadWebdavCreds();
   loadGistCreds();
 </script>

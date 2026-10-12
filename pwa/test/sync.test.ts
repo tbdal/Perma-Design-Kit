@@ -31,7 +31,8 @@ const store: Record<string, string> = {};
 
 import {
   buildBackup, parseBackup, applyBackup, backupIsEmpty, autoSyncIfConfigured, getSyncProblem,
-  webdavPush, rememberPulled, forgetSyncState,
+  webdavPush, rememberPulled, forgetSyncState, registerSyncTarget, syncProviderLabel, syncMarker,
+  type BuiltBackup,
 } from '../src/lib/sync';
 import { loadSettings, saveSettings } from '../src/lib/settings';
 import { planViewKey, readPlanView } from '../src/lib/plan-view';
@@ -239,5 +240,62 @@ describe('auto-sync (WebDAV)', () => {
     forgetSyncState('webdav');
     expect(store['sync-marker-webdav']).toBeUndefined();
     expect(store['sync-fingerprint-webdav']).toBeUndefined();
+  });
+});
+
+describe('auto-sync (registered target)', () => {
+  /** A target that keeps its backup in memory; `on` switches it on for this device. */
+  function target(id = 'extra') {
+    const state = { on: true, remote: null as BuiltBackup | null, pushes: 0, fail: '' };
+    registerSyncTarget({
+      id, label: 'Extra-Speicher',
+      enabled: () => state.on,
+      remoteExportedAt: async () => state.remote?.exportedAt ?? null,
+      push: async (b) => { if (state.fail) throw new Error(state.fail); state.pushes++; state.remote = b; },
+    });
+    return state;
+  }
+
+  it('runs before WebDAV and without the general auto-sync switch', async () => {
+    const fetchSpy = vi.fn();
+    vi.stubGlobal('fetch', fetchSpy);
+    store['webdav-url'] = 'https://dav.example/b.json'; store['webdav-user'] = 'u';
+    const t = target();
+    expect(await autoSyncIfConfigured()).toEqual({ ok: true, provider: 'extra' });
+    expect(t.pushes).toBe(1);
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(syncMarker('extra')).toBe(t.remote!.exportedAt);
+    expect(store['last-auto-sync-provider']).toBe('extra');
+    expect(syncProviderLabel('extra')).toBe('Extra-Speicher');
+
+    expect(await autoSyncIfConfigured()).toMatchObject({ ok: true, skipped: true });
+    expect(t.pushes).toBe(1);
+    t.on = false;
+    expect(await autoSyncIfConfigured()).toEqual({ ok: true, provider: null });
+  });
+
+  it('does not overwrite a foreign backup and keeps errors with its id', async () => {
+    const t = target();
+    t.remote = { json: '{}', exportedAt: '2030-01-01T00:00:00.000Z', fingerprint: 'x' };
+    expect(await autoSyncIfConfigured()).toMatchObject({ ok: false, conflict: true });
+    expect(t.pushes).toBe(0);
+    expect(getSyncProblem()).toMatchObject({ kind: 'conflict', provider: 'extra' });
+
+    t.remote = null; t.fail = 'HTTP 413';
+    expect(await autoSyncIfConfigured()).toMatchObject({ ok: false, provider: 'extra', error: 'HTTP 413' });
+    expect(getSyncProblem()).toMatchObject({ kind: 'error', provider: 'extra' });
+  });
+
+  it('uploads what the target builds', async () => {
+    const t = target();
+    registerSyncTarget({
+      id: 'extra', label: 'Extra-Speicher', enabled: () => true,
+      build: async () => ({ json: '{"own":1}', exportedAt: '2026-05-05T00:00:00.000Z', fingerprint: 'own' }),
+      remoteExportedAt: async () => null,
+      push: async (b) => { t.remote = b; },
+    });
+    await autoSyncIfConfigured();
+    expect(t.remote?.json).toBe('{"own":1}');
+    expect(store['sync-fingerprint-extra']).toBe('own');
   });
 });

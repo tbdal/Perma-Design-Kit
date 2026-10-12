@@ -499,7 +499,7 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
       }, true);
     </script>
     <script>
-      import { autoSyncIfConfigured, getSyncProblem } from '../lib/sync';
+      import { autoSyncIfConfigured, getSyncProblem, syncProviderLabel } from '../lib/sync';
       import { createT } from '../lib/i18n/core';
       import { layoutDict } from '../lib/i18n/dict-layout';
       // Auto-sync runs while the tab is hidden, so a failure or a foreign
@@ -512,7 +512,7 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
         banner.hidden = !problem;
         if (!problem) return;
         const t = createT(layoutDict);
-        const provider = problem.provider === 'webdav' ? 'WebDAV' : 'GitHub Gist';
+        const provider = syncProviderLabel(problem.provider) || problem.provider;
         text.textContent = problem.kind === 'conflict'
           ? t('syncProblemConflict', { provider })
           : t('syncProblemError', { provider, msg: problem.message });
