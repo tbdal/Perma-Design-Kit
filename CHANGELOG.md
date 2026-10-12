@@ -5,7 +5,7 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
 ## Bauabschnitte: pflanzen im gewählten Jahr 2026-10-12
-- [x] **Bauabschnitte:** neue Pflanzen kommen in das Jahr, das der Jahre-Regler unter dem Plan zeigt (vorher immer ins Startjahr) – erst Jahr wählen, dann pflanzen; gilt auch für Reihen, Polykulturen, GPS und Lücken-Vorschläge. Mit Pflanzbeginn zeigt der Regler das Kalenderjahr mit an („2017 · 37 Jahre“) #bugs #prüfen
+- [x] **Bauabschnitte:** neue Pflanzen kommen in das Jahr, das der Jahre-Regler unter dem Plan zeigt (vorher immer ins Startjahr) – erst Jahr wählen, dann pflanzen; gilt auch für Reihen, Polykulturen, GPS und Lücken-Vorschläge. Der Jahre-Regler zeigt neben den Jahren nach Start das Kalenderjahr („2017 · 37 Jahre“; ohne Pflanzbeginn ab dem laufenden Jahr gezählt) #bugs #prüfen
 
 ## Bauabschnitte: Jahresauswahl 2026-10-12
 - [x] **Bauabschnitte:** das Pflanzjahr-Dropdown bietet mit gesetztem Pflanzbeginn alle Kalenderjahre bis 80 Jahre danach an (vorher nur 16, z. B. 1980–1995, und höchstens 30 Jahre nach Start); Jahre bis 2060 sind wählbar #bugs #prüfen

@@ -2130,10 +2130,11 @@ import Layout from '../layouts/Layout.astro';
     });
   }
 
-  /** Years slider label: with a start year the calendar year too ("2017 · 37 Jahre"). */
+  /** Years slider label with the calendar year ("2017 · 37 Jahre"); without a
+   *  Pflanzbeginn counted from this year (the start field's placeholder). */
   function yearsText(plan: GardenPlan): string {
-    const y = t('yearsSuffix', { years: plan.yearsSincePlanting });
-    return plan.startYear && featureOn('phases') ? `${plan.startYear + plan.yearsSincePlanting} · ${y}` : y;
+    const start = plan.startYear ?? new Date().getFullYear();
+    return `${start + plan.yearsSincePlanting} · ${t('yearsSuffix', { years: plan.yearsSincePlanting })}`;
   }
 
   /** A new placement goes into the year the years slider shows (Bauabschnitte):
