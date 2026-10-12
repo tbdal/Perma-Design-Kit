@@ -319,7 +319,8 @@ import Layout from '../layouts/Layout.astro';
             <label class="block sm:col-span-2"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="notes" data-i18n="fieldNotes">Notizen</span>
               <textarea id="f-notes" rows="2" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none"></textarea></label>
             <label class="block sm:col-span-2"><span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-field="groups" data-i18n="fieldGroups">Gruppen (kommagetrennt)</span>
-              <input type="text" id="f-groups" data-i18n-placeholder="fieldGroupsPlaceholder" placeholder="z.B. Vorgarten, Waldgarten Nord" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" /></label>
+              <input type="text" id="f-groups" list="f-groups-list" autocomplete="off" data-i18n-placeholder="fieldGroupsPlaceholder" placeholder="z.B. Vorgarten, Waldgarten Nord" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none" />
+              <datalist id="f-groups-list"></datalist></label>
           </div>
         </fieldset>
 
@@ -665,6 +666,23 @@ import Layout from '../layouts/Layout.astro';
   }
 
   // ── Form ─────────────────────────────────────────────────────────────────────
+
+  /** Group names already in use, offered while typing in the comma-separated
+   *  Gruppen field: every option keeps what was typed before the last comma, so
+   *  picking one completes only the last entry. */
+  const groupsInput = document.getElementById('f-groups') as HTMLInputElement;
+  const groupsList = document.getElementById('f-groups-list') as HTMLDataListElement;
+  function updateGroupSuggestions() {
+    const parts = groupsInput.value.split(',');
+    const last = parts.pop()!.trim().toLowerCase();
+    const have = new Set(parts.map(s => s.trim().toLowerCase()));
+    const prefix = parts.length ? parts.map(s => s.trim()).filter(Boolean).join(', ') + ', ' : '';
+    groupsList.replaceChildren(...allGroups(cachedPlants)
+      .filter(g => !have.has(g.toLowerCase()) && g.toLowerCase().includes(last) && g.toLowerCase() !== last)
+      .map(g => Object.assign(document.createElement('option'), { value: prefix + g })));
+  }
+  groupsInput.addEventListener('input', updateGroupSuggestions);
+  groupsInput.addEventListener('focus', updateGroupSuggestions);
 
   function fillForm(p: PlantData) {
     el('id').value = p.id;

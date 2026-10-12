@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Gruppen-Vorschläge 2026-10-12
+- [x] **Pflanze bearbeiten:** beim Eintippen im Feld „Gruppen“ werden schon vorhandene Gruppennamen vorgeschlagen; ein Klick ergänzt nur den letzten Eintrag der kommagetrennten Liste #minor #prüfen
+
 ## Kopfzeile in schmalen Fenstern 2026-10-12
 - [x] **Kopfzeile:** passt sie nicht in eine Zeile, rutschen die Seiten-Links in eine eigene Zeile darunter (wie auf dem Handy, in breiteren Fenstern umbrechend statt wischbar) – vorher wurden Ansicht, Sprache, Hell/Dunkel und Einstellungen aus dem Fenster geschoben #bugs #prüfen
 
