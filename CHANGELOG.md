@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## 3D einfach 2026-10-12
+- [x] **Waldgartenplan – „3D einfach“:** neben 2D und 3D eine schnelle 3D-Ansicht für schwächere Geräte: einfache Pflanzenformen (Stamm + Krone als Kugel/Kegel), ohne Schatten und Kantenglättung, normale statt hoher Pixeldichte. Wird pro Gerät gemerkt; Geräte mit wenig Speicher oder Prozessorkernen starten damit #minor #prüfen
+
 ## Bauabschnitte: Bestandspflanzen 2026-10-12
 - [x] **Bauabschnitte:** das Pflanzjahr lässt sich nachträglich bis 50 Jahre vor den Projektbeginn setzen; solche Pflanzen sind als „Bestand“ markiert und stehen beim Projektbeginn schon entsprechend groß im Plan #bugs #prüfen
 - [x] **Begriffe:** „Jahre seit Pflanzung“ heißt jetzt „Jahre seit Projektbeginn“, „Pflanzbeginn“ heißt „Projektbeginn“ #minor #prüfen

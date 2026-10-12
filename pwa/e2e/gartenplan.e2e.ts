@@ -56,6 +56,21 @@ test('3D and back to 2D keeps the 2D section (no zooming out on every switch)', 
   void errors;
 });
 
+test('3D einfach: light 3D view, remembered per device, 3D switches back', async ({ page, errors }) => {
+  await stubNetwork(page);
+  await seedNeighbourPlan(page);
+  await openPlan(page, 'np');
+  await page.click('#btn-view-3d-simple');
+  await expect(page.locator('#plan-3d-container canvas')).toBeVisible({ timeout: 20000 });
+  await expect(page.locator('#btn-view-3d-simple')).toHaveClass(/shadow-sm/);
+  await expect(page.locator('#btn-view-3d')).not.toHaveClass(/shadow-sm/);
+  expect(await page.evaluate(() => localStorage.getItem('pgd-3d-simple'))).toBe('1');
+  await page.click('#btn-view-3d');
+  await expect(page.locator('#btn-view-3d')).toHaveClass(/shadow-sm/);
+  expect(await page.evaluate(() => localStorage.getItem('pgd-3d-simple'))).toBe('0');
+  void errors;
+});
+
 test('care calendar downloads as iCal', async ({ page, errors }) => {
   await stubNetwork(page);
   await seedNeighbourPlan(page);

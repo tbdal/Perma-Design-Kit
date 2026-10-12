@@ -3,7 +3,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import type { GardenPlan, GardenPlanArea, GardenPlanPlacement, PlantData } from './types';
 import { displayRadiusM, resolveGrowthPace, trunkRadiusM } from './growth-model';
 import { deriveLayer, LAYER_STYLE, type PlantLayer } from './plant-layer';
-import { buildPlantModel, crownShape } from './plant-mesh-3d';
+import { buildPlantModel, buildSimplePlantModel, crownShape } from './plant-mesh-3d';
 import { pointInPolygon } from './gartenplan-geometry';
 import { polygonCentroid } from './gartenplan-render';
 import { enuToPlan, tilesForRect, planToLatLon } from './gartenplan-geo';
@@ -152,6 +152,8 @@ export interface View3DOptions {
   layers?: Scene3DLayer[];
   /** Placements and areas (by id) left out of the scene, e.g. hidden by a plugin. */
   hidden?: (id: string) => boolean;
+  /** Simple 3D for weak devices: low-poly plants, no shadows, no antialiasing, pixel ratio 1. */
+  simple?: boolean;
 }
 
 /** What a plugin layer gets: the scene in plan metres (x = xM, z = yM, y up). */
@@ -186,10 +188,12 @@ function plantDims(plant: PlantData | undefined, years: number) {
   return { radiusM, heightM, layer, trunkM };
 }
 
-function buildPlantMesh(placement: GardenPlanPlacement, plant: PlantData | undefined, years: number): THREE.Group {
+function buildPlantMesh(placement: GardenPlanPlacement, plant: PlantData | undefined, years: number, simple = false): THREE.Group {
   const { radiusM, heightM, layer, trunkM } = plantDims(plant, years);
   const style = LAYER_STYLE[layer];
-  const group = buildPlantModel(placement.id, crownShape(plant, layer), radiusM, heightM, style.fill, trunkM);
+  const group = simple
+    ? buildSimplePlantModel(crownShape(plant, layer), radiusM, heightM, style.fill, trunkM)
+    : buildPlantModel(placement.id, crownShape(plant, layer), radiusM, heightM, style.fill, trunkM);
 
   const ring = new THREE.Mesh(
     new THREE.RingGeometry(radiusM * 1.05, radiusM * 1.2, 24),
@@ -316,10 +320,11 @@ export function createGardenPlan3DView(
   // Logarithmic depth: ground, map, outline and areas lie millimetres apart
   // while the view reaches hundreds of metres — a linear depth buffer can't
   // separate them there and they z-fight into stripes.
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, logarithmicDepthBuffer: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  const simple = !!opts.simple;
+  const renderer = new THREE.WebGLRenderer({ antialias: !simple, alpha: false, logarithmicDepthBuffer: true, powerPreference: simple ? 'low-power' : 'default' });
+  renderer.setPixelRatio(simple ? 1 : Math.min(window.devicePixelRatio, 2));
   renderer.setSize(Math.max(1, container.clientWidth), Math.max(1, container.clientHeight));
-  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.enabled = !simple;
   renderer.shadowMap.type = THREE.PCFShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -329,7 +334,7 @@ export function createGardenPlan3DView(
   const hemi = new THREE.HemisphereLight(0xe0f2fe, 0x6b7f4a, 0.8);
   scene.add(hemi);
   const sun = new THREE.DirectionalLight(0xfff1d6, 2.4);
-  sun.castShadow = true;
+  sun.castShadow = !simple;
   // Shadow frustum covers the plan and every building around it (OSM, up to
   // ~150 m away) — otherwise buildings outside it cast no shadow while their
   // neighbours do. A larger area gets a larger shadow map to stay sharp;
@@ -638,13 +643,13 @@ export function createGardenPlan3DView(
   let renderQueued = false; // declared before first use: the camera fit renders early
   function rebuildPlacements() {
     // Free the old per-plant geometry (materials/textures are shared).
-    plantsGroup.traverse(o => { (o as THREE.Mesh).geometry?.dispose(); });
+    plantsGroup.traverse(o => { if (!simple || o.name === 'selection-ring') (o as THREE.Mesh).geometry?.dispose(); });
     plantsGroup.clear();
     for (const placement of plan.placements) {
       if (!isPlanted(placement, years)) continue;   // later construction phase
       if (opts.hidden?.(placement.id)) continue;
-      const mesh = buildPlantMesh(placement, plantsById.get(placement.plantId), ageAt(placement, years));
-      mesh.traverse(o => { if (o.name !== 'selection-ring' && (o as THREE.Mesh).isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+      const mesh = buildPlantMesh(placement, plantsById.get(placement.plantId), ageAt(placement, years), simple);
+      if (!simple) mesh.traverse(o => { if (o.name !== 'selection-ring' && (o as THREE.Mesh).isMesh) { o.castShadow = true; o.receiveShadow = true; } });
       mesh.position.y = ground(placement.xM, placement.yM);
       const ring = mesh.getObjectByName('selection-ring');
       if (ring) ring.visible = placement.id === selectedPlacementId;
@@ -751,7 +756,7 @@ export function createGardenPlan3DView(
     const up = p.altitudeDeg > 0;
     sun.position.set(cx, 0, cz).add(dir.clone().multiplyScalar(sunDist));
     sun.intensity = up ? 2.6 * Math.min(1, Math.max(0.2, Math.sin(p.altitudeDeg * RAD) * 2)) : 0;
-    sun.castShadow = up;
+    sun.castShadow = up && !simple;
     hemi.intensity = up ? 0.7 + 0.5 * Math.min(1, p.altitudeDeg / 35) : 0.3;
     sunBall.visible = up;
     sunBall.position.set(cx, 0, cz).add(dir.multiplyScalar(skyR));

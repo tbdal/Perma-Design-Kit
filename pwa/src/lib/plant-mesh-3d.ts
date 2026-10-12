@@ -279,3 +279,53 @@ export function buildPlantModel(seed: string, shape: CrownShape, radiusM: number
   addWood(group, wood);
   return group;
 }
+
+// ── Simple 3D (weak devices) ──────────────────────────────────────────────
+// One or two low-poly solids per plant, matte, no textures: a trunk and a
+// crown ellipsoid / cone. Geometry is shared and scaled per plant.
+const SIMPLE_GEO = {
+  ball: new THREE.SphereGeometry(1, 12, 8),
+  cone: new THREE.ConeGeometry(1, 1, 10).translate(0, 0.5, 0),
+  post: new THREE.CylinderGeometry(1, 1, 1, 5).translate(0, 0.5, 0),
+};
+const simpleMats = new Map<string, THREE.MeshLambertMaterial>();
+function simpleMat(color: string) {
+  let m = simpleMats.get(color);
+  if (!m) { m = new THREE.MeshLambertMaterial({ color }); simpleMats.set(color, m); }
+  return m;
+}
+const BARK = '#5b4636';
+
+/** Low-poly stand-in for buildPlantModel (same size and shape family). */
+export function buildSimplePlantModel(shape: CrownShape, radiusM: number, heightM: number, baseColor: string, trunkM?: number): THREE.Group {
+  const group = new THREE.Group();
+  const r = Math.max(0.05, radiusM), h = Math.max(0.08, heightM);
+  const color = shape === 'mat' ? '#4d7c0f' : baseColor;
+  const add = (geo: keyof typeof SIMPLE_GEO, sx: number, sy: number, sz: number, y: number, c: string) => {
+    const m = new THREE.Mesh(SIMPLE_GEO[geo], simpleMat(c));
+    m.scale.set(sx, sy, sz);
+    m.position.y = y;
+    group.add(m);
+  };
+  if (shape === 'round' || shape === 'pine') {
+    const bottom = shape === 'pine' ? h * 0.6 : h * 0.35;
+    const ry = (h - bottom) / 2 * (shape === 'pine' ? 0.7 : 1);
+    const tr = trunkM ?? Math.max(0.03, r * 0.07);
+    add('post', tr, bottom + ry, tr, 0, BARK);
+    add('ball', r, ry, r, h - ry, color);
+  } else if (shape === 'cone') {
+    const tr = trunkM ?? Math.max(0.03, r * 0.08);
+    add('post', tr, h * 0.15, tr, 0, BARK);
+    add('cone', r, h * 0.9, r, h * 0.1, color);
+  } else if (shape === 'shrub') {
+    add('ball', r, h / 2, r, h / 2, color);
+  } else if (shape === 'climber') {
+    add('post', 0.03, h * 1.05, 0.03, 0, '#9a7b55');
+    add('post', r * 0.5, h, r * 0.5, 0, color);
+  } else if (shape === 'mat') {
+    add('post', r, Math.max(0.04, Math.min(0.15, h)), r, 0, color);
+  } else {
+    add('cone', r * 0.7, h, r * 0.7, 0, color);
+  }
+  return group;
+}

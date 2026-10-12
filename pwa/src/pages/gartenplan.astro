@@ -203,6 +203,7 @@ import Layout from '../layouts/Layout.astro';
           <div class="flex items-center gap-1 rounded-lg bg-stone-100 dark:bg-stone-800 p-0.5 text-xs">
             <button id="btn-view-2d" data-i18n="btnView2d" class="rounded-md bg-white dark:bg-stone-700 px-2.5 py-1 font-medium text-stone-800 dark:text-stone-100 shadow-sm">2D</button>
             <button id="btn-view-3d" data-i18n="btnView3d" class="rounded-md px-2.5 py-1 font-medium text-stone-500 dark:text-stone-400">3D</button>
+            <button id="btn-view-3d-simple" data-i18n="btnView3dSimple" data-i18n-title="btnView3dSimpleTitle" title="Schnelle 3D-Ansicht für schwächere Geräte: einfache Pflanzenformen, ohne Schatten" class="rounded-md px-2.5 py-1 font-medium text-stone-500 dark:text-stone-400">3D einfach</button>
           </div>
           <button data-feature="boundary-edit" id="btn-edit-boundary" type="button" aria-pressed="false" data-i18n="btnEditBoundary" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700 aria-pressed:bg-amber-100 aria-pressed:ring-amber-400 dark:aria-pressed:bg-amber-900/40">✎ Umriss bearbeiten</button>
           <button data-feature="areas" id="btn-draw-area" type="button" data-i18n="btnDrawArea" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">▱ Fläche einzeichnen</button>
@@ -1378,11 +1379,27 @@ import Layout from '../layouts/Layout.astro';
   const VIEW_TOGGLE_ACTIVE_CLS = ['bg-white', 'dark:bg-stone-700', 'text-stone-800', 'dark:text-stone-100', 'shadow-sm'];
   const VIEW_TOGGLE_INACTIVE_CLS = ['text-stone-500', 'dark:text-stone-400'];
   function setViewToggleActive(active2d: boolean) {
-    VIEW_TOGGLE_ACTIVE_CLS.forEach(c => btnView2d.classList.toggle(c, active2d));
-    VIEW_TOGGLE_INACTIVE_CLS.forEach(c => btnView2d.classList.toggle(c, !active2d));
-    VIEW_TOGGLE_ACTIVE_CLS.forEach(c => btnView3d.classList.toggle(c, !active2d));
-    VIEW_TOGGLE_INACTIVE_CLS.forEach(c => btnView3d.classList.toggle(c, active2d));
+    const on = (b: HTMLElement, active: boolean) => {
+      VIEW_TOGGLE_ACTIVE_CLS.forEach(c => b.classList.toggle(c, active));
+      VIEW_TOGGLE_INACTIVE_CLS.forEach(c => b.classList.toggle(c, !active));
+    };
+    on(btnView2d, active2d);
+    on(btnView3d, !active2d && !simple3d);
+    on(btnView3dSimple, !active2d && simple3d);
   }
+  // "3D einfach": the same 3D view, built light for weak devices (per device).
+  // Weak-looking devices start with it; a click on 3D or 3D einfach decides.
+  const btnView3dSimple = document.getElementById('btn-view-3d-simple') as HTMLButtonElement;
+  let simple3d = (() => {
+    try { const v = localStorage.getItem('pgd-3d-simple'); if (v) return v === '1'; } catch {}
+    const mem = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
+    return (mem !== undefined && mem <= 2) || (navigator.hardwareConcurrency || 8) <= 2;
+  })();
+  function setSimple3d(on: boolean) {
+    simple3d = on;
+    try { localStorage.setItem('pgd-3d-simple', on ? '1' : '0'); } catch {}
+  }
+  btnView3dSimple.addEventListener('click', () => { setSimple3d(true); btnView3d.click(); });
 
   btnView2d.addEventListener('click', () => {
     if (!editing) return;
@@ -1417,7 +1434,9 @@ import Layout from '../layouts/Layout.astro';
     renderPlanSvg();
   });
 
-  btnView3d.addEventListener('click', async () => {
+  btnView3d.addEventListener('click', async (e) => {
+    // Rebuilds call .click() and keep the current kind; only a real click on "3D" means the full view.
+    if (e.isTrusted) setSimple3d(false);
     if (!editing) return;
     planSvg.classList.add('hidden');
     canvasRectCache = null;
@@ -1482,6 +1501,7 @@ import Layout from '../layouts/Layout.astro';
       layers: pluginLayers.filter(l => featureOn(l.featureId)).map(l => l.layer),
       hidden: hiddenByPlugin,
       onTileFallback: noteOrthoFallback,
+      simple: simple3d,
     });
     if (from2d) camera3dAtEnter = view3d.getCameraState();
     view3d.setArmedPlant(armedPlantId);
