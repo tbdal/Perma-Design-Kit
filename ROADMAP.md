@@ -4,7 +4,6 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 
 ## Prios
 - [ ] Lizenz siehe artifact
-- [ ] Newsletter button: in Liste bei Jörn's Brevo aufnehmen: https://app.brevo.com/contact/list-listing/id/15
 - [ ] spendenbutton
 
 ## kurzfristig
