@@ -192,7 +192,7 @@ import Layout from '../layouts/Layout.astro';
         <div class="flex items-center gap-3">
           <label class="text-sm font-medium text-stone-600 dark:text-stone-300" for="g-years" data-i18n="labelYearsSincePlanting">Jahre seit Pflanzung</label>
           <input id="g-years" type="range" min="0" max="80" step="1" value="0" class="w-48 sm:w-72" />
-          <span id="years-label" class="w-20 text-sm font-medium text-stone-700 dark:text-stone-200"></span>
+          <span id="years-label" class="min-w-20 whitespace-nowrap text-sm font-medium text-stone-700 dark:text-stone-200"></span>
           <button id="growth-play" type="button" data-i18n="growthPlay" data-i18n-title="growthPlayTitle" title="Zeitraffer: den Garten über die Jahre wachsen lassen" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700 text-xs">▶ Wachstum</button>
         </div>
         <div class="flex items-center gap-3">
@@ -513,7 +513,7 @@ import Layout from '../layouts/Layout.astro';
   import { neighborHints } from '../lib/neighbors';
   import { wayTo, arrived } from '../lib/field-mode';
   import { latLonToPlan } from '../lib/gartenplan-geo';
-  import { ageAt, isPlanted, phaseLabel, phaseGroups, phaseOf, MAX_PHASE } from '../lib/phases';
+  import { ageAt, isPlanted, phaseLabel, phaseGroups, phaseOf, clampPhase, MAX_PHASE } from '../lib/phases';
   import { analyzeWater, roofRainM3, type WaterAnalysis } from '../lib/water';
   import { planYield, careTasks, buildIcs, type CareTask } from '../lib/yield-care';
   import { DEFAULT_ZONE_RADII, ZONE_COLORS, bearingVector, wedgePath, solsticeSectors } from '../lib/zones-sectors';
@@ -758,7 +758,7 @@ import Layout from '../layouts/Layout.astro';
     if (selectedAreaId && !(prev.areas ?? []).some(a => a.id === selectedAreaId)) selectedAreaId = null;
     for (const id of [...multiSel]) if (!prev.placements.some(p => p.id === id)) multiSel.delete(id);
     yearsInput.value = String(prev.yearsSincePlanting);
-    yearsLabel.textContent = t('yearsSuffix', { years: prev.yearsSincePlanting });
+    yearsLabel.textContent = yearsText(prev);
     gridRotInput.value = String(prev.gridRotationDeg ?? 0);
     syncMapBar();
     renderAreasList();
@@ -1440,7 +1440,7 @@ import Layout from '../layouts/Layout.astro';
     view3d = createGardenPlan3DView(plan3dContainer, editing, plantsById, {
       onGroundTap(xM, yM) {
         if (!editing || !armedPlantId) return;
-        const placement: GardenPlanPlacement = { id: newId(), plantId: armedPlantId, xM, yM, notes: '' };
+        const placement = newPlacement(armedPlantId, xM, yM);
         editing.placements.push(placement);
         unplacedPlantIds = unplacedPlantIds.filter(id => id !== armedPlantId);
         renderUnplacedList();
@@ -1687,7 +1687,7 @@ import Layout from '../layouts/Layout.astro';
     }
     renderAreasList();
     yearsInput.value = String(editing.yearsSincePlanting);
-    yearsLabel.textContent = t('yearsSuffix', { years: editing.yearsSincePlanting });
+    yearsLabel.textContent = yearsText(editing);
     renderPlantPicker();
     renderUnplacedList();
     renderSuggestions();
@@ -2130,11 +2130,24 @@ import Layout from '../layouts/Layout.astro';
     });
   }
 
+  /** Years slider label: with a start year the calendar year too ("2017 · 37 Jahre"). */
+  function yearsText(plan: GardenPlan): string {
+    const y = t('yearsSuffix', { years: plan.yearsSincePlanting });
+    return plan.startYear && featureOn('phases') ? `${plan.startYear + plan.yearsSincePlanting} · ${y}` : y;
+  }
+
+  /** A new placement goes into the year the years slider shows (Bauabschnitte):
+   *  with the slider at +5 the plant is planted then, not at the start. */
+  function newPlacement(plantId: string, xM: number, yM: number, id = newId()): GardenPlanPlacement {
+    const phase = featureOn('phases') ? clampPhase(editing?.yearsSincePlanting) : undefined;
+    return { id, plantId, xM, yM, notes: '', ...(phase ? { phaseYear: phase } : {}) };
+  }
+
   function placeArmedPlant(e: PointerEvent) {
     if (!editing || !armedPlantId) return;
     const pt = clientToMeters(planSvg, e.clientX, e.clientY);
     if (!pointInPolygon(pt, editing.boundary)) return;
-    const placement: GardenPlanPlacement = { id: newId(), plantId: armedPlantId, xM: pt.xM, yM: pt.yM, notes: '' };
+    const placement = newPlacement(armedPlantId, pt.xM, pt.yM);
     editing.placements.push(placement);
     unplacedPlantIds = unplacedPlantIds.filter(id => id !== armedPlantId);
     renderUnplacedList();
@@ -2145,7 +2158,7 @@ import Layout from '../layouts/Layout.astro';
   yearsInput.addEventListener('input', () => {
     if (!editing) return;
     editing.yearsSincePlanting = Number(yearsInput.value);
-    yearsLabel.textContent = t('yearsSuffix', { years: editing.yearsSincePlanting });
+    yearsLabel.textContent = yearsText(editing);
     for (const placement of editing.placements) {
       const group = markerMap.get(placement.id);
       if (!group) continue;
@@ -2762,7 +2775,7 @@ import Layout from '../layouts/Layout.astro';
     if (!editing || !rowDraft || rowDraft.length < 2 || !rowPlantId) return;
     const spots = rowPositions();
     const plantId = rowPlantId;
-    for (const q of spots) editing.placements.push({ id: newId(), plantId, xM: q.xM, yM: q.yM, notes: '' });
+    for (const q of spots) editing.placements.push(newPlacement(plantId, q.xM, q.yM));
     unplacedPlantIds = unplacedPlantIds.filter(id => id !== plantId);
     const p = plantsById.get(plantId);
     endRowDraw();
@@ -3145,7 +3158,7 @@ import Layout from '../layouts/Layout.astro';
         const g = gaps[Number(b.dataset.gap)];
         const p = plantsById.get(b.dataset.plant!);
         if (!g || !p || !editing) return;
-        editing.placements.push({ id: newId(), plantId: p.id, xM: g.xM, yM: g.yM, notes: '' });
+        editing.placements.push(newPlacement(p.id, g.xM, g.yM));
         renderPlanSvg();
         view3d?.refreshPlacements();
         renderSuggestions();
@@ -3255,7 +3268,7 @@ import Layout from '../layouts/Layout.astro';
   document.getElementById('gps-center')!.addEventListener('click', centerOnGps);
   gpsPlace.addEventListener('click', () => {
     if (!editing || !gpsPos || !armedPlantId) return;
-    editing.placements.push({ id: newId(), plantId: armedPlantId, xM: gpsPos.xM, yM: gpsPos.yM, notes: '' });
+    editing.placements.push(newPlacement(armedPlantId, gpsPos.xM, gpsPos.yM));
     unplacedPlantIds = unplacedPlantIds.filter(id => id !== armedPlantId);
     renderUnplacedList();
     renderSuggestions();
@@ -3354,6 +3367,7 @@ import Layout from '../layouts/Layout.astro';
     if (!editing) return;
     const v = Number(phasesStart.value);
     if (v >= 1900 && v <= 2200) editing.startYear = Math.round(v); else delete editing.startYear;
+    yearsLabel.textContent = yearsText(editing);
     renderPhases();
     renderSelectedPanel();
     renderYield();
@@ -4543,7 +4557,7 @@ import Layout from '../layouts/Layout.astro';
     for (const sp of spots) {
       const id = newId();
       ids.add(id);
-      editing.placements.push({ id, plantId: sp.plantId, xM: sp.xM, yM: sp.yM, notes: '' });
+      editing.placements.push(newPlacement(sp.plantId, sp.xM, sp.yM, id));
     }
     // Mark the new group so it can be moved together right away.
     multiSel.clear();

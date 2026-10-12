@@ -97,7 +97,7 @@ export const gartenplanDict: Dict = {
   waterNote: { de: 'Abflusswege nach dem steilsten Gefälle, Senken nach dem Auffüllen des Geländes, Dachertrag mit Abflussbeiwert 0,8. Vorschläge zum Prüfen vor Ort, keine Planung.', en: 'Flow along the steepest descent, sinks from filling the terrain, roof yield with runoff coefficient 0.8. Suggestions to check on site, not a design.' },
   phasesHeading: { de: 'Bauabschnitte', en: 'Construction phases' },
   phasesStart: { de: 'Pflanzbeginn', en: 'First planting' },
-  phasesHint: { de: 'Pflanzjahr unter „Ausgewählt“ setzen (auch für eine Mehrfachauswahl). Jahre-Regler und Zeitraffer zeigen die Abschnitte nacheinander.', en: 'Set the planting year under “Selected” (also for a multi-selection). The years slider and the time-lapse show the phases one after another.' },
+  phasesHint: { de: 'Neue Pflanzen werden in dem Jahr gepflanzt, das der Jahre-Regler unter dem Plan zeigt – erst Regler auf das Jahr stellen, dann pflanzen. Nachträglich ändern: Pflanzjahr unter „Ausgewählt“ (auch für eine Mehrfachauswahl).', en: 'New plants are planted in the year the years slider below the plan shows – set the slider to the year first, then plant. To change it later: planting year under “Selected” (also for a multi-selection).' },
   phaseLabel: { de: 'Pflanzjahr', en: 'Planting year' },
   phaseLabelAll: { de: 'Pflanzjahr für alle', en: 'Planting year for all' },
   phaseStartWord: { de: 'Start', en: 'Start' },
