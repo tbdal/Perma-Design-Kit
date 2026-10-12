@@ -3310,8 +3310,9 @@ import Layout from '../layouts/Layout.astro';
   const phasesStart = document.getElementById('phases-start') as HTMLInputElement;
   const phasesList = document.getElementById('phases-list')!;
   function phaseSelectHtml(id: string, value: number): string {
-    const opts = Array.from({ length: 16 }, (_, i) => i);
-    if (value > 15) opts.push(value);
+    // With a start year every calendar year up to the slider's end is offered, else 0…15 (+ the current value).
+    const opts = Array.from({ length: editing?.startYear ? MAX_PHASE + 1 : 16 }, (_, i) => i);
+    if (value > opts.length - 1) opts.push(value);
     return `<select id="${id}" class="${'rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs'}">${value < 0 ? `<option value="-1" selected>${escapeHtml(t('phaseMixed'))}</option>` : ''}${opts.map(i =>
       `<option value="${i}" ${i === value ? 'selected' : ''}>${escapeHtml(phaseLabel(editing ?? {}, i, t('phaseStartWord')))}</option>`).join('')}</select>`;
   }

@@ -26,7 +26,7 @@ describe('phases', () => {
     expect(clampPhase(2.4)).toBe(2);
     expect(clampPhase(-1)).toBeUndefined();
     expect(clampPhase(0)).toBeUndefined();
-    expect(clampPhase(99)).toBe(30);
+    expect(clampPhase(99)).toBe(80);
   });
   it('survive normalisation (backup, share link)', () => {
     const n = normalizeGardenPlan({ ...createEmptyGardenPlan(), startYear: 2027, placements: [pl('a', 2), pl('b', -3)] })!;

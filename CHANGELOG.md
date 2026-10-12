@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Bauabschnitte: Jahresauswahl 2026-10-12
+- [x] **Bauabschnitte:** das Pflanzjahr-Dropdown bietet mit gesetztem Pflanzbeginn alle Kalenderjahre bis 80 Jahre danach an (vorher nur 16, z. B. 1980–1995, und höchstens 30 Jahre nach Start); Jahre bis 2060 sind wählbar #bugs #prüfen
+
 ## Gruppen-Vorschläge 2026-10-12
 - [x] **Pflanze bearbeiten:** beim Eintippen im Feld „Gruppen“ werden schon vorhandene Gruppennamen vorgeschlagen; ein Klick ergänzt nur den letzten Eintrag der kommagetrennten Liste #minor #prüfen
 

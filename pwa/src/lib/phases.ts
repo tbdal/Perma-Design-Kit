@@ -6,7 +6,7 @@ import type { GardenPlan, GardenPlanPlacement } from './types';
 // plant's own age is that minus its phase — negative means not yet planted.
 // plan.startYear (calendar year) only labels the phases.
 
-export const MAX_PHASE = 30;
+export const MAX_PHASE = 80;   // as long as the years slider
 
 export const phaseOf = (pl: Pick<GardenPlanPlacement, 'phaseYear'>) => pl.phaseYear ?? 0;
 
