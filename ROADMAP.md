@@ -82,7 +82,6 @@ Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann
 - [ ] sprache der karten auf ui-sprache einstellen
 
 ### sonst
-- [ ] Finanzierungsmodell für die zukünftigen laufenden Kosten (Hosting, Software, Orga/Kommunikation, Bugfixing, Verbesserung & Erweiterung der Software) ausdenken: z.B. erst implementieren wenn Break-Even (transparente und ehrliche Kommunikation!) erreicht ist: "Countdown-Crowdfunding"
 
 ### PDF Generierung
 - [ ] zweite Option: Größen entsprechend Baumdurchmesser
