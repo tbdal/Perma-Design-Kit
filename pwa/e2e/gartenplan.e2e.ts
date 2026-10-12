@@ -165,7 +165,7 @@ test('construction phases: later plants as outline, phase panel, shopping list p
   await withDb(page, `const p = (await all('gardenPlans'))[0]; p.placements.find(x => x.id === 'e').phaseYear = 3; await put('gardenPlans', p);`);
   await openPlan(page, 'np');
   await expect(page.locator('[data-placement-id="e"]')).toHaveCSS('opacity', '0.35');
-  await expect(page.locator('#phases-list')).toContainText('+3');
+  await expect(page.locator('#phases-list')).toContainText(String(new Date().getFullYear() + 3));
   await expect(page.locator('#phases-list')).toContainText('noch nicht gepflanzt');
   await page.fill('#phases-start', '2027');
   await page.locator('#phases-start').dispatchEvent('change');
