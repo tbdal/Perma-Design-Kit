@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Kopfzeile in schmalen Fenstern 2026-10-12
+- [x] **Kopfzeile:** passt sie nicht in eine Zeile, rutschen die Seiten-Links in eine eigene Zeile darunter (wie auf dem Handy, in breiteren Fenstern umbrechend statt wischbar) – vorher wurden Ansicht, Sprache, Hell/Dunkel und Einstellungen aus dem Fenster geschoben #bugs #prüfen
+
 ## Sync-Schnittstelle 2026-10-12
 - [x] **Menüs von Zusatzmodulen:** schließen sich jetzt nach dem Klick auf einen Eintrag, auch wenn der nur zu einem anderen Abschnitt derselben Seite springt #bugs #prüfen
 - [x] **Sync – Zusatzmodule:** können einen Konflikt melden und den Stand des letzten Abgleichs lesen; der Hinweis-Banner erscheint sofort #minor #prüfen

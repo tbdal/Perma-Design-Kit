@@ -154,6 +154,23 @@ html[data-design="horizont"] .hz-sky {
     var(--hz-sky-top);
 }
 
+/* ── Header too wide for one row (Layout.astro sets data-compact): the
+   phone layout — page links in their own swipeable row under the controls. */
+.site-header[data-compact] nav { flex-wrap: wrap; }
+.site-header[data-compact] #nav-links {
+  order: 9999;
+  margin-left: -0.625rem;
+  margin-right: -0.625rem;
+  width: calc(100% + 1.25rem);
+  overflow-x: auto;
+}
+/* A link never breaks inside itself ("Waldgartenplan (neu)"): the layout switches instead. */
+#nav-links > a { white-space: nowrap; flex-shrink: 0; }
+/* Without touch swiping (wider windows) the link row wraps instead of hiding links at the edge. */
+@media (min-width: 640px) {
+  .site-header[data-compact] #nav-links { flex-wrap: wrap; overflow-x: visible; row-gap: 0.25rem; }
+}
+
 /* ── Header: sits in the sky, frosted once the page scrolls under it ──── */
 html[data-design="horizont"] .site-header {
   background: transparent;

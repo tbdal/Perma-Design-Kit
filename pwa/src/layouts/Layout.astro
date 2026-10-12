@@ -102,7 +102,8 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
 
     <header class="site-header sticky top-0 z-50 bg-green-900 dark:bg-green-950 shadow-lg">
       <!-- On phones the page links get their own (swipeable) second row, so the
-           header never makes the page wider than the screen. -->
+           header never makes the page wider than the screen. Wider windows get
+           the same layout (data-compact, set below) whenever one row does not fit. -->
       <nav class={`mx-auto flex ${barMaxW} flex-wrap items-center gap-x-2 gap-y-1 px-4 py-3 sm:flex-nowrap sm:px-6`}>
         <a href="/" data-i18n-aria-label="homeLink" aria-label="Perma Design Kit – Startseite" class="flex shrink-0 items-center gap-2 text-lg font-bold tracking-tight text-white">
           <span class="hz-wordmark" aria-hidden="true">PERMA<br />DESIGN<br />KIT</span>
@@ -113,7 +114,7 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
           </svg>
           <span class="hz-std hidden sm:inline">Perma Design Kit</span>
         </a>
-        <div class="order-last -mx-2.5 flex w-[calc(100%+1.25rem)] items-center gap-1 overflow-x-auto text-sm font-medium sm:order-none sm:mx-0 sm:ml-3 sm:w-auto sm:overflow-visible">
+        <div id="nav-links" class="order-last -mx-2.5 flex w-[calc(100%+1.25rem)] items-center gap-1 overflow-x-auto text-sm font-medium sm:order-none sm:mx-0 sm:ml-3 sm:w-auto sm:overflow-visible">
           <a href="/" data-nav="/" data-i18n="navPlants" class="rounded-md px-2.5 py-1 text-green-100 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900">Pflanzen</a>
           <a href="/kalender" data-nav="/kalender" data-i18n="navCalendar" class="rounded-md px-2.5 py-1 text-green-100 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900">Kalender</a>
           <a href="/polykulturen" data-nav="/polykulturen" data-i18n="navGuilds" class="rounded-md px-2.5 py-1 text-green-100 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900">Polykulturen</a>
@@ -451,6 +452,7 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
       }
     </script>
     <script>
+      import { onFeaturesChange } from '../lib/ui-mode';
       // Horizont design: the sky band must end exactly where the tree line
       // meets the content, which depends on the rendered header height and,
       // on the plant page, the search block in the sky ([data-hz-sky]).
@@ -473,6 +475,29 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
         root.style.setProperty('--hz-band-h', `${Math.round(ground - pageY(anchor))}px`);
         root.style.setProperty('--hz-ground', `${Math.round(ground - pageY(main))}px`);
       }
+      // One header row only while it fits: the links (and module menus) vary by
+      // mode and language, so measure in the one-row layout instead of using a
+      // fixed breakpoint; otherwise the controls were pushed out of the window.
+      const nav = header?.querySelector<HTMLElement>('nav');
+      let fitQueued = false;
+      function fitHeader() {
+        fitQueued = false;
+        if (!header || !nav) return;
+        delete header.dataset.compact;
+        if (nav.scrollWidth > nav.clientWidth + 1) header.dataset.compact = '';
+      }
+      // Deferred to the next frame: toggling the layout inside a ResizeObserver callback would loop.
+      const queueFit = () => { if (!fitQueued) { fitQueued = true; requestAnimationFrame(fitHeader); } };
+      fitHeader();
+      if (nav) {
+        const fitRo = new ResizeObserver(queueFit);
+        for (const el of nav.querySelectorAll(':scope > *')) fitRo.observe(el);
+        new MutationObserver(queueFit).observe(nav, { childList: true, subtree: true, characterData: true });
+      }
+      window.addEventListener('resize', queueFit);
+      onFeaturesChange(queueFit); // links hidden or shown by the feature table
+      document.fonts?.ready.then(queueFit);
+
       layoutHorizon();
       const ro = new ResizeObserver(layoutHorizon);
       if (header) ro.observe(header);
