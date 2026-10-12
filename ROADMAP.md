@@ -71,7 +71,6 @@ Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann
 - [ ] plantlist-icon nutzen?
 - [ ] PFAF hat noch eine agroforestry/regen.agricult. rubrik für weitere funktionen wie erosion control, carbon seq., etc die wir übernehmen wollen
 - [ ] new functions: barrier
-- [ ] create default/other plant lists: -CAFG (v5? - 41 spp.), CAFG full? (350+ spp.), PFAF - selected book, Grünheck?
 - [ ] Zirkeldreher-Tool: Prüfen ob wir uns da was abkucken können, v.a. was garden plan angeht
 - [x] domain permadesignkit.org gekauft
 - [x] Tabelle: Baum/Strauch/Krautebene als Spalte und Filter/sortierfunktion
