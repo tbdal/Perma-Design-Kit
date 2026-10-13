@@ -66,7 +66,7 @@ export const layoutDict: Dict = {
   tourListTitle: { de: '3 · Listenansicht', en: '3 · List view' },
   tourListText: { de: 'Die Tabelle zeigt alle Pflanzen mit Spalten zum Sortieren und Filtern (Sonne, Wasser, Wuchs, Ebene …). Auch als PDF exportierbar.', en: 'The table shows all plants with sortable, filterable columns (sun, water, growth, layer …). It can also be exported as PDF.' },
   tourCardsTitle: { de: '4 · Kartenansicht', en: '4 · Card view' },
-  tourCardsText: { de: 'Aus jeder Pflanze entsteht eine Karte — Pflanzenkarte, Streifenkarte oder Baumscheibe — zum Ausdrucken als PDF, auch maßstabsgetreu.', en: 'Every plant becomes a card — plant card, stripe card or tree disc — to print as PDF, including to scale.' },
+  tourCardsText: { de: 'Aus jeder Pflanze entsteht eine Karte — Pflanzenkarte, Streifenkarte oder Baumscheibe — zum Ausdrucken als PDF, auch maßstabsgetreu.', en: 'Every plant becomes a card — plant card, stripe card or canopy card — to print as PDF, including to scale.' },
   tourGuildsTitle: { de: '5 · Polykulturen', en: '5 · Polycultures' },
   tourGuildsText: { de: 'Stelle Pflanzengemeinschaften zusammen, mit Rollen und Vorschlägen passend zu Sonne, Wasser und Boden.', en: 'Assemble plant communities with roles and suggestions matching sun, water and soil.' },
   tourPlanTitle: { de: '6 · Waldgartenplan', en: '6 · Forest garden plan' },

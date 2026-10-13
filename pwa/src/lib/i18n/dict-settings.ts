@@ -30,7 +30,7 @@ export const settingsDict: Dict = {
   helpDotCodes: { de: 'Zeigt in der Pflanzenliste und ihrer Legende Kürzel (Es, Me, N …) statt reiner Farbpunkte – hilfreich bei Farbenblindheit und im Graustufendruck.', en: 'Shows short codes (Es, Me, N …) instead of plain color dots in the plant list and its legend – helpful for color blindness and grayscale printing.' },
   optPoly: { de: 'Pflanzenkarten', en: 'Plant cards' },
   optStripe: { de: 'Streifenkarten', en: 'Strip cards' },
-  optBaumscheibe: { de: 'Baumscheibe', en: 'Baumscheibe' },
+  optBaumscheibe: { de: 'Baumscheiben', en: 'Canopy cards' },
 
   sectionDesign: { de: 'Design', en: 'Design' },
   designSubtitle: { de: 'Aussehen der Website. Alle Funktionen sind in beiden Designs gleich.', en: 'How the website looks. All features are the same in both designs.' },

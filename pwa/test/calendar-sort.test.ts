@@ -28,3 +28,15 @@ describe('sortCalendar', () => {
     expect(names(sortCalendar(all, 'name', 'de'))).toEqual(['Efeu', 'Hasel', 'Holunder', 'Ohne Daten']);
   });
 });
+
+describe('season across the turn of the year', () => {
+  const m = (...on: number[]) => Array.from({ length: 12 }, (_, i) => on.includes(i));
+  it('starts in Nov and ends in Feb', async () => {
+    const { seasonStart, seasonEnd } = await import('../src/lib/calendar-sort');
+    expect(seasonStart(m(10, 11, 0, 1))).toBe(10);
+    expect(seasonEnd(m(10, 11, 0, 1))).toBe(1);
+    expect(seasonStart(m(5, 6))).toBe(5);
+    expect(seasonEnd(m(2, 8, 9))).toBe(9);
+    expect(seasonStart(m())).toBe(-1);
+  });
+});

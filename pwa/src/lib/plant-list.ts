@@ -1,3 +1,4 @@
+import { seasonStart } from './calendar-sort';
 import type { PlantData } from './types';
 import { displayName } from './plant-name';
 import { deriveLayer, type PlantLayer } from './plant-layer';
@@ -83,9 +84,9 @@ function growSpeedRank(p: PlantData): number {
 
 const LAYER_RANK: Record<PlantLayer, number> = { rhizo: 1, herb: 2, climber: 3, shrub: 4, tree: 5 };
 
-/** Earliest active month (0=Jan..11=Dec); unset sorts last. */
+/** Start of the season (0=Jan..11=Dec; Nov–Feb counts as Nov); unset sorts last. */
 function earliestMonth(months: boolean[] | undefined): number {
-  const i = months?.findIndex(Boolean) ?? -1;
+  const i = seasonStart(months);
   return i === -1 ? Infinity : i;
 }
 

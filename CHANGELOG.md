@@ -4,6 +4,10 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Fehlerbehebungen 2026-10-13
+- [x] **Englisch:** die Kartenart „Baumscheibe“ heißt in den Einstellungen und überall sonst „Canopy card(s)“ statt „Baumscheibe“ bzw. „tree disc“ #bugs #prüfen
+- [x] **Kalender und Pflanzenliste – nach frühester Blüte/Ernte sortieren:** eine Zeit über den Jahreswechsel (z. B. Nov–Feb) zählt ab November statt als Januar und landet damit nicht mehr ganz vorn #bugs #prüfen
+
 ## 3D einfach 2026-10-12
 - [x] **Waldgartenplan – „3D einfach“:** neben 2D und 3D eine schnelle 3D-Ansicht für schwächere Geräte: einfache Pflanzenformen (Stamm + Krone als Kugel/Kegel), ohne Schatten und Kantenglättung, normale statt hoher Pixeldichte. Wird pro Gerät gemerkt; Geräte mit wenig Speicher oder Prozessorkernen starten damit #minor #prüfen
 

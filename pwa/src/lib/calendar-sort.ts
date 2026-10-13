@@ -3,8 +3,25 @@ import { displayName } from './plant-name';
 
 export type CalendarSort = 'name' | 'flowerEarliest' | 'flowerLatest' | 'fruitEarliest' | 'fruitLatest';
 
-const first = (m: boolean[] | undefined) => m?.findIndex(Boolean) ?? -1;
-const last = (m: boolean[] | undefined) => m ? m.lastIndexOf(true) : -1;
+/** First month of the season (0=Jan); a season across the turn of the year
+ *  (Nov–Feb) starts in Nov, not Jan. -1 = no month set. */
+export function seasonStart(m: boolean[] | undefined): number {
+  if (!m?.some(Boolean)) return -1;
+  if (m.every(Boolean)) return 0;
+  // a month that is on while the one before it is off; the earliest such one in the year
+  // unless the season wraps: then the start is the one after the last gap
+  const starts = [...Array(12).keys()].filter(i => m[i] && !m[(i + 11) % 12]);
+  return m[0] && m[11] ? starts[starts.length - 1] : starts[0];
+}
+/** Last month of the season; Nov–Feb ends in Feb. -1 = no month set. */
+export function seasonEnd(m: boolean[] | undefined): number {
+  if (!m?.some(Boolean)) return -1;
+  if (m.every(Boolean)) return 11;
+  const ends = [...Array(12).keys()].filter(i => m[i] && !m[(i + 1) % 12]);
+  return m[0] && m[11] ? ends[0] : ends[ends.length - 1];
+}
+const first = seasonStart;
+const last = seasonEnd;
 
 /** Sort key, smaller first; plants without the relevant months go last.
  *  "Earliest" = first active month ascending, "latest" = last active month

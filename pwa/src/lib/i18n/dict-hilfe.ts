@@ -60,7 +60,7 @@ export const hilfeDict: Dict = {
   variantPolyDesc: { de: '70 × 120 mm. Eine Karte pro Pflanze mit Bild, Namen, Eigenschaften und Phänologie. Standardformat zum Auslegen oder Anheften.', en: '70 × 120 mm. One card per plant with image, name, attributes and phenology. Standard format for laying out or pinning up.' },
   variantStripeTerm: { de: 'Streifenkarten', en: 'Strip cards' },
   variantStripeDesc: { de: '290 × 17 mm Querformat. Kompakte Zeile pro Pflanze — gut für Etiketten oder Schnellübersichten.', en: '290 × 17 mm landscape. A compact row per plant — good for labels or quick overviews.' },
-  variantBaumscheibeTerm: { de: 'Baumscheibe', en: 'Baumscheibe (tree-disc card)' },
+  variantBaumscheibeTerm: { de: 'Baumscheibe', en: 'Canopy card (Baumscheibe)' },
   variantBaumscheibeDesc: { de: 'Großformat mit grafischer Darstellung (Schichten, Sonne, Wasser, pH, Nutzung, Funktion). PDF im A4-Hochformat.', en: 'Large format with a graphical layout (layers, sun, water, pH, use, function). PDF in A4 portrait.' },
 
   sourcesHeading: { de: 'Datenquellen', en: 'Data sources' },

@@ -43,10 +43,10 @@ export const indexDict: Dict = {
   scaleLabel: { de: 'Maßstab', en: 'Scale' },
   cardTypePoly: { de: 'Pflanzenkarten', en: 'Plant cards' },
   cardTypeStripe: { de: 'Streifenkarten', en: 'Strip cards' },
-  cardTypeBaumscheibe: { de: 'Baumscheibe', en: 'Tree disc' },
+  cardTypeBaumscheibe: { de: 'Baumscheibe', en: 'Canopy card' },
   pdfScaledBtn: { de: 'PDF (Maßstab)', en: 'PDF (to scale)' },
-  pdfScaledTitle: { de: 'Baumscheiben im Maßstab (Kronenbreite der Pflanze), platzsparend auf Papier verteilt', en: 'Tree discs to scale (plant crown width), packed compactly onto the paper' },
-  pdfScaledShrunk: { de: '{n} Baumscheibe(n) sind bei diesem Maßstab größer als das Papier und wurden verkleinert.', en: '{n} disc(s) are larger than the paper at this scale and were shrunk to fit.' },
+  pdfScaledTitle: { de: 'Baumscheiben im Maßstab (Kronenbreite der Pflanze), platzsparend auf Papier verteilt', en: 'Canopy cards to scale (plant crown width), packed compactly onto the paper' },
+  pdfScaledShrunk: { de: '{n} Baumscheibe(n) sind bei diesem Maßstab größer als das Papier und wurden verkleinert.', en: '{n} card(s) are larger than the paper at this scale and were shrunk to fit.' },
   scaledMinSizeLabel: { de: 'Min. Größe (cm)', en: 'Min. size (cm)' },
   scaledMinSizeTitle: { de: 'Pflanzen, deren Karte bei diesem Maßstab kleiner ausfallen würde, werden nicht gedruckt', en: 'Plants whose card would come out smaller than this at this scale are left out of the PDF' },
   pdfScaledDiscarded: { de: '{n} Pflanze(n) wurden bei diesem Maßstab/Mindestgröße nicht gedruckt: {names}', en: '{n} plant(s) were left out at this scale/minimum size: {names}' },
@@ -57,7 +57,7 @@ export const indexDict: Dict = {
   tablePdfMonths: { de: 'Blüte: obere Reihe, Frucht: untere Reihe · H/B in m', en: 'Bloom: top row, fruit: bottom row · H/W in m' },
   tablePdfLegend: { de: 'Legende:', en: 'Legend:' },
   pdfAllBtn: { de: 'PDF ↓', en: 'PDF ↓' },
-  pdfSheetTitle: { de: '6 Baumscheiben je 9cm Durchmesser auf einer A4-Seite, kompakt zum Ausschneiden', en: '6 tree discs, 9cm diameter each, on one A4 page — compact, ready to cut out' },
+  pdfSheetTitle: { de: '6 Baumscheiben je 9cm Durchmesser auf einer A4-Seite, kompakt zum Ausschneiden', en: '6 canopy cards, 9cm diameter each, on one A4 page — compact, ready to cut out' },
   pdfSheetBtn: { de: 'PDF (6/Seite, 9cm)', en: 'PDF (6/page, 9cm)' },
 
   // ── Table toolbar ────────────────────────────────────────────────────
