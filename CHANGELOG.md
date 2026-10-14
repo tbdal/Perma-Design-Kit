@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Schrift Source Sans 3 2026-10-14
+- [x] **Schriften:** Source Sans 3 (variabel, Latin und Latin Extended) liegt jetzt mit den anderen Schriften auf dem eigenen Server bereit (OFL) #minor #prüfen
+
 ## Zusatzkästen einklappbar 2026-10-14
 - [x] **Waldgartenplan:** die Kästen von Zusatzmodulen lassen sich wie die übrigen mit dem Pfeil einklappen #minor #prüfen
 
