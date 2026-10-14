@@ -5,7 +5,7 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
 ## Plan-Kacheln für Zusatzmodule 2026-10-14
-- [x] **Waldgartenplan – Zusatzmodule:** Knopf auf den Plan-Kacheln der Übersicht; Hinweise der Module dort als gut sichtbares Schildchen #minor #prüfen
+- [x] **Waldgartenplan – Zusatzmodule:** Knopf (mit Symbol, öffnet ein Menü) auf den Plan-Kacheln der Übersicht; Hinweise der Module dort als gut sichtbares Schildchen #minor #prüfen
 
 ## Auswahl mit Esc aufheben 2026-10-14
 - [x] **Waldgartenplan:** Esc hebt jetzt auch die Auswahl einer einzelnen Pflanze auf (vorher nur Mehrfachauswahl und Flächen) #bugs #prüfen

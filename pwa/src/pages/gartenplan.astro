@@ -676,7 +676,7 @@ import Layout from '../layouts/Layout.astro';
     for (const cb of planDeletedListeners) { try { cb(id); } catch (err) { console.warn('plan-deleted listener failed', err); } }
   }
   const planBadges: { featureId: string; fn: (plan: GardenPlan) => string | null }[] = [];
-  const planTileActions: { featureId: string; label: string; onClick: (planId: string) => void }[] = [];
+  const planTileActions: { featureId: string; label: string; onClick: (planId: string, button: HTMLElement) => void; icon?: string }[] = [];
 
   let drawingPoints: GardenPlanPoint[] = [];
   let armedPlantId: string | null = null;
@@ -973,7 +973,7 @@ import Layout from '../layouts/Layout.astro';
           <div class="flex w-32 shrink-0 flex-col gap-1.5">
             <button type="button" data-plan-action="rename" class="w-full rounded-md px-2.5 py-1 text-left text-xs font-medium bg-stone-50 dark:bg-stone-700/60 text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">✎ ${escapeHtml(t('planRename'))}</button>
             <button type="button" data-plan-action="duplicate" class="w-full rounded-md px-2.5 py-1 text-left text-xs font-medium bg-stone-50 dark:bg-stone-700/60 text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">⧉ ${escapeHtml(t('planDuplicate'))}</button>
-            ${planTileActions.map((a, i) => (featureOn(a.featureId) ? `<button type="button" data-plan-ext="${i}" class="w-full rounded-md px-2.5 py-1 text-left text-xs font-medium bg-stone-50 dark:bg-stone-700/60 text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">${escapeHtml(a.label)}</button>` : '')).join('')}
+            ${planTileActions.map((a, i) => (featureOn(a.featureId) ? `<button type="button" data-plan-ext="${i}" aria-haspopup="true" class="flex w-full items-center gap-1.5 rounded-md px-2.5 py-1 text-left text-xs font-medium bg-stone-50 dark:bg-stone-700/60 text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">${a.icon ?? ''}${escapeHtml(a.label)}</button>` : '')).join('')}
             <button type="button" data-plan-action="delete" class="w-full rounded-md px-2.5 py-1 text-left text-xs font-medium bg-red-600 text-white shadow-sm hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600">🗑 ${escapeHtml(t('planDelete'))}</button>
           </div>
         </article>`;
@@ -981,7 +981,12 @@ import Layout from '../layouts/Layout.astro';
     listEl.querySelectorAll<HTMLElement>('[data-plan-id]').forEach(el => {
       el.addEventListener('click', (e) => {
         const ext = (e.target as HTMLElement).closest<HTMLElement>('[data-plan-ext]')?.dataset.planExt;
-        if (ext != null) { e.stopPropagation(); try { planTileActions[Number(ext)]?.onClick(el.dataset.planId!); } catch (err) { console.warn('plan tile action failed', err); } return; }
+        if (ext != null) {
+          e.stopPropagation();
+          const button = (e.target as HTMLElement).closest<HTMLElement>('[data-plan-ext]')!;
+          try { planTileActions[Number(ext)]?.onClick(el.dataset.planId!, button); } catch (err) { console.warn('plan tile action failed', err); }
+          return;
+        }
         const action = (e.target as HTMLElement).closest<HTMLElement>('[data-plan-action]')?.dataset.planAction;
         if (action) { e.stopPropagation(); void planTileAction(el.dataset.planId!, action); return; }
         openEditor(el.dataset.planId!);
@@ -4392,7 +4397,7 @@ import Layout from '../layouts/Layout.astro';
       if (editing) { renderPlanSvg(); renderSelectedPanel(); if (!plan3dContainer.hidden) btnView3d.click(); }
     },
     addPlanBadge(featureId, fn) { planBadges.push({ featureId, fn }); if (!editing) renderList(); },
-    addPlanTileAction(featureId, label, onClick) { planTileActions.push({ featureId, label, onClick }); if (!editing) renderList(); },
+    addPlanTileAction(featureId, label, onClick, opts) { planTileActions.push({ featureId, label, onClick, icon: opts?.icon }); if (!editing) renderList(); },
     async reloadPlans() {
       const fresh = await getAllGardenPlans();
       plans = editing ? fresh.map(p => (p.id === editing!.id ? editing! : p)) : fresh;
