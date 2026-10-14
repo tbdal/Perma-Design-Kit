@@ -278,7 +278,7 @@ export const gartenplanDict: Dict = {
   drawOnGrid: { de: 'Raster (ohne Standort)', en: 'Grid (no location)' },
   sizeFromMapHint: { de: 'Größe und Ausrichtung ergeben sich aus der gezeichneten Fläche.', en: 'Size and orientation follow from the area you draw.' },
   hintDrawingMap: { de: 'Suche deinen Garten, zoome hinein und klicke die Eckpunkte der Fläche an (mind. 3). Punkte lassen sich verschieben; ein Klick auf den ersten Punkt schließt die Fläche.', en: 'Find your garden, zoom in and click the corners of the area (at least 3). Points can be dragged; clicking the first point closes the shape.' },
-  alertAreaTooLarge: { de: 'Die Fläche ist größer als 500 m × 500 m. Bitte eine kleinere Fläche zeichnen.', en: 'The area is larger than 500 m × 500 m. Please draw a smaller area.' },
+  alertAreaTooLarge: { de: 'Die Fläche ist größer als {max} m × {max} m. Bitte eine kleinere Fläche zeichnen.', en: 'The area is larger than {max} m × {max} m. Please draw a smaller area.' },
   btnDrawArea: { de: '▱ Fläche einzeichnen', en: '▱ Draw area' },
   areaDrawHint: { de: 'Eckpunkte anklicken; Klick auf den ersten Punkt oder „Fertig“ schließt die Fläche. Esc bricht ab.', en: 'Click the corners; clicking the first point or “Done” closes the shape. Esc cancels.' },
   btnAreaFinish: { de: 'Fertig', en: 'Done' },

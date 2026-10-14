@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Große Flächen 2026-10-14
+- [x] **Waldgartenplan:** auf der Karte gezeichnete Flächen dürfen jetzt bis 5 km × 5 km groß sein (vorher 500 m × 500 m); Gelände, Abdeckungs- und Sonnenkarte rechnen bei großen Plänen gröber, damit sie flüssig bleiben #minor #prüfen
+
 ## Fehlerbehebungen 2026-10-13
 - [x] **Englisch:** die Kartenart „Baumscheibe“ heißt in den Einstellungen und überall sonst „Canopy card(s)“ statt „Baumscheibe“ bzw. „tree disc“ #bugs #prüfen
 - [x] **Kalender und Pflanzenliste – nach frühester Blüte/Ernte sortieren:** eine Zeit über den Jahreswechsel (z. B. Nov–Feb) zählt ab November statt als Januar und landet damit nicht mehr ganz vorn #bugs #prüfen

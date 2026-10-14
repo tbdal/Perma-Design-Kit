@@ -60,3 +60,11 @@ describe('phases in the calculations', () => {
     expect(r.totalKg).toBeCloseTo(one);
   });
 });
+
+describe('plan size', () => {
+  it('keeps plans up to 5 km a side, clamps beyond', () => {
+    const n = normalizeGardenPlan({ ...createEmptyGardenPlan(), areaWidthM: 1800, areaHeightM: 9000 })!;
+    expect(n.areaWidthM).toBe(1800);
+    expect(n.areaHeightM).toBe(5000);
+  });
+});

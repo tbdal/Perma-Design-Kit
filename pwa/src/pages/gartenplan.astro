@@ -528,7 +528,7 @@ import Layout from '../layouts/Layout.astro';
   import { planFromLatLngPolygon, planToLatLon } from '../lib/gartenplan-geo';
   import type { MapDrawer } from '../lib/gartenplan-mapdraw';
   import { basemapSvg, basemapAttribution, sourceForGeo, FALLBACK_ATTRIBUTION, basemapSvgInline } from '../lib/gartenplan-background';
-  import { growPlanToFit } from '../lib/gartenplan-extent';
+  import { growPlanToFit, MAX_PLAN_M } from '../lib/gartenplan-extent';
   import type { PlanRect } from '../lib/gartenplan-geo';
   import { compassLabel, sunPosition } from '../lib/sun-position';
   import { browserTimeZone, timeZoneAt, timeZoneLabel, wallClock, zonedDate } from '../lib/plan-time';
@@ -1353,7 +1353,7 @@ import Layout from '../layouts/Layout.astro';
       const pts = mapDrawer.points();
       if (pts.length < 3) return;
       const r = planFromLatLngPolygon(pts, MAP_MARGIN_M, editing.gridSpacingM);
-      if (r.widthM > 500 || r.heightM > 500) { alert(t('alertAreaTooLarge')); return; }
+      if (r.widthM > MAX_PLAN_M || r.heightM > MAX_PLAN_M) { alert(t('alertAreaTooLarge', { max: MAX_PLAN_M })); return; }
       editing.areaWidthM = r.widthM;
       editing.areaHeightM = r.heightM;
       editing.boundary = r.boundary;
@@ -3025,13 +3025,15 @@ import Layout from '../layouts/Layout.astro';
     const maxDim = Math.max(plan.areaWidthM, plan.areaHeightM);
     // Margin covers the OSM buildings (150 m) so they stand on the same
     // ground as the 3D terrain around them.
-    const m = Math.max(160, maxDim);
+    // Big plans (up to 5 km) get a margin of at most 1 km and a coarser grid
+    // (≤ ~800 samples a side), so the grid stays a few hundred thousand cells.
+    const m = Math.max(160, Math.min(maxDim, 1000));
     // With an official 1 m model (dgm.ts) the grid gets finer and is refined
     // with its heights; elsewhere the Terrain Tiles alone (≈ 25–30 m data).
     const dgm = dgmFor(geo.lat, geo.lon);
     const span = maxDim + 2 * m;
     try {
-      let grid = await fetchElevationGrid(geo, { minX: -m, minY: -m, maxX: plan.areaWidthM + m, maxY: plan.areaHeightM + m }, Math.min(4, Math.max(1, span / (dgm ? 300 : 100))));
+      let grid = await fetchElevationGrid(geo, { minX: -m, minY: -m, maxX: plan.areaWidthM + m, maxY: plan.areaHeightM + m }, Math.max(span / 800, Math.min(4, Math.max(1, span / (dgm ? 300 : 100)))));
       if (dgm && terrainKey === key) {
         terrainInfo.textContent = t('terrainLoadingDgm', { region: dgm.region[lang] });
         try { grid = (await refineWithDgm(grid, geo)) ?? grid; } catch { /* keep the coarse grid */ }
@@ -3127,7 +3129,7 @@ import Layout from '../layouts/Layout.astro';
     if (!layer) return;
     if (!mode || !editing || editing.boundary.length < 3) { layer.innerHTML = ''; coverage3d = null; view3d?.setCoverage(null); return; }
     const plan = editing;
-    const cellM = Math.max(0.5, Math.min(plan.areaWidthM, plan.areaHeightM) / 40);
+    const cellM = Math.max(0.5, Math.min(plan.areaWidthM, plan.areaHeightM) / 40, Math.max(plan.areaWidthM, plan.areaHeightM) / 200);
     const grid = coverageGrid(plan, plantsById, cellM);
     // One path per colour keeps the DOM small.
     const buckets = new Map<string, string[]>();
@@ -3881,7 +3883,7 @@ import Layout from '../layouts/Layout.astro';
     const day = chosenDay();
     const samples = mode === 'sun-day' ? sunSamples([day], ll.lat, ll.lon, ll.rot, 15, sunTz) : seasonSamples();
     const { scene } = sunContext();
-    const cellM = Math.max(0.5, Math.min(plan.areaWidthM, plan.areaHeightM) / 36);
+    const cellM = Math.max(0.5, Math.min(plan.areaWidthM, plan.areaHeightM) / 36, Math.max(plan.areaWidthM, plan.areaHeightM) / 180);
     const cells = planCells(plan, cellM);
     const hours: number[] = [];
     // In chunks so the page stays responsive on big plans.

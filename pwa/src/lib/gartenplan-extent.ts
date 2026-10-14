@@ -1,6 +1,9 @@
 import type { GardenPlan } from './types';
 import { planToLatLon } from './gartenplan-geo';
 
+/** Largest plan side in meters (drawing, import, growing). */
+export const MAX_PLAN_M = 5000;
+
 // Lets the plan grow when something is dragged past its edge (boundary or
 // area corner, plant): the rectangle is extended in whole grid cells plus a
 // margin, every coordinate is shifted so 0,0 stays the top-left corner, and

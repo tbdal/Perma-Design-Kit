@@ -5,6 +5,7 @@ import {
 import { newId } from './id';
 import { sanitizeZones } from './zones-sectors';
 import { clampPhase } from './phases';
+import { MAX_PLAN_M } from './gartenplan-extent';
 import { normalizeGridAngle } from './gartenplan-geometry';
 import type { VarietyEntry, VarietyList } from './varieties';
 
@@ -114,8 +115,8 @@ export function normalizeGardenPlan(raw: unknown): GardenPlan | null {
     name: str(raw.name, ''),
     description: str(raw.description, ''),
     polycultureId: typeof raw.polycultureId === 'string' ? raw.polycultureId : null,
-    areaWidthM: clamp(finite(raw.areaWidthM) ?? d.areaWidthM, 1, 500),
-    areaHeightM: clamp(finite(raw.areaHeightM) ?? d.areaHeightM, 1, 500),
+    areaWidthM: clamp(finite(raw.areaWidthM) ?? d.areaWidthM, 1, MAX_PLAN_M),
+    areaHeightM: clamp(finite(raw.areaHeightM) ?? d.areaHeightM, 1, MAX_PLAN_M),
     gridSpacingM: finite(raw.gridSpacingM) ?? d.gridSpacingM,
     boundary: Array.isArray(raw.boundary) ? raw.boundary.map(point).filter((q): q is { xM: number; yM: number } => q !== null) : [],
     placements: Array.isArray(raw.placements)
