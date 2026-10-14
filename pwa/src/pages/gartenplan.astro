@@ -659,6 +659,23 @@ import Layout from '../layouts/Layout.astro';
   let polyculturesById = new Map<string, Polyculture>();
   let plans: GardenPlan[] = [];
   let editing: GardenPlan | null = null;
+  /** Plants a plugin brings along for drawing plans (expert-api setExtraPlants), by feature; not in the user's list. */
+  const pluginPlants = new Map<string, Map<string, PlantData>>();
+  /** plantsById = the user's plants, plus plugin plants whose ids the list doesn't have. */
+  function rebuildPlantsById() {
+    plantsById = new Map([...[...pluginPlants.values()].flatMap(m => [...m]), ...plants.map(p => [p.id, p] as [string, PlantData])]);
+  }
+  /** Set by a plugin (expert-api setReadOnly): the open plan is shown but not saved. */
+  let readOnly = false;
+  const planSavedListeners: ((plan: GardenPlan) => void)[] = [];
+  const planDeletedListeners: ((id: string) => void)[] = [];
+  function notifyPlanSaved(plan: GardenPlan) {
+    for (const cb of planSavedListeners) { try { cb(plan); } catch (err) { console.warn('plan-saved listener failed', err); } }
+  }
+  function notifyPlanDeleted(id: string) {
+    for (const cb of planDeletedListeners) { try { cb(id); } catch (err) { console.warn('plan-deleted listener failed', err); } }
+  }
+  const planBadges: { featureId: string; fn: (plan: GardenPlan) => string | null }[] = [];
 
   let drawingPoints: GardenPlanPoint[] = [];
   let armedPlantId: string | null = null;
@@ -690,8 +707,10 @@ import Layout from '../layouts/Layout.astro';
     if (autosaveTimer) clearTimeout(autosaveTimer);
     const plan = editing;
     autosaveTimer = setTimeout(async () => {
+      if (readOnly && plan === editing) return;
       plan.updatedAt = new Date().toISOString();
       await saveGardenPlan(plan);
+      notifyPlanSaved(plan);
     }, 500);
     if (!restoringHistory) scheduleHistory();
     scheduleWarnings();
@@ -746,9 +765,17 @@ import Layout from '../layouts/Layout.astro';
     const target = historyIndex + dir;
     if (target < 0 || target >= history.length) return;
     historyIndex = target;
+    applyPlanData(JSON.parse(history[historyIndex]) as GardenPlan);
+    restoringHistory = true;
+    scheduleAutosave();
+    restoringHistory = false;
+    syncUndoButtons();
+  }
+  /** Writes `data` into the open plan object (shared with `plans`) and redraws everything. */
+  function applyPlanData(data: GardenPlan) {
+    if (!editing) return;
     const prev = editing;
     const before = { geo: JSON.stringify(prev.geo), w: prev.areaWidthM, h: prev.areaHeightM };
-    const data = JSON.parse(history[historyIndex]) as GardenPlan;
     for (const k of Object.keys(prev) as (keyof GardenPlan)[]) if (k !== 'updatedAt' && !(k in data)) delete (prev as any)[k];
     Object.assign(prev, data);
     // Drop selections / tools that point at things which no longer exist.
@@ -761,6 +788,9 @@ import Layout from '../layouts/Layout.astro';
     yearsInput.value = String(prev.yearsSincePlanting);
     yearsLabel.textContent = yearsText(prev);
     gridRotInput.value = String(prev.gridRotationDeg ?? 0);
+    if (document.activeElement !== fName) fName.value = prev.name;
+    if (document.activeElement !== fDescription) fDescription.value = prev.description;
+    if (document.activeElement !== fNotes) fNotes.value = prev.notes;
     syncMapBar();
     renderAreasList();
     renderUnplacedList();
@@ -769,10 +799,6 @@ import Layout from '../layouts/Layout.astro';
     renderPlanSvg();
     if (!plan3dContainer.hidden) btnView3d.click(); // rebuild 3D, camera kept
     if (before.geo !== JSON.stringify(prev.geo) || before.w !== prev.areaWidthM || before.h !== prev.areaHeightM) { void loadTerrain(); void loadBuildings(); }
-    restoringHistory = true;
-    scheduleAutosave();
-    restoringHistory = false;
-    syncUndoButtons();
   }
   btnUndo.addEventListener('click', () => stepHistory(-1));
   btnRedo.addEventListener('click', () => stepHistory(1));
@@ -941,6 +967,7 @@ import Layout from '../layouts/Layout.astro';
             <p class="mt-2 text-sm text-stone-700 dark:text-stone-200">${t('placementCount', { count: plan.placements.length })}</p>
             <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">${new Intl.NumberFormat(lang, { maximumFractionDigits: 0 }).format(planAreaM2(plan))} m² · ${t('areaSizeLabel', { w: plan.areaWidthM, h: plan.areaHeightM })}</p>
             ${plan.updatedAt || plan.createdAt ? `<p class="mt-1 text-[11px] text-stone-400 dark:text-stone-500">${escapeHtml(t('planDates', { created: fmtDate(plan.createdAt), updated: fmtDate(plan.updatedAt || plan.createdAt) }))}</p>` : ''}
+            ${planBadges.filter(b => featureOn(b.featureId)).map(b => { let line: string | null = null; try { line = b.fn(plan); } catch { /* plugin */ } return line ? `<p class="mt-1 text-xs font-medium text-sky-700 dark:text-sky-300">${escapeHtml(line)}</p>` : ''; }).join('')}
           </div>
           <div class="flex w-32 shrink-0 flex-col gap-1.5">
             <button type="button" data-plan-action="rename" class="w-full rounded-md px-2.5 py-1 text-left text-xs font-medium bg-stone-50 dark:bg-stone-700/60 text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">✎ ${escapeHtml(t('planRename'))}</button>
@@ -969,6 +996,7 @@ import Layout from '../layouts/Layout.astro';
       plan.name = next.trim();
       plan.updatedAt = new Date().toISOString();
       await saveGardenPlan(plan);
+      notifyPlanSaved(plan);
     } else if (action === 'duplicate') {
       const now = new Date().toISOString();
       const copy: GardenPlan = { ...structuredClone(plan), id: newId(), name: t('planCopyName', { name }), createdAt: now, updatedAt: now };
@@ -980,6 +1008,7 @@ import Layout from '../layouts/Layout.astro';
       if (!confirm(t('confirmDeletePlan', { name }))) return;
       await deleteGardenPlan(id);
       try { localStorage.removeItem(planViewKey(id)); } catch { /* ignore */ }
+      notifyPlanDeleted(id);
       showToast(t('toastPlanDeleted'));
     } else return;
     plans = await getAllGardenPlans();
@@ -2842,7 +2871,7 @@ import Layout from '../layouts/Layout.astro';
       if (r.newPlants.length) {
         await importPlants(r.newPlants);
         plants = await getAllPlants();
-        plantsById = new Map(plants.map(p => [p.id, p]));
+        rebuildPlantsById();
       }
       const plan = normalizeGardenPlan(r.plan)!;
       await saveGardenPlan(plan);
@@ -4332,6 +4361,31 @@ import Layout from '../layouts/Layout.astro';
       if (editing && plan3dContainer.hidden) { resetPlanViewState(); applyPlanView(); }
     },
     projectToScreen: (xM, yM) => (view3d && !plan3dContainer.hidden ? view3d.projectToScreen(xM, yM) : null),
+    onPlanSaved: cb => { planSavedListeners.push(cb); },
+    onPlanDeleted: cb => { planDeletedListeners.push(cb); },
+    replacePlan(data) {
+      if (!editing || data.id !== editing.id) return;
+      applyPlanData(structuredClone(data));
+      scheduleAutosave();
+    },
+    setReadOnly(on) { readOnly = on; },
+    setExtraPlants(featureId, list) {
+      if (list.length) pluginPlants.set(featureId, new Map(list.map(p => [p.id, p]))); else pluginPlants.delete(featureId);
+      rebuildPlantsById();
+      if (editing) { renderPlanSvg(); renderSelectedPanel(); if (!plan3dContainer.hidden) btnView3d.click(); }
+    },
+    addPlanBadge(featureId, fn) { planBadges.push({ featureId, fn }); if (!editing) renderList(); },
+    async reloadPlans() {
+      const fresh = await getAllGardenPlans();
+      plans = editing ? fresh.map(p => (p.id === editing!.id ? editing! : p)) : fresh;
+      renderList();
+    },
+    openPlan(id) {
+      if (!plans.some(p => p.id === id)) return false;
+      if (editing) closeEditor();
+      openEditor(id);
+      return true;
+    },
     addPanel(featureId, title) {
       const panel = document.createElement('details');
       panel.open = true;
@@ -4617,7 +4671,7 @@ import Layout from '../layouts/Layout.astro';
     plants: () => plants,
     onAdded: async (plant) => {
       plants = await getAllPlants();
-      plantsById = new Map(plants.map(p => [p.id, p]));
+      rebuildPlantsById();
       if (editing && !phaseB.classList.contains('hidden')) {
         armedPlantId = plant.id;
         armedHint.classList.remove('hidden');
@@ -4633,7 +4687,7 @@ import Layout from '../layouts/Layout.astro';
   // ── Init + save/delete ──────────────────────────────────────────────────
   async function init() {
     plants = await getAllPlants();
-    plantsById = new Map(plants.map(p => [p.id, p]));
+    rebuildPlantsById();
     polycultures = await getAllPolycultures();
     polyculturesById = new Map(polycultures.map(pc => [pc.id, pc]));
     plans = await getAllGardenPlans();
@@ -4693,7 +4747,10 @@ import Layout from '../layouts/Layout.astro';
       if (!confirm(t('confirmSaveWithoutArea', { n: pending }))) return;
     }
     syncFormIntoEditing();
-    await saveGardenPlan(editing);
+    if (!readOnly) {
+      await saveGardenPlan(editing);
+      notifyPlanSaved(editing);
+    }
     plans = await getAllGardenPlans();
     renderList();
     closeEditor();
@@ -4703,10 +4760,12 @@ import Layout from '../layouts/Layout.astro';
   document.getElementById('btn-delete-plan')!.addEventListener('click', async () => {
     if (!editing) return;
     if (!confirm(t('confirmDeletePlan', { name: editing.name || t('planUnnamed') }))) return;
-    await deleteGardenPlan(editing.id);
+    const deletedId = editing.id;
+    await deleteGardenPlan(deletedId);
     plans = await getAllGardenPlans();
     renderList();
     closeEditor();
+    notifyPlanDeleted(deletedId);
     showToast(t('toastPlanDeleted'));
   });
 

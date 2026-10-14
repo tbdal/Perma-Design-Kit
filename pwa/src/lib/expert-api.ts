@@ -72,6 +72,22 @@ export interface GartenplanApi {
   setViewInset(px: { left?: number }): void;
   /** Where a plan point appears on screen in the 3D view (client coordinates); null in 2D or behind the camera. */
   projectToScreen(xM: number, yM: number): { x: number; y: number } | null;
+  /** Called after a plan was written to the database (autosave, save button, rename). */
+  onPlanSaved(cb: (plan: GardenPlan) => void): void;
+  /** Called after the user deleted a plan. */
+  onPlanDeleted(cb: (id: string) => void): void;
+  /** Replaces the open plan's content (same id) with `data`, redraws and saves it; an undo step like any edit. */
+  replacePlan(data: GardenPlan): void;
+  /** While on, the open plan is shown and can be looked around in, but edits are not saved. */
+  setReadOnly(on: boolean): void;
+  /** Plants the open plan may refer to without being in the user's list (drawn like the others); [] removes them. */
+  setExtraPlants(featureId: string, plants: PlantData[]): void;
+  /** A line on each plan tile in the plan list (null = none), while the feature is on. */
+  addPlanBadge(featureId: string, fn: (plan: GardenPlan) => string | null): void;
+  /** Reads the plans from the database again and redraws the list (after a plugin wrote some). */
+  reloadPlans(): Promise<void>;
+  /** Opens a plan in the editor; false if there is no plan with that id. */
+  openPlan(id: string): boolean;
 }
 
 /** What the plant list (index.astro) offers plugins. */
