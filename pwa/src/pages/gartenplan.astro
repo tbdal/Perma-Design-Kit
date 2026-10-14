@@ -2411,7 +2411,9 @@ import Layout from '../layouts/Layout.astro';
   }
   /** Apply a canvas height; keeps the view's center (or the whole plan, if it
    *  was fully in view) and adapts the view to the new canvas shape. */
-  function sizePlanCanvas(heightPx = storedPlanHeight() ?? autoPlanHeight()) {
+  /** Set by a plugin (expert-api setCanvasHeight): the canvas height it wants, instead of the stored or automatic one. */
+  let canvasHeightOverride: (() => number) | null = null;
+  function sizePlanCanvas(heightPx = (canvasHeightOverride ? Math.max(MIN_PLAN_H, Math.round(canvasHeightOverride())) : null) ?? storedPlanHeight() ?? autoPlanHeight()) {
     const wasFit = !!editing && planView.w > 0 && planView.x <= 0.5 && planView.y <= 0.5
       && planView.x + planView.w >= editing.areaWidthM * U - 0.5 && planView.y + planView.h >= editing.areaHeightM * U - 0.5;
     applyCanvasHeight(heightPx);
@@ -2742,6 +2744,12 @@ import Layout from '../layouts/Layout.astro';
     else if (areaDraft) endAreaDraw();
     else if (editBoundary) setBoundaryEdit(false);
     else if (selectedAreaId && !(e.target as HTMLElement).closest?.('input, textarea, select')) { selectedAreaId = null; markSelectedArea(); }
+    else if (selectedPlacementId && !(e.target as HTMLElement).closest?.('input, textarea, select')) {
+      selectedPlacementId = null;
+      view3d?.setSelectedPlacement(null);
+      refreshMarkerHighlight();
+      renderSelectedPanel();
+    }
   });
 
   function addAreaDraftPoint(e: PointerEvent) {
@@ -4346,6 +4354,7 @@ import Layout from '../layouts/Layout.astro';
     onSelectionChange: cb => { selectionListeners.push(cb); },
     setSelection(ids) {
       if (!editing) return;
+      if (!ids.length && selectedAreaId) { selectedAreaId = null; markSelectedArea(); }
       const known = ids.filter(id => editing!.placements.some(p => p.id === id));
       multiSel.clear();
       selectedPlacementId = null;
@@ -4361,6 +4370,10 @@ import Layout from '../layouts/Layout.astro';
       if (editing && plan3dContainer.hidden) { resetPlanViewState(); applyPlanView(); }
     },
     projectToScreen: (xM, yM) => (view3d && !plan3dContainer.hidden ? view3d.projectToScreen(xM, yM) : null),
+    setCanvasHeight(fn) {
+      canvasHeightOverride = fn;
+      if (editing) sizePlanCanvas();
+    },
     onPlanSaved: cb => { planSavedListeners.push(cb); },
     onPlanDeleted: cb => { planDeletedListeners.push(cb); },
     replacePlan(data) {

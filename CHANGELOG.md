@@ -4,6 +4,10 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Auswahl mit Esc aufheben 2026-10-14
+- [x] **Waldgartenplan:** Esc hebt jetzt auch die Auswahl einer einzelnen Pflanze auf (vorher nur Mehrfachauswahl und Flächen) #bugs #prüfen
+- [x] **Waldgartenplan – Zusatzmodule:** Schnittstelle für die Kartenhöhe; „keine Auswahl“ hebt auch eine ausgewählte Fläche auf #minor #prüfen
+
 ## Schrift Source Sans 3 2026-10-14
 - [x] **Schriften:** Source Sans 3 (variabel, Latin und Latin Extended) liegt jetzt mit den anderen Schriften auf dem eigenen Server bereit (OFL) #minor #prüfen
 

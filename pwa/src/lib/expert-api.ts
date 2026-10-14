@@ -66,12 +66,14 @@ export interface GartenplanApi {
   getSelection(): { placementIds: string[]; areaId: string | null };
   /** Called whenever the selection changes. */
   onSelectionChange(cb: () => void): void;
-  /** Selects these placements (one, several or none), as a click or the lasso would. */
+  /** Selects these placements (one, several or none), as a click or the lasso would; none also clears a selected area. */
   setSelection(placementIds: string[]): void;
   /** Room on the 2D canvas covered by a floating panel (px): fitting the whole plan keeps it clear. */
   setViewInset(px: { left?: number }): void;
   /** Where a plan point appears on screen in the 3D view (client coordinates); null in 2D or behind the camera. */
   projectToScreen(xM: number, yM: number): { x: number; y: number } | null;
+  /** The canvas height (px) comes from `fn`, asked again on every window resize; null = back to the stored or automatic height. */
+  setCanvasHeight(fn: (() => number) | null): void;
   /** Called after a plan was written to the database (autosave, save button, rename). */
   onPlanSaved(cb: (plan: GardenPlan) => void): void;
   /** Called after the user deleted a plan. */
