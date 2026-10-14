@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Zusatzkästen einklappbar 2026-10-14
+- [x] **Waldgartenplan:** die Kästen von Zusatzmodulen lassen sich wie die übrigen mit dem Pfeil einklappen #minor #prüfen
+
 ## Schnittstellen für Zusatzmodule 2026-10-14
 - [x] **Waldgartenplan – Zusatzmodule:** neue Schnittstellen: Ereignis nach dem Speichern und Löschen eines Plans, offenen Plan durch einen neuen Inhalt ersetzen, nur-ansehen-Modus, mitgebrachte Pflanzen zeichnen, Zeile auf den Plan-Kacheln, Planliste neu laden, Plan öffnen. Rückgängig setzt jetzt auch Name, Beschreibung und Notizen im Formular zurück #minor #prüfen
 
