@@ -676,6 +676,7 @@ import Layout from '../layouts/Layout.astro';
     for (const cb of planDeletedListeners) { try { cb(id); } catch (err) { console.warn('plan-deleted listener failed', err); } }
   }
   const planBadges: { featureId: string; fn: (plan: GardenPlan) => string | null }[] = [];
+  const planTileActions: { featureId: string; label: string; onClick: (planId: string) => void }[] = [];
 
   let drawingPoints: GardenPlanPoint[] = [];
   let armedPlantId: string | null = null;
@@ -967,17 +968,20 @@ import Layout from '../layouts/Layout.astro';
             <p class="mt-2 text-sm text-stone-700 dark:text-stone-200">${t('placementCount', { count: plan.placements.length })}</p>
             <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">${new Intl.NumberFormat(lang, { maximumFractionDigits: 0 }).format(planAreaM2(plan))} m² · ${t('areaSizeLabel', { w: plan.areaWidthM, h: plan.areaHeightM })}</p>
             ${plan.updatedAt || plan.createdAt ? `<p class="mt-1 text-[11px] text-stone-400 dark:text-stone-500">${escapeHtml(t('planDates', { created: fmtDate(plan.createdAt), updated: fmtDate(plan.updatedAt || plan.createdAt) }))}</p>` : ''}
-            ${planBadges.filter(b => featureOn(b.featureId)).map(b => { let line: string | null = null; try { line = b.fn(plan); } catch { /* plugin */ } return line ? `<p class="mt-1 text-xs font-medium text-sky-700 dark:text-sky-300">${escapeHtml(line)}</p>` : ''; }).join('')}
+            ${planBadges.filter(b => featureOn(b.featureId)).map(b => { let line: string | null = null; try { line = b.fn(plan); } catch { /* plugin */ } return line ? `<p class="mt-2 inline-flex max-w-full items-center gap-1.5 rounded-full bg-sky-50 px-2.5 py-0.5 text-xs font-medium text-sky-800 ring-1 ring-sky-200 dark:bg-sky-900/30 dark:text-sky-200 dark:ring-sky-800"><svg aria-hidden="true" class="h-3.5 w-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.2c2.8.4 5 2.8 5 5.8"/></svg><span class="truncate">${escapeHtml(line)}</span></p>` : ''; }).join('')}
           </div>
           <div class="flex w-32 shrink-0 flex-col gap-1.5">
             <button type="button" data-plan-action="rename" class="w-full rounded-md px-2.5 py-1 text-left text-xs font-medium bg-stone-50 dark:bg-stone-700/60 text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">✎ ${escapeHtml(t('planRename'))}</button>
             <button type="button" data-plan-action="duplicate" class="w-full rounded-md px-2.5 py-1 text-left text-xs font-medium bg-stone-50 dark:bg-stone-700/60 text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">⧉ ${escapeHtml(t('planDuplicate'))}</button>
+            ${planTileActions.map((a, i) => (featureOn(a.featureId) ? `<button type="button" data-plan-ext="${i}" class="w-full rounded-md px-2.5 py-1 text-left text-xs font-medium bg-stone-50 dark:bg-stone-700/60 text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">${escapeHtml(a.label)}</button>` : '')).join('')}
             <button type="button" data-plan-action="delete" class="w-full rounded-md px-2.5 py-1 text-left text-xs font-medium bg-red-600 text-white shadow-sm hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600">🗑 ${escapeHtml(t('planDelete'))}</button>
           </div>
         </article>`;
     }).join('');
     listEl.querySelectorAll<HTMLElement>('[data-plan-id]').forEach(el => {
       el.addEventListener('click', (e) => {
+        const ext = (e.target as HTMLElement).closest<HTMLElement>('[data-plan-ext]')?.dataset.planExt;
+        if (ext != null) { e.stopPropagation(); try { planTileActions[Number(ext)]?.onClick(el.dataset.planId!); } catch (err) { console.warn('plan tile action failed', err); } return; }
         const action = (e.target as HTMLElement).closest<HTMLElement>('[data-plan-action]')?.dataset.planAction;
         if (action) { e.stopPropagation(); void planTileAction(el.dataset.planId!, action); return; }
         openEditor(el.dataset.planId!);
@@ -4388,6 +4392,7 @@ import Layout from '../layouts/Layout.astro';
       if (editing) { renderPlanSvg(); renderSelectedPanel(); if (!plan3dContainer.hidden) btnView3d.click(); }
     },
     addPlanBadge(featureId, fn) { planBadges.push({ featureId, fn }); if (!editing) renderList(); },
+    addPlanTileAction(featureId, label, onClick) { planTileActions.push({ featureId, label, onClick }); if (!editing) renderList(); },
     async reloadPlans() {
       const fresh = await getAllGardenPlans();
       plans = editing ? fresh.map(p => (p.id === editing!.id ? editing! : p)) : fresh;

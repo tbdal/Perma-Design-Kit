@@ -86,6 +86,8 @@ export interface GartenplanApi {
   setExtraPlants(featureId: string, plants: PlantData[]): void;
   /** A line on each plan tile in the plan list (null = none), while the feature is on. */
   addPlanBadge(featureId: string, fn: (plan: GardenPlan) => string | null): void;
+  /** A button on each plan tile in the plan list, while the feature is on; gets the plan's id. */
+  addPlanTileAction(featureId: string, label: string, onClick: (planId: string) => void): void;
   /** Reads the plans from the database again and redraws the list (after a plugin wrote some). */
   reloadPlans(): Promise<void>;
   /** Opens a plan in the editor; false if there is no plan with that id. */
