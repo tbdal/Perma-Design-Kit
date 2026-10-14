@@ -2377,7 +2377,8 @@ import Layout from '../layouts/Layout.astro';
     const upp = Math.max(W / fw, H / fh); // plan units per screen pixel
     const w = cw * upp, h = w * a;
     const left = fw === cw ? 0 : L, top = fh === ch ? 0 : T;
-    planView = { x: OX - left * upp + (fw * upp - W) / 2, y: OY - top * upp + (fh * upp - H) / 2, w, h };
+    // The view starts the inset plus half the spare room before the content.
+    planView = { x: OX - left * upp - (fw * upp - W) / 2, y: OY - top * upp - (fh * upp - H) / 2, w, h };
   }
   /** Plan rectangle that is actually visible. The viewBox only matches the
    *  canvas shape right after sizing; if the canvas changed since (sidebar
