@@ -4,6 +4,10 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Ganzen Plan zeigen: auf den Inhalt 2026-10-14
+- [x] **Ganzen Plan zeigen:** zoomt auf das, was gezeichnet ist (Umriss, Flächen, Pflanzen mit Krone), nicht auf den ganzen Rahmen mit seinen Rändern #minor #prüfen
+- [x] **3D:** Wasserwege liegen auf Gelände wieder über Boden und Flächen #bugs #prüfen
+
 ## 3D-Einfärbung, Ganzen Plan zeigen 2026-10-14
 - [x] **Waldgartenplan 3D:** Einfärbung, Flächen und Umriss liegen auf Gelände lückenlos (vorher schien der Boden fleckig durch) #bugs #prüfen
 - [x] **Ganzen Plan zeigen:** lässt rundum etwas Rand; Zusatzmodule können Platz auf allen Seiten freihalten #minor #prüfen

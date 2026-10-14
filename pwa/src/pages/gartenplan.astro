@@ -2352,17 +2352,32 @@ import Layout from '../layouts/Layout.astro';
   const FIT_MARGIN_PX = 16;
   function resetPlanViewState() {
     if (!editing) return;
-    const W = editing.areaWidthM * U, H = editing.areaHeightM * U, a = canvasAspect();
+    // What is drawn (outline, areas, plants with their crowns), not the whole plan
+    // rectangle: a map-drawn garden sits in a frame with margins around it.
+    const pts: { xM: number; yM: number; r: number }[] = [
+      ...editing.boundary.map(p => ({ ...p, r: 0 })),
+      ...(editing.areas ?? []).flatMap(ar => ar.points.map(p => ({ ...p, r: 0 }))),
+      ...editing.placements.map(pl => { const pd = plantsById.get(pl.plantId); return { xM: pl.xM, yM: pl.yM, r: pd ? displayRadiusM(pd, editing!.yearsSincePlanting) : 0.5 }; }),
+    ];
+    const box = pts.length
+      ? { x0: Math.min(...pts.map(p => p.xM - p.r)), y0: Math.min(...pts.map(p => p.yM - p.r)), x1: Math.max(...pts.map(p => p.xM + p.r)), y1: Math.max(...pts.map(p => p.yM + p.r)) }
+      : { x0: 0, y0: 0, x1: editing.areaWidthM, y1: editing.areaHeightM };
+    // At least 4 m across, so a lone plant isn't blown up to fill the screen.
+    const MIN_M = 4;
+    if (box.x1 - box.x0 < MIN_M) { const c = (box.x0 + box.x1) / 2; box.x0 = c - MIN_M / 2; box.x1 = c + MIN_M / 2; }
+    if (box.y1 - box.y0 < MIN_M) { const c = (box.y0 + box.y1) / 2; box.y0 = c - MIN_M / 2; box.y1 = c + MIN_M / 2; }
+    const OX = box.x0 * U, OY = box.y0 * U;
+    const W = (box.x1 - box.x0) * U, H = (box.y1 - box.y0) * U, a = canvasAspect();
     const r = planSvg.getBoundingClientRect();
     const cw = r.width, ch = r.height || cw * a;
     const L = viewInset.left + FIT_MARGIN_PX, R = viewInset.right + FIT_MARGIN_PX, T = viewInset.top + FIT_MARGIN_PX, B = viewInset.bottom + FIT_MARGIN_PX;
     // Too little room left after the insets (tiny canvas): fall back to the whole canvas.
     const fw = cw - L - R > cw * 0.3 ? cw - L - R : cw, fh = ch - T - B > ch * 0.3 ? ch - T - B : ch;
-    if (!(cw > 0 && ch > 0)) { const w = Math.max(W, H / a); planView = { x: (W - w) / 2, y: (H - w * a) / 2, w, h: w * a }; return; }
+    if (!(cw > 0 && ch > 0)) { const w = Math.max(W, H / a); planView = { x: OX + (W - w) / 2, y: OY + (H - w * a) / 2, w, h: w * a }; return; }
     const upp = Math.max(W / fw, H / fh); // plan units per screen pixel
     const w = cw * upp, h = w * a;
     const left = fw === cw ? 0 : L, top = fh === ch ? 0 : T;
-    planView = { x: -left * upp + (fw * upp - W) / 2, y: -top * upp + (fh * upp - H) / 2, w, h };
+    planView = { x: OX - left * upp + (fw * upp - W) / 2, y: OY - top * upp + (fh * upp - H) / 2, w, h };
   }
   /** Plan rectangle that is actually visible. The viewBox only matches the
    *  canvas shape right after sizing; if the canvas changed since (sidebar

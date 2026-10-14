@@ -1057,7 +1057,7 @@ export function createGardenPlan3DView(
     }
     if (w && (w.flow.length || w.sinks.length || w.swales.length)) {
       const g = new THREE.Group();
-      const lift = 0.16 + (plan.areas?.length ?? 0) * 0.02;
+      const lift = 0.16 + (plan.areas?.length ?? 0) * 0.02 + drapeLift * 1.2; // above areas and colouring
       const step = Math.max(0.5, (terrain?.cellM ?? 2) / 2);
       const ribbon = (arr: number[], x1: number, z1: number, x2: number, z2: number, width: number, up: number) => {
         const len = Math.hypot(x2 - x1, z2 - z1);
