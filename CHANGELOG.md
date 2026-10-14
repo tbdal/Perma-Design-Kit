@@ -4,6 +4,10 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## 3D-Einfärbung, Ganzen Plan zeigen 2026-10-14
+- [x] **Waldgartenplan 3D:** Einfärbung, Flächen und Umriss liegen auf Gelände lückenlos (vorher schien der Boden fleckig durch) #bugs #prüfen
+- [x] **Ganzen Plan zeigen:** lässt rundum etwas Rand; Zusatzmodule können Platz auf allen Seiten freihalten #minor #prüfen
+
 ## Plan-Kacheln für Zusatzmodule 2026-10-14
 - [x] **Waldgartenplan – Zusatzmodule:** Knopf (mit Symbol, öffnet ein Menü) auf den Plan-Kacheln der Übersicht; Hinweise der Module dort als gut sichtbares Schildchen #minor #prüfen
 

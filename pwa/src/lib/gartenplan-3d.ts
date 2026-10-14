@@ -211,8 +211,8 @@ function buildPlantMesh(placement: GardenPlanPlacement, plant: PlantData | undef
 }
 
 
-function buildBoundaryMesh(plan: GardenPlan, ground: GroundFn = FLAT, cellM = 1e9): THREE.Mesh {
-  const geom = drapedPolygon(plan.boundary, ground, 0.04, cellM);
+function buildBoundaryMesh(plan: GardenPlan, ground: GroundFn = FLAT, cellM = 1e9, extraLift = 0): THREE.Mesh {
+  const geom = drapedPolygon(plan.boundary, ground, 0.04 + extraLift, cellM);
   // Winding depends on the user's click order while drawing (arbitrary) —
   // verified against the real triangulation output, not assumed — so a
   // one-sided material would randomly render the fill invisible from above
@@ -252,10 +252,10 @@ function buildLabelSprite(text: string, heightM: number): THREE.Sprite {
 /** One area as a translucent colored sheet just above the ground (each one a
  *  hair higher than the previous to avoid z-fighting where areas overlap),
  *  with an outline and a name tag. `userData.areaId` marks it for picking. */
-function buildAreaObject(area: GardenPlanArea, index: number, selected: boolean, labelH: number, ground: GroundFn = FLAT, cellM = 1e9): THREE.Group {
+function buildAreaObject(area: GardenPlanArea, index: number, selected: boolean, labelH: number, ground: GroundFn = FLAT, cellM = 1e9, extraLift = 0): THREE.Group {
   const group = new THREE.Group();
   group.userData.areaId = area.id;
-  const y = 0.07 + index * 0.02;
+  const y = 0.07 + index * 0.02 + extraLift;
   const geom = drapedPolygon(area.points, ground, y, cellM);
   const fill = new THREE.Mesh(geom, new THREE.MeshStandardMaterial({
     color: area.color, transparent: true, opacity: selected ? 0.65 : 0.5, side: THREE.DoubleSide, depthWrite: false, roughness: 1,
@@ -530,7 +530,11 @@ export function createGardenPlan3DView(
     requestRender();
   }
   const drapeCell = terrain ? Math.max(0.5, terrain.cellM / 2) : 1e9;
-  scene.add(buildBoundaryMesh(plan, ground, drapeCell));
+  // On terrain the ground tiles interpolate between their own vertices, which
+  // can lie a little above the heights sampled here (in hollows): sheets on the
+  // ground float a bit higher there, or the ground shows through in patches.
+  const drapeLift = terrain ? Math.max(0.2, terrain.cellM * 0.12) : 0;
+  scene.add(buildBoundaryMesh(plan, ground, drapeCell, drapeLift));
 
   // Buildings: walls from the lowest ground point of the footprint (so slopes
   // don't leave them floating) up to the roof edge, roofs from OSM roof:shape
@@ -617,7 +621,7 @@ export function createGardenPlan3DView(
     }
     areasGroup.clear();
     handlesGroup.clear();
-    (plan.areas ?? []).forEach((area, i) => opts.hidden?.(area.id) || areasGroup.add(buildAreaObject(area, i, area.id === selectedAreaId, labelH, ground, drapeCell)));
+    (plan.areas ?? []).forEach((area, i) => opts.hidden?.(area.id) || areasGroup.add(buildAreaObject(area, i, area.id === selectedAreaId, labelH, ground, drapeCell, drapeLift)));
     const sel = (plan.areas ?? []).find(a => a.id === selectedAreaId);
     sel?.points.forEach((p, i) => {
       // Invisible, larger pick sphere around a small visible knob.
@@ -855,7 +859,7 @@ export function createGardenPlan3DView(
         mat?.map?.dispose();
         mat?.dispose();
       });
-      areasGroup.add(buildAreaObject({ ...area, points: vertexDrag.points }, idx, true, labelH, ground, drapeCell));
+      areasGroup.add(buildAreaObject({ ...area, points: vertexDrag.points }, idx, true, labelH, ground, drapeCell, drapeLift));
     }
     const handle = handlesGroup.children.find(h => h.userData.vertexIndex === vertexDrag!.index);
     handle?.position.set(hit.x, handleR / 2 + ground(hit.x, hit.z), hit.z);
@@ -995,16 +999,21 @@ export function createGardenPlan3DView(
     }
     if (o && o.cells.length) {
       const g = new THREE.Group();
-      const lift = 0.12 + (plan.areas?.length ?? 0) * 0.02; // above the area sheets
+      const lift = 0.12 + (plan.areas?.length ?? 0) * 0.02 + drapeLift; // above the area sheets
       const pos: number[] = [], col: number[] = [];
       const c = new THREE.Color();
       const h = o.cellM / 2;
+      // Cells larger than the terrain grid are split, so they follow the ground instead of cutting through it.
+      const n = Math.max(1, Math.min(8, Math.ceil(o.cellM / drapeCell)));
+      const step = o.cellM / n;
       for (const cell of o.cells) {
         c.setStyle(cell.color, THREE.SRGBColorSpace);
-        const x0 = cell.xM - h, x1 = cell.xM + h, z0 = cell.yM - h, z1 = cell.yM + h;
         const v = (x: number, z: number) => { pos.push(x, ground(x, z) + lift, z); col.push(c.r, c.g, c.b); };
-        v(x0, z0); v(x0, z1); v(x1, z0);
-        v(x1, z0); v(x0, z1); v(x1, z1);
+        for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+          const x0 = cell.xM - h + i * step, x1 = x0 + step, z0 = cell.yM - h + j * step, z1 = z0 + step;
+          v(x0, z0); v(x0, z1); v(x1, z0);
+          v(x1, z0); v(x0, z1); v(x1, z1);
+        }
       }
       const geom = new THREE.BufferGeometry();
       geom.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));

@@ -2347,14 +2347,22 @@ import Layout from '../layouts/Layout.astro';
   /** Whole plan in view, centered; the rest of the canvas shows surroundings. */
   /** Pixels on the left of the 2D canvas covered by something floating
    *  (expert-api setViewInset): "show whole plan" keeps the plan right of it. */
-  let viewInsetLeftPx = 0;
+  const viewInset = { left: 0, right: 0, top: 0, bottom: 0 };
+  /** Free space kept around the plan by "show whole plan" (px), so edge labels stay readable. */
+  const FIT_MARGIN_PX = 16;
   function resetPlanViewState() {
     if (!editing) return;
     const W = editing.areaWidthM * U, H = editing.areaHeightM * U, a = canvasAspect();
-    const cw = planSvg.getBoundingClientRect().width;
-    const s = cw > 0 ? Math.min(0.5, viewInsetLeftPx / cw) : 0;
-    const w = Math.max(W / (1 - s), H / a), h = w * a;
-    planView = { x: -w * s + (w * (1 - s) - W) / 2, y: (H - h) / 2, w, h };
+    const r = planSvg.getBoundingClientRect();
+    const cw = r.width, ch = r.height || cw * a;
+    const L = viewInset.left + FIT_MARGIN_PX, R = viewInset.right + FIT_MARGIN_PX, T = viewInset.top + FIT_MARGIN_PX, B = viewInset.bottom + FIT_MARGIN_PX;
+    // Too little room left after the insets (tiny canvas): fall back to the whole canvas.
+    const fw = cw - L - R > cw * 0.3 ? cw - L - R : cw, fh = ch - T - B > ch * 0.3 ? ch - T - B : ch;
+    if (!(cw > 0 && ch > 0)) { const w = Math.max(W, H / a); planView = { x: (W - w) / 2, y: (H - w * a) / 2, w, h: w * a }; return; }
+    const upp = Math.max(W / fw, H / fh); // plan units per screen pixel
+    const w = cw * upp, h = w * a;
+    const left = fw === cw ? 0 : L, top = fh === ch ? 0 : T;
+    planView = { x: -left * upp + (fw * upp - W) / 2, y: -top * upp + (fh * upp - H) / 2, w, h };
   }
   /** Plan rectangle that is actually visible. The viewBox only matches the
    *  canvas shape right after sizing; if the canvas changed since (sidebar
@@ -4375,7 +4383,7 @@ import Layout from '../layouts/Layout.astro';
       renderSelectedPanel();
     },
     setViewInset(px) {
-      viewInsetLeftPx = Math.max(0, px.left ?? 0);
+      for (const k of ['left', 'right', 'top', 'bottom'] as const) viewInset[k] = Math.max(0, px[k] ?? 0);
       if (editing && plan3dContainer.hidden) { resetPlanViewState(); applyPlanView(); }
     },
     projectToScreen: (xM, yM) => (view3d && !plan3dContainer.hidden ? view3d.projectToScreen(xM, yM) : null),
