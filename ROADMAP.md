@@ -23,7 +23,6 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 
 
 ## Karten
-- [ ] kommerzieller Satellit mit offiziellem Key (Esri Location Platform / MapTiler / Mapbox Raster) erst bei Bedarf außerhalb der Ortho-Länder — Esri *ohne* Key ist nur nicht-kommerziell nutzbar
 
 ## Modi & Experten-Repo
 - [ ] **Live schalten:** nginx-Konfiguration (`/api/auth/`, `/api/admin/`, `/api/features`, `/x/` mit `auth_request`) nach `/etc/nginx/sites-available/` kopieren, `nginx -t`, reload; `plant-proxy` neu starten; ersten Admin anlegen (`npm run user -- add <name> --admin`); `src/expert/` im Checkout `/root/pdk/pwa` aus `/root/git/pdk-expert.git` klonen
