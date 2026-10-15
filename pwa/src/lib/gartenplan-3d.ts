@@ -246,6 +246,20 @@ function buildLabelSprite(text: string, heightM: number): THREE.Sprite {
   const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, depthTest: false, transparent: true, opacity: 0.75 }));
   sprite.scale.set(heightM * canvas.width / canvas.height, heightM, 1);
   sprite.renderOrder = 10;
+  // Sized in the world, so zoomed in the tag would swallow the screen: never
+  // taller than ~24 screen px (zoomed out it keeps its world size).
+  const aspect = canvas.width / canvas.height;
+  const wp = new THREE.Vector3();
+  const size = new THREE.Vector2();
+  sprite.onBeforeRender = (renderer, _scene, camera) => {
+    const cam = camera as THREE.PerspectiveCamera;
+    renderer.getSize(size);
+    if (!(size.y > 0) || !cam.isPerspectiveCamera) return;
+    sprite.getWorldPosition(wp);
+    const worldPerPx = 2 * wp.distanceTo(cam.position) * Math.tan((cam.fov * Math.PI) / 360) / size.y;
+    const h = Math.min(heightM, 24 * worldPerPx);
+    sprite.scale.set(h * aspect, h, 1);
+  };
   return sprite;
 }
 
