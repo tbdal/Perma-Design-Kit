@@ -4935,7 +4935,10 @@ import Layout from '../layouts/Layout.astro';
     else if (lastId && plans.some(p => p.id === lastId)) {
       try { localStorage.setItem(REOPEN_KEY, lastId); } catch {}
       openEditor(lastId);
-      setTimeout(() => { try { localStorage.removeItem(REOPEN_KEY); } catch {} }, 6000);
+      const settled = () => { try { localStorage.removeItem(REOPEN_KEY); } catch {} };
+      setTimeout(settled, 6000);
+      // Leaving the page normally within those seconds is no sign of a freeze.
+      addEventListener('pagehide', settled, { once: true });
     }
   }
 

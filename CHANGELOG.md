@@ -20,6 +20,11 @@ Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerb
 - [x] **Zugänge:** Kommentarfeld je Zugang auf der Admin-Seite; Eingeladene bekommen automatisch „Eingeladen von …“ als Kommentar; nach der Einladung wird der Team- bzw. Experten-Modus gleich eingeschaltet #minor #prüfen
 - [x] **Einladungen:** Admins erstellen auf der Seite „Funktionen verwalten“ einen Link oder QR-Code für genau eine Person; Rolle (Experte/Team) vorgewählt, 14 Tage gültig, nur einmal einlösbar. Die Person legt Name und Passwort selbst fest #major #prüfen
 
+## Pflanzenkacheln und Druckleiste 2026-10-16
+- [x] **Pflanzen (Kacheln):** Klick auf Bild oder Text einer Pflanzenkachel öffnet das Bearbeiten-Fenster #minor #prüfen
+- [x] **Karten-Ansicht:** Auf schmalen Bildschirmen bricht die Leiste nach dem Layout um, die Ausgabeformat-Knöpfe bleiben zusammen in einer Zeile #minor #prüfen
+- [x] **Waldgartenplan:** Wer die Seite kurz nach dem automatischen Wiederöffnen normal verlässt, bekommt beim nächsten Mal nicht fälschlich „Plan nicht geöffnet“ #bugs #prüfen
+
 ## Polykulturen: Modul-Schnittstelle 2026-10-15
 - [x] **Waldgartenplan, Modul-Schnittstelle:** Module können GeoJSON-Daten wie den GeoJSON-Import als Plan übernehmen #minor #prüfen
 - [x] **Polykulturen, Modul-Schnittstelle:** Module können im Editor einen Kasten und auf den Karten eine Zeile ergänzen #minor #prüfen
