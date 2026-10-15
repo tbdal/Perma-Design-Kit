@@ -87,7 +87,6 @@ Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann
 - [ ] **Bild-Fallback** — Silhouette nach Pflanzentyp wenn kein Foto vorhanden
 
 ### Daten
-- [ ] Fehlende Felder: Boden-Typ, Ausbreitungsart, Wurzeltiefe
 
 ### von Opus 
   1. ✅ erledigt 2026-09-29 (Vitest-Suite, `npm test`; growth-model/blob-shape/compat noch ohne Tests). Kein Testnetz. Das Projekt hatte keine Testsuite — jede
