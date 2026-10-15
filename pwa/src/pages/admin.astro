@@ -239,7 +239,7 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
     // ── Accounts ─────────────────────────────────────────────────────────
     const userList = document.getElementById('user-list')!;
     const userStatus = document.getElementById('user-status')!;
-    type User = { name: string; role: 'expert' | 'team' | 'admin'; created: string | null };
+    type User = { name: string; role: 'expert' | 'team' | 'admin'; created: string | null; comment?: string };
 
     async function loadUsers() {
       const res = await api('GET', '/api/admin/users');
@@ -260,6 +260,7 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
             <button type="button" data-act="pw-save" class="rounded-md bg-stone-100 dark:bg-stone-700 px-2 py-1 text-xs font-medium ring-1 ring-stone-300 dark:ring-stone-600">${escapeHtml(t('adSave'))}</button>
             <button type="button" data-act="remove" class="ml-auto rounded-md px-2 py-1 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30">${escapeHtml(t('adRemove'))}</button>
           </div>
+          <input data-act="comment" maxlength="300" value="${escapeHtml(u.comment ?? '')}" placeholder="${escapeHtml(t('adComment'))}" aria-label="${escapeHtml(`${u.name}: ${t('adComment')}`)}" class="block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2 py-1 text-xs" />
         </li>`).join('');
     }
 
@@ -270,9 +271,11 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
 
     userList.addEventListener('change', async e => {
       const el = e.target as HTMLElement;
-      if (el.dataset.act !== 'role') return;
-      const name = el.closest<HTMLElement>('[data-name]')!.dataset.name!;
-      await userAction(await api('POST', '/api/admin/users', { name, role: (el as HTMLSelectElement).value }));
+      const name = el.closest<HTMLElement>('[data-name]')?.dataset.name;
+      if (!name) return;
+      if (el.dataset.act === 'role') await userAction(await api('POST', '/api/admin/users', { name, role: (el as HTMLSelectElement).value }));
+      // The comment saves when the field is left (change fires on blur / Enter).
+      else if (el.dataset.act === 'comment') await userAction(await api('POST', '/api/admin/users', { name, comment: (el as HTMLInputElement).value }));
     });
     userList.addEventListener('click', async e => {
       const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-act]');

@@ -163,6 +163,13 @@ describe('HTTP endpoints', () => {
     expect(ok.status).toBe(200);
     expect(await ok.json()).toEqual({ name: 'Jörn', role: 'team' });
     expect((await fetch(`${base}/api/auth/me`, { headers: { cookie: cookieOf(ok) } })).status).toBe(200);
+    // the invitation's label becomes the account's comment; admins can edit it later
+    const users = await (await fetch(`${base}/api/admin/users`, { headers: { cookie: admin } })).json();
+    expect(users.users.find((u: { name: string }) => u.name === 'Jörn').comment).toBe('Jörn');
+    const edit = await fetch(`${base}/api/admin/users`, { method: 'POST', headers: { ...json, cookie: admin }, body: JSON.stringify({ name: 'Jörn', comment: 'Bauleitung, Tel. im Büro' }) });
+    expect(edit.status).toBe(200);
+    expect((await (await fetch(`${base}/api/admin/users`, { headers: { cookie: admin } })).json()).users.find((u: { name: string }) => u.name === 'Jörn').comment).toBe('Bauleitung, Tel. im Büro');
+    expect((await fetch(`${base}/api/auth/me`, { headers: { cookie: cookieOf(ok) } })).status).toBe(200); // editing does not end the session
     // second use fails
     expect((await redeem(made.token, 'Zweite')).status).toBe(404);
     expect((await fetch(`${base}/api/auth/invite?token=${made.token}`)).status).toBe(404);

@@ -8,9 +8,11 @@ test('invite page + admin', async ({ page }) => {
   await page.goto('/anmelden/?einladung=gut');
   await expect(page.locator('#invite-form')).toBeVisible();
   await expect(page.locator('#login-form')).toBeHidden();
+  await expect(page.locator('#invite-intro')).toContainText('ins Team eingeladen');
   await page.fill('#invite-name', 'Jörn'); await page.fill('#invite-password', 'langes-passwort');
   await page.click('#invite-form button[type=submit]');
-  await expect(page.locator('#login-done')).toBeVisible();
+  await page.waitForURL(u => u.pathname === '/');
+  expect(await page.evaluate(() => localStorage.getItem('pdk-mode'))).toBe('team');
   expect(page.url()).not.toContain('einladung');
   await page.goto('/anmelden/?einladung=schlecht');
   await expect(page.locator('#invite-invalid')).toBeVisible();

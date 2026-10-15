@@ -56,6 +56,7 @@ export const accessDict: Dict = {
   adErr_name_taken: { de: 'Diesen Namen gibt es schon.', en: 'This name is already taken.' },
   adErr_bad_role: { de: 'Diese Rolle ist für Einladungen nicht möglich.', en: 'This role isn’t possible for invitations.' },
   // Invitations: admin page and sign-up on /anmelden/
+  adComment: { de: 'Kommentar (nur für Admins sichtbar)', en: 'Comment (visible to admins only)' },
   adInvTitle: { de: 'Einladungen', en: 'Invitations' },
   adInvIntro: { de: 'Ein Link oder QR-Code, mit dem sich genau eine Person selbst ein Konto anlegt. Die Rolle ist vorgewählt, der Link gilt 14 Tage und nur einmal.', en: 'A link or QR code with which exactly one person creates their own account. The role is preset; the link is valid for 14 days and only once.' },
   adInvLabel: { de: 'Für wen? (optional)', en: 'For whom? (optional)' },
@@ -69,7 +70,8 @@ export const accessDict: Dict = {
   adInvRevoke: { de: 'Zurückziehen', en: 'Revoke' },
   adInvNone: { de: 'Noch keine Einladungen.', en: 'No invitations yet.' },
   acInvTitle: { de: 'Einladung', en: 'Invitation' },
-  acInvIntro: { de: 'Du wurdest als {role} eingeladen. Lege dein Konto an: Name und ein Passwort mit mindestens 10 Zeichen.', en: 'You were invited as {role}. Create your account: a name and a password of at least 10 characters.' },
+  acInvIntroTeam: { de: 'Du bist ins Team eingeladen. Lege dein Konto an: Name und ein Passwort mit mindestens 10 Zeichen.', en: 'You are invited to the team. Create your account: a name and a password of at least 10 characters.' },
+  acInvIntroExpert: { de: 'Du bist als Experte eingeladen. Lege dein Konto an: Name und ein Passwort mit mindestens 10 Zeichen.', en: 'You are invited as an expert. Create your account: a name and a password of at least 10 characters.' },
   acInvForLabel: { de: 'Für: {label}', en: 'For: {label}' },
   acInvCreateBtn: { de: 'Konto anlegen', en: 'Create account' },
   acInvInvalid: { de: 'Diese Einladung gilt nicht mehr: sie wurde schon benutzt, ist abgelaufen oder wurde zurückgezogen. Bitte um einen neuen Link.', en: 'This invitation is no longer valid: it was already used, has expired or was revoked. Please ask for a new link.' },

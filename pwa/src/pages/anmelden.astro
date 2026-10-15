@@ -66,6 +66,7 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
     const inviteToken = params.get('einladung') || '';
     const inviteForm = document.getElementById('invite-form') as HTMLFormElement;
     let inviteOpen = false;
+    let inviteRole: 'team' | 'expert' = 'expert';
 
     function showDone() {
       const auth = getAuth();
@@ -116,8 +117,8 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
       } catch { /* offline: treated as invalid */ }
       if (!info) { document.getElementById('invite-invalid')!.hidden = false; return; }
       inviteOpen = true;
-      const role = t(info.role === 'team' ? 'adRoleTeam' : 'adRoleExpert');
-      document.getElementById('invite-intro')!.textContent = t('acInvIntro', { role }) + (info.label ? ` ${t('acInvForLabel', { label: info.label })}` : '');
+      inviteRole = info.role === 'team' ? 'team' : 'expert';
+      document.getElementById('invite-intro')!.textContent = t(inviteRole === 'team' ? 'acInvIntroTeam' : 'acInvIntroExpert') + (info.label ? ` ${t('acInvForLabel', { label: info.label })}` : '');
       showDone();
     }
     inviteForm.addEventListener('submit', async e => {
@@ -136,7 +137,9 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
           inviteOpen = false;
           history.replaceState(null, '', location.pathname); // the token is spent: out of the address bar
           await refreshAuth();
-          showDone();
+          // The invited role's mode is switched on right away (the team may use expert mode too).
+          try { localStorage.setItem('pdk-mode', inviteRole); } catch { /* ignore */ }
+          location.href = next;
           return;
         }
         const data = await res.json().catch(() => ({}));

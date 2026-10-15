@@ -159,19 +159,21 @@ export function findUser(users, name) {
  * @param {{ name: string, role?: string, password?: string }} input
  * @param {Date} [now]
  */
-export function upsertUser(users, { name, role, password }, now = new Date()) {
+export function upsertUser(users, { name, role, password, comment }, now = new Date()) {
   name = String(name || '').trim();
   if (!NAME_RE.test(name)) throw new Error('bad-name');
   if (role !== undefined && !ROLES.includes(role)) throw new Error('bad-role');
   if (password !== undefined && String(password).length < MIN_PASSWORD) throw new Error('short-password');
+  const note = comment === undefined ? undefined : String(comment).trim().slice(0, 300);
   const existing = findUser(users, name);
   if (!existing) {
     if (password === undefined) throw new Error('short-password');
-    return [...users, { name, role: role || 'expert', hash: hashPassword(String(password)), v: 1, created: now.toISOString() }];
+    return [...users, { name, role: role || 'expert', hash: hashPassword(String(password)), v: 1, created: now.toISOString(), ...(note ? { comment: note } : {}) }];
   }
   const next = { ...existing };
   if (role !== undefined) next.role = role;
   if (password !== undefined) next.hash = hashPassword(String(password));
+  if (note !== undefined) { if (note) next.comment = note; else delete next.comment; }
   // A new password or a lost admin right ends that account's open sessions.
   if (password !== undefined || (existing.role === 'admin' && next.role !== 'admin')) next.v = (existing.v || 1) + 1;
   const list = users.map(u => (u === existing ? next : u));
@@ -309,7 +311,7 @@ export function createAuthHandler({ store, isAllowedOrigin = () => true, now = (
         if (!inv) { limiter.fail(ip, now()); send(res, 404, { error: 'invalid' }); return true; }
         const name = String(body?.name || '').trim();
         if (findUser(store.users(), name)) { send(res, 409, { error: 'name-taken' }); return true; }
-        const users = upsertUser(store.users(), { name, role: inv.role, password: String(body?.password ?? '') }, clock);
+        const users = upsertUser(store.users(), { name, role: inv.role, password: String(body?.password ?? ''), comment: inv.label }, clock);
         store.saveUsers(users);
         store.saveInvites(store.invites().map(i => (i === inv || i.id === inv.id ? { ...i, used: clock.toISOString(), usedBy: name } : i)));
         const user = findUser(users, name);
@@ -347,13 +349,13 @@ export function createAuthHandler({ store, isAllowedOrigin = () => true, now = (
           return true;
         }
         if (path === '/api/admin/users' && method === 'GET') {
-          send(res, 200, { users: store.users().map(u => ({ name: u.name, role: u.role, created: u.created || null })) });
+          send(res, 200, { users: store.users().map(u => ({ name: u.name, role: u.role, created: u.created || null, comment: u.comment || '' })) });
           return true;
         }
         if (path === '/api/admin/users' && method === 'POST') {
           const body = await readJsonBody(req);
           const password = body?.password ? String(body.password) : undefined;
-          const users = upsertUser(store.users(), { name: body?.name, role: body?.role, password });
+          const users = upsertUser(store.users(), { name: body?.name, role: body?.role, password, comment: body?.comment });
           store.saveUsers(users);
           send(res, 200, { ok: true });
           return true;
