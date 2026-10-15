@@ -60,6 +60,8 @@ export interface GartenplanApi {
   getPluginData<T = unknown>(featureId: string): T | undefined;
   /** Stores this feature's data with the open plan (saved like any plan edit); undefined removes it. */
   setPluginData(featureId: string, data: unknown): void;
+  /** Takes a GeoJSON FeatureCollection (as the planner's GeoJSON export writes it) as a plan, like the GeoJSON import; throws on unusable data. */
+  importGeoJson(data: unknown): Promise<void>;
   /** Whether a placement or area is hidden by some feature (setHidden). */
   isHidden(id: string): boolean;
   /** Placements and areas (by id) not drawn in 2D and 3D while the feature is on; replaces the feature's earlier set. */

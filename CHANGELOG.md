@@ -21,6 +21,7 @@ Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerb
 - [x] **Einladungen:** Admins erstellen auf der Seite „Funktionen verwalten“ einen Link oder QR-Code für genau eine Person; Rolle (Experte/Team) vorgewählt, 14 Tage gültig, nur einmal einlösbar. Die Person legt Name und Passwort selbst fest #major #prüfen
 
 ## Polykulturen: Modul-Schnittstelle 2026-10-15
+- [x] **Waldgartenplan, Modul-Schnittstelle:** Module können GeoJSON-Daten wie den GeoJSON-Import als Plan übernehmen #minor #prüfen
 - [x] **Polykulturen, Modul-Schnittstelle:** Module können im Editor einen Kasten und auf den Karten eine Zeile ergänzen #minor #prüfen
 
 ## Waldgartenplan auf dem Handy flüssiger 2026-10-15

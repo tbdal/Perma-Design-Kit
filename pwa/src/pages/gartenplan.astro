@@ -2961,8 +2961,17 @@ import Layout from '../layouts/Layout.astro';
     input.value = '';
     if (!file) return;
     try {
+      await importGeoJsonData(JSON.parse(await file.text()));
+    } catch (err) {
+      alert(t('alertGeojsonFailed', { msg: err instanceof Error ? err.message : String(err) }));
+    }
+  });
+  /** A GeoJSON FeatureCollection (file, or a module's converted data) as a plan:
+   *  updates the plan it was exported from (after asking) or makes a new one. */
+  async function importGeoJsonData(data: unknown) {
+    {
       const { planFromGeoJson } = await import('../lib/gartenplan-geojson');
-      const r = planFromGeoJson(JSON.parse(await file.text()), plants);
+      const r = planFromGeoJson(data, plants);
       // A file exported from an existing plan can update it in place.
       const existing = r.sourcePlanId ? plans.find(p => p.id === r.sourcePlanId) : undefined;
       if (existing && confirm(t('confirmGeojsonUpdate', { name: existing.name || t('planUnnamed') }))) {
@@ -2984,10 +2993,8 @@ import Layout from '../layouts/Layout.astro';
       renderList();
       openEditor(plan.id);
       showToast(t('toastGeojsonImported', { areas: plan.areas.length, plants: plan.placements.length, created: r.newPlants.length }));
-    } catch (err) {
-      alert(t('alertGeojsonFailed', { msg: err instanceof Error ? err.message : String(err) }));
     }
-  });
+  }
 
   // ── Werkzeuge: Bewegen / Markieren einzeln / Markieren als Fläche ───────
   // Pan: every drag moves the map (markers and areas ignore the pointer).
@@ -4502,6 +4509,7 @@ import Layout from '../layouts/Layout.astro';
       };
     },
     isHidden: id => hiddenByPlugin(id),
+    importGeoJson: data => importGeoJsonData(data),
     plantsById: () => plantsById,
     pickPoint() {
       finishPick(null);
