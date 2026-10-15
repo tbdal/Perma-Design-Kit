@@ -121,7 +121,6 @@ Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann
 ## Mittelfristig
 
 ### Notizen & Beobachtungen
-- [ ] **Foto-Upload pro Eintrag** — eigene Fotos direkt in der App
 
 ### Polykulturen — Kuratiertes Companion-Wissen (Phase 2)
 - [ ] **`companions.json` als Golden Master** — bekannte gute Kombinationen aus Standardliteratur (Jacke & Toensmeier, Crawford, Hemenway)
