@@ -81,3 +81,20 @@
     remember('unhandled rejection: ' + (r && r.message ? r.message : r), '');
   });
 })();
+
+// /gartenplan/#neu (team mode): the new layout is built by a module that loads
+// after the page, so the regular layout used to show first and then jump. Keep
+// the planner hidden until the module has set up its layout (it removes
+// `pdk-layout-pending`); a timeout lifts it if the module never comes.
+(function () {
+  try {
+    if (!/^\/gartenplan\/?$/.test(location.pathname) || location.hash !== '#neu') return;
+    if (localStorage.getItem('pdk-mode') !== 'team') return;
+    var root = document.documentElement;
+    root.classList.add('pdk-layout-pending');
+    var sheet = new CSSStyleSheet();
+    sheet.replaceSync('html.pdk-layout-pending #plan-list-view, html.pdk-layout-pending #plan-editor-view { visibility: hidden; }');
+    document.adoptedStyleSheets = document.adoptedStyleSheets.concat([sheet]);
+    setTimeout(function () { root.classList.remove('pdk-layout-pending'); }, 4000);
+  } catch (_) {}
+})();
