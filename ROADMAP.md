@@ -81,7 +81,6 @@ Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann
 - [x] **Lizenz-Metadaten ergänzen** (2026-10-04: `"license": "FSL-1.1-MIT"`, NOTICE mit MIT-Hinweis) — `pwa/package.json` fehlt `"license": "MIT"`. Optional: Copyright-Hinweis in `LICENSE`/README erweitern, da die PWA inzwischen eine vollständige Neuentwicklung ist (Original von Sebastian Schucht war die PowerShell-Tooling-Basis in `legacy/`); MIT erlaubt das Rewrite ohne Einschränkung, solange die bestehende Attribution erhalten bleibt
 
 ### Lizenz & Datenquellen (Launch-Blocker)
-- [ ] **OSM-Kachelserver** — `tile.openstreetmap.org` nur bei geringem Traffic erlaubt (Tile Usage Policy); bei mehr Nutzung auf OpenFreeMap o. ä. wechseln (`OSM_TILES`)
 - ⚠ Keine Rechtsberatung, nur technisch-praktische Einschätzung anhand der tatsächlichen Lizenztexte — vor öffentlichem/kommerziellem Launch ggf. kurz von einem Urheberrechtler gegenchecken lassen, insbesondere NaturaDB
 
 ### Sync (Feinschliff)
