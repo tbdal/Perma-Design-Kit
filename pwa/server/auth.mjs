@@ -311,7 +311,7 @@ export function createAuthHandler({ store, isAllowedOrigin = () => true, now = (
         if (!inv) { limiter.fail(ip, now()); send(res, 404, { error: 'invalid' }); return true; }
         const name = String(body?.name || '').trim();
         if (findUser(store.users(), name)) { send(res, 409, { error: 'name-taken' }); return true; }
-        const users = upsertUser(store.users(), { name, role: inv.role, password: String(body?.password ?? ''), comment: inv.label }, clock);
+        const users = upsertUser(store.users(), { name, role: inv.role, password: String(body?.password ?? ''), comment: `Eingeladen von ${inv.by || '?'}${inv.label ? ` (${inv.label})` : ''}` }, clock);
         store.saveUsers(users);
         store.saveInvites(store.invites().map(i => (i === inv || i.id === inv.id ? { ...i, used: clock.toISOString(), usedBy: name } : i)));
         const user = findUser(users, name);
