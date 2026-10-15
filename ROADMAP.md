@@ -81,7 +81,6 @@ Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann
 ### Polykulturen (Feinschliff)
 
 ### Baumscheibe-Karte (Feinschliff)
-- [ ] **SVG-Template optimieren** — derzeit 5 MB durch ~30 inline Base64-PNGs; via `svgo` / externe Raster
 
 ### UI / UX
 - [ ] **Konfigurierbare Farbthemen** — Farbenblindheits-Modus
