@@ -4,6 +4,10 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Pflanzen mit Änderungszeit, Planer-Schnittstellen 2026-10-15
+- [x] **Pflanzen:** merken sich, wann sie zuletzt geändert wurden – beim Abgleich zweier Geräte gewinnt die neuere Fassung #bugs #prüfen
+- [x] **Waldgartenplan, Modul-Schnittstelle:** Rückgängig-Schritte abfragen, Linie des Reihen-Werkzeugs umformen #minor #prüfen
+
 ## Ganzen Plan zeigen: auf den Inhalt 2026-10-14
 - [x] **Ganzen Plan zeigen:** Inhalt liegt mittig im freien Bereich, rechts neben schwebenden Leisten (lag teils links/oben abgeschnitten) #bugs #prüfen
 - [x] **Ganzen Plan zeigen:** zoomt auf das, was gezeichnet ist (Umriss, Flächen, Pflanzen mit Krone), nicht auf den ganzen Rahmen mit seinen Rändern #minor #prüfen

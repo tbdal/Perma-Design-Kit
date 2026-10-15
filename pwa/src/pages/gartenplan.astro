@@ -734,9 +734,11 @@ import Layout from '../layouts/Layout.astro';
     const { updatedAt: _u, ...rest } = editing!;
     return JSON.stringify(rest);
   }
+  const historyListeners: (() => void)[] = [];
   function syncUndoButtons() {
     btnUndo.disabled = historyIndex <= 0;
     btnRedo.disabled = historyIndex >= history.length - 1;
+    for (const cb of historyListeners) cb();
   }
   function resetHistory() {
     if (historyTimer) clearTimeout(historyTimer);
@@ -2807,10 +2809,13 @@ import Layout from '../layouts/Layout.astro';
   const btnRowFinish = document.getElementById('btn-row-finish') as HTMLButtonElement;
   let rowDraft: GardenPlanPoint[] | null = null;
   let rowPlantId: string | null = null;
+  /** A plugin may bend the clicked points into another line (setRowPath). */
+  let rowPathFn: ((points: GardenPlanPoint[]) => GardenPlanPoint[]) | null = null;
+  const rowLine = (): GardenPlanPoint[] => (rowDraft && rowDraft.length >= 2 && rowPathFn ? rowPathFn(rowDraft) : rowDraft ?? []);
 
   function rowPositions(): GardenPlanPoint[] {
     if (!rowDraft || rowDraft.length < 2) return rowDraft ? [...rowDraft] : [];
-    return pointsAlongPolyline(rowDraft, Math.max(0.1, Number(rowSpacingInput.value) || 1));
+    return pointsAlongPolyline(rowLine(), Math.max(0.1, Number(rowSpacingInput.value) || 1));
   }
 
   function renderRowDraft() {
@@ -2820,7 +2825,7 @@ import Layout from '../layouts/Layout.astro';
     const u = SVG_UNITS_PER_METER, k = viewK();
     const p = rowPlantId ? plantsById.get(rowPlantId) : undefined;
     const fill = p ? LAYER_STYLE[deriveLayer(p)].fill : '#15803d';
-    const line = rowDraft.map(q => `${q.xM * u},${q.yM * u}`).join(' ');
+    const line = rowLine().map(q => `${q.xM * u},${q.yM * u}`).join(' ');
     const spots = rowPositions();
     g.innerHTML = `
       ${rowDraft.length >= 2 ? `<polyline points="${line}" fill="none" stroke="#b45309" stroke-width="${2 * k}" stroke-dasharray="${6 * k} ${4 * k}"/>` : ''}
@@ -4367,6 +4372,13 @@ import Layout from '../layouts/Layout.astro';
       if (!plan3dContainer.hidden) btnView3d.click();
     },
     onPlanChange: cb => { planChangeListeners.push(cb); },
+    getHistory: () => {
+      const at = (i: number) => (i >= 0 && i < history.length ? JSON.parse(history[i]) as GardenPlan : null);
+      return { current: at(historyIndex), undo: at(historyIndex - 1), redo: at(historyIndex + 1) };
+    },
+    onHistoryChange: cb => { historyListeners.push(cb); },
+    setRowPath: fn => { rowPathFn = fn; renderRowDraft(); },
+    refreshRowDraft: () => renderRowDraft(),
     getPluginData: <T,>(featureId: string) => editing?.ext?.[featureId] as T | undefined,
     setPluginData(featureId, data) {
       if (!editing) return;

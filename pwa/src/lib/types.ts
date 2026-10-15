@@ -292,6 +292,9 @@ export interface PlantData {
   // When the plant was added (ISO). '' for plants from before this field
   // existed — they sort last under "Zuletzt hinzugefügt".
   createdAt: string;
+  // Last change by the user on this device (ISO; '' = unknown, from before this
+  // field). Lets a sync keep the newer of two edited copies of a plant.
+  updatedAt: string;
   // Provenance: source per field (optional, not all plants have this)
   _sources?: Partial<Record<keyof PlantData, DataSource>>;
 }
@@ -348,5 +351,6 @@ export function createEmptyPlant(): PlantData {
     imageCredit: '',
     printCount: 1,
     createdAt: new Date().toISOString(),
+    updatedAt: '',
   };
 }

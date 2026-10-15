@@ -92,6 +92,14 @@ export interface GartenplanApi {
   reloadPlans(): Promise<void>;
   /** Opens a plan in the editor; false if there is no plan with that id. */
   openPlan(id: string): boolean;
+  /** The undo steps around the current state: what undo would go back to and what redo would bring (null = none). */
+  getHistory(): { current: GardenPlan | null; undo: GardenPlan | null; redo: GardenPlan | null };
+  /** Called whenever an undo step is recorded, undone or redone, and when another plan opens. */
+  onHistoryChange(cb: () => void): void;
+  /** Reshapes the line the row tool places plants along (clicked points in, line to follow out); null = the clicked points as they are. */
+  setRowPath(fn: ((points: GardenPlanPoint[]) => GardenPlanPoint[]) | null): void;
+  /** Redraws the row tool's preview (after `setRowPath`'s output changed). */
+  refreshRowDraft(): void;
 }
 
 /** What the plant list (index.astro) offers plugins. */

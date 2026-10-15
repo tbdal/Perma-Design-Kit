@@ -98,6 +98,7 @@ export async function getPlant(id: string): Promise<PlantData | undefined> {
 
 export async function savePlant(plant: PlantData): Promise<void> {
   const db = await getDB();
+  plant.updatedAt = new Date().toISOString();
   await db.put('plants', plant);
   announceChange();
 }
