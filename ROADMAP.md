@@ -77,7 +77,6 @@ Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann
 - ⚠ Keine Rechtsberatung, nur technisch-praktische Einschätzung anhand der tatsächlichen Lizenztexte — vor öffentlichem/kommerziellem Launch ggf. kurz von einem Urheberrechtler gegenchecken lassen, insbesondere NaturaDB
 
 ### Sync (Feinschliff)
-- [ ] **Background Sync API** — Service-Worker-basierter Sync, der auch funktioniert wenn die App geschlossen ist (Chrome only; graceful degradation)
 
 ### Polykulturen (Feinschliff)
 - [ ] **Inkompatibilitäts-Warnung** — z.B. Walnuss-Allelopathie (Juglone)
