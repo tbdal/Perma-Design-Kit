@@ -158,7 +158,6 @@ Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann
 - [ ] **Pflege-Workflow** für Companion-Daten (PR-Prozess)
 
 ### Polykulturen — Visualisierung (Phase 3)
-- [ ] **Schicht-Diagramm pro Polykultur** — Baumkrone → Strauch → Staude → Bodendecker → Wurzel
 - [ ] **Kompatibilitäts-Matrix** als Heatmap (Sonne/Wasser/pH/Allelopathie)
 
 ### Polykulturen — SPARQL (Phase 4, Experiment)
