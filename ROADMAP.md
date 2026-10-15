@@ -3,7 +3,6 @@
 Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Prios
-- [ ] Lizenz siehe artifact
 - [ ] spendenbutton
 
 ## kurzfristig
