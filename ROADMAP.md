@@ -24,7 +24,6 @@ Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELO
 
 
 ## Karten
-- [ ] Sukzessive Pflanzung
 - [ ] kommerzieller Satellit mit offiziellem Key (Esri Location Platform / MapTiler / Mapbox Raster) erst bei Bedarf außerhalb der Ortho-Länder — Esri *ohne* Key ist nur nicht-kommerziell nutzbar
 
 ## Modi & Experten-Repo
