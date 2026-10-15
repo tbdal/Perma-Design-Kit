@@ -619,6 +619,55 @@ export function createGardenPlan3DView(
 
   const plantsGroup = new THREE.Group();
   scene.add(plantsGroup);
+  // Simple 3D draws the plants as instances: one draw call per shape and colour
+  // instead of one per plant part (hundreds of plants stay fluid on phones).
+  // The per-plant groups stay in plantsGroup, hidden, for picking and dragging.
+  const instGroup = new THREE.Group();
+  scene.add(instGroup);
+  const instancesOf = new Map<string, { mesh: THREE.InstancedMesh; index: number; part: THREE.Object3D }[]>();
+  const tmpM = new THREE.Matrix4();
+  function buildInstances() {
+    for (const c of instGroup.children) (c as THREE.InstancedMesh).dispose();
+    instGroup.clear();
+    instancesOf.clear();
+    if (!simple) return;
+    plantsGroup.updateMatrixWorld(true);
+    const parts = new Map<string, { geo: THREE.BufferGeometry; mat: THREE.Material; list: { part: THREE.Mesh; id: string }[] }>();
+    for (const g of plantsGroup.children) {
+      const id = g.userData.placementId as string;
+      g.traverse(o => {
+        const m = o as THREE.Mesh;
+        if (!m.isMesh || m.name === 'selection-ring' || Array.isArray(m.material)) return;
+        const k = `${m.geometry.uuid}|${(m.material as THREE.Material).uuid}`;
+        let e = parts.get(k);
+        if (!e) parts.set(k, e = { geo: m.geometry, mat: m.material as THREE.Material, list: [] });
+        e.list.push({ part: m, id });
+        m.visible = false;
+      });
+    }
+    for (const { geo, mat, list } of parts.values()) {
+      const inst = new THREE.InstancedMesh(geo, mat, list.length);
+      list.forEach(({ part, id }, i) => {
+        inst.setMatrixAt(i, part.matrixWorld);
+        const arr = instancesOf.get(id) ?? [];
+        arr.push({ mesh: inst, index: i, part });
+        instancesOf.set(id, arr);
+      });
+      inst.instanceMatrix.needsUpdate = true;
+      inst.computeBoundingSphere();
+      instGroup.add(inst);
+    }
+  }
+  /** After a plant group moved (drag in 3D): its instances follow. */
+  function syncInstances(placementId: string) {
+    const list = instancesOf.get(placementId);
+    if (!list) return;
+    for (const { mesh, index, part } of list) {
+      part.updateWorldMatrix(true, false);
+      mesh.setMatrixAt(index, tmpM.copy(part.matrixWorld));
+      mesh.instanceMatrix.needsUpdate = true;
+    }
+  }
   const areasGroup = new THREE.Group();
   scene.add(areasGroup);
   const handlesGroup = new THREE.Group();
@@ -677,6 +726,7 @@ export function createGardenPlan3DView(
       if (ring) ring.visible = placement.id === selectedPlacementId;
       plantsGroup.add(mesh);
     }
+    buildInstances();
     requestRender();
   }
 
@@ -906,7 +956,7 @@ export function createGardenPlan3DView(
     const hit = new THREE.Vector3();
     if (!intersectGround(hit)) return;
     const mesh = plantsGroup.children.find(c => c.userData.placementId === dragState!.placementId);
-    if (mesh) mesh.position.set(hit.x, ground(hit.x, hit.z), hit.z);
+    if (mesh) { mesh.position.set(hit.x, ground(hit.x, hit.z), hit.z); syncInstances(dragState.placementId); }
     requestRender();
   }
 

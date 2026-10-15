@@ -57,6 +57,7 @@ export const gartenplanDict: Dict = {
   gridAlignTitle: { de: 'Meterlinien an der längsten Kante des Umrisses ausrichten', en: 'Line the grid up with the longest edge of the outline' },
   mapGridTitle: { de: 'Meterlinien ein-/ausblenden (G)', en: 'Show / hide grid lines (G)' },
   warningsHeading: { de: 'Hinweise', en: 'Hints' },
+  toastReopenSkipped: { de: 'Der zuletzt offene Plan wurde nicht automatisch geöffnet – die Seite hing beim letzten Mal. Tippe ihn an, um ihn zu öffnen.', en: 'The plan open last time was not reopened automatically – the page froze last time. Tap it to open it.' },
   warnShow: { de: 'Hinweise auf dem Plan markieren', en: 'Mark hints on the plan' },
   warnIgnore: { de: 'Diesen Hinweis ignorieren', en: 'Ignore this hint' },
   warnIgnoredN: { de: '{n} ignoriert.', en: '{n} ignored.' },

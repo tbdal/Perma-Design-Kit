@@ -20,6 +20,10 @@ Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerb
 - [x] **Zugänge:** Kommentarfeld je Zugang auf der Admin-Seite; Eingeladene bekommen automatisch „Eingeladen von …“ als Kommentar; nach der Einladung wird der Team- bzw. Experten-Modus gleich eingeschaltet #minor #prüfen
 - [x] **Einladungen:** Admins erstellen auf der Seite „Funktionen verwalten“ einen Link oder QR-Code für genau eine Person; Rolle (Experte/Team) vorgewählt, 14 Tage gültig, nur einmal einlösbar. Die Person legt Name und Passwort selbst fest #major #prüfen
 
+## Waldgartenplan auf dem Handy flüssiger 2026-10-15
+- [x] **3D (einfache Ansicht):** Pflanzen werden gebündelt gezeichnet (wenige statt hunderter Zeichenaufrufe) – große Pläne drehen und zoomen auf dem Handy flüssiger #bugs #prüfen
+- [x] **Waldgartenplan:** Ein großer Plan öffnet auf dem Handy in 2D statt direkt in 3D; hing die Seite beim automatischen Wiederöffnen, bleibt sie beim nächsten Mal in der Liste #bugs #prüfen
+
 ## Pflanzen mit Änderungszeit, Planer-Schnittstellen 2026-10-15
 - [x] **Pflanzen:** merken sich, wann sie zuletzt geändert wurden – beim Abgleich zweier Geräte gewinnt die neuere Fassung #bugs #prüfen
 - [x] **Waldgartenplan, Modul-Schnittstelle:** Rückgängig-Schritte abfragen, Linie des Reihen-Werkzeugs umformen #minor #prüfen

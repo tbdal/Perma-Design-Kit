@@ -1790,7 +1790,9 @@ import Layout from '../layouts/Layout.astro';
     fillPackageSelect();
     renderPlanSvg();
     if (savedView?.coverage !== undefined) scheduleCoverage();
-    if (savedView?.mode === '3d' && plan3dContainer.hidden) btnView3d.click();
+    // A big plan on a phone opens in 2D (3D takes long there); one tap on 3D brings it back.
+    const phoneBig = (editing?.placements.length ?? 0) > 150 && !!window.matchMedia?.('(pointer: coarse)').matches && Math.min(screen.width, screen.height) < 700;
+    if (savedView?.mode === '3d' && plan3dContainer.hidden && !phoneBig) btnView3d.click();
     void loadTerrain();
     void loadBuildings();
     resetHistory();
@@ -4557,6 +4559,10 @@ import Layout from '../layouts/Layout.astro';
     },
     setReadOnly(on) { readOnly = on; },
     setExtraPlants(featureId, list) {
+      // Nothing new (e.g. none before and none now): no full redraw of a big plan.
+      const before = pluginPlants.get(featureId);
+      if (!list.length && !before) return;
+      if (before && list.length === before.size && list.every(p => before.get(p.id) === p)) return;
       if (list.length) pluginPlants.set(featureId, new Map(list.map(p => [p.id, p]))); else pluginPlants.delete(featureId);
       rebuildPlantsById();
       if (editing) { renderPlanSvg(); renderSelectedPanel(); if (!plan3dContainer.hidden) btnView3d.click(); }
@@ -4887,7 +4893,17 @@ import Layout from '../layouts/Layout.astro';
     // stays a real navigation, not something a reload undoes.
     let lastId: string | null = null;
     try { lastId = localStorage.getItem(LAST_PLAN_KEY); } catch {}
-    if (lastId && plans.some(p => p.id === lastId)) openEditor(lastId);
+    // If reopening it last time froze the page (the marker below was never cleared),
+    // stay on the list this once, so a plan that is too heavy can't lock the user out.
+    const REOPEN_KEY = 'pdk-reopen-pending';
+    let stuck = false;
+    try { stuck = !!lastId && localStorage.getItem(REOPEN_KEY) === lastId; localStorage.removeItem(REOPEN_KEY); } catch {}
+    if (stuck) showToast(t('toastReopenSkipped'));
+    else if (lastId && plans.some(p => p.id === lastId)) {
+      try { localStorage.setItem(REOPEN_KEY, lastId); } catch {}
+      openEditor(lastId);
+      setTimeout(() => { try { localStorage.removeItem(REOPEN_KEY); } catch {} }, 6000);
+    }
   }
 
   document.getElementById('btn-new-plan')!.addEventListener('click', () => openEditor(null));
