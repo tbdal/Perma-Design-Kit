@@ -58,6 +58,7 @@ import Layout from '../layouts/Layout.astro';
           <div id="member-list" class="space-y-2"></div>
           <div class="mt-3 text-xs text-stone-500 dark:text-stone-400" data-i18n="membersHint">Mitglieder aus dem Vorschlags-Panel rechts hinzufügen.</div>
         </div>
+        <div id="polyculture-extra" class="space-y-4"></div>
 
         <button id="btn-save-polyculture" data-i18n="btnSaveGuild" class="rounded-lg bg-green-700 px-5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">Polykultur speichern</button>
       </div>
@@ -86,6 +87,7 @@ import Layout from '../layouts/Layout.astro';
     type Polyculture, type PolycultureMember, type PolycultureRole, type PlantData,
   } from '../lib/types';
   import { escapeHtml } from '../lib/html';
+  import { providePageApi } from '../lib/expert-api';
   import { compatScore } from '../lib/compat';
   import { polycultureFromGroup, allGroups } from '../lib/polyculture-from-group';
   import { createT, applyStaticI18n } from '../lib/i18n/core';
@@ -132,6 +134,26 @@ import Layout from '../layouts/Layout.astro';
   let polycultures: Polyculture[] = [];
   let editing: Polyculture | null = null;
 
+  // ── Plugins (expert-api.ts PolykulturenApi) ────────────────────────────
+  const cardExtras: ((pc: Polyculture) => string | null)[] = [];
+  const editorListeners: ((pc: Polyculture | null) => void)[] = [];
+  function notifyEditor() { for (const cb of editorListeners) { try { cb(editing); } catch (e) { console.warn('polykulturen plugin failed', e); } } }
+  providePageApi('polykulturen', {
+    getEditing: () => editing,
+    plantsById: () => plantsById,
+    onEditorChange: cb => { editorListeners.push(cb); },
+    addEditorBox(featureId, title) {
+      const box = document.createElement('div');
+      box.dataset.feature = featureId;
+      box.className = 'rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700';
+      box.innerHTML = '<h2 class="mb-3 text-base font-semibold text-stone-800 dark:text-stone-100"></h2><div></div>';
+      box.querySelector('h2')!.textContent = title;
+      document.getElementById('polyculture-extra')!.appendChild(box);
+      return box.querySelector('div')!;
+    },
+    addCardExtra(_featureId, fn) { cardExtras.push(fn); renderList(); },
+  });
+
   function showToast(msg: string) {
     toast.textContent = msg;
     toast.classList.remove('hidden');
@@ -171,6 +193,7 @@ import Layout from '../layouts/Layout.astro';
           <p class="mt-2 text-sm text-stone-700 dark:text-stone-200"><span class="text-stone-500 dark:text-stone-400">${t('anchorLabel')}</span> ${plantLabel(anchor)}</p>
           <div class="mt-3 flex flex-wrap items-center gap-1">${memberChips} ${more}</div>
           <p class="mt-3 text-xs text-stone-500 dark:text-stone-400">${memberCount} · ${t('rolesFilled', { filled: filledRoles.size, total: ROLES.length })}</p>
+          ${cardExtras.map(x => { try { return x(g) ?? ''; } catch { return ''; } }).join('')}
         </article>`;
     }).join('');
     listEl.querySelectorAll<HTMLElement>('[data-polyculture-id]').forEach(el => {
@@ -196,12 +219,14 @@ import Layout from '../layouts/Layout.astro';
 
   function closeEditor() {
     editing = null;
+    queueMicrotask(notifyEditor);
     listView.hidden = false;
     editorView.hidden = true;
   }
 
   function renderMembers() {
     if (!editing) return;
+    queueMicrotask(notifyEditor);
     if (editing.members.length === 0) {
       memberList.innerHTML = `<p class="text-xs text-stone-500 dark:text-stone-400">${t('noMembers')}</p>`;
       return;

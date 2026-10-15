@@ -7,7 +7,7 @@
 // may use through providePageApi(). Without src/expert/ nothing of this runs
 // and the public build is unchanged.
 import type { FeatureDef } from './features';
-import type { GardenPlan, GardenPlanPoint, PlantData } from './types';
+import type { GardenPlan, GardenPlanPoint, PlantData, Polyculture } from './types';
 import type { Lang } from './i18n/core';
 import type { Scene3DLayer } from './gartenplan-3d';
 import type { Occluder } from './sun-hours';
@@ -158,8 +158,22 @@ export interface AdminApi {
   addInviteExtra(featureId: string, build: (box: HTMLElement, role: HTMLSelectElement) => (() => Promise<Record<string, unknown> | null> | Record<string, unknown> | null)): void;
 }
 
+/** What the polycultures page offers plugins. */
+export interface PolykulturenApi {
+  /** The polyculture open in the editor (members as currently edited), or null. */
+  getEditing(): Polyculture | null;
+  plantsById(): Map<string, PlantData>;
+  /** Called when a polyculture opens in the editor and whenever its members change. */
+  onEditorChange(cb: (pc: Polyculture | null) => void): void;
+  /** A box below the members in the editor; returns its body. */
+  addEditorBox(featureId: string, title: string): HTMLElement;
+  /** Extra HTML at the end of each polyculture card in the list (null = none). */
+  addCardExtra(featureId: string, fn: (pc: Polyculture) => string | null): void;
+}
+
 export interface PageApis {
   admin: AdminApi;
+  polykulturen: PolykulturenApi;
   gartenplan: GartenplanApi;
   pflanzen: PflanzenApi;
   layout: LayoutApi;

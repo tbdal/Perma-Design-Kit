@@ -20,6 +20,9 @@ Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerb
 - [x] **Zugänge:** Kommentarfeld je Zugang auf der Admin-Seite; Eingeladene bekommen automatisch „Eingeladen von …“ als Kommentar; nach der Einladung wird der Team- bzw. Experten-Modus gleich eingeschaltet #minor #prüfen
 - [x] **Einladungen:** Admins erstellen auf der Seite „Funktionen verwalten“ einen Link oder QR-Code für genau eine Person; Rolle (Experte/Team) vorgewählt, 14 Tage gültig, nur einmal einlösbar. Die Person legt Name und Passwort selbst fest #major #prüfen
 
+## Polykulturen: Modul-Schnittstelle 2026-10-15
+- [x] **Polykulturen, Modul-Schnittstelle:** Module können im Editor einen Kasten und auf den Karten eine Zeile ergänzen #minor #prüfen
+
 ## Waldgartenplan auf dem Handy flüssiger 2026-10-15
 - [x] **3D (einfache Ansicht):** Pflanzen werden gebündelt gezeichnet (wenige statt hunderter Zeichenaufrufe) – große Pläne drehen und zoomen auf dem Handy flüssiger #bugs #prüfen
 - [x] **Waldgartenplan:** 2D-Aufbau großer Pläne schneller: Modul-Ebenen werden einzeln und nur bei Änderung neu gezeichnet #bugs #prüfen
