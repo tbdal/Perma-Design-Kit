@@ -75,7 +75,6 @@ Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann
 #### weitere bugs / validierung
 
 ### Baumscheibe Karte Feinschliff
-- [ ] Sonne/Wasser-Icons (je 3 Zustände) ergänzen — einzige verbleibende „komplett tot"-Gruppe, siehe `baumscheibe-mapping-status.md`
 - [ ] sprache der karten auf ui-sprache einstellen
 
 ### sonst
