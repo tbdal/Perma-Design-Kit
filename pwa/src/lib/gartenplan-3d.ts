@@ -259,6 +259,9 @@ function buildLabelSprite(text: string, heightM: number): THREE.Sprite {
     const worldPerPx = 2 * wp.distanceTo(cam.position) * Math.tan((cam.fov * Math.PI) / 360) / size.y;
     const h = Math.min(heightM, 24 * worldPerPx);
     sprite.scale.set(h * aspect, h, 1);
+    // Hangs just above the ground spot, not at the unshrunk height.
+    const gy = sprite.userData.groundY as number | undefined;
+    if (gy !== undefined) sprite.position.y = gy + h * 0.8;
   };
   return sprite;
 }
@@ -283,7 +286,8 @@ function buildAreaObject(area: GardenPlanArea, index: number, selected: boolean,
   if (area.name) {
     const c = polygonCentroid(area.points);
     const label = buildLabelSprite(area.name, labelH);
-    label.position.set(c.xM, labelH * 0.8 + ground(c.xM, c.yM), c.yM);
+    label.userData.groundY = ground(c.xM, c.yM);
+    label.position.set(c.xM, labelH * 0.8 + label.userData.groundY, c.yM);
     group.add(label);
   }
   return group;
