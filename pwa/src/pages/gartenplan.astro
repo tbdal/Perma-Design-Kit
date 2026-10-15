@@ -761,6 +761,10 @@ import Layout from '../layouts/Layout.astro';
     history = history.slice(0, historyIndex + 1);
     history.push(snap);
     if (history.length > HISTORY_MAX) history.shift();
+    // Large plans: snapshots are whole-plan JSON; cap their total size (phone memory).
+    let chars = 0;
+    for (const h of history) chars += h.length;
+    while (history.length > 5 && chars > 12_000_000) chars -= history.shift()!.length;
     historyIndex = history.length - 1;
     syncUndoButtons();
   }
@@ -1435,8 +1439,16 @@ import Layout from '../layouts/Layout.astro';
   let simple3d = (() => {
     try { const v = localStorage.getItem('pgd-3d-simple'); if (v) return v === '1'; } catch {}
     const mem = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
-    return (mem !== undefined && mem <= 2) || (navigator.hardwareConcurrency || 8) <= 2;
+    return (mem !== undefined && mem <= 2) || (navigator.hardwareConcurrency || 8) <= 2
   })();
+  // Big plans are too heavy for the full 3D view on a phone: they open light
+  // there, unless the person chose a 3D variant on this device.
+  function phoneBigPlan(): boolean {
+    let chosen = false;
+    try { chosen = !!localStorage.getItem('pgd-3d-simple'); } catch {}
+    return !chosen && (editing?.placements.length ?? 0) > 150
+      && !!window.matchMedia?.('(pointer: coarse)').matches && Math.min(screen.width, screen.height) < 700;
+  }
   function setSimple3d(on: boolean) {
     simple3d = on;
     try { localStorage.setItem('pgd-3d-simple', on ? '1' : '0'); } catch {}
@@ -1543,7 +1555,7 @@ import Layout from '../layouts/Layout.astro';
       layers: pluginLayers.filter(l => featureOn(l.featureId)).map(l => l.layer),
       hidden: hiddenByPlugin,
       onTileFallback: noteOrthoFallback,
-      simple: simple3d,
+      simple: simple3d || phoneBigPlan(),
     });
     if (from2d) camera3dAtEnter = view3d.getCameraState();
     view3d.setArmedPlant(armedPlantId);
@@ -2030,6 +2042,9 @@ import Layout from '../layouts/Layout.astro';
   // Layer (tree/shrub/herb) drives the blob's color and irregularity via
   // LAYER_STYLE (plant-layer.ts) — a heuristic classification, not real
   // per-species artwork, see the info box for the caveat shown to users.
+  // Zoom level each marker was last drawn at: pan/zoom redraws only the visible
+  // markers whose stroke/label size is out of date (see rescaleUi).
+  const markerPpu = new WeakMap<SVGGElement, number>();
   function updateMarkerShape(group: SVGGElement, placement: GardenPlanPlacement, p: PlantData | undefined) {
     const years = editing!.yearsSincePlanting;
     const planted = isPlanted(placement, years);
@@ -2051,6 +2066,7 @@ import Layout from '../layouts/Layout.astro';
     // disappears below ~7 px, so zoomed-out plans don't drown in labels.
     // The selected plant always keeps its name.
     const ppu = pxPerUnit();
+    markerPpu.set(group, ppu);
     const rPx = radiusU * ppu;
     blob.setAttribute('stroke-width', String((selected ? 2.5 : hot ? 3.5 : warned ? 2.5 : 1.2) / ppu));
     blob.setAttribute('stroke-dasharray', !planted ? `${3 / ppu} ${3 / ppu}` : warned && !hot ? `${5 / ppu} ${3 / ppu}` : '');
@@ -2182,11 +2198,18 @@ import Layout from '../layouts/Layout.astro';
         refreshMarkerHighlight();
         renderSelectedPanel();
       } else {
+        // Selecting only recolours the marker(s) involved: a full renderPlanSvg()
+        // rebuilt every marker (and autosaved) on each tap.
+        const before = [...multiSel, ...(selectedPlacementId ? [selectedPlacementId] : [])];
         multiSel.clear();
         selectedPlacementId = placement.id;
         setBoundaryEdit(false);
         if (selectedAreaId) { selectedAreaId = null; markSelectedArea(); }
-        renderPlanSvg();
+        for (const id of [...before, placement.id]) {
+          const pl = editing?.placements.find(x => x.id === id);
+          const g = markerMap.get(id);
+          if (pl && g) updateMarkerShape(g, pl, plantsById.get(pl.plantId));
+        }
         renderSelectedPanel();
       }
     });
@@ -2514,9 +2537,17 @@ import Layout from '../layouts/Layout.astro';
     planSvg.querySelector('#plan-boundary')?.setAttribute('stroke-width', String(2 * k));
     renderMeasure();
     renderPluginOverlays();
+    // Markers only depend on the zoom here: skip the ones drawn at this zoom
+    // already (plain panning touches none) and the off-screen ones (they catch up
+    // when they scroll into view). With hundreds of plants this was the lag on phones.
+    const ppu = pxPerUnit();
+    const vr = viewRectM();
+    const mx = (vr.maxX - vr.minX) * 0.1 + 15, my = (vr.maxY - vr.minY) * 0.1 + 15;
     for (const pl of editing.placements) {
       const g = markerMap.get(pl.id);
-      if (g) updateMarkerShape(g, pl, plantsById.get(pl.plantId));
+      if (!g || markerPpu.get(g) === ppu) continue;
+      if (pl.xM < vr.minX - mx || pl.xM > vr.maxX + mx || pl.yM < vr.minY - my || pl.yM > vr.maxY + my) continue;
+      updateMarkerShape(g, pl, plantsById.get(pl.plantId));
     }
     renderAreasLayer();
     renderAreaDraft();
