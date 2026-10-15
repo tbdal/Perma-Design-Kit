@@ -12,6 +12,9 @@ Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerb
 - [x] **Waldgartenplan, Modul-Schnittstelle:** 2D-Ansicht auf einen Planpunkt zentrieren (mit oder ohne neuen Zoom) #minor #prüfen
 
 ## Einladungen per Link und QR-Code 2026-10-15
+- [x] **Waldgartenplan:** Höhenlinien mit wählbarem Linienabstand (automatisch, 100 m … 1 m) #minor #prüfen
+- [x] **Waldgartenplan:** Hinweise lassen sich auf dem Plan ausblenden und einzeln ignorieren #minor #prüfen
+- [x] **Waldgartenplan:** Kartenkacheln bleiben beim Zoomen und Verschieben stehen statt neu zu laden #bugs #prüfen
 - [x] **Einladungen, Modul-Schnittstelle:** Die Einladungsmaske nimmt Zusatzfelder von Modulen auf, die mit der Einladung gespeichert und beim Einlösen ausgewertet werden #minor #prüfen
 - [x] **Zugänge:** Kommentarfeld je Zugang auf der Admin-Seite; Eingeladene bekommen automatisch „Eingeladen von …“ als Kommentar; nach der Einladung wird der Team- bzw. Experten-Modus gleich eingeschaltet #minor #prüfen
 - [x] **Einladungen:** Admins erstellen auf der Seite „Funktionen verwalten“ einen Link oder QR-Code für genau eine Person; Rolle (Experte/Team) vorgewählt, 14 Tage gültig, nur einmal einlösbar. Die Person legt Name und Passwort selbst fest #major #prüfen

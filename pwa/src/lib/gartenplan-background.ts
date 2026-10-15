@@ -103,7 +103,9 @@ export function basemapSvg(plan: GardenPlan, view: PlanRect, screenMPerPx: numbe
   const images = tiles.map(t => {
     const size = t.sizeM * u * 1.003;
     const fb = fallbackTileUrl(src, t.z, t.x, t.y);
-    return `<image href="${tileUrl(src, t.z, t.x, t.y)}"${fb ? ` data-fallback="${fb}"` : ''} x="${t.eM * u}" y="${t.sM * u}" width="${size}" height="${size}" preserveAspectRatio="none"/>`;
+    const url = tileUrl(src, t.z, t.x, t.y);
+    // data-k: identifies the tile (source, z/x/y), so a redraw can keep the element that already has the picture.
+    return `<image href="${url}"${fb ? ` data-fallback="${fb}"` : ''} x="${t.eM * u}" y="${t.sM * u}" width="${size}" height="${size}" preserveAspectRatio="none" data-k="${url}"/>`;
   }).join('');
   return `<g opacity="${geo.opacity}" pointer-events="none"><g transform="rotate(${-geo.rotationDeg})">${images}</g></g>`;
 }

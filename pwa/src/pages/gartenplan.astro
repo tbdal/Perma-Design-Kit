@@ -87,6 +87,11 @@ import Layout from '../layouts/Layout.astro';
       </span>
       <label data-feature="buildings" id="buildings-toggle" hidden class="inline-flex items-center gap-1.5" data-i18n-title="mapBuildingsTitle" title="Gebäude aus OpenStreetMap: in 3D und als Schattenwerfer für Besonnung und Hinweise"><input id="g-buildings" type="checkbox" checked class="accent-stone-600" /> <span data-i18n="mapBuildings">Gebäude</span></label>
       <label data-feature="terrain" id="contours-toggle" hidden class="inline-flex items-center gap-1.5"><input id="g-contours" type="checkbox" checked class="accent-amber-700" /> <span data-i18n="mapContours">Höhenlinien</span></label>
+      <label data-feature="terrain" id="contour-step-label" class="inline-flex items-center gap-1.5 text-xs"><span data-i18n="contourStep">Linienabstand</span>
+        <select id="g-contour-step" class="rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs">
+          <option value="" data-i18n="contourStepAuto">automatisch</option>
+          <option value="100">100 m</option><option value="50">50 m</option><option value="20">20 m</option><option value="10">10 m</option><option value="5">5 m</option><option value="2">2 m</option><option value="1">1 m</option>
+        </select></label>
       <label data-feature="water" id="water-toggle" hidden class="inline-flex items-center gap-1.5" data-i18n-title="mapWaterTitle" title="Abflusswege, Senken, Swale-Vorschläge und Regen vom Dach"><input id="g-water" type="checkbox" class="accent-sky-600" /> <span data-i18n="mapWater">Wasser</span></label>
       <label data-feature="zones" class="inline-flex items-center gap-1.5" data-i18n-title="mapZonesTitle" title="Permakultur-Zonen um das Haus und Sektoren (Sonne, Wind, Kaltluft)"><input id="g-zones" type="checkbox" class="accent-amber-600" /> <span data-i18n="mapZones">Zonen &amp; Sektoren</span></label>
       <span id="map-status" class="text-stone-500 dark:text-stone-400"></span>
@@ -385,7 +390,9 @@ import Layout from '../layouts/Layout.astro';
           <details data-feature="warnings" id="warnings-section" data-panel="warnings" hidden open class="group/panel rounded-xl bg-red-50/60 dark:bg-red-950/30 p-4 shadow-sm ring-1 ring-red-200 dark:ring-red-900">
             <summary class="flex cursor-pointer list-none items-center justify-between gap-2 text-sm font-semibold text-red-900 dark:text-red-200"><span><span data-i18n="warningsHeading">Hinweise</span> (<span id="warnings-count">0</span>)</span><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-red-700 dark:text-red-300 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
             <p class="mt-1 text-xs text-stone-500 dark:text-stone-400" data-i18n="warningsIntro">Mit Blick auf die ausgewachsenen Pflanzen (30 Jahre). Klick markiert die Pflanze(n).</p>
+            <label class="mt-1 flex items-center gap-1.5 text-xs text-stone-700 dark:text-stone-200"><input id="warn-show" type="checkbox" checked class="accent-red-700" /><span data-i18n="warnShow">Hinweise auf dem Plan markieren</span></label>
             <ul id="warnings-list" class="mt-1 space-y-0.5 text-xs text-stone-700 dark:text-stone-200"></ul>
+            <p id="warn-ignored" hidden class="mt-1 text-[11px] text-stone-500 dark:text-stone-400"><span id="warn-ignored-n"></span> <button id="warn-ignored-reset" type="button" class="underline" data-i18n="warnIgnoredReset">wieder anzeigen</button></p>
             <p id="good-neighbors-heading" hidden class="mt-3 text-xs font-semibold text-green-800 dark:text-green-300" data-i18n="goodNeighborsHeading">Gute Nachbarschaften</p>
             <ul id="good-neighbors-list" class="mt-1 space-y-0.5 text-xs text-stone-700 dark:text-stone-200"></ul>
           </details>
@@ -1122,7 +1129,21 @@ import Layout from '../layouts/Layout.astro';
     const view = isPlan ? viewRectM() : { minX: 0, minY: 0, maxX: plan.areaWidthM, maxY: plan.areaHeightM };
     const px = svg.getBoundingClientRect().width;
     const mPerPx = px > 0 ? (view.maxX - view.minX) / px / (window.devicePixelRatio || 1) : 0.02;
-    layer.innerHTML = basemapSvg(plan, view, mPerPx);
+    // Tiles already on screen keep their element (no flicker, no reload while zooming):
+    // only new ones are created, vanished ones dropped.
+    const html = basemapSvg(plan, view, mPerPx);
+    const old = new Map<string, Element>();
+    layer.querySelectorAll('image[data-k]').forEach(i => old.set(i.getAttribute('data-k')!, i));
+    const holder = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    holder.innerHTML = html;
+    holder.querySelectorAll('image[data-k]').forEach(n => {
+      const o = old.get(n.getAttribute('data-k')!);
+      if (!o) return;
+      // Position/size may have changed with the zoom step: take them over.
+      for (const a of ['x', 'y', 'width', 'height']) o.setAttribute(a, n.getAttribute(a)!);
+      n.replaceWith(o);
+    });
+    layer.replaceChildren(...holder.childNodes);
     updateAttribution(svg);
   }
 
@@ -3137,6 +3158,12 @@ import Layout from '../layouts/Layout.astro';
     try { localStorage.setItem('pgd-contours', contoursInput.checked ? '1' : '0'); } catch {}
     renderContours();
   });
+  const contourStepSel = document.getElementById('g-contour-step') as HTMLSelectElement;
+  try { contourStepSel.value = localStorage.getItem('pgd-contour-step') ?? ''; } catch {}
+  contourStepSel.addEventListener('change', () => {
+    try { localStorage.setItem('pgd-contour-step', contourStepSel.value); } catch {}
+    renderContours();
+  });
 
   async function loadTerrain() {
     void loadClimate();
@@ -3201,11 +3228,14 @@ import Layout from '../layouts/Layout.astro';
 
   function renderContours() {
     const layer = planSvg.querySelector('#contour-layer');
+    document.getElementById('contour-step-label')!.hidden = !terrain || !editing?.geo;
     if (!layer) return;
     if (!terrain || !contoursInput.checked || !editing?.geo || !featureOn('terrain')) { layer.innerHTML = ''; return; }
     let lo = Infinity, hi = -Infinity;
     for (const h of terrain.heights) { lo = Math.min(lo, h); hi = Math.max(hi, h); }
-    const interval = contourInterval(hi - lo);
+    // Chosen spacing (m); never so fine that the plan fills with hundreds of lines.
+    const chosen = Number(contourStepSel.value) || 0;
+    const interval = chosen ? Math.max(chosen, (hi - lo) / 150) : contourInterval(hi - lo);
     const byLevel = new Map<number, string[]>();
     for (const { level, seg } of contourSegments(terrain, interval)) {
       const arr = byLevel.get(level) ?? [];
@@ -4063,6 +4093,27 @@ import Layout from '../layouts/Layout.astro';
   const warningsList = document.getElementById('warnings-list')!;
   const warningsCount = document.getElementById('warnings-count')!;
   let warnedIds = new Set<string>();
+  // Hints can be switched off on the plan (one preference) and single hints
+  // ignored per plan (kept on this device).
+  const warnShowEl = document.getElementById('warn-show') as HTMLInputElement;
+  let warnShow = true;
+  try { warnShow = localStorage.getItem('pdk-warn-show') !== '0'; } catch { /* ignore */ }
+  warnShowEl.checked = warnShow;
+  const ignoreKey = (planId: string) => `pdk-warn-ignore:${planId}`;
+  const loadIgnored = (planId: string): Set<string> => { try { return new Set(JSON.parse(localStorage.getItem(ignoreKey(planId)) || '[]')); } catch { return new Set(); } };
+  const saveIgnored = (planId: string, set: Set<string>) => { try { localStorage.setItem(ignoreKey(planId), JSON.stringify([...set])); } catch { /* ignore */ } };
+  let shownWarnIds: string[] = [];
+  function applyWarnVisibility() {
+    const next = new Set(warnShow ? shownWarnIds : []);
+    const same = next.size === warnedIds.size && [...next].every(id => warnedIds.has(id));
+    warnedIds = next;
+    if (!same) refreshMarkerHighlight();
+  }
+  warnShowEl.addEventListener('change', () => {
+    warnShow = warnShowEl.checked;
+    try { localStorage.setItem('pdk-warn-show', warnShow ? '1' : '0'); } catch { /* ignore */ }
+    applyWarnVisibility();
+  });
   const goodNeighborsHeading = document.getElementById('good-neighbors-heading')!;
   const goodNeighborsList = document.getElementById('good-neighbors-list')!;
   // Placements of the warning under the mouse/keyboard focus: ringed on the map.
@@ -4157,6 +4208,7 @@ import Layout from '../layouts/Layout.astro';
     if (warnTimer) clearTimeout(warnTimer);
     warnTimer = setTimeout(renderWarnings, 600);
   }
+  document.getElementById('warn-ignored-reset')!.addEventListener('click', () => { if (editing) { saveIgnored(editing.id, new Set()); renderWarnings(); } });
   function renderWarnings() {
     warnTimer = null;
     if (!editing || phaseB.classList.contains('hidden')) return;
@@ -4202,7 +4254,7 @@ import Layout from '../layouts/Layout.astro';
     };
     const at = (id: string) => plan.placements.find(p => p.id === id);
     const item = (key: string, ids: string[], text: string, marks: WarnMark[], tone: 'bad' | 'good' = 'bad'): WarnItem => ({ key, ids, text, marks, tone });
-    const items: WarnItem[] = [
+    let items: WarnItem[] = [
       ...neighbors.bad.map(w => item(`nb:${w.source}:${w.target}`, [w.source, w.target], t('warnBadNeighbor', {
         a: name(w.source), b: name(w.target), d: fmt1(w.distM), r: fmt1(w.radiusM), why: w.reason.label[lang === 'en' ? 'en' : 'de'],
       }), [{ xM: at(w.source)!.xM, yM: at(w.source)!.yM, rM: w.radiusM, kind: 'zone' }, ...crown(w.target)])),
@@ -4210,8 +4262,14 @@ import Layout from '../layouts/Layout.astro';
       ...shade.map(w => item(`sh:${w.id}`, [w.id], t('warnShade', { name: name(w.id), h: fmt1(w.hours), need: t(w.need === 'full' ? 'warnNeedFull' : 'warnNeedMid') }), crown(w.id))),
       ...crowd.map(w => item(`cr:${w.a}:${w.b}`, [w.a, w.b], t('warnCrowded', { a: name(w.a), b: name(w.b), d: fmt1(w.distM), min: fmt1(w.minM) }), [...crown(w.a), ...crown(w.b)])),
     ];
+    // Ignored hints stay out of the list and the markers (until "wieder anzeigen").
+    const ignored = loadIgnored(plan.id);
+    const allItems = items;
+    items = allItems.filter(i => !ignored.has(i.key));
+    const ignoredCount = allItems.length - items.length;
     const before = warnedIds;
-    warnedIds = new Set(items.flatMap(i => i.ids));
+    shownWarnIds = items.flatMap(i => i.ids);
+    warnedIds = new Set(warnShow ? shownWarnIds : []);
     // Good neighbours: one line per fruiting plant with its helpers.
     const roleLabel = (r: string) => t(r === 'nitrogen' ? 'roleNitrogen' : r === 'nutrients' ? 'roleNutrients' : 'roleInsects');
     const goodItems = neighbors.good.map(g => item(`gn:${g.target}`, [g.target, ...g.helpers.map(h => h.id)],
@@ -4219,13 +4277,23 @@ import Layout from '../layouts/Layout.astro';
       [g.target, ...g.helpers.map(h => h.id)].flatMap(crown), 'good'));
     warnItemsByKey.clear();
     for (const i of [...items, ...goodItems]) warnItemsByKey.set(i.key, i);
-    warningsSection.hidden = items.length === 0 && goodItems.length === 0;
+    warningsSection.hidden = items.length === 0 && goodItems.length === 0 && ignoredCount === 0;
+    const ignoredEl = document.getElementById('warn-ignored')!;
+    ignoredEl.hidden = ignoredCount === 0;
+    document.getElementById('warn-ignored-n')!.textContent = t('warnIgnoredN', { n: ignoredCount });
     warningsCount.textContent = String(items.length);
     warningsList.innerHTML = items.slice(0, 30).map(i => `
-      <li><button type="button" data-key="${escapeHtml(i.key)}" data-tone="bad" aria-pressed="false" class="w-full rounded px-1.5 py-1 text-left hover:bg-red-50 dark:hover:bg-red-900/30">${escapeHtml(i.text)}</button></li>`).join('');
+      <li class="flex items-start gap-1"><button type="button" data-key="${escapeHtml(i.key)}" data-tone="bad" aria-pressed="false" class="min-w-0 flex-1 rounded px-1.5 py-1 text-left hover:bg-red-50 dark:hover:bg-red-900/30">${escapeHtml(i.text)}</button><button type="button" data-warn-ignore="${escapeHtml(i.key)}" title="${escapeHtml(t('warnIgnore'))}" aria-label="${escapeHtml(t('warnIgnore'))}" class="shrink-0 rounded px-1.5 py-1 text-stone-400 hover:bg-stone-100 hover:text-stone-700 dark:hover:bg-stone-800">×</button></li>`).join('');
     goodNeighborsHeading.hidden = goodItems.length === 0;
     goodNeighborsList.innerHTML = goodItems.slice(0, 20).map(i => `
       <li><button type="button" data-key="${escapeHtml(i.key)}" data-tone="good" aria-pressed="false" class="w-full rounded px-1.5 py-1 text-left hover:bg-green-50 dark:hover:bg-green-900/30"><span aria-hidden="true" class="text-green-700 dark:text-green-400">✓ </span>${escapeHtml(i.text)}</button></li>`).join('');
+    warningsList.querySelectorAll<HTMLButtonElement>('[data-warn-ignore]').forEach(b => b.addEventListener('click', () => {
+      const set = loadIgnored(plan.id);
+      set.add(b.dataset.warnIgnore!);
+      saveIgnored(plan.id, set);
+      if (pinnedWarn?.key === b.dataset.warnIgnore) setWarnPin(null);
+      renderWarnings();
+    }));
     warningsSection.querySelectorAll<HTMLButtonElement>('[data-key]').forEach(b => {
       const it = () => warnItemsByKey.get(b.dataset.key!) ?? null;
       b.addEventListener('mouseenter', () => setWarnHover(it()));
