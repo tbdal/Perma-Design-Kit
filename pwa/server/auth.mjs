@@ -7,7 +7,7 @@
 // private chunks under /x/ (auth_request). The private dir is outside git
 // (server/data/private/, or PDK_PRIVATE_DIR); scripts/user-admin.mjs manages
 // accounts from the shell.
-import { createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import { chmodSync, existsSync, mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -104,6 +104,7 @@ function writePrivate(file, text) {
 export function createStore(dir = DEFAULT_PRIVATE_DIR) {
   const usersFile = join(dir, 'users.json');
   const featuresFile = join(dir, 'features.json');
+  const invitesFile = join(dir, 'invites.json');
   const secretFile = join(dir, 'session-secret');
   const cache = new Map();
   const readJson = (file, fallback) => {
@@ -127,6 +128,11 @@ export function createStore(dir = DEFAULT_PRIVATE_DIR) {
       return Array.isArray(list) ? list : [];
     },
     saveUsers(users) { writePrivate(usersFile, JSON.stringify({ users }, null, 2) + '\n'); },
+    invites() {
+      const list = readJson(invitesFile, { invites: [] }).invites;
+      return Array.isArray(list) ? list : [];
+    },
+    saveInvites(invites) { writePrivate(invitesFile, JSON.stringify({ invites }, null, 2) + '\n'); },
     features() { return sanitizeFeatures(readJson(featuresFile, { features: {} }).features); },
     saveFeatures(features) { writePrivate(featuresFile, JSON.stringify({ features, updatedAt: new Date().toISOString() }, null, 2) + '\n'); },
     secret() {
@@ -180,6 +186,40 @@ export function removeUser(users, name) {
   if (existing.role === 'admin' && !list.some(u => u.role === 'admin')) throw new Error('last-admin');
   return list;
 }
+
+// ── Invitations (link / QR code, valid for one person) ───────────────────
+/** Roles an invitation may grant (never admin). */
+export const INVITE_ROLES = ['expert', 'team'];
+export const INVITE_DAYS = 14;
+const tokenHash = (token) => createHash('sha256').update(String(token)).digest('base64url');
+
+/**
+ * Adds an invitation; only a hash of its token is kept. Returns the new list
+ * and the token (shown once, put into the link).
+ */
+export function createInvite(invites, { role, label, by }, now = new Date()) {
+  if (!INVITE_ROLES.includes(role)) throw new Error('bad-role');
+  const token = randomBytes(24).toString('base64url');
+  const cutoff = now.getTime() - 30 * 86_400_000;
+  // Used or expired invitations are kept 30 days for the list, then dropped.
+  const kept = invites.filter(i => Date.parse(i.used || i.expires) > cutoff);
+  const invite = {
+    id: randomBytes(6).toString('hex'), hash: tokenHash(token), role,
+    label: String(label || '').trim().slice(0, 60), by: by || null,
+    created: now.toISOString(), expires: new Date(now.getTime() + INVITE_DAYS * 86_400_000).toISOString(),
+  };
+  return { invites: [...kept, invite], token, invite };
+}
+
+/** The open invitation for a token, or null (unknown, used or expired). */
+export function findInvite(invites, token, now = new Date()) {
+  if (typeof token !== 'string' || token.length < 20 || token.length > 100) return null;
+  const h = tokenHash(token);
+  const hit = invites.find(i => i.hash === h);
+  return hit && !hit.used && Date.parse(hit.expires) > now.getTime() ? hit : null;
+}
+
+export const inviteStatus = (i, now = new Date()) => (i.used ? 'used' : Date.parse(i.expires) > now.getTime() ? 'open' : 'expired');
 
 // ── Login rate limit ─────────────────────────────────────────────────────
 export function createLoginLimiter({ max = 5, windowMs = 15 * 60_000 } = {}) {
@@ -254,6 +294,33 @@ export function createAuthHandler({ store, isAllowedOrigin = () => true, now = (
       return true;
     }
     if (path === '/api/auth/logout' && method === 'POST') { send(res, 204, undefined, { 'Set-Cookie': cookieHeader('', 0, secure) }); return true; }
+    if (path === '/api/auth/invite' && (method === 'GET' || method === 'POST')) {
+      if (limiter.blocked(ip, now())) { send(res, 429, { error: 'rate' }); return true; }
+      const clock = new Date(now());
+      try {
+        if (method === 'GET') {
+          const inv = findInvite(store.invites(), url.searchParams.get('token'), clock);
+          if (!inv) { limiter.fail(ip, now()); send(res, 404, { error: 'invalid' }); return true; }
+          send(res, 200, { role: inv.role, label: inv.label });
+          return true;
+        }
+        const body = await readJsonBody(req);
+        const inv = findInvite(store.invites(), body?.token, clock);
+        if (!inv) { limiter.fail(ip, now()); send(res, 404, { error: 'invalid' }); return true; }
+        const name = String(body?.name || '').trim();
+        if (findUser(store.users(), name)) { send(res, 409, { error: 'name-taken' }); return true; }
+        const users = upsertUser(store.users(), { name, role: inv.role, password: String(body?.password ?? '') }, clock);
+        store.saveUsers(users);
+        store.saveInvites(store.invites().map(i => (i === inv || i.id === inv.id ? { ...i, used: clock.toISOString(), usedBy: name } : i)));
+        const user = findUser(users, name);
+        const token = signSession({ n: user.name, r: user.role, e: now() + SESSION_DAYS * 86_400_000, v: user.v || 1 }, store.secret());
+        send(res, 200, { name: user.name, role: user.role }, { 'Set-Cookie': cookieHeader(token, SESSION_DAYS * 86_400, secure) });
+      } catch (err) {
+        const code = err instanceof Error ? err.message : 'error';
+        send(res, 400, { error: code });
+      }
+      return true;
+    }
     if (path === '/api/auth/login' && method === 'POST') {
       if (limiter.blocked(ip, now())) { send(res, 429, { error: 'rate' }); return true; }
       let body;
@@ -288,6 +355,26 @@ export function createAuthHandler({ store, isAllowedOrigin = () => true, now = (
           const password = body?.password ? String(body.password) : undefined;
           const users = upsertUser(store.users(), { name: body?.name, role: body?.role, password });
           store.saveUsers(users);
+          send(res, 200, { ok: true });
+          return true;
+        }
+        if (path === '/api/admin/invites' && method === 'GET') {
+          const clock = new Date(now());
+          send(res, 200, { invites: store.invites().map(i => ({ id: i.id, role: i.role, label: i.label, by: i.by, created: i.created, expires: i.expires, used: i.used || null, usedBy: i.usedBy || null, status: inviteStatus(i, clock) })) });
+          return true;
+        }
+        if (path === '/api/admin/invites' && method === 'POST') {
+          const body = await readJsonBody(req);
+          const made = createInvite(store.invites(), { role: body?.role, label: body?.label, by: s.name }, new Date(now()));
+          store.saveInvites(made.invites);
+          send(res, 200, { id: made.invite.id, token: made.token, expires: made.invite.expires });
+          return true;
+        }
+        if (path === '/api/admin/invites' && method === 'DELETE') {
+          const id = url.searchParams.get('id');
+          const list = store.invites();
+          if (!list.some(i => i.id === id)) throw new Error('not-found');
+          store.saveInvites(list.filter(i => i.id !== id));
           send(res, 200, { ok: true });
           return true;
         }

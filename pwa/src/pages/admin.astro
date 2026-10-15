@@ -46,6 +46,31 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
           <button type="submit" data-i18n="adAddUser" class={`${btn} bg-green-700 text-white hover:bg-green-800`}>Zugang anlegen</button>
           <p id="user-status" role="status" class="text-sm text-stone-600 dark:text-stone-300"></p>
         </form>
+
+        <h2 class="pt-2 text-lg font-semibold" data-i18n="adInvTitle">Einladungen</h2>
+        <form id="invite-form" class="space-y-2 rounded-xl bg-white dark:bg-stone-800 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+          <p class="text-xs text-stone-600 dark:text-stone-300" data-i18n="adInvIntro">Ein Link oder QR-Code für genau eine Person.</p>
+          <label class="block text-xs font-medium"><span data-i18n="adInvLabel">Für wen? (optional)</span>
+            <input id="invite-label" maxlength="60" autocomplete="off" class={`mt-1 ${field}`} />
+          </label>
+          <label class="block text-xs font-medium"><span data-i18n="adRole">Rolle</span>
+            <select id="invite-role" class={`mt-1 ${field}`}>
+              <option value="expert" data-i18n="adRoleExpert">Experte</option>
+              <option value="team" data-i18n="adRoleTeam">Team</option>
+            </select>
+          </label>
+          <button type="submit" data-i18n="adInvCreate" class={`${btn} bg-green-700 text-white hover:bg-green-800`}>Einladung erstellen</button>
+        </form>
+        <div id="invite-result" hidden class="space-y-2 rounded-xl bg-amber-50 dark:bg-amber-900/30 p-4 text-sm ring-1 ring-amber-200 dark:ring-amber-800">
+          <p class="font-medium" data-i18n="adInvLink">Link – wird nur jetzt angezeigt:</p>
+          <input id="invite-url" readonly class={`${field} font-mono text-xs`} />
+          <div class="flex flex-wrap items-center gap-3">
+            <button id="invite-copy" type="button" data-i18n="adInvCopy" class={`${btn} bg-white dark:bg-stone-800 ring-1 ring-stone-300 dark:ring-stone-600`}>Link kopieren</button>
+            <span id="invite-copied" role="status" class="text-xs"></span>
+          </div>
+          <canvas id="invite-qr" class="rounded-md bg-white p-2" width="220" height="220"></canvas>
+        </div>
+        <ul id="invite-list" class="divide-y divide-stone-100 dark:divide-stone-700 rounded-xl bg-white dark:bg-stone-800 text-sm shadow-sm ring-1 ring-stone-200 dark:ring-stone-700"></ul>
       </section>
     </div>
   </article>
@@ -272,6 +297,47 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
       await userAction(res);
     });
 
+    // ── Invitations ──────────────────────────────────────────────────────
+    type Invite = { id: string; role: string; label: string; created: string; expires: string; used: string | null; usedBy: string | null; status: 'open' | 'used' | 'expired' };
+    const inviteList = document.getElementById('invite-list')!;
+    const roleName = (r: string) => t(r === 'team' ? 'adRoleTeam' : 'adRoleExpert');
+    async function loadInvites() {
+      const res = await api('GET', '/api/admin/invites');
+      const list = ((res.ok ? res.data.invites : []) as Invite[]).slice().reverse();
+      inviteList.innerHTML = list.length ? list.map(i => {
+        const state = i.status === 'used' ? t('adInvUsed', { name: i.usedBy ?? '' }) : i.status === 'open' ? t('adInvOpen', { date: i.expires.slice(0, 10) }) : t('adInvExpired');
+        return `<li class="flex flex-wrap items-center justify-between gap-2 p-3" data-invite="${escapeHtml(i.id)}">
+          <span><span class="font-medium">${escapeHtml(i.label || roleName(i.role))}</span> <span class="text-xs text-stone-500 dark:text-stone-400">${escapeHtml(roleName(i.role))} · ${escapeHtml(state)}</span></span>
+          <button type="button" data-revoke class="rounded-md px-2 py-1 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30">${escapeHtml(t('adInvRevoke'))}</button></li>`;
+      }).join('') : `<li class="p-3 text-xs text-stone-500 dark:text-stone-400">${escapeHtml(t('adInvNone'))}</li>`;
+    }
+    document.getElementById('invite-form')!.addEventListener('submit', async e => {
+      e.preventDefault();
+      const labelEl = document.getElementById('invite-label') as HTMLInputElement;
+      const role = (document.getElementById('invite-role') as HTMLSelectElement).value;
+      const res = await api('POST', '/api/admin/invites', { role, label: labelEl.value.trim() });
+      if (!res.ok) { userStatus.textContent = errText(String(res.data.error ?? res.data.status)); return; }
+      labelEl.value = '';
+      const url = `${location.origin}/anmelden/?einladung=${encodeURIComponent(String(res.data.token))}`;
+      (document.getElementById('invite-url') as HTMLInputElement).value = url;
+      document.getElementById('invite-copied')!.textContent = '';
+      document.getElementById('invite-result')!.hidden = false;
+      const { default: QRCode } = await import('qrcode');
+      await QRCode.toCanvas(document.getElementById('invite-qr'), url, { width: 220, margin: 1 });
+      await loadInvites();
+    });
+    document.getElementById('invite-copy')!.addEventListener('click', async () => {
+      const input = document.getElementById('invite-url') as HTMLInputElement;
+      try { await navigator.clipboard.writeText(input.value); } catch { input.select(); document.execCommand('copy'); }
+      document.getElementById('invite-copied')!.textContent = t('adInvCopied');
+    });
+    inviteList.addEventListener('click', async e => {
+      const li = (e.target as HTMLElement).closest<HTMLElement>('[data-invite]');
+      if (!li || !(e.target as HTMLElement).closest('[data-revoke]')) return;
+      await api('DELETE', `/api/admin/invites?id=${encodeURIComponent(li.dataset.invite!)}`);
+      await loadInvites();
+    });
+
     // ── Start: admins only ───────────────────────────────────────────────
     (async () => {
       const auth = await refreshAuth();
@@ -287,6 +353,7 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
       draft = { ...saved };
       renderRows();
       await loadUsers();
+      await loadInvites();
     })();
   </script>
 </Layout>

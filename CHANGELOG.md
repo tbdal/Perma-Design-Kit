@@ -11,6 +11,9 @@ Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerb
 ## Planer-Schnittstelle: Ausschnitt auf einen Punkt 2026-10-15
 - [x] **Waldgartenplan, Modul-Schnittstelle:** 2D-Ansicht auf einen Planpunkt zentrieren (mit oder ohne neuen Zoom) #minor #prüfen
 
+## Einladungen per Link und QR-Code 2026-10-15
+- [x] **Einladungen:** Admins erstellen auf der Seite „Funktionen verwalten“ einen Link oder QR-Code für genau eine Person; Rolle (Experte/Team) vorgewählt, 14 Tage gültig, nur einmal einlösbar. Die Person legt Name und Passwort selbst fest #major #prüfen
+
 ## Pflanzen mit Änderungszeit, Planer-Schnittstellen 2026-10-15
 - [x] **Pflanzen:** merken sich, wann sie zuletzt geändert wurden – beim Abgleich zweier Geräte gewinnt die neuere Fassung #bugs #prüfen
 - [x] **Waldgartenplan, Modul-Schnittstelle:** Rückgängig-Schritte abfragen, Linie des Reihen-Werkzeugs umformen #minor #prüfen

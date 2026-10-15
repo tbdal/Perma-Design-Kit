@@ -8,6 +8,20 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
     <h1 class="text-2xl font-bold" data-i18n="acLoginTitle">Experten-Zugang</h1>
     <p class="text-sm text-stone-600 dark:text-stone-300" data-i18n="acLoginIntro">Der Experten-Modus zeigt zusätzlich Funktionen, die noch in Erprobung sind. Zugänge vergibt das Team des Perma Design Kit.</p>
 
+    <form id="invite-form" hidden class="space-y-4 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+      <h2 class="text-lg font-semibold" data-i18n="acInvTitle">Einladung</h2>
+      <p id="invite-intro" class="text-sm"></p>
+      <label class="block text-sm font-medium"><span data-i18n="acName">Name</span>
+        <input id="invite-name" name="username" autocomplete="username" required maxlength="40" class={field} />
+      </label>
+      <label class="block text-sm font-medium"><span data-i18n="acPassword">Passwort</span> <span class="font-normal text-stone-500 dark:text-stone-400" data-i18n="acInvPasswordHint">mindestens 10 Zeichen</span>
+        <input id="invite-password" name="password" type="password" autocomplete="new-password" required minlength="10" class={field} />
+      </label>
+      <p id="invite-error" role="alert" class="text-sm font-medium text-red-700 dark:text-red-300"></p>
+      <button type="submit" data-i18n="acInvCreateBtn" class={`${btn} bg-green-700 text-white hover:bg-green-800 disabled:opacity-60`}>Konto anlegen</button>
+    </form>
+    <p id="invite-invalid" hidden role="alert" class="rounded-lg bg-amber-50 dark:bg-amber-900/30 px-3 py-2 text-sm text-amber-900 dark:text-amber-100 ring-1 ring-amber-200 dark:ring-amber-800" data-i18n="acInvInvalid">Diese Einladung gilt nicht mehr.</p>
+
     <form id="login-form" class="space-y-4 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
       <label class="block text-sm font-medium"><span data-i18n="acName">Name</span>
         <input id="login-name" name="username" autocomplete="username" required maxlength="40" class={field} />
@@ -49,9 +63,14 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
     const nextRaw = params.get('next') || '';
     const next = /^\/(?!\/)/.test(nextRaw) ? nextRaw : '/';
 
+    const inviteToken = params.get('einladung') || '';
+    const inviteForm = document.getElementById('invite-form') as HTMLFormElement;
+    let inviteOpen = false;
+
     function showDone() {
       const auth = getAuth();
-      if (!auth) { form.hidden = false; done.hidden = true; return; }
+      if (!auth) { form.hidden = inviteOpen; inviteForm.hidden = !inviteOpen; done.hidden = true; return; }
+      inviteForm.hidden = true;
       form.hidden = true;
       done.hidden = false;
       document.getElementById('login-done-text')!.textContent = t('acLoggedIn', { name: auth.name });
@@ -87,7 +106,48 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
     });
     document.getElementById('btn-logout')!.addEventListener('click', () => void logout());
 
+    // Invitation link: the role is preset, the person only chooses name and password.
+    async function loadInvite() {
+      if (!inviteToken) return;
+      let info: { role?: string; label?: string } | null = null;
+      try {
+        const res = await fetch(`/api/auth/invite?token=${encodeURIComponent(inviteToken)}`, { cache: 'no-store' });
+        if (res.ok) info = await res.json();
+      } catch { /* offline: treated as invalid */ }
+      if (!info) { document.getElementById('invite-invalid')!.hidden = false; return; }
+      inviteOpen = true;
+      const role = t(info.role === 'team' ? 'adRoleTeam' : 'adRoleExpert');
+      document.getElementById('invite-intro')!.textContent = t('acInvIntro', { role }) + (info.label ? ` ${t('acInvForLabel', { label: info.label })}` : '');
+      showDone();
+    }
+    inviteForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      const err = document.getElementById('invite-error')!;
+      err.textContent = '';
+      const btnEl = inviteForm.querySelector('button[type=submit]') as HTMLButtonElement;
+      btnEl.disabled = true;
+      try {
+        const res = await fetch('/api/auth/invite', {
+          method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: inviteToken, name: (document.getElementById('invite-name') as HTMLInputElement).value.trim(), password: (document.getElementById('invite-password') as HTMLInputElement).value }),
+        });
+        if (res.ok) {
+          (document.getElementById('invite-password') as HTMLInputElement).value = '';
+          inviteOpen = false;
+          history.replaceState(null, '', location.pathname); // the token is spent: out of the address bar
+          await refreshAuth();
+          showDone();
+          return;
+        }
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 404) { inviteOpen = false; inviteForm.hidden = true; document.getElementById('invite-invalid')!.hidden = false; return; }
+        const code = String(data.error || 'generic').replace(/-/g, '_');
+        err.textContent = res.status === 429 ? t('acErrRate') : accessDict[`adErr_${code}`] ? t(`adErr_${code}`) : t('acErrServer');
+      } catch { err.textContent = t('acErrServer'); } finally { btnEl.disabled = false; }
+    });
+
     showDone();
+    void loadInvite();
     void refreshAuth().then(showDone);
   </script>
 </Layout>

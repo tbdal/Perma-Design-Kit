@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createServer, type Server } from 'node:http';
-import { mkdtempSync, rmSync, statSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
@@ -141,5 +141,38 @@ describe('HTTP endpoints', () => {
     expect(JSON.stringify(list)).not.toContain('scrypt');
     const del = await fetch(`${base}/api/admin/users?name=Admin`, { method: 'DELETE', headers: { cookie } });
     expect(await del.json()).toEqual({ error: 'last-admin' });
+  });
+
+  it('invites one person per link: role preset, single use, admin only', async () => {
+    const admin = cookieOf(await login('Admin', 'admin-passwort'));
+    const json = { 'Content-Type': 'application/json' };
+    const noAdmin = await fetch(`${base}/api/admin/invites`, { method: 'POST', headers: json, body: JSON.stringify({ role: 'team' }) });
+    expect(noAdmin.status).toBe(401);
+    const bad = await fetch(`${base}/api/admin/invites`, { method: 'POST', headers: { ...json, cookie: admin }, body: JSON.stringify({ role: 'admin' }) });
+    expect(bad.status).toBe(400);
+    const made = await (await fetch(`${base}/api/admin/invites`, { method: 'POST', headers: { ...json, cookie: admin }, body: JSON.stringify({ role: 'team', label: 'Jörn' }) })).json();
+    expect(made.token).toMatch(/^[\w-]{30,}$/);
+    // the token itself is not stored
+    expect(readFileSync(join(dir, 'invites.json'), 'utf8')).not.toContain(made.token);
+
+    expect(await (await fetch(`${base}/api/auth/invite?token=${made.token}`)).json()).toEqual({ role: 'team', label: 'Jörn' });
+    const redeem = (token: string, name: string, password = 'langes-passwort') => fetch(`${base}/api/auth/invite`, { method: 'POST', headers: json, body: JSON.stringify({ token, name, password }) });
+    expect((await redeem(made.token, 'Gast')).status).toBe(409); // name taken
+    expect((await redeem(made.token, 'Neu', 'kurz')).status).toBe(400);
+    const ok = await redeem(made.token, 'Jörn');
+    expect(ok.status).toBe(200);
+    expect(await ok.json()).toEqual({ name: 'Jörn', role: 'team' });
+    expect((await fetch(`${base}/api/auth/me`, { headers: { cookie: cookieOf(ok) } })).status).toBe(200);
+    // second use fails
+    expect((await redeem(made.token, 'Zweite')).status).toBe(404);
+    expect((await fetch(`${base}/api/auth/invite?token=${made.token}`)).status).toBe(404);
+    const list = await (await fetch(`${base}/api/admin/invites`, { headers: { cookie: admin } })).json();
+    expect(list.invites[0]).toMatchObject({ status: 'used', usedBy: 'Jörn', role: 'team' });
+    expect(JSON.stringify(list)).not.toContain(made.token);
+    // revoke
+    const m2 = await (await fetch(`${base}/api/admin/invites`, { method: 'POST', headers: { ...json, cookie: admin }, body: JSON.stringify({ role: 'expert' }) })).json();
+    const del = await fetch(`${base}/api/admin/invites?id=${m2.id}`, { method: 'DELETE', headers: { cookie: admin } });
+    expect(del.status).toBe(200);
+    expect((await redeem(m2.token, 'Dritte')).status).toBe(404);
   });
 });
