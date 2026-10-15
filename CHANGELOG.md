@@ -21,6 +21,7 @@ Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerb
 - [x] **Einladungen:** Admins erstellen auf der Seite „Funktionen verwalten“ einen Link oder QR-Code für genau eine Person; Rolle (Experte/Team) vorgewählt, 14 Tage gültig, nur einmal einlösbar. Die Person legt Name und Passwort selbst fest #major #prüfen
 
 ## Pflanzenkacheln und Druckleiste 2026-10-16
+- [x] **Pflanze bearbeiten:** Klick neben das Fenster (auf den abgedunkelten Bereich) schließt es wie „Abbrechen“ #minor #prüfen
 - [x] **Pflanzen (Kacheln):** Klick auf Bild oder Text einer Pflanzenkachel öffnet das Bearbeiten-Fenster #minor #prüfen
 - [x] **Karten-Ansicht:** Auf schmalen Bildschirmen bricht die Leiste nach dem Layout um, die Ausgabeformat-Knöpfe bleiben zusammen in einer Zeile #minor #prüfen
 - [x] **Waldgartenplan:** Wer die Seite kurz nach dem automatischen Wiederöffnen normal verlässt, bekommt beim nächsten Mal nicht fälschlich „Plan nicht geöffnet“ #bugs #prüfen

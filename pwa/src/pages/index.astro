@@ -1419,6 +1419,11 @@ import Layout from '../layouts/Layout.astro';
     },
   });
   document.getElementById('btn-cancel')!.addEventListener('click', () => dialog.close());
+  // A click on the dimmed area around the editor closes it like "Abbrechen". Only when the
+  // press also started there: selecting text in a field and letting go outside keeps it open.
+  let downOnBackdrop = false;
+  dialog.addEventListener('pointerdown', e => { downOnBackdrop = e.target === dialog; });
+  dialog.addEventListener('click', e => { if (e.target === dialog && downOnBackdrop) dialog.close(); downOnBackdrop = false; });
   dialog.addEventListener('close', () => { newTemplate = null; });
   form.addEventListener('submit', async (e) => { e.preventDefault(); await savePlant(readForm()); dialog.close(); renderList(); });
 
