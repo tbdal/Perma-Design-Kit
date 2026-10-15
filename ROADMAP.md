@@ -87,7 +87,6 @@ Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann
 - [ ] **Bild-Fallback** — Silhouette nach Pflanzentyp wenn kein Foto vorhanden
 
 ### Daten
-- [ ] **Pflanzenbild-Upload** — Bild lokal speichern (Base64 in IndexedDB oder File in OPFS)
 - [ ] Fehlende Felder: Boden-Typ, Ausbreitungsart, Wurzeltiefe
 
 ### von Opus 
