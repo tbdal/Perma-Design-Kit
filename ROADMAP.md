@@ -54,7 +54,6 @@ Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann
 
 
 ## später / Fragen für Präsentation
-- [ ] Boden-Dreieck mappen und aktiveren
 - [ ] unfarbige Felder in Baumscheibe
 - [ ] Zirkeldreher-Tool: Prüfen ob wir uns da was abkucken können, v.a. was garden plan angeht
 - [x] domain permadesignkit.org gekauft
