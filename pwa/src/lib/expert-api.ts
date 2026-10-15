@@ -62,6 +62,10 @@ export interface GartenplanApi {
   setPluginData(featureId: string, data: unknown): void;
   /** Takes a GeoJSON FeatureCollection (as the planner's GeoJSON export writes it) as a plan, like the GeoJSON import; throws on unusable data. */
   importGeoJson(data: unknown): Promise<void>;
+  /** A box under the selected plant(s) in the selection panel, drawn again with every change of selection; `ids` = the selected placements. */
+  addSelectionExtra(featureId: string, render: (box: HTMLElement, ids: string[]) => void): void;
+  /** Puts these placements on another plant of the list (saved into the list first when it is new); an undo step like any edit. */
+  setPlacementPlant(placementIds: string[], plant: PlantData): Promise<void>;
   /** Whether a placement or area is hidden by some feature (setHidden). */
   isHidden(id: string): boolean;
   /** Placements and areas (by id) not drawn in 2D and 3D while the feature is on; replaces the feature's earlier set. */

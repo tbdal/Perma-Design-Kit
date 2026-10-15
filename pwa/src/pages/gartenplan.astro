@@ -1955,7 +1955,23 @@ import Layout from '../layouts/Layout.astro';
     renderUnplacedList();
   }
 
+  // Boxes modules add under the selected plant(s) (addSelectionExtra).
+  const selectionExtras: { featureId: string; render: (box: HTMLElement, ids: string[]) => void }[] = [];
   function renderSelectedPanel() {
+    renderSelectedPanelInner();
+    if (!editing || selectedAreaId || editBoundary) return;
+    const ids = multiSel.size ? [...multiSel] : selectedPlacementId ? [selectedPlacementId] : [];
+    if (!ids.length) return;
+    for (const x of selectionExtras) {
+      if (!featureOn(x.featureId)) continue;
+      const box = document.createElement('div');
+      box.dataset.feature = x.featureId;
+      box.className = 'mt-2';
+      selectedPanel.appendChild(box);
+      try { x.render(box, ids); } catch (e) { console.warn('selection extra failed', e); }
+    }
+  }
+  function renderSelectedPanelInner() {
     queueSelectionNotify();
     if (gpsPos) renderGps();
     if (editing && multiSel.size) { renderMultiPanel(); return; }
@@ -4510,6 +4526,22 @@ import Layout from '../layouts/Layout.astro';
     },
     isHidden: id => hiddenByPlugin(id),
     importGeoJson: data => importGeoJsonData(data),
+    addSelectionExtra(featureId, render) { selectionExtras.push({ featureId, render }); renderSelectedPanel(); },
+    async setPlacementPlant(placementIds, plant) {
+      if (!editing) return;
+      if (!plantsById.has(plant.id)) {
+        await importPlants([plant]);
+        plants = await getAllPlants();
+        rebuildPlantsById();
+      }
+      const ids = new Set(placementIds);
+      for (const pl of editing.placements) if (ids.has(pl.id)) pl.plantId = plant.id;
+      renderPlanSvg();
+      view3d?.refreshPlacements();
+      renderSelectedPanel();
+      renderUnplacedList();
+      scheduleAutosave();
+    },
     plantsById: () => plantsById,
     pickPoint() {
       finishPick(null);
