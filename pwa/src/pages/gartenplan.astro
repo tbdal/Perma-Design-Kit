@@ -1838,6 +1838,7 @@ import Layout from '../layouts/Layout.astro';
         const id = btn.dataset.pickerPlant!;
         armedPlantId = armedPlantId === id ? null : id;
         armedHint.classList.toggle('hidden', !armedPlantId);
+        if (armedPlantId && tool === 'lasso') setTool('select'); // lasso and placing exclude each other
         view3d?.setArmedPlant(armedPlantId);
         renderPlantPicker();
         if (gpsPos) renderGps();   // enables „Hier setzen“
@@ -1862,6 +1863,7 @@ import Layout from '../layouts/Layout.astro';
         const id = btn.dataset.unplacedPlant!;
         armedPlantId = armedPlantId === id ? null : id;
         armedHint.classList.toggle('hidden', !armedPlantId);
+        if (armedPlantId && tool === 'lasso') setTool('select'); // lasso and placing exclude each other
         view3d?.setArmedPlant(armedPlantId);
         renderUnplacedList();
       });
@@ -2981,6 +2983,19 @@ import Layout from '../layouts/Layout.astro';
     planSvg.classList.toggle('tool-lasso', t === 'lasso');
     planSvg.classList.toggle('tool-measure', t === 'measure');
     if (t !== 'measure') clearMeasure();
+    if (t === 'lasso') {
+      // An armed plant or an unfinished area/row would swallow the lasso press
+      // (it then ended as a tap and the plant stayed active): end them first.
+      if (armedPlantId) {
+        armedPlantId = null;
+        armedHint.classList.add('hidden');
+        view3d?.setArmedPlant(null);
+        renderPlantPicker();
+        renderUnplacedList();
+      }
+      endAreaDraw();
+      endRowDraw();
+    }
   }
   document.querySelectorAll<HTMLElement>('[data-tool]').forEach(b => b.addEventListener('click', () => setTool(b.dataset.tool as Tool)));
 
