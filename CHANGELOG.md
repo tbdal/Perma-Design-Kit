@@ -22,6 +22,7 @@ Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerb
 
 ## Waldgartenplan auf dem Handy flüssiger 2026-10-15
 - [x] **3D (einfache Ansicht):** Pflanzen werden gebündelt gezeichnet (wenige statt hunderter Zeichenaufrufe) – große Pläne drehen und zoomen auf dem Handy flüssiger #bugs #prüfen
+- [x] **Waldgartenplan:** 2D-Aufbau großer Pläne schneller: Modul-Ebenen werden einzeln und nur bei Änderung neu gezeichnet #bugs #prüfen
 - [x] **Waldgartenplan:** Ein großer Plan öffnet auf dem Handy in 2D statt direkt in 3D; hing die Seite beim automatischen Wiederöffnen, bleibt sie beim nächsten Mal in der Liste #bugs #prüfen
 
 ## Pflanzen mit Änderungszeit, Planer-Schnittstellen 2026-10-15

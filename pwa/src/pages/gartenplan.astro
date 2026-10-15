@@ -4422,7 +4422,9 @@ import Layout from '../layouts/Layout.astro';
   // Plugin hooks (expert-api.ts): extra 3D content and shade casters.
   const pluginLayers: { featureId: string; layer: Scene3DLayer }[] = [];
   const pluginOccluderFns: { featureId: string; fn: (groundZ: (x: number, y: number) => number) => Occluder[] }[] = [];
-  const pluginOverlays: { featureId: string; draw: (px: number) => string }[] = [];
+  // Each overlay draws into its own group; unchanged output is not written again,
+  // and a plugin's redraw() redraws only its own overlay, once per frame.
+  const pluginOverlays: { featureId: string; draw: (px: number) => string; el?: SVGGElement; last?: string; queued?: boolean }[] = [];
   // Placements and areas plugins hide (setHidden): a style rule keeps them out
   // of the 2D plan across redraws; the 3D view leaves them out when built.
   const pluginHidden = new Map<string, Set<string>>();
@@ -4453,13 +4455,22 @@ import Layout from '../layouts/Layout.astro';
     if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); finishPick(null); }
   }
   /** Plugin drawings on the 2D plan: markup in metres, `px` = metres per screen pixel. */
+  function drawOverlay(o: typeof pluginOverlays[number], layer: Element, px: number) {
+    if (o.el?.parentNode !== layer) {
+      o.el = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      o.el.setAttribute('transform', `scale(${U})`);
+      o.last = undefined;
+      layer.appendChild(o.el);
+    }
+    let html = '';
+    if (featureOn(o.featureId)) { try { html = o.draw(px); } catch { html = ''; } }
+    if (html !== o.last) { o.el.innerHTML = html; o.last = html; }
+  }
   function renderPluginOverlays() {
     const g = planSvg.querySelector('#plugin-layer');
     if (!g || !editing) return;
     const px = viewK() / U;
-    g.innerHTML = pluginOverlays.filter(o => featureOn(o.featureId)).map(o => {
-      try { return `<g transform="scale(${U})">${o.draw(px)}</g>`; } catch { return ''; }
-    }).join('');
+    for (const o of pluginOverlays) drawOverlay(o, g, px);
   }
   function pluginOccluders(groundZ: (x: number, y: number) => number): Occluder[] {
     return pluginOccluderFns.filter(o => featureOn(o.featureId)).flatMap(o => { try { return o.fn(groundZ); } catch { return []; } });
@@ -4476,7 +4487,21 @@ import Layout from '../layouts/Layout.astro';
       if (!plan3dContainer.hidden && featureOn(featureId)) btnView3d.click();
     },
     addSunOccluders(featureId, fn) { pluginOccluderFns.push({ featureId, fn }); },
-    addPlanOverlay(featureId, draw) { pluginOverlays.push({ featureId, draw }); renderPluginOverlays(); return renderPluginOverlays; },
+    addPlanOverlay(featureId, draw) {
+      const o: typeof pluginOverlays[number] = { featureId, draw };
+      pluginOverlays.push(o);
+      renderPluginOverlays();
+      return () => {
+        if (o.queued) return;
+        o.queued = true;
+        requestAnimationFrame(() => {
+          o.queued = false;
+          const g = planSvg.querySelector('#plugin-layer');
+          if (g && editing) drawOverlay(o, g, viewK() / U);
+        });
+      };
+    },
+    isHidden: id => hiddenByPlugin(id),
     plantsById: () => plantsById,
     pickPoint() {
       finishPick(null);

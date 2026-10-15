@@ -47,7 +47,8 @@ export default defineConfig({
     // Astro inlines processed <script>s smaller than this limit into the
     // HTML, which the production CSP (script-src without 'unsafe-inline')
     // silently blocks — the dev server sends no CSP, so it only breaks live.
-    build: { assetsInlineLimit: 0 },
+    // PDK_NOMINIFY=1 keeps function names in the build (for profiling).
+    build: { assetsInlineLimit: 0, ...(process.env.PDK_NOMINIFY ? { minify: false } : {}) },
     environments: {
       client: {
         build: {
