@@ -39,6 +39,7 @@ export const indexDict: Dict = {
   // ── Cards toolbar ────────────────────────────────────────────────────
   cardOutputLayoutLabel: { de: 'Ausgabe-Layout', en: 'Output layout' },
   cardOutputFormatLabel: { de: 'Ausgabeformat', en: 'Output format' },
+  cardScaledMenuLabel: { de: 'Maßstabsgetreu ⋮', en: 'True to scale ⋮' },
   cardOutputMenuLabel: { de: 'PDF ⋮', en: 'PDF ⋮' },
   scaleLabel: { de: 'Maßstab', en: 'Scale' },
   cardTypePoly: { de: 'Pflanzenkarten', en: 'Plant cards' },
