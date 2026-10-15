@@ -516,7 +516,7 @@ import Layout from '../layouts/Layout.astro';
 <script>
   import { getAllPlants, getAllPolycultures, getAllGardenPlans, saveGardenPlan, deleteGardenPlan, importPlants } from '../lib/db';
   import { normalizeGardenPlan } from '../lib/plant-normalize';
-  import { displayName, displayCommonName } from '../lib/plant-name';
+  import { displayName, displayCommonName, nameWithVariety } from '../lib/plant-name';
   import { LAST_PLAN_KEY, planViewKey, readPlanView, writePlanView, type PlanView } from '../lib/plan-view';
   import { neighborHints } from '../lib/neighbors';
   import { wayTo, arrived } from '../lib/field-mode';
@@ -2120,7 +2120,7 @@ import Layout from '../layouts/Layout.astro';
     label.setAttribute('y', String(radiusU + f * 1.05));
     label.setAttribute('font-size', String(f));
     label.setAttribute('stroke-width', String(f * 0.25));
-    label.textContent = p ? (displayName(p)) : '?';
+    label.textContent = p ? nameWithVariety(p) : '?';
   }
 
   function renderPlanSvg() {

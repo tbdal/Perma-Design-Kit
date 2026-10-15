@@ -21,6 +21,7 @@ Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerb
 - [x] **Einladungen:** Admins erstellen auf der Seite „Funktionen verwalten“ einen Link oder QR-Code für genau eine Person; Rolle (Experte/Team) vorgewählt, 14 Tage gültig, nur einmal einlösbar. Die Person legt Name und Passwort selbst fest #major #prüfen
 
 ## Pflanzenkacheln und Druckleiste 2026-10-16
+- [x] **Waldgartenplan:** Beschriftung auf der Karte (auch im PDF) und Name im Auswahl-Popup zeigen die Sorte in Klammern, z. B. „Apfel (Topaz)“ #minor #prüfen
 - [x] **Waldgartenplan, Modul-Schnittstelle:** Module können unter der Auswahl einen Kasten zeigen und Pflanzungen auf einen anderen Listeneintrag setzen #minor #prüfen
 - [x] **Pflanze bearbeiten:** Klick neben das Fenster (auf den abgedunkelten Bereich) schließt es wie „Abbrechen“ #minor #prüfen
 - [x] **Pflanzen (Kacheln):** Klick auf Bild oder Text einer Pflanzenkachel öffnet das Bearbeiten-Fenster #minor #prüfen

@@ -3,7 +3,7 @@ import { displayRadiusM } from './growth-model';
 import { deriveLayer, LAYER_STYLE } from './plant-layer';
 import { blobPathD } from './blob-shape';
 import { escapeHtml } from './html';
-import { displayName } from './plant-name';
+import { displayName, nameWithVariety } from './plant-name';
 import { ageAt } from './phases';
 
 // Kept in sync with gartenplan.astro's own constant (not imported from there —
@@ -59,7 +59,7 @@ export function renderGardenPlanInnerSvg(plan: GardenPlan, plantsById: Map<strin
     const layer = p ? deriveLayer(p) : 'shrub';
     const style = LAYER_STYLE[layer];
     const d = blobPathD(radiusU, placement.id, style.lobes, style.wobble);
-    const name = escapeHtml(p ? (displayName(p)) : '?');
+    const name = escapeHtml(p ? nameWithVariety(p) : '?');
     const cx = placement.xM * SVG_UNITS_PER_METER;
     const cy = placement.yM * SVG_UNITS_PER_METER;
     return `
