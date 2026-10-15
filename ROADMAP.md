@@ -121,7 +121,6 @@ Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann
 ## Mittelfristig
 
 ### Notizen & Beobachtungen
-- [ ] **Beobachtungs-Tagebuch pro Pflanze** — freie Notizen mit Datum (z.B. „Erstmals geblüht", „Mehltau bemerkt"), gespeichert in IndexedDB
 - [ ] **Foto-Upload pro Eintrag** — eigene Fotos direkt in der App
 
 ### Polykulturen — Kuratiertes Companion-Wissen (Phase 2)
