@@ -69,7 +69,6 @@ Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann
 ### sonst
 
 ### PDF Generierung
-- [ ] zweite Option: Größen entsprechend Baumdurchmesser
 
 ### Launch-Blocker
 - [ ] **Plausible-Domain** — `data-domain` in `Layout.astro` auf Custom-Domain anpassen + im Plausible-Dashboard registrieren
