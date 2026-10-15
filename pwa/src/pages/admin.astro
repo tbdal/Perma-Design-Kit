@@ -59,6 +59,7 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
               <option value="team" data-i18n="adRoleTeam">Team</option>
             </select>
           </label>
+          <div id="invite-extra" class="space-y-2"></div>
           <button type="submit" data-i18n="adInvCreate" class={`${btn} bg-green-700 text-white hover:bg-green-800`}>Einladung erstellen</button>
         </form>
         <div id="invite-result" hidden class="space-y-2 rounded-xl bg-amber-50 dark:bg-amber-900/30 p-4 text-sm ring-1 ring-amber-200 dark:ring-amber-800">
@@ -82,6 +83,7 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
     import { FEATURES, FEATURE_GROUPS, LOGIN_MODES, UI_MODES, sanitizeFeatureConfig, type FeatureConfig, type FeatureDef, type UiMode } from '../lib/features';
     import { refreshAuth } from '../lib/ui-mode';
     import { loadExpertModule } from '../lib/expert-loader';
+    import { providePageApi } from '../lib/expert-api';
     import { escapeHtml } from '../lib/html';
 
     applyStaticI18n(accessDict);
@@ -314,11 +316,24 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
           <button type="button" data-revoke class="rounded-md px-2 py-1 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30">${escapeHtml(t('adInvRevoke'))}</button></li>`;
       }).join('') : `<li class="p-3 text-xs text-stone-500 dark:text-stone-400">${escapeHtml(t('adInvNone'))}</li>`;
     }
+    // Boxes that modules add to the invitation form, and what they send along.
+    const inviteExtras: (() => Promise<Record<string, unknown> | null> | Record<string, unknown> | null)[] = [];
+    providePageApi('admin', {
+      addInviteExtra(featureId, build) {
+        const box = document.createElement('div');
+        box.dataset.feature = featureId;
+        document.getElementById('invite-extra')!.appendChild(box);
+        inviteExtras.push(build(box, document.getElementById('invite-role') as HTMLSelectElement));
+      },
+    });
     document.getElementById('invite-form')!.addEventListener('submit', async e => {
       e.preventDefault();
       const labelEl = document.getElementById('invite-label') as HTMLInputElement;
       const role = (document.getElementById('invite-role') as HTMLSelectElement).value;
-      const res = await api('POST', '/api/admin/invites', { role, label: labelEl.value.trim() });
+      let extra: Record<string, unknown> = {};
+      try { for (const get of inviteExtras) extra = { ...extra, ...((await get()) ?? {}) }; }
+      catch (err) { userStatus.textContent = String(err instanceof Error ? err.message : err); return; }
+      const res = await api('POST', '/api/admin/invites', { role, label: labelEl.value.trim(), extra });
       if (!res.ok) { userStatus.textContent = errText(String(res.data.error ?? res.data.status)); return; }
       labelEl.value = '';
       const url = `${location.origin}/anmelden/?einladung=${encodeURIComponent(String(res.data.token))}`;

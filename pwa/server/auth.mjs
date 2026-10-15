@@ -195,11 +195,20 @@ export const INVITE_ROLES = ['expert', 'team'];
 export const INVITE_DAYS = 14;
 const tokenHash = (token) => createHash('sha256').update(String(token)).digest('base64url');
 
+/** Data an optional module attaches to an invitation: a small plain JSON object, handed to `onInviteRedeemed`. */
+function cleanExtra(extra) {
+  if (!extra || typeof extra !== 'object' || Array.isArray(extra)) return null;
+  try {
+    const text = JSON.stringify(extra);
+    return text.length <= 4000 ? JSON.parse(text) : null;
+  } catch { return null; }
+}
+
 /**
  * Adds an invitation; only a hash of its token is kept. Returns the new list
  * and the token (shown once, put into the link).
  */
-export function createInvite(invites, { role, label, by }, now = new Date()) {
+export function createInvite(invites, { role, label, by, extra }, now = new Date()) {
   if (!INVITE_ROLES.includes(role)) throw new Error('bad-role');
   const token = randomBytes(24).toString('base64url');
   const cutoff = now.getTime() - 30 * 86_400_000;
@@ -208,6 +217,7 @@ export function createInvite(invites, { role, label, by }, now = new Date()) {
   const invite = {
     id: randomBytes(6).toString('hex'), hash: tokenHash(token), role,
     label: String(label || '').trim().slice(0, 60), by: by || null,
+    ...(cleanExtra(extra) ? { extra: cleanExtra(extra) } : {}),
     created: now.toISOString(), expires: new Date(now.getTime() + INVITE_DAYS * 86_400_000).toISOString(),
   };
   return { invites: [...kept, invite], token, invite };
@@ -268,7 +278,7 @@ function cookieHeader(value, maxAgeS, secure) {
  * @param {{ store: ReturnType<typeof createStore>, isAllowedOrigin?: (origin: string | null) => boolean,
  *          now?: () => number, limiter?: ReturnType<typeof createLoginLimiter> }} opts
  */
-export function createAuthHandler({ store, isAllowedOrigin = () => true, now = () => Date.now(), limiter = createLoginLimiter() }) {
+export function createAuthHandler({ store, isAllowedOrigin = () => true, now = () => Date.now(), limiter = createLoginLimiter(), onInviteRedeemed = null }) {
   function session(req) {
     const p = verifySession(parseCookies(req.headers.cookie)[SESSION_COOKIE], store.secret(), now());
     if (!p) return null;
@@ -315,6 +325,8 @@ export function createAuthHandler({ store, isAllowedOrigin = () => true, now = (
         store.saveUsers(users);
         store.saveInvites(store.invites().map(i => (i === inv || i.id === inv.id ? { ...i, used: clock.toISOString(), usedBy: name } : i)));
         const user = findUser(users, name);
+        // A module may attach data to an invitation (e.g. shares): carried out now; a failure doesn't undo the account.
+        try { await onInviteRedeemed?.(inv, { name: user.name, role: user.role }); } catch (e) { console.error('invite hook failed', e); }
         const token = signSession({ n: user.name, r: user.role, e: now() + SESSION_DAYS * 86_400_000, v: user.v || 1 }, store.secret());
         send(res, 200, { name: user.name, role: user.role }, { 'Set-Cookie': cookieHeader(token, SESSION_DAYS * 86_400, secure) });
       } catch (err) {
@@ -362,12 +374,12 @@ export function createAuthHandler({ store, isAllowedOrigin = () => true, now = (
         }
         if (path === '/api/admin/invites' && method === 'GET') {
           const clock = new Date(now());
-          send(res, 200, { invites: store.invites().map(i => ({ id: i.id, role: i.role, label: i.label, by: i.by, created: i.created, expires: i.expires, used: i.used || null, usedBy: i.usedBy || null, status: inviteStatus(i, clock) })) });
+          send(res, 200, { invites: store.invites().map(i => ({ id: i.id, extra: i.extra || null, role: i.role, label: i.label, by: i.by, created: i.created, expires: i.expires, used: i.used || null, usedBy: i.usedBy || null, status: inviteStatus(i, clock) })) });
           return true;
         }
         if (path === '/api/admin/invites' && method === 'POST') {
           const body = await readJsonBody(req);
-          const made = createInvite(store.invites(), { role: body?.role, label: body?.label, by: s.name }, new Date(now()));
+          const made = createInvite(store.invites(), { role: body?.role, label: body?.label, by: s.name, extra: body?.extra }, new Date(now()));
           store.saveInvites(made.invites);
           send(res, 200, { id: made.invite.id, token: made.token, expires: made.invite.expires });
           return true;

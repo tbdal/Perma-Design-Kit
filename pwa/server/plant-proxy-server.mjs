@@ -282,7 +282,11 @@ async function lookup(name) {
 
 // Expert mode: login, accounts and the feature table (server/auth.mjs) under
 // /api/auth/, /api/admin/ and /api/features. Same-origin only, no CORS.
-const handleAuth = createAuthHandler({ store: createStore(), isAllowedOrigin });
+const handleAuth = createAuthHandler({
+  store: createStore(), isAllowedOrigin,
+  // Modules may act on a redeemed invitation (expertServer is loaded just below).
+  onInviteRedeemed: (invite, user) => expertServer?.onInviteRedeemed?.(invite, user),
+});
 
 // Private server routes under /api/x/ from the expert repo (src/expert/server/,
 // only on the VPS), loaded when this checkout has it. Logged-in accounts only.

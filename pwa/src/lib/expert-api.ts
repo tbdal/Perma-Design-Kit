@@ -150,7 +150,14 @@ export interface EinstellungenApi {
   refreshSyncInfo(): void;
 }
 
+/** What the admin page offers plugins. */
+export interface AdminApi {
+  /** A box in the invitation form. `build` fills it and returns what it adds to the invitation (a plain JSON object, or null); `role` is the form's role select. */
+  addInviteExtra(featureId: string, build: (box: HTMLElement, role: HTMLSelectElement) => (() => Promise<Record<string, unknown> | null> | Record<string, unknown> | null)): void;
+}
+
 export interface PageApis {
+  admin: AdminApi;
   gartenplan: GartenplanApi;
   pflanzen: PflanzenApi;
   layout: LayoutApi;
