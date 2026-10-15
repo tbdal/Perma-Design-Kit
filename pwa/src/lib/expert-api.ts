@@ -64,6 +64,8 @@ export interface GartenplanApi {
   setHidden(featureId: string, ids: Iterable<string>): void;
   /** What is selected on the plan: placements (single or multi-selection) and the selected area. */
   getSelection(): { placementIds: string[]; areaId: string | null };
+  /** Called with the outline (plan metres) of every lasso drawn on the 2D plan, before the selection changes. */
+  onLasso(cb: (polygon: GardenPlanPoint[]) => void): void;
   /** Called whenever the selection changes. */
   onSelectionChange(cb: () => void): void;
   /** Selects these placements (one, several or none), as a click or the lasso would; none also clears a selected area. */

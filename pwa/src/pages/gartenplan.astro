@@ -684,6 +684,8 @@ import Layout from '../layouts/Layout.astro';
   let selectedPlacementId: string | null = null;
   /** Plugins listening for selection changes (expert-api onSelectionChange); called once per task. */
   const selectionListeners: (() => void)[] = [];
+  /** Plugins that also catch their own things with the lasso (expert-api onLasso). */
+  const lassoListeners: ((polygon: GardenPlanPoint[]) => void)[] = [];
   let selectionNotifyQueued = false;
   function queueSelectionNotify() {
     if (selectionNotifyQueued || !selectionListeners.length) return;
@@ -2596,6 +2598,7 @@ import Layout from '../layouts/Layout.astro';
     pan = null;
     if (!p.moved && e.type === 'pointerup') onCanvasTap(e, p.target);
   }
+  planSvg.addEventListener('dragstart', e => { if (lasso) e.preventDefault(); });
   planSvg.addEventListener('pointerup', endCanvasPointer);
   planSvg.addEventListener('pointercancel', endCanvasPointer);
 
@@ -2966,6 +2969,10 @@ import Layout from '../layouts/Layout.astro';
   }
 
   function startLasso(e: PointerEvent) {
+    // No text selection or native drag from this press: the browser would cancel
+    // the pointer after a few points and the lasso would end empty.
+    e.preventDefault();
+    window.getSelection()?.removeAllRanges();
     lasso = { id: e.pointerId, pts: [clientToMeters(planSvg, e.clientX, e.clientY)], lastX: e.clientX, lastY: e.clientY };
     planSvg.setPointerCapture(e.pointerId);
   }
@@ -2987,6 +2994,7 @@ import Layout from '../layouts/Layout.astro';
     selectedPlacementId = null;
     if (l.pts.length >= 3) {
       for (const pl of editing.placements) if (!hiddenByPlugin(pl.id) && pointInPolygon(pl, l.pts)) multiSel.add(pl.id);
+      for (const cb of lassoListeners) { try { cb(l.pts.map(p => ({ xM: p.xM, yM: p.yM }))); } catch (err) { console.warn('lasso listener failed', err); } }
     }
     if (multiSel.size && selectedAreaId) { selectedAreaId = null; markSelectedArea(); }
     refreshMarkerHighlight();
@@ -4397,6 +4405,7 @@ import Layout from '../layouts/Layout.astro';
       areaId: selectedAreaId,
     }),
     onSelectionChange: cb => { selectionListeners.push(cb); },
+    onLasso: cb => { lassoListeners.push(cb); },
     setSelection(ids) {
       if (!editing) return;
       if (!ids.length && selectedAreaId) { selectedAreaId = null; markSelectedArea(); }
