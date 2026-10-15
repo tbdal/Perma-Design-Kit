@@ -70,6 +70,8 @@ export interface GartenplanApi {
   setSelection(placementIds: string[]): void;
   /** Room on the 2D canvas covered by floating panels (px, per side): fitting the whole plan keeps it clear. */
   setViewInset(px: { left?: number; right?: number; top?: number; bottom?: number }): void;
+  /** Centers the 2D view on a plan point (metres); `widthM` = visible width, else the zoom stays. No effect in 3D. */
+  centerOn(xM: number, yM: number, widthM?: number): void;
   /** Where a plan point appears on screen in the 3D view (client coordinates); null in 2D or behind the camera. */
   projectToScreen(xM: number, yM: number): { x: number; y: number } | null;
   /** The canvas height (px) comes from `fn`, asked again on every window resize; null = back to the stored or automatic height. */

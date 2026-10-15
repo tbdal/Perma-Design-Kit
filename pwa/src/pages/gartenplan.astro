@@ -4414,6 +4414,12 @@ import Layout from '../layouts/Layout.astro';
       for (const k of ['left', 'right', 'top', 'bottom'] as const) viewInset[k] = Math.max(0, px[k] ?? 0);
       if (editing && plan3dContainer.hidden) { resetPlanViewState(); applyPlanView(); }
     },
+    centerOn(xM, yM, widthM) {
+      if (!editing || !plan3dContainer.hidden) return;
+      const w = widthM ? widthM * U : planView.w, h = w * canvasAspect();
+      planView = { x: xM * U - w / 2, y: yM * U - h / 2, w, h };
+      applyPlanView();
+    },
     projectToScreen: (xM, yM) => (view3d && !plan3dContainer.hidden ? view3d.projectToScreen(xM, yM) : null),
     setCanvasHeight(fn) {
       canvasHeightOverride = fn;
