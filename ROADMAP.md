@@ -83,7 +83,6 @@ Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann
 - [ ] **Background Sync API** — Service-Worker-basierter Sync, der auch funktioniert wenn die App geschlossen ist (Chrome only; graceful degradation)
 
 ### Polykulturen (Feinschliff)
-- [ ] **Rollen-Vollständigkeits-Indikator** — welche Rollen noch fehlen, auf der Polykulturenkarte in der Listenansicht
 - [ ] **Inkompatibilitäts-Warnung** — z.B. Walnuss-Allelopathie (Juglone)
 
 ### Baumscheibe-Karte (Feinschliff)
