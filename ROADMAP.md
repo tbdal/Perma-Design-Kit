@@ -3,37 +3,25 @@
 Offene Punkte. Abgeschlossene Roadmap-Punkte stehen in [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Prios
-- [ ] spendenbutton
 
 ## kurzfristig
 
-- [ ] GitHub release fsl
-- [ ] Team-Seite / Kooperationen
-- [ ] zulip wieder starten: cd /opt/zulip && docker compose start
 
   ## Fragen
-- [ ] Bundessortenamt anfragen, ob die „Gesamtliste Obst“ als Namensliste für die Sortenauswahl übernommen werden darf (vollständigste deutsche Liste, nur als PDF)
 
 ## bugs
 
 
 ## APs
 ### AP4
-- [ ] Offene Folgepunkte aus dem Lizenz-Check: EOX-Sentinel (nur nicht-kommerziell), OSM-Kachelserver (geringer Traffic), Edible-Forest-Gardens-Tabelle (keine ausdrückliche Lizenz, schriftliche Erlaubnis einholen) — Details siehe „Lizenz & Datenquellen" unten
 
 
 ## Karten
 
 ## Modi & Experten-Repo
-- [ ] **Live schalten:** nginx-Konfiguration (`/api/auth/`, `/api/admin/`, `/api/features`, `/x/` mit `auth_request`) nach `/etc/nginx/sites-available/` kopieren, `nginx -t`, reload; `plant-proxy` neu starten; ersten Admin anlegen (`npm run user -- add <name> --admin`); `src/expert/` im Checkout `/root/pdk/pwa` aus `/root/git/pdk-expert.git` klonen
-- [ ] **Backup des Bare-Repos** `/root/git/pdk-expert.git` (z. B. nächtliches `git bundle` an einen zweiten Ort)
-- [ ] **Einfacher Modus auf weiteren Seiten:** bisher nur der Waldgartenplan; Pflanzenliste (Filter, Tabellen-PDF), Polykulturen und Einstellungen genauso über `data-feature` vereinfachen
-- [ ] **Einfacher Modus prüfen:** mit 2–3 Neulingen ausprobieren — reichen die drei Schritte, fehlt etwas (z. B. Flächen für Teich/Beete)?
 
 ## Gartenplan Ideen
 Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann 2 + 3 als Paket „Standortanalyse“.
-- [ ] **Gebäude aus amtlichen 3D-Daten (LoD2):** Dachformen kommen jetzt aus OSM `roof:shape` bzw. geschätzt (Satteldach für Wohnhäuser); genauer wären die LoD2-Modelle der Länder (z. B. NRW offen) — als CityGML-Kacheln aber zu schwer für den Browser, bräuchte serverseitige Aufbereitung
-- [ ] **1-m-Gelände für weitere Länder:** bisher NRW, BB/BE, BW, HE, NI, NL. Bayern nur kostenpflichtiger WCS (DGM1 als Download offen), Sachsen/Sachsen-Anhalt lehnen ab (403), TH/SH/MV/RP/SL kein offener WCS gefunden — erneut prüfen oder Kacheln selbst bereitstellen
 
 
 
@@ -47,14 +35,11 @@ Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann
 
 ### Re: RECHTLICH/LIZENZ
 - [ ] contributor erwähnen: Jörn, Andi, Jens, Sebastian, pfaf
-  - [ ] lizenz
-  - [ ] bild
 - [x] lizenz auf github: fair-use — FSL-1.1-MIT seit 2026-10-04 (Tag `fsl-start`), Lizenzgeber Andreas + Jörn; Sebastian & Jens nur verlinkt
 - [x] Toensmeier: können wir seine Daten dafür nutzen? Anfrage ist raus@Joern: US-Recht verbietet Nutzung der Tabellendaten nicht
 
 
 ## später / Fragen für Präsentation
-- [ ] Zirkeldreher-Tool: Prüfen ob wir uns da was abkucken können, v.a. was garden plan angeht
 - [x] domain permadesignkit.org gekauft
 - [x] Tabelle: Baum/Strauch/Krautebene als Spalte und Filter/sortierfunktion
 - [x] Zeichen für Baum/Strauch.. ebene -> psd erneut in svg konvertieren
@@ -83,8 +68,6 @@ Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann
 ### Baumscheibe-Karte (Feinschliff)
 
 ### UI / UX
-- [ ] **Konfigurierbare Farbthemen** — Farbenblindheits-Modus
-- [ ] **Bild-Fallback** — Silhouette nach Pflanzentyp wenn kein Foto vorhanden
 
 ### Daten
 
@@ -123,27 +106,15 @@ Vorschläge vom 2026-10-04, nach Nutzen sortiert. Empfehlung: zuerst 1 + 9, dann
 ### Notizen & Beobachtungen
 
 ### Polykulturen — Kuratiertes Companion-Wissen (Phase 2)
-- [ ] **`companions.json` als Golden Master** — bekannte gute Kombinationen aus Standardliteratur (Jacke & Toensmeier, Crawford, Hemenway)
-- [ ] **Vorschläge erweitern** — mechanische Filter + Companion-Datenbank kombiniert
-- [ ] **Pflege-Workflow** für Companion-Daten (PR-Prozess)
 
 ### Polykulturen — Visualisierung (Phase 3)
-- [ ] **Kompatibilitäts-Matrix** als Heatmap (Sonne/Wasser/pH/Allelopathie)
 
 ### Polykulturen — SPARQL (Phase 4, Experiment)
-- [ ] **Wikidata-SPARQL** direkt aus dem Browser — z.B. alle Stickstoff-fixierenden Pflanzen
-- [ ] **Filter-Builder** im Vorschlags-Panel → SPARQL generieren, importieren
 - ⚠ Wikidata-Coverage für ökologische Properties dünn; als Ergänzung, nicht Ersatz
 
 ### Visuelles Layout
-- [ ] Pflanzplan-Ansicht: Bäume/Sträucher als Kreise auf 2D-Raster, maßstäblich
-- [ ] Schichtmodell-Visualisierung
-- [ ] Export als SVG/PNG
 
 ### Datenquellen
-- [ ] Offline-Datenbank (GBIF-Subset o.ä.)
-- [ ] Weitere Proxy-Quellen (Pflanzkollektiv, OpenEcoSystems)
-- [ ] Wikidata-Properties erweitern (Bestäuber, Schädlingsabwehr)
 
 ---
 
@@ -169,11 +140,8 @@ später optionales Abo-Modell für gepflegte Sammlungen.
 **Wann sinnvoll:** mehrere Nutzer, geteilte Bibliothek, kein Datenverlustrisiko.
 
 ### Mehrsprachigkeit
-- [ ] Pflanzennamen mehrsprachig (de/en/la)
 
 ### Migration PowerShell → PWA
-- [ ] PowerShell-Skripte als Legacy markieren
-- [ ] Import bestehender `.psd1`-Datensätze
 
 ---
 
