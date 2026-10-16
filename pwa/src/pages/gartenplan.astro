@@ -828,7 +828,9 @@ import Layout from '../layouts/Layout.astro';
   function plantLabel(p: PlantData | undefined): string {
     if (!p) return '—';
     const cn = displayCommonName(p);
-    const label = cn ? `${cn} (${p.latinName})` : p.latinName || '—';
+    // A variety shows instead of the Latin name: "Apfel (Topaz)"; species keep "Apfel (Malus domestica)".
+    const v = p.varietyName?.trim();
+    const label = cn ? `${cn} (${v || p.latinName})` : v ? `${p.latinName} (${v})` : p.latinName || '—';
     return escapeHtml(label);
   }
 
