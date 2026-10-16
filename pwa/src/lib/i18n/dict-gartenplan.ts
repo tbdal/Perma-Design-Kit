@@ -401,7 +401,7 @@ export const gartenplanDict: Dict = {
   selectedPanelHeading: { de: 'Ausgewählt', en: 'Selected' },
   selectedPanelEmpty: { de: 'Klicke eine platzierte Pflanze an, um sie zu bearbeiten.', en: 'Click a placed plant to edit it.' },
   btnRemovePlacement: { de: 'Entfernen', en: 'Remove' },
-  labelPlacementNotes: { de: 'Notizen', en: 'Notes' },
+  labelPlacementNotes: { de: 'Neue Aufgabe', en: 'New task' },
   noPlantsInCollection: { de: 'Noch keine Pflanzen im Bestand — erst auf der Pflanzenseite hinzufügen.', en: 'No plants in your collection yet — add some on the Plants page first.' },
 
   // ── Suggestions (compatScore, reused from Polykulturen) ──────────────

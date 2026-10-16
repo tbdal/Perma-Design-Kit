@@ -5,6 +5,7 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
 ## Pflanzennamen für Module und Luftbild-Zwischenspeicher 2026-10-16
+- [x] **Waldgartenplan:** Das Notizfeld im Fenster einer Pflanze heißt „Neue Aufgabe“; der lateinische Name steht in Planer-Listen und im Pflanzenfenster nur noch, wenn es keinen deutschen/englischen Namen gibt #minor #prüfen
 - [x] **Waldgartenplan:** Pflanzenlisten und Mehrfachauswahl zeigen bei Sorten die Sorte statt des lateinischen Namens („Apfel (Topaz)“) #bugs #prüfen
 - [x] **Waldgartenplan:** Module können Pflanzennamen beim Hineinzoomen weiter wachsen lassen (`maxPx` in `setLabelStyle`, langsamer als die Pflanze) #minor #prüfen
 - [x] **Waldgartenplan:** Module können Pflanzennamen im Plan je Pflanze ausblenden oder größer/kleiner zeichnen (Schnittstelle `setLabelStyle`) #minor #prüfen

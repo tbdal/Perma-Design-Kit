@@ -1,6 +1,6 @@
 import type { PlantData } from './types';
 import { escapeHtml, imageCreditOverlayHtml } from './html';
-import { displayName, nameWithVariety } from './plant-name';
+import { displayCommonName, displayName, nameWithVariety } from './plant-name';
 import { badgedFieldsOf, fieldsOf, fieldLabelKey, type FieldGroup } from './plant-fields';
 
 type Translate = (key: string, vars?: Record<string, string | number>) => string;
@@ -107,7 +107,7 @@ export function plantDetailHtml(p: PlantData, t: Translate): string {
       ${imageCreditOverlayHtml(p.imageCredit)}
     </div>` : ''}
     <p class="text-sm font-bold text-stone-800 dark:text-stone-100">${escapeHtml(nameWithVariety(p))}</p>
-    <p class="mb-1.5 text-xs italic text-stone-500 dark:text-stone-400">${escapeHtml(p.latinName)}</p>
+    ${displayCommonName(p) ? '<div class="mb-1.5"></div>' : `<p class="mb-1.5 text-xs italic text-stone-500 dark:text-stone-400">${escapeHtml(p.latinName)}</p>`}
     ${dims ? `<div class="mb-1.5 flex gap-3 text-xs text-stone-500 dark:text-stone-400">${dims}</div>` : ''}
     ${badges ? `<div class="mb-2 flex flex-wrap gap-1">${badges}</div>` : ''}
     ${groupPillsHtml(p, 'mb-2')}
