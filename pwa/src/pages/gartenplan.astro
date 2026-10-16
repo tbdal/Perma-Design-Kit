@@ -1972,6 +1972,9 @@ import Layout from '../layouts/Layout.astro';
       selectedPanel.appendChild(box);
       try { x.render(box, ids); } catch (e) { console.warn('selection extra failed', e); }
     }
+    // "Entfernen" goes last, below whatever plugins added (a destructive button belongs at the very bottom).
+    const rm = selectedPanel.querySelector('#btn-remove-placement');
+    if (rm && rm !== selectedPanel.lastElementChild) selectedPanel.appendChild(rm);
   }
   function renderSelectedPanelInner() {
     queueSelectionNotify();
