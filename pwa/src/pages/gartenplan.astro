@@ -143,11 +143,16 @@ import Layout from '../layouts/Layout.astro';
             <label class="block">
               <span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="labelGridSpacing">Rastergröße</span>
               <select id="g-grid-spacing" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none">
+                <option value="0.1">0.1 m</option>
                 <option value="0.5">0.5 m</option>
                 <option value="1" selected>1 m</option>
                 <option value="2">2 m</option>
               </select>
             </label>
+            <div id="new-grid-row" class="flex items-center gap-2 text-sm text-stone-700 dark:text-stone-200">
+              <label class="inline-flex items-center gap-1.5"><input id="g-new-grid" type="checkbox" class="accent-green-600" /> <span data-i18n="labelNewGrid">Meterlinien (Raster) im Plan zeigen</span></label>
+              <button id="btn-grid-info" type="button" data-i18n-title="gridInfoTitle" data-i18n-aria-label="gridInfoTitle" title="Wozu Meterlinien?" aria-label="Wozu Meterlinien?" class="flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold text-stone-500 ring-1 ring-stone-300 hover:bg-stone-100 dark:text-stone-300 dark:ring-stone-600 dark:hover:bg-stone-700">i</button>
+            </div>
             <label class="block">
               <span class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="labelNotes">Notizen</span>
               <textarea id="g-notes" rows="2" data-i18n-placeholder="placeholderNotes" placeholder="Standort, Boden, Beobachtungen…" class="mt-0.5 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none"></textarea>
@@ -418,6 +423,19 @@ import Layout from '../layouts/Layout.astro';
 
   <!-- Standort & Ausrichtung (Leaflet, src/lib/gartenplan-locate.ts) -->
   <!-- Plan-PDF: Papier, Maßstab, Kartenhintergrund -->
+  <dialog id="grid-info-dialog" aria-labelledby="grid-info-title" class="m-auto w-[min(30rem,calc(100vw-2rem))] rounded-xl bg-white dark:bg-stone-800 p-0 text-stone-800 dark:text-stone-100 shadow-2xl backdrop:bg-black/50">
+    <div class="space-y-3 p-5 text-sm">
+      <h2 id="grid-info-title" class="text-base font-semibold" data-i18n="gridInfoHead">Meterlinien (Raster)</h2>
+      <p data-i18n="gridInfo1">Die Linien liegen im Abstand der gewählten Rastergröße hinter dem Plan und zeigen Entfernungen auf einen Blick, zum Beispiel beim Setzen von Reihen oder beim Abschätzen von Pflanzabständen.</p>
+      <ul class="list-disc space-y-1 pl-5">
+        <li data-i18n="gridInfo2">Auf einer Karte oder einem Luftbild verdecken sie oft mehr, als sie helfen – darum sind sie dort zunächst aus.</li>
+        <li data-i18n="gridInfo3">Beim Zeichnen auf dem Raster (ohne Standort) sind sie an: Dort orientierst du dich an ihnen, und Ecken rasten auf den Linien ein.</li>
+        <li data-i18n="gridInfo4">Du kannst sie jederzeit im Plan ein- und ausblenden (Taste G) und passend zu einem schrägen Grundstück drehen.</li>
+      </ul>
+      <div class="text-right"><button id="grid-info-close" type="button" data-i18n="gridInfoClose" class="rounded-md bg-green-700 px-4 py-1.5 text-sm font-medium text-white hover:bg-green-800">Verstanden</button></div>
+    </div>
+  </dialog>
+
   <dialog id="pdf-dialog" aria-labelledby="pdf-title" class="m-auto w-[min(28rem,calc(100vw-2rem))] rounded-xl bg-white dark:bg-stone-800 p-0 text-stone-800 dark:text-stone-100 shadow-2xl backdrop:bg-black/50">
     <form method="dialog" class="space-y-3 p-5">
       <h2 id="pdf-title" class="text-base font-semibold" data-i18n="pdfTitle">Plan als PDF</h2>
@@ -890,6 +908,7 @@ import Layout from '../layouts/Layout.astro';
   try { gridInput.checked = localStorage.getItem('pgd-grid') !== '0'; } catch {}
   gridInput.addEventListener('change', () => {
     try { localStorage.setItem('pgd-grid', gridInput.checked ? '1' : '0'); } catch {}
+    if (editing) { editing.showGrid = gridInput.checked; scheduleAutosave(); }
     if (editing) rescaleUi();
     renderDrawingSvg();
     refreshBasemaps();
@@ -1072,6 +1091,11 @@ import Layout from '../layouts/Layout.astro';
     fHeight.value = String(editing.areaHeightM);
     fGridSpacing.value = String(editing.gridSpacingM);
     gridRotInput.value = String(editing.gridRotationDeg ?? 0);
+    // The plan's own choice of meter lines (made at creation); older plans keep the device setting.
+    if (editing.showGrid !== undefined) gridInput.checked = editing.showGrid;
+    else { try { gridInput.checked = localStorage.getItem('pgd-grid') !== '0'; } catch {} }
+    newGridTouched = false;
+    newGridCb.checked = drawMode() === 'grid';
     syncMapBar();
     fPolyculture.innerHTML = `<option value="">${t('linkedPolycultureNone')}</option>` + polycultures
       .map(pc => `<option value="${pc.id}" ${pc.id === editing!.polycultureId ? 'selected' : ''}>${escapeHtml(pc.name || t('planUnnamed'))}</option>`)
@@ -1080,6 +1104,7 @@ import Layout from '../layouts/Layout.astro';
     const lockInputs = editing.boundary.length > 0;
     [fWidth, fHeight, fGridSpacing, ...drawModeRadios].forEach(el => { el.disabled = lockInputs; });
     btnStartDrawing.classList.toggle('hidden', lockInputs);
+    newGridRow.classList.toggle('hidden', lockInputs);
     drawingHint.classList.add('hidden');
     drawingWrap.classList.add('hidden');
     mapdrawWrap.classList.add('hidden');
@@ -1326,8 +1351,18 @@ import Layout from '../layouts/Layout.astro';
   function drawMode(): 'map' | 'grid' {
     return [...drawModeRadios].find(r => r.checked)?.value === 'grid' ? 'grid' : 'map';
   }
+  // Meter lines for a new plan: off on a map (they hide the picture), on on the plain grid — until the user decides.
+  const newGridRow = document.getElementById('new-grid-row') as HTMLElement;
+  const newGridCb = document.getElementById('g-new-grid') as HTMLInputElement;
+  let newGridTouched = false;
+  newGridCb.addEventListener('change', () => { newGridTouched = true; });
+  const gridInfoDialog = document.getElementById('grid-info-dialog') as HTMLDialogElement;
+  document.getElementById('btn-grid-info')!.addEventListener('click', () => gridInfoDialog.showModal());
+  document.getElementById('grid-info-close')!.addEventListener('click', () => gridInfoDialog.close());
+  gridInfoDialog.addEventListener('click', e => { if (e.target === gridInfoDialog) gridInfoDialog.close(); });
   function setDrawMode(m: 'map' | 'grid') {
     drawModeRadios.forEach(r => { r.checked = r.value === m; });
+    if (!newGridTouched) newGridCb.checked = m === 'grid';
     sizeFields.classList.toggle('hidden', m === 'map');
     sizeFromMapHint.classList.toggle('hidden', m === 'grid');
   }
@@ -1418,6 +1453,8 @@ import Layout from '../layouts/Layout.astro';
     if (!editing) return;
     if (!fName.value.trim()) { alert(t('alertEnterName')); fName.focus(); return; }
     editing.gridSpacingM = gridSpacingM();
+    editing.showGrid = newGridCb.checked;
+    gridInput.checked = editing.showGrid;
     if (mapDrawer) {
       const pts = mapDrawer.points();
       if (pts.length < 3) return;

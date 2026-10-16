@@ -107,7 +107,9 @@ export interface GardenPlan {
   polycultureId: string | null;  // one-time prefill source only — no ongoing sync
   areaWidthM: number;
   areaHeightM: number;
-  gridSpacingM: number;          // 0.5 | 1 | 2
+  gridSpacingM: number;          // 0.1 | 0.5 | 1 | 2
+  /** Meter lines shown in the plan (chosen when the plan was made); absent = the device's last choice. */
+  showGrid?: boolean;
   /** Grid lines turned clockwise by this many degrees (−45…45), e.g. along
    *  a slanted plot; absent/0 = along the plan axes. Only the grid turns. */
   gridRotationDeg?: number;

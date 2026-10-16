@@ -316,3 +316,41 @@ test('new plan on the map: "Mein Standort" says why it fails, then works once al
   await expect(page.locator('#mapdraw-status')).toHaveText('');
   void errors;
 });
+
+test('new plan: meter lines are optional (off on a map, on on the grid), explained in a popup, 0.1 m grid size', async ({ page, errors }) => {
+  await stubNetwork(page);
+  await page.goto('/gartenplan/');
+  await page.click('#btn-new-plan');
+  await expect(page.locator('#g-new-grid')).not.toBeChecked();          // map is the default
+  await page.check('input[name="draw-mode"][value="grid"]');
+  await expect(page.locator('#g-new-grid')).toBeChecked();              // grid: on
+  await page.click('#btn-grid-info');
+  await expect(page.locator('#grid-info-dialog')).toBeVisible();
+  await expect(page.locator('#grid-info-dialog')).toContainText('Meterlinien');
+  await page.click('#grid-info-close');
+  await expect(page.locator('#grid-info-dialog')).toBeHidden();
+  await expect(page.locator('#g-grid-spacing option[value="0.1"]')).toHaveCount(1);
+  // an own choice is kept when switching the mode
+  await page.uncheck('#g-new-grid');
+  await page.check('input[name="draw-mode"][value="map"]');
+  await expect(page.locator('#g-new-grid')).not.toBeChecked();
+  await page.check('input[name="draw-mode"][value="grid"]');
+  await expect(page.locator('#g-new-grid')).not.toBeChecked();
+  // make a grid plan with lines off and 0.1 m: the plan keeps both
+  await page.fill('#g-name', 'Rasterlos');
+  await page.selectOption('#g-grid-spacing', '0.1');
+  await page.fill('#g-width', '5');
+  await page.fill('#g-height', '4');
+  await page.click('#btn-start-drawing');
+  const box = (await page.locator('#drawing-svg').boundingBox())!;
+  for (const [fx, fy] of [[0.2, 0.2], [0.8, 0.2], [0.8, 0.8], [0.2, 0.8]]) await page.mouse.click(box.x + box.width * fx, box.y + box.height * fy);
+  await page.click('#btn-finish-boundary');
+  await expect(page.locator('#g-grid')).not.toBeChecked();
+  await page.waitForTimeout(2500);
+  const saved = await page.evaluate(() => new Promise<any>(res => {
+    const r = indexedDB.open('permaculture-guilds');
+    r.onsuccess = () => { const q = r.result.transaction('gardenPlans').objectStore('gardenPlans').getAll(); q.onsuccess = () => res(q.result.map((p: any) => [p.name, p.showGrid, p.gridSpacingM])); };
+  }));
+  expect(saved).toContainEqual(['Rasterlos', false, 0.1]);
+  void errors;
+});
