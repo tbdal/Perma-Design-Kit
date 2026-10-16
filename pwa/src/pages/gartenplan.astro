@@ -1535,7 +1535,7 @@ import Layout from '../layouts/Layout.astro';
     canvasRectCache = null;
     if (rect3d && view2dAtEnter3d && camera3dUnmoved) {
       // Only looked at in 3D (camera not moved): back to exactly the 2D section from before.
-      planView = { ...view2dAtEnter3d };
+      planView = { ...view2dAtEnter3d }; planViewFitted = false;
       last2dView = { ...planView };
     } else if (rect3d) {
       // Keep the perspective: 2D shows what the 3D camera was looking at.
@@ -1543,7 +1543,7 @@ import Layout from '../layouts/Layout.astro';
       const aspect = canvasAspect();
       const w = Math.max((r.maxX - r.minX), (r.maxY - r.minY) / aspect) * U;
       const cxU = (r.minX + r.maxX) / 2 * U, cyU = (r.minY + r.maxY) / 2 * U;
-      planView = { x: cxU - w / 2, y: cyU - w * aspect / 2, w, h: w * aspect };
+      planView = { x: cxU - w / 2, y: cyU - w * aspect / 2, w, h: w * aspect }; planViewFitted = false;
       last2dView = { ...planView };
     }
     zoomControls.hidden = false;
@@ -1873,7 +1873,7 @@ import Layout from '../layouts/Layout.astro';
     if (v && [v.x, v.y, v.w, v.h].every(Number.isFinite) && v.w > 0) {
       // The canvas may have another shape now: same center and width, new aspect.
       const h = v.w * canvasAspect();
-      planView = { x: v.x, y: v.y + v.h / 2 - h / 2, w: v.w, h };
+      planView = { x: v.x, y: v.y + v.h / 2 - h / 2, w: v.w, h }; planViewFitted = false;
     }
     const c = saved?.cam3d;
     if (c && Array.isArray(c.position) && Array.isArray(c.target) && [...c.position, ...c.target].every(Number.isFinite)) {
@@ -1884,6 +1884,11 @@ import Layout from '../layouts/Layout.astro';
   }
 
   window.addEventListener('pagehide', saveViewState);
+  // A phone often ends the page without pagehide/visibilitychange (swiped away, killed in the background):
+  // the view is saved shortly after every change, and now and then (3D camera, mode).
+  let viewSaveTimer: ReturnType<typeof setTimeout> | undefined;
+  const saveViewSoon = () => { clearTimeout(viewSaveTimer); viewSaveTimer = setTimeout(saveViewState, 700); };
+  setInterval(() => { if (!document.hidden) saveViewState(); }, 15_000);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveViewState(); });
 
   function renderPlantPicker() {
@@ -2455,6 +2460,8 @@ import Layout from '../layouts/Layout.astro';
   // pan, taps (place plant, add area corner, select) fire on release.
   const U = SVG_UNITS_PER_METER;
   let planView = { x: 0, y: 0, w: 0, h: 0 };
+  /** The view is the fitted "whole project" one (nobody zoomed, panned or restored a section): only then a resize / new inset re-fits it. */
+  let planViewFitted = true;
   let basemapViewTimer: ReturnType<typeof setTimeout> | null = null;
 
   /** Height/width of the 2D canvas; the view (viewBox) always has this
@@ -2486,6 +2493,7 @@ import Layout from '../layouts/Layout.astro';
     const MIN_M = 4;
     if (box.x1 - box.x0 < MIN_M) { const c = (box.x0 + box.x1) / 2; box.x0 = c - MIN_M / 2; box.x1 = c + MIN_M / 2; }
     if (box.y1 - box.y0 < MIN_M) { const c = (box.y0 + box.y1) / 2; box.y0 = c - MIN_M / 2; box.y1 = c + MIN_M / 2; }
+    planViewFitted = true;
     const OX = box.x0 * U, OY = box.y0 * U;
     const W = (box.x1 - box.x0) * U, H = (box.y1 - box.y0) * U, a = canvasAspect();
     const r = planSvg.getBoundingClientRect();
@@ -2516,6 +2524,7 @@ import Layout from '../layouts/Layout.astro';
   }
   function applyPlanView() {
     planSvg.setAttribute('viewBox', `${planView.x} ${planView.y} ${planView.w} ${planView.h}`);
+    saveViewSoon();
     if (basemapViewTimer) clearTimeout(basemapViewTimer);
     basemapViewTimer = setTimeout(() => renderBasemap(planSvg), 120);
     if (!rescaleQueued) { rescaleQueued = true; requestAnimationFrame(rescaleUi); }
@@ -2661,7 +2670,7 @@ import Layout from '../layouts/Layout.astro';
     return { x: cx - (cx - base.x) * f, y: cy - (cy - base.y) * f, w, h: base.h * f };
   }
   function zoomAtCenter(factor: number) {
-    planView = zoomedView(planView, factor, planView.x + planView.w / 2, planView.y + planView.h / 2);
+    planView = zoomedView(planView, factor, planView.x + planView.w / 2, planView.y + planView.h / 2); planViewFitted = false;
     applyPlanView();
   }
   document.getElementById('zoom-in')!.addEventListener('click', () => zoomAtCenter(1.5));
@@ -2671,7 +2680,7 @@ import Layout from '../layouts/Layout.astro';
     if (!(e.ctrlKey || e.metaKey) || !editing) return;
     e.preventDefault();
     const p = clientToMeters(planSvg, e.clientX, e.clientY);
-    planView = zoomedView(planView, Math.exp(-e.deltaY * 0.0025), p.xM * U, p.yM * U);
+    planView = zoomedView(planView, Math.exp(-e.deltaY * 0.0025), p.xM * U, p.yM * U); planViewFitted = false;
     applyPlanView();
   }, { passive: false });
 
@@ -2698,7 +2707,7 @@ import Layout from '../layouts/Layout.astro';
     if (lasso && e.pointerId === lasso.id) { extendLasso(e); return; }
     if (pinch && activePointers.size === 2) {
       const [a, b] = [...activePointers.values()];
-      planView = zoomedView(pinch.view, Math.hypot(a.x - b.x, a.y - b.y) / pinch.d, pinch.cx, pinch.cy);
+      planView = zoomedView(pinch.view, Math.hypot(a.x - b.x, a.y - b.y) / pinch.d, pinch.cx, pinch.cy); planViewFitted = false;
       applyPlanView();
       return;
     }
@@ -2709,7 +2718,7 @@ import Layout from '../layouts/Layout.astro';
     }
     if (!pan.moved) return;
     const unitsPerPx = 1 / pxPerUnit();
-    planView = { ...pan.view, x: pan.view.x - (e.clientX - pan.sx) * unitsPerPx, y: pan.view.y - (e.clientY - pan.sy) * unitsPerPx };
+    planView = { ...pan.view, x: pan.view.x - (e.clientX - pan.sx) * unitsPerPx, y: pan.view.y - (e.clientY - pan.sy) * unitsPerPx }; planViewFitted = false;
     applyPlanView();
   });
 
@@ -2768,7 +2777,7 @@ import Layout from '../layouts/Layout.astro';
     const w0 = editing.areaWidthM, h0 = editing.areaHeightM;
     const shift = growPlanToFit(editing, 1);
     if (shift) {
-      planView = { ...planView, x: planView.x + shift.dx * U, y: planView.y + shift.dy * U };
+      planView = { ...planView, x: planView.x + shift.dx * U, y: planView.y + shift.dy * U }; planViewFitted = false;
       fWidth.value = String(editing.areaWidthM);
       fHeight.value = String(editing.areaHeightM);
       planView.h = planView.w * canvasAspect();
@@ -3505,7 +3514,7 @@ import Layout from '../layouts/Layout.astro';
   function centerOnGps() {
     if (!gpsPos || !plan3dContainer.hidden) return;
     const w = Math.min(planView.w, 30 * U), h = w * canvasAspect();
-    planView = { x: gpsPos.xM * U - w / 2, y: gpsPos.yM * U - h / 2, w, h };
+    planView = { x: gpsPos.xM * U - w / 2, y: gpsPos.yM * U - h / 2, w, h }; planViewFitted = false;
     applyPlanView();
   }
   gpsBtn.addEventListener('click', () => {
@@ -4256,7 +4265,7 @@ import Layout from '../layouts/Layout.astro';
     if ((y1 - y0) * U * 1.15 > w * aspect) w = (y1 - y0) * U * 1.15 / aspect;
     const h = w * aspect;
     const cx = ((x0 + x1) / 2) * U, cy = ((y0 + y1) / 2) * U;
-    planView = { x: cx - w / 2, y: cy - h / 2, w, h };
+    planView = { x: cx - w / 2, y: cy - h / 2, w, h }; planViewFitted = false;
     applyPlanView();
     renderWarnHover();
   }
@@ -4274,7 +4283,7 @@ import Layout from '../layouts/Layout.astro';
     const needW = (x1 - x0) * U, needH = (y1 - y0) * U;
     if (needW > w || needH > h) { const f = Math.max(needW / w, needH / h); w *= f; h *= f; }
     const cx = ((x0 + x1) / 2) * U, cy = ((y0 + y1) / 2) * U;
-    planView = { x: cx - w / 2, y: cy - h / 2, w, h };
+    planView = { x: cx - w / 2, y: cy - h / 2, w, h }; planViewFitted = false;
     applyPlanView();
   }
   document.addEventListener('keydown', (e: KeyboardEvent) => {
@@ -4672,12 +4681,13 @@ import Layout from '../layouts/Layout.astro';
     },
     setViewInset(px) {
       for (const k of ['left', 'right', 'top', 'bottom'] as const) viewInset[k] = Math.max(0, px[k] ?? 0);
-      if (editing && plan3dContainer.hidden) { resetPlanViewState(); applyPlanView(); }
+      // A resize or a new inset must not throw away the section the user is looking at.
+      if (editing && plan3dContainer.hidden && (planViewFitted || !planView.w)) { resetPlanViewState(); applyPlanView(); }
     },
     centerOn(xM, yM, widthM) {
       if (!editing || !plan3dContainer.hidden) return;
       const w = widthM ? widthM * U : planView.w, h = w * canvasAspect();
-      planView = { x: xM * U - w / 2, y: yM * U - h / 2, w, h };
+      planView = { x: xM * U - w / 2, y: yM * U - h / 2, w, h }; planViewFitted = false;
       applyPlanView();
     },
     projectToScreen: (xM, yM) => (view3d && !plan3dContainer.hidden ? view3d.projectToScreen(xM, yM) : null),

@@ -5,6 +5,7 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
 ## Pflanzennamen für Module und Luftbild-Zwischenspeicher 2026-10-16
+- [x] **Waldgartenplan:** Die gewählte Ansicht bleibt beim Ändern der Fenstergröße (Vollbild an/aus, Drehen) und beim erneuten Öffnen erhalten – vorher sprang die Karte auf „ganzes Projekt“ zurück; die Ansicht wird zudem laufend gesichert, nicht nur beim Schließen #bugs #prüfen
 - [x] **Waldgartenplan:** Gebäude werden bis 600 m um den Plan geladen und gezeigt (vorher 150 m), das Gelände reicht entsprechend weit #minor #prüfen
 - [x] **Waldgartenplan, neuer Plan:** Ein neuer Plan startet mit sichtbaren Gebäuden (und für Module mit dem Ereignis `pdk-plan-created` z. B. mit sichtbarem Wald) #minor #prüfen
 - [x] **Waldgartenplan, neuer Plan:** Meterlinien sind beim Anlegen wählbar (auf der Karte zunächst aus, auf dem Raster an), mit Infofenster; neue Rastergröße 0,1 m; die Wahl wird mit dem Plan gespeichert #minor #prüfen
