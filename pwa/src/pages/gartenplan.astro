@@ -3225,6 +3225,8 @@ import Layout from '../layouts/Layout.astro';
   // ── Gelände (Höhendaten) ───────────────────────────────────────────────
   // Loaded once per plan location/size from the open Terrain Tiles; drives
   // the 3D ground, the 2D contour lines and the slope read-out.
+  /** OSM buildings are loaded this far around the plan, the terrain grid reaches as far. */
+  const BUILDINGS_MARGIN_M = 600;
   let terrain: ElevationGrid | null = null;
   let terrainKey = '';
   const contoursToggle = document.getElementById('contours-toggle')!;
@@ -3256,11 +3258,11 @@ import Layout from '../layouts/Layout.astro';
     renderWater();
     terrainInfo.textContent = t('terrainLoading');
     const maxDim = Math.max(plan.areaWidthM, plan.areaHeightM);
-    // Margin covers the OSM buildings (150 m) so they stand on the same
+    // Margin covers the OSM buildings (600 m) so they stand on the same
     // ground as the 3D terrain around them.
     // Big plans (up to 5 km) get a margin of at most 1 km and a coarser grid
     // (≤ ~800 samples a side), so the grid stays a few hundred thousand cells.
-    const m = Math.max(160, Math.min(maxDim, 1000));
+    const m = Math.max(BUILDINGS_MARGIN_M + 10, Math.min(maxDim, 1000));
     // With an official 1 m model (dgm.ts) the grid gets finer and is refined
     // with its heights; elsewhere the Terrain Tiles alone (≈ 25–30 m data).
     const dgm = dgmFor(geo.lat, geo.lon);
@@ -4034,7 +4036,8 @@ import Layout from '../layouts/Layout.astro';
     geoGate(buildingsToggle, !!geo);
     syncBuildingsButton();
     if (!plan || !geo || !buildingsInput.checked || !featureOn('buildings')) return;
-    const m = 150;
+    // Buildings far beyond the plot show too (3D view, shade): 600 m around it.
+    const m = BUILDINGS_MARGIN_M;
     const key = buildingsKeyOf(plan);
     if (key === buildingsKey) return;
     buildingsKey = key;
