@@ -80,7 +80,7 @@ export interface ToolbarEls {
   form: HTMLFormElement;
   query: HTMLInputElement;
   searchBtn: HTMLButtonElement;
-  myPosBtn: HTMLElement;
+  myPosBtn: HTMLButtonElement;
   status: HTMLElement;
   layerRadios: NodeListOf<HTMLInputElement>;
 }
@@ -114,11 +114,24 @@ export function wireToolbar(base: BaseMap, els: ToolbarEls, lang: Lang, t: (k: s
   };
   const onMyPosition = () => {
     if (!navigator.geolocation) { els.status.textContent = t('locateGeoError'); return; }
-    els.status.textContent = '…';
+    els.status.textContent = t('locateGeoWait');
+    els.myPosBtn.disabled = true;
+    const done = () => { els.myPosBtn.disabled = false; };
+    const fail = (err: GeolocationPositionError) => {
+      done();
+      // Permission refused / blocked is a different story from "no fix": say which.
+      els.status.textContent = err.code === err.PERMISSION_DENIED ? t('locateGeoDenied') : err.code === err.TIMEOUT ? t('locateGeoTimeout') : t('locateGeoError');
+    };
+    const ok = (pos: GeolocationPosition) => { done(); els.status.textContent = ''; map.setView([pos.coords.latitude, pos.coords.longitude], 19); };
+    // First the quick network/Wi-Fi position (works on computers without GPS, a 10 s
+    // high-accuracy request mostly timed out there), then GPS as the second try.
     navigator.geolocation.getCurrentPosition(
-      pos => { els.status.textContent = ''; map.setView([pos.coords.latitude, pos.coords.longitude], 19); },
-      () => { els.status.textContent = t('locateGeoError'); },
-      { enableHighAccuracy: true, timeout: 10000 },
+      ok,
+      err => {
+        if (err.code === err.PERMISSION_DENIED) { fail(err); return; }
+        navigator.geolocation.getCurrentPosition(ok, fail, { enableHighAccuracy: true, timeout: 20000, maximumAge: 60000 });
+      },
+      { enableHighAccuracy: false, timeout: 12000, maximumAge: 5 * 60_000 },
     );
   };
   const onLayer = (e: Event) => {

@@ -57,7 +57,7 @@ export function openLocateDialog(opts: LocateOptions): Promise<LocateResult> {
     form: $('locate-search-form') as HTMLFormElement,
     query,
     searchBtn: $('locate-search-btn') as HTMLButtonElement,
-    myPosBtn: $('locate-mypos'),
+    myPosBtn: $('locate-mypos') as HTMLButtonElement,
     status,
     layerRadios,
   }, opts.lang, opts.t);

@@ -299,3 +299,20 @@ test.describe('sun in the garden’s local time', () => {
     void errors;
   });
 });
+
+test('new plan on the map: "Mein Standort" says why it fails, then works once allowed', async ({ page, context, errors }) => {
+  await stubNetwork(page);
+  await page.goto('/gartenplan/');
+  await page.click('#btn-new-plan');
+  await expect(page.locator('#mapdraw-wrap')).toBeVisible();
+  // not allowed: a clear message and the button usable again
+  await page.click('#mapdraw-mypos');
+  await expect(page.locator('#mapdraw-status')).toContainText('Standort nicht erlaubt');
+  await expect(page.locator('#mapdraw-mypos')).toBeEnabled();
+  // allowed: the map moves there, status empties
+  await context.grantPermissions(['geolocation']);
+  await context.setGeolocation({ latitude: 50.9, longitude: 7.0, accuracy: 20 });
+  await page.click('#mapdraw-mypos');
+  await expect(page.locator('#mapdraw-status')).toHaveText('');
+  void errors;
+});

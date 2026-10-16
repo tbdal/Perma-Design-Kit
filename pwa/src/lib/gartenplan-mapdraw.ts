@@ -37,7 +37,7 @@ export function createMapDrawer(el: HTMLElement, opts: MapDrawerOptions): MapDra
     form: $('mapdraw-search-form') as HTMLFormElement,
     query: $('mapdraw-query') as HTMLInputElement,
     searchBtn: $('mapdraw-search-btn') as HTMLButtonElement,
-    myPosBtn: $('mapdraw-mypos'),
+    myPosBtn: $('mapdraw-mypos') as HTMLButtonElement,
     status: $('mapdraw-status'),
     layerRadios: document.querySelectorAll<HTMLInputElement>('input[name="mapdraw-layer"]'),
   }, opts.lang, opts.t);
