@@ -42,7 +42,28 @@ describe('orthophoto sources', () => {
   it('falls back to the coarse satellite layer outside all coverages', () => {
     const geo = { lat: 48.8566, lon: 2.3522, rotationDeg: 0, basemap: 'ortho' as const, opacity: 1 };
     expect(sourceForGeo(geo)).toBe(S2_TILES);
-    expect(sourceForGeo({ ...geo, lat: 48.1372, lon: 11.5756 })?.url).toContain('geoservices.bayern.de');
+    expect(sourceForGeo({ ...geo, lat: 48.1372, lon: 11.5756 })?.url).toBe('/geo/ortho/by/od/wms/dop/v1/dop40?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=by_dop40c&STYLES=&FORMAT=image/jpeg&CRS=EPSG:3857&WIDTH=256&HEIGHT=256&BBOX={bbox}');
     expect(sourceForGeo({ ...geo, basemap: 'none' })).toBeNull();
+  });
+});
+
+describe('aerial photos through the own cache', () => {
+  it('turns each service URL into /geo/ortho/<id>/<path and query>', async () => {
+    const { orthoProxyUrl } = await import('../src/lib/gartenplan-background');
+    const { ORTHO_SOURCES } = await import('../src/lib/ortho-sources');
+    for (const o of ORTHO_SOURCES) expect(orthoProxyUrl(o)).toMatch(new RegExp(`^/geo/ortho/${o.id}/`));
+    expect(orthoProxyUrl({ id: 'ch', url: 'https://wmts.geo.admin.ch/1.0.0/x/{z}/{x}/{y}.jpeg' })).toBe('/geo/ortho/ch/1.0.0/x/{z}/{x}/{y}.jpeg');
+  });
+});
+
+describe('nginx cache knows every aerial photo service', () => {
+  it('has a map entry id → host for each source', async () => {
+    const { readFileSync } = await import('node:fs');
+    const conf = readFileSync(new URL('../server/nginx/permadesignkit.org.conf', import.meta.url), 'utf8');
+    const { ORTHO_SOURCES } = await import('../src/lib/ortho-sources');
+    for (const o of ORTHO_SOURCES) {
+      const host = new URL(o.url.replace(/\{[a-z]+\}/g, '0')).host;
+      expect(conf).toMatch(new RegExp(`\\n\\s+${o.id} ${host.replace(/\./g, '\\.')};`));
+    }
   });
 });

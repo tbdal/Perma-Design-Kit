@@ -20,6 +20,9 @@ Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerb
 - [x] **Zugänge:** Kommentarfeld je Zugang auf der Admin-Seite; Eingeladene bekommen automatisch „Eingeladen von …“ als Kommentar; nach der Einladung wird der Team- bzw. Experten-Modus gleich eingeschaltet #minor #prüfen
 - [x] **Einladungen:** Admins erstellen auf der Seite „Funktionen verwalten“ einen Link oder QR-Code für genau eine Person; Rolle (Experte/Team) vorgewählt, 14 Tage gültig, nur einmal einlösbar. Die Person legt Name und Passwort selbst fest #major #prüfen
 
+## Luftbilder aus dem eigenen Zwischenspeicher 2026-10-16
+- [x] **Waldgartenplan:** Amtliche Luftbilder (Satellit fein) laden über den eigenen Server und werden dort 30 Tage, im Browser eine Woche gemerkt – vorher kam jede Kachel bei jedem Besuch neu vom Landesamt #bugs #prüfen
+
 ## Pflanzenkacheln und Druckleiste 2026-10-16
 - [x] **Waldgartenplan:** Beschriftung auf der Karte (auch im PDF) und Name im Auswahl-Popup zeigen die Sorte in Klammern, z. B. „Apfel (Topaz)“ #minor #prüfen
 - [x] **Waldgartenplan, Modul-Schnittstelle:** Module können unter der Auswahl einen Kasten zeigen und Pflanzungen auf einen anderen Listeneintrag setzen #minor #prüfen

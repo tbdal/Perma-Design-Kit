@@ -54,9 +54,16 @@ export function fallbackTileUrl(src: TileSource, z: number, x: number, y: number
 }
 export const FALLBACK_ATTRIBUTION = 'Ersatz: ' + OSM_TILES.attributionHtml;
 
+/** The aerial photo tile URL through our own server cache (/geo/ortho/<id>/…, see the nginx
+ *  config): the survey offices send no caching headers, so every visit loaded every tile again. */
+export function orthoProxyUrl(o: Pick<OrthoSource, 'id' | 'url'>): string {
+  const m = /^https:\/\/[^/]+(\/.*)$/.exec(o.url);
+  return m ? `/geo/ortho/${o.id}${m[1]}` : o.url;
+}
+
 export function orthoTiles(o: OrthoSource): TileSource {
   return {
-    url: o.url, maxZoom: o.maxZoom, minZoom: o.minZoom, fallback: S2_TILES, region: o.region,
+    url: orthoProxyUrl(o), maxZoom: o.maxZoom, minZoom: o.minZoom, fallback: S2_TILES, region: o.region,
     // Short credit for the overview fallback; the full one shows with 'sat'.
     attributionHtml: o.attributionHtml.replace('{YEAR}', String(new Date().getFullYear()))
       + ' · Übersicht: <a href="https://s2maps.eu" target="_blank" rel="noopener">Sentinel-2 cloudless</a> (EOX, Copernicus)',
