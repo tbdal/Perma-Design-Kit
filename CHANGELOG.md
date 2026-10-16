@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Pflanzennamen für Module und Luftbild-Zwischenspeicher 2026-10-16
+- [x] **Waldgartenplan:** Module können Pflanzennamen im Plan je Pflanze ausblenden oder größer/kleiner zeichnen (Schnittstelle `setLabelStyle`) #minor #prüfen
+
 ## Lasso bricht nicht mehr ab 2026-10-15
 - [x] **Waldgartenplan, Lasso:** bricht nicht mehr nach wenigen Punkten ab, wenn auf der Seite Text markiert war (der Browser begann sonst ein Ziehen und das Lasso blieb leer) #bugs #prüfen
 - [x] **Waldgartenplan, Modul-Schnittstelle:** Umriss jedes Lassos an Module melden #minor #prüfen

@@ -2113,10 +2113,13 @@ import Layout from '../layouts/Layout.astro';
     blob.setAttribute('stroke-dasharray', !planted ? `${3 / ppu} ${3 / ppu}` : warned && !hot ? `${5 / ppu} ${3 / ppu}` : '');
     if (!planted) blob.setAttribute('fill-opacity', '0.15'); else blob.removeAttribute('fill-opacity');
     group.querySelector('.marker-dot')?.setAttribute('r', String(Math.min(3, Math.max(1, rPx * 0.25)) / ppu));
-    const fontPx = single ? 13 : Math.min(13, rPx * 0.7);
+    // Plugins may hide a plant's name or make it bigger/smaller (setLabelStyle).
+    const ls = labelStyleFor(placement.id);
+    const scale = ls?.scale ?? 1;
+    const fontPx = (single ? 13 : Math.min(13, rPx * 0.7)) * scale;
     const label = group.querySelector('.marker-label') as SVGTextElement;
     const f = fontPx / ppu;
-    label.style.display = single || fontPx >= 7 ? '' : 'none';
+    label.style.display = single || (!ls?.hidden && fontPx >= 7) ? '' : 'none';
     label.setAttribute('y', String(radiusU + f * 1.05));
     label.setAttribute('font-size', String(f));
     label.setAttribute('stroke-width', String(f * 0.25));
@@ -4451,6 +4454,16 @@ import Layout from '../layouts/Layout.astro';
   // Placements and areas plugins hide (setHidden): a style rule keeps them out
   // of the 2D plan across redraws; the 3D view leaves them out when built.
   const pluginHidden = new Map<string, Set<string>>();
+  // Name labels plugins change (setLabelStyle): asked per placement in updateMarkerShape().
+  const pluginLabelStyle = new Map<string, (placementId: string) => { hidden?: boolean; scale?: number } | null | undefined>();
+  function labelStyleFor(id: string): { hidden?: boolean; scale?: number } | null {
+    for (const [featureId, fn] of pluginLabelStyle) {
+      if (!featureOn(featureId)) continue;
+      const st = fn(id);
+      if (st) return st;
+    }
+    return null;
+  }
   const hiddenStyle = document.createElement('style');
   document.head.appendChild(hiddenStyle);
   function hiddenByPlugin(id: string): boolean {
@@ -4575,6 +4588,11 @@ import Layout from '../layouts/Layout.astro';
       if (data === undefined) delete ext[featureId]; else ext[featureId] = data;
       if (Object.keys(ext).length) editing.ext = ext; else delete editing.ext;
       scheduleAutosave();
+    },
+    setLabelStyle(featureId, fn) {
+      if (!fn && !pluginLabelStyle.has(featureId)) return;
+      if (fn) pluginLabelStyle.set(featureId, fn); else pluginLabelStyle.delete(featureId);
+      for (const pl of editing?.placements ?? []) { const g = markerMap.get(pl.id); if (g) updateMarkerShape(g, pl, plantsById.get(pl.plantId)); }
     },
     setHidden(featureId, ids) {
       pluginHidden.set(featureId, new Set(ids));
