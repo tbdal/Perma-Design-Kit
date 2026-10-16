@@ -2116,7 +2116,11 @@ import Layout from '../layouts/Layout.astro';
     // Plugins may hide a plant's name or make it bigger/smaller (setLabelStyle).
     const ls = labelStyleFor(placement.id);
     const scale = ls?.scale ?? 1;
-    const fontPx = (single ? 13 : Math.min(13, rPx * 0.7)) * scale;
+    // Like a map the name follows the plant's size on screen, up to 13 px; with a plugin's maxPx it
+    // keeps growing beyond that, slower (a third of the plant's growth), up to maxPx.
+    const basePx = 13 * scale, natPx = rPx * 0.7 * scale;
+    const growPx = natPx <= basePx ? natPx : Math.min(Math.max(basePx, ls?.maxPx ?? basePx), basePx + (natPx - basePx) / 3);
+    const fontPx = single ? Math.max(basePx, growPx) : growPx;
     const label = group.querySelector('.marker-label') as SVGTextElement;
     const f = fontPx / ppu;
     label.style.display = single || (!ls?.hidden && fontPx >= 7) ? '' : 'none';
@@ -4455,8 +4459,8 @@ import Layout from '../layouts/Layout.astro';
   // of the 2D plan across redraws; the 3D view leaves them out when built.
   const pluginHidden = new Map<string, Set<string>>();
   // Name labels plugins change (setLabelStyle): asked per placement in updateMarkerShape().
-  const pluginLabelStyle = new Map<string, (placementId: string) => { hidden?: boolean; scale?: number } | null | undefined>();
-  function labelStyleFor(id: string): { hidden?: boolean; scale?: number } | null {
+  const pluginLabelStyle = new Map<string, (placementId: string) => { hidden?: boolean; scale?: number; maxPx?: number } | null | undefined>();
+  function labelStyleFor(id: string): { hidden?: boolean; scale?: number; maxPx?: number } | null {
     for (const [featureId, fn] of pluginLabelStyle) {
       if (!featureOn(featureId)) continue;
       const st = fn(id);

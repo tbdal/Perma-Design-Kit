@@ -68,8 +68,8 @@ export interface GartenplanApi {
   setPlacementPlant(placementIds: string[], plant: PlantData): Promise<void>;
   /** Whether a placement or area is hidden by some feature (setHidden). */
   isHidden(id: string): boolean;
-  /** Plant name labels on the 2D plan: per placement hidden and/or scaled (1 = normal; the selected plant always shows its name); null = back to normal. Asked again on every redraw. */
-  setLabelStyle(featureId: string, fn: ((placementId: string) => { hidden?: boolean; scale?: number } | null | undefined) | null): void;
+  /** Plant name labels on the 2D plan: per placement hidden and/or scaled (1 = normal; the selected plant always shows its name); `maxPx` = how big the name may grow when zooming in (default 13 px × scale); null = back to normal. Asked again on every redraw. */
+  setLabelStyle(featureId: string, fn: ((placementId: string) => { hidden?: boolean; scale?: number; maxPx?: number } | null | undefined) | null): void;
   /** Placements and areas (by id) not drawn in 2D and 3D while the feature is on; replaces the feature's earlier set. */
   setHidden(featureId: string, ids: Iterable<string>): void;
   /** What is selected on the plan: placements (single or multi-selection) and the selected area. */
