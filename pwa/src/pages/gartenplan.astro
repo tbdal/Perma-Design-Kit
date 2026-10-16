@@ -1455,6 +1455,9 @@ import Layout from '../layouts/Layout.astro';
     editing.gridSpacingM = gridSpacingM();
     editing.showGrid = newGridCb.checked;
     gridInput.checked = editing.showGrid;
+    // A new plan starts with buildings and forest shown (modules listen for the event).
+    if (!buildingsInput.checked) { buildingsInput.checked = true; buildingsInput.dispatchEvent(new Event('change')); }
+    document.dispatchEvent(new CustomEvent('pdk-plan-created', { detail: { id: editing.id } }));
     if (mapDrawer) {
       const pts = mapDrawer.points();
       if (pts.length < 3) return;

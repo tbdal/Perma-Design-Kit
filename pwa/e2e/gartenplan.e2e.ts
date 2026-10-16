@@ -341,11 +341,13 @@ test('new plan: meter lines are optional (off on a map, on on the grid), explain
   await page.selectOption('#g-grid-spacing', '0.1');
   await page.fill('#g-width', '5');
   await page.fill('#g-height', '4');
+  await page.evaluate(() => { (window as any).__created = 0; document.addEventListener('pdk-plan-created', () => { (window as any).__created++; }); });
   await page.click('#btn-start-drawing');
   const box = (await page.locator('#drawing-svg').boundingBox())!;
   for (const [fx, fy] of [[0.2, 0.2], [0.8, 0.2], [0.8, 0.8], [0.2, 0.8]]) await page.mouse.click(box.x + box.width * fx, box.y + box.height * fy);
   await page.click('#btn-finish-boundary');
   await expect(page.locator('#g-grid')).not.toBeChecked();
+  expect(await page.evaluate(() => (window as any).__created)).toBe(1); // modules start the new plan with their layers on
   await page.waitForTimeout(2500);
   const saved = await page.evaluate(() => new Promise<any>(res => {
     const r = indexedDB.open('permaculture-guilds');
