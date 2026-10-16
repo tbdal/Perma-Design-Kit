@@ -185,6 +185,11 @@ import Layout from '../layouts/Layout.astro';
               <label class="inline-flex items-center gap-1"><input type="radio" name="mapdraw-layer" value="osm" checked /> <span data-i18n="locateLayerOsm">Karte</span></label>
               <label class="inline-flex items-center gap-1" data-i18n-title="locateSatNote" title="Satellitenbild nur zur groben Orientierung (10 m pro Pixel)."><input type="radio" name="mapdraw-layer" value="sat" /> <span data-i18n="locateLayerSat">Satellit (grob, 10 m)</span></label>
               <label class="inline-flex items-center gap-1" data-i18n-title="locateOrthoNote" title="Amtliche Luftbilder (8–40 cm) der Länder bzw. von basemap.at, swisstopo, PDOK — wo vorhanden, sonst Satellit grob."><input type="radio" name="mapdraw-layer" value="ortho" /> <span data-i18n="locateLayerOrtho">Luftbild (amtlich)</span></label>
+              <span class="inline-flex flex-wrap items-center gap-3 sm:ml-auto">
+                <label class="inline-flex items-center gap-1"><input id="mapdraw-surr-buildings" type="checkbox" checked class="accent-stone-600" /> <span data-i18n="surrBuildings">Gebäude</span></label>
+                <label class="inline-flex items-center gap-1"><input id="mapdraw-surr-forest" type="checkbox" checked class="accent-green-700" /> <span data-i18n="surrForest">Wald</span></label>
+                <span id="mapdraw-surr-hint" class="text-stone-500 dark:text-stone-400"></span>
+              </span>
             </div>
           </div>
           <div id="drawing-controls" class="hidden flex flex-wrap gap-2">
@@ -492,6 +497,11 @@ import Layout from '../layouts/Layout.astro';
           <label class="inline-flex items-center gap-1"><input type="radio" name="locate-layer" value="osm" checked /> <span data-i18n="locateLayerOsm">Karte</span></label>
           <label class="inline-flex items-center gap-1" data-i18n-title="locateSatNote" title="Satellitenbild nur zur groben Orientierung (10 m pro Pixel)."><input type="radio" name="locate-layer" value="sat" /> <span data-i18n="locateLayerSat">Satellit (grob, 10 m)</span></label>
           <label class="inline-flex items-center gap-1" data-i18n-title="locateOrthoNote" title="Amtliche Luftbilder (8–40 cm) der Länder bzw. von basemap.at, swisstopo, PDOK — wo vorhanden, sonst Satellit grob."><input type="radio" name="locate-layer" value="ortho" /> <span data-i18n="locateLayerOrtho">Luftbild (amtlich)</span></label>
+          <span class="inline-flex flex-wrap items-center gap-3 sm:ml-auto">
+                <label class="inline-flex items-center gap-1"><input id="locate-surr-buildings" type="checkbox" checked class="accent-stone-600" /> <span data-i18n="surrBuildings">Gebäude</span></label>
+                <label class="inline-flex items-center gap-1"><input id="locate-surr-forest" type="checkbox" checked class="accent-green-700" /> <span data-i18n="surrForest">Wald</span></label>
+                <span id="locate-surr-hint" class="text-stone-500 dark:text-stone-400"></span>
+              </span>
         </span>
         <span class="inline-flex items-center gap-1.5">
           <span data-i18n="locateRotation">Drehung</span>

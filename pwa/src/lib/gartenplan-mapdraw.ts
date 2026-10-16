@@ -1,5 +1,5 @@
 import L from 'leaflet';
-import { createBaseMap, wireToolbar, handleIcon, DEFAULT_CENTER, type BaseMap } from './gartenplan-leaflet';
+import { createBaseMap, wireToolbar, attachSurroundings, handleIcon, DEFAULT_CENTER, type BaseMap } from './gartenplan-leaflet';
 import type { Lang } from './i18n/core';
 
 // "Fläche auf der Karte zeichnen": the boundary is clicked directly onto a
@@ -41,6 +41,7 @@ export function createMapDrawer(el: HTMLElement, opts: MapDrawerOptions): MapDra
     status: $('mapdraw-status'),
     layerRadios: document.querySelectorAll<HTMLInputElement>('input[name="mapdraw-layer"]'),
   }, opts.lang, opts.t);
+  const unwireSurr = attachSurroundings(m, { buildings: $('mapdraw-surr-buildings') as HTMLInputElement, forest: $('mapdraw-surr-forest') as HTMLInputElement, hint: $('mapdraw-surr-hint') }, opts.t);
 
   let pts: L.LatLng[] = [];
   const shapes = L.layerGroup().addTo(m);
@@ -66,6 +67,6 @@ export function createMapDrawer(el: HTMLElement, opts: MapDrawerOptions): MapDra
     undo() { pts.pop(); redraw(); },
     clear() { pts = []; redraw(); },
     refresh() { m.invalidateSize(); },
-    destroy() { m.off('click', onClick); unwire(); m.remove(); },
+    destroy() { m.off('click', onClick); unwire(); unwireSurr(); m.remove(); },
   };
 }

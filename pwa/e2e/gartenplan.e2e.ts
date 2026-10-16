@@ -356,3 +356,32 @@ test('new plan: meter lines are optional (off on a map, on on the grid), explain
   expect(saved).toContainEqual(['Rasterlos', false, 0.1]);
   void errors;
 });
+
+test('map when creating a plan: buildings and forest of the surroundings, no plan needed', async ({ page, context, errors }) => {
+  await context.grantPermissions(['geolocation']);
+  await context.setGeolocation({ latitude: 52.75205, longitude: 11.1734, accuracy: 10 });
+  await stubNetwork(page);
+  const asked: string[] = [];
+  const sq = (lat: number, lon: number) => [{ lat, lon }, { lat, lon: lon + 0.0004 }, { lat: lat + 0.0003, lon: lon + 0.0004 }, { lat: lat + 0.0003, lon }];
+  const answer = (geom: { lat: number; lon: number }[]) => JSON.stringify({ elements: [{ type: 'way', id: 1, geometry: geom, tags: {} }] });
+  await page.route('**/geo/wald?**', r => { asked.push(`wald ${new URL(r.request().url()).searchParams.get('bbox')}`); return r.fulfill({ status: 200, contentType: 'application/json', body: answer(sq(52.7515, 11.1710)) }); });
+  await page.route('**/geo/overpass?**', r => { asked.push(`geb ${new URL(r.request().url()).searchParams.get('bbox')}`); return r.fulfill({ status: 200, contentType: 'application/json', body: answer(sq(52.7520, 11.1735)) }); });
+  await page.goto('/gartenplan/');
+  await page.click('#btn-new-plan');
+  await expect(page.locator('#mapdraw-wrap')).toBeVisible();
+  await expect(page.locator('#mapdraw-surr-buildings')).toBeChecked();
+  await expect(page.locator('#mapdraw-surr-forest')).toBeChecked();
+  // far out: only a hint
+  await expect(page.locator('#mapdraw-surr-hint')).toContainText('Näher heranzoomen');
+  expect(asked).toEqual([]);
+  // my position → zoomed in → both kinds are asked for the grid box around it
+  await page.click('#mapdraw-mypos');
+  await expect.poll(() => asked.sort(), { timeout: 8000 }).toEqual(expect.arrayContaining(['geb 52.7500,11.1700,52.7600,11.1800', 'wald 52.7500,11.1700,52.7600,11.1800']));
+  await expect(page.locator('#mapdraw-surr-hint')).toHaveText('');
+  // something got drawn (canvas layers exist in the map panes)
+  await expect(page.locator('#mapdraw-map .leaflet-surrForest-pane canvas, #mapdraw-map .leaflet-surrBuildings-pane canvas')).toHaveCount(2);
+  // switched off: remembered
+  await page.uncheck('#mapdraw-surr-forest');
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('pdk-map-surr')!))).toEqual({ buildings: true, forest: false });
+  void errors;
+});

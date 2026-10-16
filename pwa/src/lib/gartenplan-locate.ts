@@ -1,7 +1,7 @@
 import L from 'leaflet';
 import type { GardenPlanGeo, GardenPlanPoint } from './types';
 import { bearingFromOrigin, planToLatLon } from './gartenplan-geo';
-import { createBaseMap, wireToolbar, handleIcon, DEFAULT_CENTER, type BaseMap } from './gartenplan-leaflet';
+import { createBaseMap, wireToolbar, attachSurroundings, handleIcon, DEFAULT_CENTER, type BaseMap } from './gartenplan-leaflet';
 import type { Lang } from './i18n/core';
 
 // "Standort festlegen" dialog — only for plans drawn on the plain grid (no
@@ -61,6 +61,7 @@ export function openLocateDialog(opts: LocateOptions): Promise<LocateResult> {
     status,
     layerRadios,
   }, opts.lang, opts.t);
+  const unwireSurr = attachSurroundings(base.map, { buildings: $('locate-surr-buildings') as HTMLInputElement, forest: $('locate-surr-forest') as HTMLInputElement, hint: $('locate-surr-hint') }, opts.t);
 
   function currentGeo(): GardenPlanGeo | null {
     if (!origin) return null;
@@ -143,6 +144,7 @@ export function openLocateDialog(opts: LocateOptions): Promise<LocateResult> {
       rotNum.removeEventListener('change', onRotNum);
       stepBtns.forEach(b => b.removeEventListener('click', onRotStep));
       unwireToolbar();
+      unwireSurr();
       btnApply.removeEventListener('click', onApply);
       btnRemove.removeEventListener('click', onRemove);
       cancelBtn.removeEventListener('click', onCancel);

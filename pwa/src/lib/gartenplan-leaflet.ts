@@ -3,6 +3,7 @@ import 'leaflet/dist/leaflet.css';
 import { OSM_TILES, S2_TILES, orthoTiles, tileUrl, fallbackTileUrl, FALLBACK_ATTRIBUTION, type TileSource } from './gartenplan-background';
 import { orthoFor } from './ortho-sources';
 import type { Lang } from './i18n/core';
+import { boxesFor, endpoint, isUsable, parseRings, MIN_ZOOM, type SurrKind } from './map-surroundings';
 
 // Shared Leaflet plumbing for the garden plan: base map with the OSM / coarse
 // satellite layers, Nominatim address search and "my location". Used by the
@@ -146,5 +147,101 @@ export function wireToolbar(base: BaseMap, els: ToolbarEls, lang: Lang, t: (k: s
     els.form.removeEventListener('submit', onSearch);
     els.myPosBtn.removeEventListener('click', onMyPosition);
     els.layerRadios.forEach(r => r.removeEventListener('change', onLayer));
+  };
+}
+
+
+export interface SurroundingsEls { buildings: HTMLInputElement; forest: HTMLInputElement; hint: HTMLElement }
+const SURR_PREF = 'pdk-map-surr';
+const SURR_STYLE: Record<SurrKind, L.PolylineOptions> = {
+  forest: { color: '#166534', weight: 1, fillColor: '#15803d', fillOpacity: 0.32, interactive: false },
+  buildings: { color: '#44403c', weight: 1, fillColor: '#78716c', fillOpacity: 0.6, interactive: false },
+};
+
+/**
+ * Buildings and forests of the visible map part (OpenStreetMap through our cache), drawn
+ * under/over the base map — independent of any plan, so the surroundings can be judged before
+ * one exists. Loaded in fixed boxes when zoomed in far enough; both switchable, on by default.
+ */
+export function attachSurroundings(map: L.Map, els: SurroundingsEls, t: (k: string) => string): () => void {
+  const pref = (() => { try { return { buildings: true, forest: true, ...JSON.parse(localStorage.getItem(SURR_PREF) || '{}') } as Record<SurrKind, boolean>; } catch { return { buildings: true, forest: true } as Record<SurrKind, boolean>; } })();
+  els.buildings.checked = !!pref.buildings;
+  els.forest.checked = !!pref.forest;
+  // forest below buildings, both above the base map
+  for (const [name, z] of [['surrForest', 410], ['surrBuildings', 415]] as const) { map.createPane(name); map.getPane(name)!.style.zIndex = String(z); map.getPane(name)!.style.pointerEvents = 'none'; }
+  const renderers: Record<SurrKind, L.Canvas> = { forest: L.canvas({ pane: 'surrForest', padding: 0.3 }), buildings: L.canvas({ pane: 'surrBuildings', padding: 0.3 }) };
+  const groups = new Map<string, L.LayerGroup>();   // "kind|box" → drawn polygons (kept while in the cache)
+  const pending = new Set<string>();
+  let failed = 0;
+  let credited = false;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let gone = false;
+
+  const wanted = (): Record<SurrKind, boolean> => ({ buildings: els.buildings.checked, forest: els.forest.checked });
+  function setHint() {
+    if (!wanted().buildings && !wanted().forest) { els.hint.textContent = ''; return; }
+    if (map.getZoom() < MIN_ZOOM) els.hint.textContent = t('surrZoomIn');
+    else if (!boxesFor(toBounds())) els.hint.textContent = t('surrZoomIn');
+    else if (pending.size) els.hint.textContent = t('surrLoading');
+    else if (failed) els.hint.textContent = t('surrFailed');
+    else els.hint.textContent = '';
+  }
+  const toBounds = () => { const b = map.getBounds(); return { south: b.getSouth(), west: b.getWest(), north: b.getNorth(), east: b.getEast() }; };
+
+  async function load(kind: SurrKind, box: string) {
+    const key = `${kind}|${box}`;
+    if (groups.has(key) || pending.has(key)) return;
+    pending.add(key);
+    setHint();
+    try {
+      let json: unknown = null;
+      // A cached Overpass "remark" (overload) is refreshed once.
+      for (const refresh of [false, true]) {
+        const res = await fetch(`${endpoint(kind)}?bbox=${box}${refresh ? '&refresh=1' : ''}`);
+        if (!res.ok) throw new Error(String(res.status));
+        json = await res.json();
+        if (isUsable(json)) break;
+        if (refresh) throw new Error('overpass');
+      }
+      const g = L.layerGroup();
+      for (const rings of parseRings(json)) L.polygon(rings.map(r => r.map(p => [p.lat, p.lon] as L.LatLngTuple)), { ...SURR_STYLE[kind], renderer: renderers[kind] }).addTo(g);
+      groups.set(key, g);
+      failed = 0;
+      if (groups.size > 80) { const old = groups.keys().next().value!; map.removeLayer(groups.get(old)!); groups.delete(old); }
+    } catch { failed++; }
+    pending.delete(key);
+    if (!gone) refresh();
+  }
+
+  function refresh() {
+    if (gone) return;
+    const want = wanted();
+    const boxes = map.getZoom() >= MIN_ZOOM ? boxesFor(toBounds()) : null;
+    const visible = new Set<string>();
+    if (boxes) for (const kind of ['forest', 'buildings'] as const) if (want[kind]) for (const b of boxes) visible.add(`${kind}|${b}`);
+    for (const [key, g] of groups) {
+      if (visible.has(key)) { if (!map.hasLayer(g)) g.addTo(map); } else if (map.hasLayer(g)) map.removeLayer(g);
+    }
+    for (const key of visible) { const [kind, box] = key.split('|'); void load(kind as SurrKind, box); }
+    if (boxes && visible.size && !credited) { credited = true; map.attributionControl?.addAttribution('Gebäude, Wald: © OpenStreetMap-Mitwirkende'); }
+    setHint();
+  }
+  const refreshSoon = () => { clearTimeout(timer); timer = setTimeout(refresh, 350); };
+  const onToggle = () => {
+    try { localStorage.setItem(SURR_PREF, JSON.stringify(wanted())); } catch { /* private window */ }
+    refresh();
+  };
+  map.on('moveend zoomend', refreshSoon);
+  els.buildings.addEventListener('change', onToggle);
+  els.forest.addEventListener('change', onToggle);
+  refreshSoon();
+  return () => {
+    gone = true;
+    clearTimeout(timer);
+    map.off('moveend zoomend', refreshSoon);
+    els.buildings.removeEventListener('change', onToggle);
+    els.forest.removeEventListener('change', onToggle);
+    for (const g of groups.values()) map.removeLayer(g);
+    els.hint.textContent = '';
   };
 }
