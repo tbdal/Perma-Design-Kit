@@ -52,6 +52,10 @@ export interface GartenplanApi {
   pickPoint(): Promise<GardenPlanPoint | null>;
   /** All plants of the user's list, by id (the plan's placements refer to them). */
   plantsById(): Map<string, PlantData>;
+  /** Pans the 2D view just far enough that this plan point is in view with some room around it (zoom stays; no effect in 3D). */
+  revealPoint(xM: number, yM: number): void;
+  /** Trees (plants of the tree layer) drawn see-through in 2D and 3D: 1 = solid (default), 0 = invisible; null = back to solid. */
+  setTreeOpacity(featureId: string, opacity: number | null): void;
   /** Puts a plant of the list on the plan at this point (current planting year like a click would); returns the new placement's id, null outside the plan area or without a plan. */
   placePlantAt(plantId: string, xM: number, yM: number): string | null;
   /** Direct sun hours per day at a plan point with what the plan has now (plants at the shown age, terrain, buildings, plugins' shade casters); `mode` follows the "Einfärben" choice (a chosen day, else the summer half-year). Null without a plan. */

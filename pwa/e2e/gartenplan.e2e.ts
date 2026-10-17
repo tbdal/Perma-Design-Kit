@@ -417,3 +417,22 @@ test('scale bar bottom left follows the zoom (desktop, 2D)', async ({ page, erro
   await expect(bar).toBeHidden();
   void errors;
 });
+
+test('3D compass: shows where north is, a click turns the view to look north', async ({ page, errors }) => {
+  await stubNetwork(page);
+  await seedNeighbourPlan(page, { geo: { lat: 50.9, lon: 7.0, rotationDeg: 40, basemap: 'none', opacity: 0.6 } });
+  await openPlan(page, 'np');
+  await page.click('#btn-view-3d');
+  const compass = page.locator('[data-compass]');
+  await expect(compass).toBeVisible();
+  const angle = async () => Number(await compass.getAttribute('data-angle'));
+  await page.waitForTimeout(500);
+  expect(Math.abs(await angle())).toBeGreaterThan(5);        // the start view does not look north
+  await compass.click();
+  await page.waitForTimeout(900);
+  expect(Math.abs(await angle())).toBeLessThan(2);           // now it does: the needle points up
+  // gone again in 2D
+  await page.click('#btn-view-2d');
+  await expect(compass).toHaveCount(0);
+  void errors;
+});

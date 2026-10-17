@@ -5,6 +5,8 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
 ## Pflanzennamen für Module und Luftbild-Zwischenspeicher 2026-10-16
+- [x] **Waldgartenplan, 3D:** Kompass unten links; ein Klick dreht die Ansicht nach Norden #minor #prüfen
+- [x] **Waldgartenplan:** Neue Schnittstellen für Module: Bäume durchscheinend zeichnen (`setTreeOpacity`) und den Planausschnitt auf einen Punkt verschieben (`revealPoint`) #minor #prüfen
 - [x] **Waldgartenplan, Standortklima:** Unter den Werten steht, woher die Daten kommen (ERA5 über Open-Meteo, Zeitraum, wie Zone, Frost und Wind berechnet sind, Rundung des Standorts) #minor #prüfen
 - [x] **Waldgartenplan:** Neue Schnittstellen für Module: Pflanze an einen Punkt setzen (`placePlantAt`) und Sonnenstunden an einem Punkt (`sunHoursAt`); Meterlinien-Kürzel im neuen Planer Umschalt+G (G = GPS, N = Notiz) #minor #prüfen
 - [x] **Waldgartenplan:** Maßstabsbalken unten links im 2D-Plan (Desktop), der sich mit der Zoomstufe anpasst #minor #prüfen

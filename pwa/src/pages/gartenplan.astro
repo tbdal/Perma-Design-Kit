@@ -1640,6 +1640,7 @@ import Layout from '../layouts/Layout.astro';
       simple: simple3d || phoneBigPlan(),
     });
     if (from2d) camera3dAtEnter = view3d.getCameraState();
+    view3d.setTreeOpacity(treeOpacity);
     view3d.setArmedPlant(armedPlantId);
     view3d.refreshAreas(selectedAreaId);
     view3d.setCoverage(coverage3d);
@@ -2180,7 +2181,10 @@ import Layout from '../layouts/Layout.astro';
     const rPx = radiusU * ppu;
     blob.setAttribute('stroke-width', String((selected ? 2.5 : hot ? 3.5 : warned ? 2.5 : 1.2) / ppu));
     blob.setAttribute('stroke-dasharray', !planted ? `${3 / ppu} ${3 / ppu}` : warned && !hot ? `${5 / ppu} ${3 / ppu}` : '');
-    if (!planted) blob.setAttribute('fill-opacity', '0.15'); else blob.removeAttribute('fill-opacity');
+    // Trees see-through (setTreeOpacity of a plugin): only the crown's fill, the outline and name stay.
+    if (!planted) blob.setAttribute('fill-opacity', '0.15');
+    else if (layer === 'tree' && treeOpacity < 1) blob.setAttribute('fill-opacity', String(Math.round(treeOpacity * 100) / 100));
+    else blob.removeAttribute('fill-opacity');
     group.querySelector('.marker-dot')?.setAttribute('r', String(Math.min(3, Math.max(1, rPx * 0.25)) / ppu));
     // Plugins may hide a plant's name or make it bigger/smaller (setLabelStyle).
     const ls = labelStyleFor(placement.id);
@@ -2481,6 +2485,8 @@ import Layout from '../layouts/Layout.astro';
   let planView = { x: 0, y: 0, w: 0, h: 0 };
   /** The view is the fitted "whole project" one (nobody zoomed, panned or restored a section): only then a resize / new inset re-fits it. */
   let planViewFitted = true;
+  /** Trees see-through (expert-api setTreeOpacity): 1 = solid. */
+  let treeOpacity = 1;
   let basemapViewTimer: ReturnType<typeof setTimeout> | null = null;
 
   /** Height/width of the 2D canvas; the view (viewBox) always has this
@@ -4661,6 +4667,24 @@ import Layout from '../layouts/Layout.astro';
       });
     },
     groundAt: (xM, yM) => (terrain && editing?.geo ? sampleGrid(terrain, xM, yM) : null),
+    setTreeOpacity(_featureId, opacity) {
+      const next = opacity == null ? 1 : Math.min(1, Math.max(0, opacity));
+      if (next === treeOpacity) return;
+      treeOpacity = next;
+      for (const pl of editing?.placements ?? []) { const g = markerMap.get(pl.id); if (g) updateMarkerShape(g, pl, plantsById.get(pl.plantId)); }
+      view3d?.setTreeOpacity(treeOpacity);
+    },
+    revealPoint(xM, yM) {
+      if (!editing || !plan3dContainer.hidden || !planView.w) return;
+      // Pans the 2D view just far enough that the point is inside it with some room around (zoom stays).
+      const px = xM * U, py = yM * U, mx = planView.w * 0.18, my = planView.h * 0.18;
+      const dx = px < planView.x + mx ? px - (planView.x + mx) : px > planView.x + planView.w - mx ? px - (planView.x + planView.w - mx) : 0;
+      const dy = py < planView.y + my ? py - (planView.y + my) : py > planView.y + planView.h - my ? py - (planView.y + planView.h - my) : 0;
+      if (!dx && !dy) return;
+      planView = { ...planView, x: planView.x + dx, y: planView.y + dy };
+      planViewFitted = false;
+      applyPlanView();
+    },
     placePlantAt(plantId, xM, yM) {
       if (!editing || !plantsById.has(plantId) || xM < 0 || yM < 0 || xM > editing.areaWidthM || yM > editing.areaHeightM) return null;
       const placement = newPlacement(plantId, Math.round(xM * 100) / 100, Math.round(yM * 100) / 100);

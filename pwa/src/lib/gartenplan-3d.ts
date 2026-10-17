@@ -112,6 +112,8 @@ export interface GardenPlan3DView {
   /** Flow paths, sinks and swale suggestions draped on the ground (null hides them). */
   setWater(water: Water3D | null): void;
   updateYears(years: number): void;
+  /** See-through trees: 1 = solid (default), 0 = invisible. Only plants of the tree layer. */
+  setTreeOpacity(opacity: number): void;
   refreshPlacements(): void;
   setArmedPlant(plantId: string | null): void;
   setSelectedPlacement(placementId: string | null): void;
@@ -207,6 +209,7 @@ function buildPlantMesh(placement: GardenPlanPlacement, plant: PlantData | undef
 
   group.position.set(placement.xM, 0, placement.yM);
   group.userData.placementId = placement.id;
+  group.userData.layer = layer;
   return group;
 }
 
@@ -708,6 +711,20 @@ export function createGardenPlan3DView(
   }
 
   let years = plan.yearsSincePlanting;
+  /** Trees see-through: one shared see-through copy per original material (instancing keeps working). */
+  let treeOpacity = 1;
+  const treeMats = new Map<THREE.Material, THREE.Material>();
+  function seeThroughTrees(group: THREE.Object3D) {
+    group.traverse(o => {
+      const m = o as THREE.Mesh;
+      if (!m.isMesh || m.name === 'selection-ring' || Array.isArray(m.material)) return;
+      let c = treeMats.get(m.material);
+      if (!c) { c = m.material.clone(); c.transparent = true; treeMats.set(m.material, c); }
+      c.opacity = treeOpacity;
+      c.depthWrite = treeOpacity > 0.75;
+      m.material = c;
+    });
+  }
   let armedPlantId: string | null = null;
   let selectedPlacementId: string | null = null;
 
@@ -721,6 +738,7 @@ export function createGardenPlan3DView(
       if (opts.hidden?.(placement.id)) continue;
       const mesh = buildPlantMesh(placement, plantsById.get(placement.plantId), ageAt(placement, years), simple);
       if (!simple) mesh.traverse(o => { if (o.name !== 'selection-ring' && (o as THREE.Mesh).isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+      if (treeOpacity < 1 && mesh.userData.layer === 'tree') seeThroughTrees(mesh);
       mesh.position.y = ground(placement.xM, placement.yM);
       const ring = mesh.getObjectByName('selection-ring');
       if (ring) ring.visible = placement.id === selectedPlacementId;
@@ -762,6 +780,62 @@ export function createGardenPlan3DView(
   // camera may have been raised above the canopies, which would zoom out).
   const startPos = camera.position.clone(), startTarget = controls.target.clone();
   controls.update();
+
+  // ── Compass (bottom left): the needle shows where north is; a click turns the view to look north ──
+  const northV = (() => { const h = enuToPlan({ e: 0, n: 1 }, opts.rotationDeg); const l = Math.hypot(h.xM, h.yM) || 1; return { x: h.xM / l, z: h.yM / l }; })();
+  if (!document.getElementById('pdk-compass-css')) {
+    document.head.appendChild(Object.assign(document.createElement('style'), { id: 'pdk-compass-css', textContent: `
+.pdk-compass{position:absolute;left:var(--scale-left,12px);bottom:12px;z-index:12;width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.92);box-shadow:0 2px 8px rgba(0,0,0,.28);border:1px solid #d6d3d1;padding:0;cursor:pointer;touch-action:manipulation}
+.dark .pdk-compass{background:rgba(41,37,36,.92);border-color:#57534e}
+.pdk-compass:hover{background:#fff}.dark .pdk-compass:hover{background:#292524}
+.pdk-compass svg{display:block;width:100%;height:100%;transition:transform .08s linear}
+html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
+  }
+  const compass = document.createElement('button');
+  compass.type = 'button';
+  compass.className = 'pdk-compass';
+  compass.dataset.compass = '';
+  const de = (document.documentElement.lang || 'de').startsWith('de');
+  compass.title = de ? 'Nach Norden ausrichten' : 'Turn to face north';
+  compass.setAttribute('aria-label', compass.title);
+  compass.innerHTML = '<svg viewBox="-24 -24 48 48" aria-hidden="true"><g data-needle><path d="M0 -17 L6 3 L0 -1 L-6 3 Z" fill="#dc2626"/><path d="M0 17 L6 -3 L0 1 L-6 -3 Z" fill="#a8a29e"/><text x="0" y="-18.5" text-anchor="middle" font-size="9" font-weight="800" fill="#7f1d1d" stroke="#fff" stroke-width="2.2" paint-order="stroke" font-family="system-ui,sans-serif">N</text></g></svg>';
+  container.appendChild(compass);
+  const needle = compass.querySelector<SVGGElement>('[data-needle]')!;
+  /** Where north lies on the screen, in degrees clockwise from "up" (up = the way the camera looks). */
+  function updateCompass() {
+    const fx = controls.target.x - camera.position.x, fz = controls.target.z - camera.position.z;
+    const fl = Math.hypot(fx, fz);
+    // looking straight down: the camera's up vector decides what is "up" on screen
+    const f = fl > 1e-6 ? { x: fx / fl, z: fz / fl } : { x: -camera.up.x || 0, z: -camera.up.z || -1 };
+    const right = { x: -f.z, z: f.x };
+    const ang = Math.atan2(northV.x * right.x + northV.z * right.z, northV.x * f.x + northV.z * f.z) * 180 / Math.PI;
+    needle.setAttribute('transform', `rotate(${ang.toFixed(1)})`);
+    compass.dataset.angle = ang.toFixed(1);
+  }
+  controls.addEventListener('change', updateCompass);
+  updateCompass();
+  let northAnim = 0;
+  compass.addEventListener('click', () => {
+    // The camera moves round the target on its circle (same height, same distance) to the south of it, looking north.
+    const t = controls.target, c0 = camera.position.clone();
+    const dist = Math.hypot(c0.x - t.x, c0.z - t.z) || Math.hypot(c0.y - t.y, 1);
+    const to = new THREE.Vector3(t.x - northV.x * dist, c0.y, t.z - northV.z * dist);
+    const a0 = Math.atan2(c0.z - t.z, c0.x - t.x);
+    let da = Math.atan2(to.z - t.z, to.x - t.x) - a0;
+    da = Math.atan2(Math.sin(da), Math.cos(da));                    // the short way round
+    const t0 = performance.now(), D = 420;
+    cancelAnimationFrame(northAnim);
+    const step = (now: number) => {
+      const k = Math.min(1, (now - t0) / D), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+      const a = a0 + da * e;
+      camera.position.set(t.x + Math.cos(a) * dist, c0.y, t.z + Math.sin(a) * dist);
+      if (dist < 1e-3) camera.up.set(-northV.x, 0, -northV.z);       // straight above: "up" on screen is north
+      controls.update();
+      requestRender();
+      if (k < 1) northAnim = requestAnimationFrame(step);
+    };
+    northAnim = requestAnimationFrame(step);
+  });
 
   // ── Sun: position from date/time at the garden's location ──
   const RAD = Math.PI / 180;
@@ -1236,6 +1310,15 @@ export function createGardenPlan3DView(
     setPreview,
     setCoverage,
     setWater,
+    setTreeOpacity(v: number) {
+      const next = Math.min(1, Math.max(0, v));
+      if (next === treeOpacity) return;
+      const swap = (treeOpacity < 1) !== (next < 1);
+      treeOpacity = next;
+      if (swap) { rebuildPlacements(); return; }   // between solid and see-through the materials differ
+      for (const c of treeMats.values()) { c.opacity = treeOpacity; c.depthWrite = treeOpacity > 0.75; }
+      requestRender();
+    },
     updateYears(newYears: number) {
       years = newYears;
       rebuildPlacements();
@@ -1287,6 +1370,8 @@ export function createGardenPlan3DView(
     dispose() {
       for (const done of layerCleanups) { try { done(); } catch { /* plugin */ } }
       resizeObserver.disconnect();
+      cancelAnimationFrame(northAnim);
+      compass.remove();
       if (tileTimer) clearTimeout(tileTimer);
       container.removeEventListener('pointerdown', onContainerPointerDown, { capture: true } as any);
       renderer.domElement.removeEventListener('pointermove', onPlantPointerMove);
