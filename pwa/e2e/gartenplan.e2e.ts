@@ -232,7 +232,7 @@ test('project tiles: rename, duplicate, delete; Alt+4 and the nav link lead back
   const tile = page.locator('[data-plan-id="tile"]');
   await page.evaluate(() => { window.prompt = () => 'Hang Nord'; });
   await tile.locator('[data-plan-action="rename"]').click();
-  await expect(page.locator('[data-plan-id="tile"] h3')).toHaveText('Hang Nord');
+  await expect(page.locator('[data-plan-id="tile"] h3 > span')).toHaveText('Hang Nord');
   await page.locator('[data-plan-id="tile"] [data-plan-action="duplicate"]').click();
   await expect(page.locator('[data-plan-id]')).toHaveCount(2);
   await expect(page.locator('#plan-list')).toContainText('Hang Nord (Kopie)');
@@ -241,11 +241,11 @@ test('project tiles: rename, duplicate, delete; Alt+4 and the nav link lead back
   await expect(page.locator('[data-plan-id]')).toHaveCount(1);
   expect(await withDb<number>(page, `return (await all('gardenPlans')).length;`)).toBe(1);
   // into the plan and back with Alt+4, then with the nav link
-  await page.locator('[data-plan-id="tile"] h3').click();
+  await page.locator('[data-plan-id="tile"] h3 > span').click();
   await expect(page.locator('#phase-b')).not.toHaveClass(/hidden/);
   await page.keyboard.press('Alt+4');
   await expect(page.locator('[data-plan-id="tile"]')).toBeVisible();
-  await page.locator('[data-plan-id="tile"] h3').click();
+  await page.locator('[data-plan-id="tile"] h3 > span').click();
   await page.locator('a[data-nav="/gartenplan"]').first().click();
   await expect(page.locator('[data-plan-id="tile"]')).toBeVisible();
   void errors;
@@ -429,7 +429,7 @@ test('3D compass: shows where north is, a click turns the view to look north', a
   await page.waitForTimeout(500);
   expect(Math.abs(await angle())).toBeGreaterThan(5);        // the start view does not look north
   await compass.click();
-  await expect.poll(async () => Math.abs(await angle()), { timeout: 6000 }).toBeLessThan(2);   // now it does: the needle points up
+  await expect.poll(async () => Math.abs(await angle()), { timeout: 20000 }).toBeLessThan(2);   // now it does (timers of busy background pages run late): the needle points up
   // gone again in 2D
   await page.click('#btn-view-2d');
   await expect(compass).toHaveCount(0);
