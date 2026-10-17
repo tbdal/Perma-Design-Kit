@@ -21,7 +21,47 @@ const ROLES = new Set<PolycultureRole>(['companion', 'groundCover', 'nFixer', 'm
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const str = (v: unknown, fallback: string) => typeof v === 'string' ? v : fallback;
-const nonEmptyStr = (v: unknown, fallback: string) => typeof v === 'string' && v.trim() ? v : fallback;
+
+// IDs end up unescaped in HTML attributes (data-id="…") and CSS selectors, so
+// an id from a file or share link must not be able to break out of them.
+// The app's own ids are UUIDs or "sample-1"/"crawford-1"; those pass as they
+// are. Anything else is replaced by an id derived from it — the same input
+// always gives the same id, so references to it elsewhere in the file
+// (anchor, members, placements, plan views, prices) still match.
+const ID_RE = /^[A-Za-z0-9_-]{1,100}$/;
+
+/** cyrb53 — a small, well-distributed 53-bit string hash (not for security). */
+function hash53(s: string): string {
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < s.length; i++) {
+    const c = s.charCodeAt(i);
+    h1 = Math.imul(h1 ^ c, 2654435761);
+    h2 = Math.imul(h2 ^ c, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+
+/** A safe id for `v`: kept if it is already safe, derived from it if not,
+ *  `fallback()` when there is no usable string at all. */
+export function safeId(v: unknown, fallback: () => string = newId): string {
+  if (typeof v !== 'string' || !v.trim()) return fallback();
+  return ID_RE.test(v) ? v : `imp-${hash53(v)}`;
+}
+
+/** An object keyed by ids (plan views), with every key passed through safeId. */
+export function safeIdKeys(raw: unknown): unknown {
+  if (!isObject(raw)) return raw;
+  return Object.fromEntries(Object.entries(raw).map(([k, v]) => [safeId(k), v]));
+}
+
+/** Same as safeId, but null stays null (optional references). */
+const safeRef = (v: unknown): string | null => typeof v === 'string' && v.trim() ? safeId(v) : null;
+
+/** Grid spacing of a plan: the editor offers 0.1–2 m; anything else from a
+ *  file is pulled into a sane range (0 or a tiny value froze the editor). */
+export const MIN_GRID_M = 0.1, MAX_GRID_M = 50;
 
 function finite(v: unknown): number | null {
   const n = typeof v === 'string' ? parseFloat(v.replace(',', '.')) : v;
@@ -50,7 +90,7 @@ export function normalizePlant(raw: unknown): PlantData | null {
     else if (typeof def === 'string') (p as any)[key] = str(v, def);
   }
 
-  p.id = nonEmptyStr(raw.id, p.id);
+  p.id = safeId(raw.id, () => p.id);
   p.habit = parseHabit(raw.habit);
   // Keep a valid add date; data without one counts as added now.
   if (typeof raw.createdAt !== 'string' || Number.isNaN(Date.parse(raw.createdAt))) p.createdAt = new Date().toISOString();
@@ -88,13 +128,13 @@ export function normalizePolyculture(raw: unknown): Polyculture | null {
   if (!isObject(raw)) return null;
   const d = createEmptyPolyculture();
   return {
-    id: nonEmptyStr(raw.id, d.id),
+    id: safeId(raw.id, () => d.id),
     name: str(raw.name, ''),
     description: str(raw.description, ''),
-    anchorPlantId: typeof raw.anchorPlantId === 'string' ? raw.anchorPlantId : null,
+    anchorPlantId: safeRef(raw.anchorPlantId),
     members: Array.isArray(raw.members)
       ? raw.members.filter(isObject).filter(m => typeof m.plantId === 'string').map(m => ({
-          plantId: m.plantId as string,
+          plantId: safeId(m.plantId),
           role: ROLES.has(m.role as PolycultureRole) ? m.role as PolycultureRole : 'other',
           notes: str(m.notes, ''),
         }))
@@ -111,18 +151,18 @@ export function normalizeGardenPlan(raw: unknown): GardenPlan | null {
   const point = (v: unknown) => isObject(v) && finite(v.xM) != null && finite(v.yM) != null
     ? { xM: finite(v.xM)!, yM: finite(v.yM)! } : null;
   return {
-    id: nonEmptyStr(raw.id, d.id),
+    id: safeId(raw.id, () => d.id),
     name: str(raw.name, ''),
     description: str(raw.description, ''),
-    polycultureId: typeof raw.polycultureId === 'string' ? raw.polycultureId : null,
+    polycultureId: safeRef(raw.polycultureId),
     areaWidthM: clamp(finite(raw.areaWidthM) ?? d.areaWidthM, 1, MAX_PLAN_M),
     areaHeightM: clamp(finite(raw.areaHeightM) ?? d.areaHeightM, 1, MAX_PLAN_M),
-    gridSpacingM: finite(raw.gridSpacingM) ?? d.gridSpacingM,
+    gridSpacingM: clamp(finite(raw.gridSpacingM) ?? d.gridSpacingM, MIN_GRID_M, MAX_GRID_M),
     boundary: Array.isArray(raw.boundary) ? raw.boundary.map(point).filter((q): q is { xM: number; yM: number } => q !== null) : [],
     placements: Array.isArray(raw.placements)
       ? raw.placements.filter(isObject).filter(pl => typeof pl.plantId === 'string' && point(pl)).map(pl => ({
-          id: nonEmptyStr(pl.id, newId()),
-          plantId: pl.plantId as string,
+          id: safeId(pl.id),
+          plantId: safeId(pl.plantId),
           xM: finite(pl.xM)!,
           yM: finite(pl.yM)!,
           notes: str(pl.notes, ''),
@@ -141,7 +181,8 @@ export function normalizeGardenPlan(raw: unknown): GardenPlan | null {
     ...(sanitizeZones(raw.zones) ? { zones: sanitizeZones(raw.zones)! } : {}),
     ...(finite(raw.startYear) != null && finite(raw.startYear)! >= 1900 && finite(raw.startYear)! <= 2200 ? { startYear: Math.round(finite(raw.startYear)!) } : {}),
     ...(isObject(raw.plantPrices) ? { plantPrices: Object.fromEntries(Object.entries(raw.plantPrices)
-      .filter(([, v]) => typeof v === 'number' && Number.isFinite(v) && v >= 0) as [string, number][]) } : {}),
+      .filter(([, v]) => typeof v === 'number' && Number.isFinite(v) && v >= 0)
+      .map(([k, v]) => [safeId(k), v]) as [string, number][]) } : {}),
     ...(normalizeExt(raw.ext) ? { ext: normalizeExt(raw.ext)! } : {}),
     createdAt: str(raw.createdAt, d.createdAt),
     updatedAt: str(raw.updatedAt, d.updatedAt),
@@ -162,7 +203,7 @@ function normalizeGardenPlanArea(raw: unknown, point: (v: unknown) => { xM: numb
   const points = raw.points.map(point).filter((q): q is { xM: number; yM: number } => q !== null);
   if (points.length < 3) return null;
   return {
-    id: nonEmptyStr(raw.id, newId()),
+    id: safeId(raw.id),
     name: str(raw.name, '').slice(0, 80),
     color: typeof raw.color === 'string' && /^#[0-9a-f]{6}$/i.test(raw.color) ? raw.color.toLowerCase() : '#22c55e',
     points,
@@ -207,7 +248,7 @@ export function normalizeVarietyList(raw: unknown): VarietyList | null {
   }).filter((e): e is VarietyEntry => e !== null);
   if (!entries.length) return null;
   return {
-    id: nonEmptyStr(raw.id, newId()),
+    id: safeId(raw.id),
     name: str(raw.name, '').slice(0, 120),
     source: raw.source === 'wikidata' ? 'wikidata' : 'csv',
     license: str(raw.license, ''),
