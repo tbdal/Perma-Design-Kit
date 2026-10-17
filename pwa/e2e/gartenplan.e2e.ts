@@ -424,13 +424,12 @@ test('3D compass: shows where north is, a click turns the view to look north', a
   await openPlan(page, 'np');
   await page.click('#btn-view-3d');
   const compass = page.locator('[data-compass]');
-  await expect(compass).toBeVisible();
+  await expect(compass).toBeVisible({ timeout: 20000 });
   const angle = async () => Number(await compass.getAttribute('data-angle'));
   await page.waitForTimeout(500);
   expect(Math.abs(await angle())).toBeGreaterThan(5);        // the start view does not look north
   await compass.click();
-  await page.waitForTimeout(900);
-  expect(Math.abs(await angle())).toBeLessThan(2);           // now it does: the needle points up
+  await expect.poll(async () => Math.abs(await angle()), { timeout: 6000 }).toBeLessThan(2);   // now it does: the needle points up
   // gone again in 2D
   await page.click('#btn-view-2d');
   await expect(compass).toHaveCount(0);

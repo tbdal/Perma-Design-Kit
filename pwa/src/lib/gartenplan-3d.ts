@@ -825,8 +825,11 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
     da = Math.atan2(Math.sin(da), Math.cos(da));                    // the short way round
     const t0 = performance.now(), D = 420;
     cancelAnimationFrame(northAnim);
+    let finished = false;
     const step = (now: number) => {
+      if (finished) return;
       const k = Math.min(1, (now - t0) / D), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+      if (k >= 1) finished = true;
       const a = a0 + da * e;
       camera.position.set(t.x + Math.cos(a) * dist, c0.y, t.z + Math.sin(a) * dist);
       if (dist < 1e-3) camera.up.set(-northV.x, 0, -northV.z);       // straight above: "up" on screen is north
@@ -835,6 +838,8 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
       if (k < 1) northAnim = requestAnimationFrame(step);
     };
     northAnim = requestAnimationFrame(step);
+    // frames can stall (hidden tab, busy page): the end position is reached anyway
+    setTimeout(() => step(t0 + D), D + 120);
   });
 
   // ── Sun: position from date/time at the garden's location ──
