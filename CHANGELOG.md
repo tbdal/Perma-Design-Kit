@@ -5,6 +5,7 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
 ## Pflanzennamen für Module und Luftbild-Zwischenspeicher 2026-10-16
+- [x] **Waldgartenplan:** Pfeiltasten bewegen die Karte (2D) bzw. die Ansicht über dem Boden (3D), mit Umschalt weiter; zweimal schnell Esc führt aus dem Plan zurück zur Projektübersicht; im 3D wird ein fehlgeschlagenes Luftbild-Stück zweimal neu versucht, bevor das grobe Satellitenbild einspringt, und später noch einmal scharf nachgeladen #minor #bugs #prüfen
 - [x] **Waldgartenplan:** Unten rechts im Plan steht, was noch lädt (Gebäude, Topografie, Wasser, Klima; Module melden ihres über `setLoadStatus`) #minor #prüfen
 - [x] **Waldgartenplan:** Pläne lassen sich oben in der Übersicht anpinnen (Stern, Favoriten stehen vorn), bei breiten Bildschirmen drei Pläne nebeneinander; Alt + 1…9 erreicht alle Menüpunkte der Reihe nach; wer den neuen Planer hat, sieht ihn als „Waldgartenplan“ an Stelle 4, der alte heißt dort „Planer (alt)“; ein Klick auf eine Pflanze in der Ebenenliste fliegt (heraus- und wieder hineinzoomen) zu ihr #minor #prüfen
 - [x] **Waldgartenplan, 3D:** Kompass unten links; ein Klick dreht die Ansicht nach Norden #minor #prüfen

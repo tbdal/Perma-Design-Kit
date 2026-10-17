@@ -126,6 +126,8 @@ export interface GardenPlan3DView {
   /** Where a plan point (on the ground) appears on screen, in client
    *  coordinates; null when it is behind the camera. */
   projectToScreen(xM: number, yM: number): { x: number; y: number } | null;
+  /** Moves the view over the ground (arrow keys): `right` and `forward` as fractions of the distance to the target, relative to where the camera looks. */
+  panView(right: number, forward: number): void;
   /** Jump to a straight top view or an oblique view from the south. */
   setViewPreset(preset: 'top' | 'oblique'): void;
   /** Ground rectangle (plan meters) roughly visible around the camera target
@@ -538,11 +540,29 @@ export function createGardenPlan3DView(
       };
       // Aerial-photo service not answering → coarse satellite / OSM instead.
       const fb = fallbackTileUrl(tileSrc, q.z, q.x, q.y);
-      tileLoader.load(tileUrl(tileSrc, q.z, q.x, q.y), onTex, undefined, () => {
+      const url = tileUrl(tileSrc, q.z, q.x, q.y);
+      // A tile that fails once is tried again (twice, a little later) before the coarse picture takes its place — a busy
+      // moment of the service or of our cache must not leave a blurry patch on the ground — and the sharp one is fetched
+      // once more later and swapped in if it works by then.
+      const attempt = (left: number) => tileLoader.load(url, onTex, undefined, () => {
+        if (left > 0 && (tileGroup === next || oldTileGroup === next)) { setTimeout(() => attempt(left - 1), left === 2 ? 600 : 1800); return; }
         if (!fb) { settled(); return; }
         opts.onTileFallback?.();
         tileLoader.load(fb, onTex, undefined, settled);
+        setTimeout(() => {
+          if (tileGroup !== next) return;
+          tileLoader.load(url, tex => {
+            if (tileGroup !== next) { tex.dispose(); return; }
+            tex.colorSpace = THREE.SRGBColorSpace;
+            tex.anisotropy = 4;
+            mat.map?.dispose();
+            mat.map = tex;
+            mat.needsUpdate = true;
+            requestRender();
+          }, undefined, () => { /* stays coarse */ });
+        }, 20000);
       });
+      attempt(2);
       next.add(mesh);
     }
     scene.add(next);
@@ -1335,6 +1355,17 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
       armedPlantId = plantId;
     },
     setSunTime,
+    panView(right: number, forward: number) {
+      const t = controls.target;
+      const fx = t.x - camera.position.x, fz = t.z - camera.position.z, fl = Math.hypot(fx, fz) || 1;
+      const f = { x: fx / fl, z: fz / fl };                       // where the camera looks, on the ground
+      const d = camera.position.distanceTo(t);
+      const dx = (f.x * forward + -f.z * right) * d, dz = (f.z * forward + f.x * right) * d;
+      camera.position.x += dx; camera.position.z += dz;
+      t.x += dx; t.z += dz;
+      controls.update();
+      requestRender();
+    },
     setViewPreset(preset: 'top' | 'oblique') {
       const t = controls.target;
       const d = camera.position.distanceTo(t);

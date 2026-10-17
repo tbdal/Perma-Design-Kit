@@ -2996,6 +2996,21 @@ import Layout from '../layouts/Layout.astro';
   document.getElementById('btn-area-undo')!.addEventListener('click', () => { areaDraft?.pop(); renderAreaDraft(); });
   document.getElementById('btn-area-cancel')!.addEventListener('click', endAreaDraw);
   btnAreaFinish.addEventListener('click', finishAreaDraw);
+  // Esc twice in quick succession: out of the plan, back to the project list (like Alt + the menu number).
+  let lastEscAt = 0;
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape' || e.repeat) return;
+    const typing = !!(e.target as HTMLElement | null)?.closest?.('input, textarea, select, [contenteditable]');
+    const now = Date.now();
+    const twice = !typing && editing && !phaseB.classList.contains('hidden') && now - lastEscAt < 450 && !document.querySelector('dialog[open]');
+    lastEscAt = typing ? 0 : now;
+    if (!twice) return;
+    lastEscAt = 0;
+    e.stopPropagation();
+    closeEditor();
+    renderList();
+    window.scrollTo({ top: 0 });
+  }, true);
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
     if (measurePts.length) clearMeasure();
@@ -3290,6 +3305,21 @@ import Layout from '../layouts/Layout.astro';
       case 'r': click('btn-draw-row'); break;
       case 'u': btnEditBoundary.click(); break;
       case 'g': gridInput.click(); break;
+      case 'ArrowLeft': case 'ArrowRight': case 'ArrowUp': case 'ArrowDown': {
+        // The map moves with the arrow keys (Shift = bigger steps); the 3D view moves over the ground.
+        if (document.activeElement?.id === 'plan-resize') { handled = false; break; }   // the height handle has its own arrow keys
+        const k = e.shiftKey ? 0.5 : 0.15;
+        const dx = key === 'ArrowLeft' ? -k : key === 'ArrowRight' ? k : 0, dy = key === 'ArrowUp' ? -k : key === 'ArrowDown' ? k : 0;
+        if (in2d) {
+          if (!planView.w) { handled = false; break; }
+          flightId++;
+          planView = { ...planView, x: planView.x + dx * planView.w, y: planView.y + dy * planView.h };
+          planViewFitted = false;
+          applyPlanView();
+        } else if (view3d) view3d.panView(dx, -dy);
+        else handled = false;
+        break;
+      }
       case 't': if (!in2d) setPreset(lastPreset === 'top' ? 'oblique' : 'top'); break;
       case 'i': case 'o': {
         // Years since planting: I fewer, O more (2D and 3D).

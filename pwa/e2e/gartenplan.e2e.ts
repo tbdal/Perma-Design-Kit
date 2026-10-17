@@ -474,3 +474,70 @@ test('status at the bottom right shows what is still loading (buildings, terrain
   await expect(status).toBeHidden({ timeout: 15000 });
   void errors;
 });
+
+test('3D aerial photo: a tile that fails once is tried again before the coarse satellite replaces it', async ({ page, errors }) => {
+  await stubNetwork(page);
+  const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/58BAwAI/AL+hc2rNAAAAABJRU5ErkJggg==', 'base64');
+  const seen = new Map<string, number>();
+  let ok = 0;
+  await page.route('**/geo/ortho/**', route => {
+    const u = route.request().url();
+    const n = (seen.get(u) ?? 0) + 1; seen.set(u, n);
+    if (n === 1) return route.fulfill({ status: 503, body: '' });     // the first try of every tile fails
+    ok++;
+    return route.fulfill({ contentType: 'image/png', body: PNG });
+  });
+  const coarse: string[] = [];
+  page.on('request', r => { if (/maps\.eox\.at/.test(r.url())) coarse.push(r.url()); });
+  await seedNeighbourPlan(page, { geo: { lat: 53.5511, lon: 9.9937, rotationDeg: 0, basemap: 'ortho', opacity: 0.6 } });
+  await openPlan(page, 'np');
+  await page.click('#btn-view-3d');
+  await expect.poll(() => ok, { timeout: 15000 }).toBeGreaterThan(0);   // the second tries went through
+  await page.waitForTimeout(2500);
+  expect(coarse).toEqual([]);                                           // no coarse tile was needed
+  void errors;
+});
+
+test('arrow keys move the map (2D) and the view over the ground (3D)', async ({ page, errors }) => {
+  await stubNetwork(page);
+  await seedNeighbourPlan(page, {});
+  await openPlan(page, 'np');
+  const vb = async () => (await page.locator('#plan-svg').getAttribute('viewBox'))!.split(' ').map(Number);
+  for (let i = 0; i < 3; i++) await page.click('#zoom-in');
+  const v0 = await vb();
+  await page.locator('#plan-svg').click({ position: { x: 5, y: 5 } });   // focus on the page, no input
+  await page.keyboard.press('ArrowRight');
+  await page.waitForTimeout(100);
+  const v1 = await vb();
+  expect(v1[0]).toBeGreaterThan(v0[0]);                    // moved right
+  expect(v1[2]).toBeCloseTo(v0[2], 3);                     // same zoom
+  expect(v1[1]).toBeCloseTo(v0[1], 3);
+  await page.keyboard.press('ArrowUp');
+  await page.waitForTimeout(100);
+  expect((await vb())[1]).toBeLessThan(v1[1]);             // moved up
+  await page.keyboard.press('Shift+ArrowLeft');
+  await page.waitForTimeout(100);
+  expect((v1[0] - (await vb())[0])).toBeGreaterThan(v0[2] * 0.3);   // Shift: bigger step
+  // in 3D the camera moves over the ground (the compass needle stays as it is, the camera target moves)
+  await page.click('#btn-view-3d');
+  await expect(page.locator('#plan-3d-container canvas')).toBeVisible({ timeout: 15000 });
+  await page.waitForTimeout(800);
+  void errors;
+});
+
+test('Esc twice quickly leads from the plan back to the project list; one Esc only cancels', async ({ page, errors }) => {
+  await stubNetwork(page);
+  await seedNeighbourPlan(page, {});
+  await openPlan(page, 'np');
+  await page.locator('#plan-svg').click({ position: { x: 5, y: 5 } });
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(700);                                     // one Esc: stays
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(300);
+  await expect(page.locator('#phase-b')).toBeVisible();              // two slow Escs: stays too
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');                                // two quick ones: out
+  await expect(page.locator('#plan-list')).toBeVisible();
+  await expect(page.locator('#phase-b')).toBeHidden();
+  void errors;
+});

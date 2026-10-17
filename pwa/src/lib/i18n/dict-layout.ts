@@ -102,6 +102,8 @@ export const layoutDict: Dict = {
   scGp3dViews: { de: '3D: Draufsicht ↔ Schrägansicht', en: '3D: top ↔ oblique view' },
   scGpYears: { de: 'Weniger / mehr Jahre seit Projektbeginn', en: 'Fewer / more years since project start' },
   scGpDelete: { de: 'Markierte Pflanze(n) bzw. Fläche entfernen', en: 'Remove selected plant(s) or area' },
+  scGpEscTwice: { de: 'Zweimal schnell: zurück zur Projektübersicht', en: 'Twice quickly: back to the project list' },
+  scGpArrows: { de: 'Karte bewegen (mit Umschalt weiter)', en: 'Move the map (Shift = further)' },
   scGpEsc: { de: 'Abbrechen / Markierung aufheben', en: 'Cancel / clear selection' },
   shortcutsOverview: { de: 'Diese Übersicht', en: 'This overview' },
   shortcutsFocusSearch: { de: 'Suche fokussieren', en: 'Focus search' },
