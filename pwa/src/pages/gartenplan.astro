@@ -4041,7 +4041,8 @@ import Layout from '../layouts/Layout.astro';
       [t('climateWind'), t('climateWindValue', { dir, share: nf(c.windRose[Math.round(c.windFromDeg / 22.5) % 16] * 100) })],
     ];
     climateBody.innerHTML = `<dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5">${rows.map(([k, v]) => `<dt class="text-stone-500 dark:text-stone-400">${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd>`).join('')}</dl>
-      <p class="pt-1 text-[10px] text-stone-500 dark:text-stone-400">${escapeHtml(t('climateNote', { from: c.years[0], to: c.years[1] }))}</p>`;
+      <p class="pt-1 text-[10px] text-stone-500 dark:text-stone-400">${escapeHtml(t('climateNote', { from: c.years[0], to: c.years[1] }))}</p>
+      <p data-climate-source class="text-[10px] text-stone-500 dark:text-stone-400"><b>${escapeHtml(t('climateSourceLead'))}</b> <a href="https://open-meteo.com/" target="_blank" rel="noopener" class="underline">Open-Meteo</a> – ${escapeHtml(t('climateSourceBody', { from: c.years[0], to: c.years[1] }))}</p>`;
   }
 
   // ── Gebäude (OSM) ──

@@ -99,6 +99,10 @@ test('site climate panel and hints from (stubbed) Open-Meteo data', async ({ pag
   await openPlan(page, 'np');
   await expect(page.locator('#climate-body')).toContainText('6b');
   await expect(page.locator('#climate-body')).toContainText('aus WSW');
+  // where the data come from
+  await expect(page.locator('#climate-body [data-climate-source]')).toContainText('Open-Meteo');
+  await expect(page.locator('#climate-body [data-climate-source]')).toContainText('ERA5');
+  await expect(page.locator('#climate-body [data-climate-source] a')).toHaveAttribute('href', 'https://open-meteo.com/');
   await expect(page.locator('#warnings-list')).toContainText('nicht winterhart');
   void errors;
 });
