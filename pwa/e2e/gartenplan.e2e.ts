@@ -385,3 +385,31 @@ test('map when creating a plan: buildings and forest of the surroundings, no pla
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('pdk-map-surr')!))).toEqual({ buildings: true, forest: false });
   void errors;
 });
+
+test('scale bar bottom left follows the zoom (desktop, 2D)', async ({ page, errors }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await stubNetwork(page);
+  await seedNeighbourPlan(page, {});
+  await openPlan(page, 'np');
+  const bar = page.locator('#plan-scale');
+  await expect(bar).toBeVisible();
+  const label = async () => (await bar.locator('[data-scale-label]').textContent())!;
+  const width = async () => (await bar.locator('[data-scale-line]').boundingBox())!.width;
+  const l0 = await label(), w0 = await width();
+  expect(w0).toBeGreaterThan(30);
+  expect(w0).toBeLessThanOrEqual(121);
+  // lower left of the plan
+  const wrap = (await page.locator('#plan-wrap').boundingBox())!, b = (await bar.boundingBox())!;
+  expect(b.x - wrap.x).toBeLessThan(40);
+  expect(wrap.y + wrap.height - (b.y + b.height)).toBeLessThan(40);
+  for (let i = 0; i < 4; i++) await page.click('#zoom-in');
+  await page.waitForTimeout(300);
+  expect(await label()).not.toBe(l0);                 // another round length after zooming in
+  const w1 = await width();
+  expect(w1).toBeGreaterThan(30);
+  expect(w1).toBeLessThanOrEqual(121);
+  // not in 3D
+  await page.click('#btn-view-3d');
+  await expect(bar).toBeHidden();
+  void errors;
+});

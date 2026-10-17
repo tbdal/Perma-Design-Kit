@@ -284,6 +284,11 @@ import Layout from '../layouts/Layout.astro';
           <div id="plan-wrap" class="relative overflow-hidden rounded-xl bg-white dark:bg-stone-800 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <svg id="plan-svg" class="block w-full touch-none" style="touch-action:none"></svg>
             <div id="plan-3d-container" hidden class="h-[70vh] w-full touch-none" style="touch-action:none"></div>
+            <!-- Scale bar (desktop, 2D): adapts to the zoom -->
+            <div id="plan-scale" hidden aria-hidden="true" class="pointer-events-none absolute bottom-3 left-3 z-10 hidden flex-col items-start gap-0.5 rounded bg-white/80 px-1.5 py-1 text-[11px] font-semibold text-stone-700 dark:bg-stone-900/80 dark:text-stone-200 lg:flex">
+              <span data-scale-label></span>
+              <span data-scale-line class="block h-1.5 border-x-2 border-b-2 border-stone-700 dark:border-stone-200"></span>
+            </div>
             <div data-feature="measure" id="measure-readout" hidden aria-live="polite" class="absolute left-1/2 top-3 z-10 -translate-x-1/2 rounded-md bg-orange-600/90 px-2.5 py-1 text-xs font-medium text-white shadow"></div>
             <div data-feature="gps" id="gps-box" hidden aria-live="polite" class="absolute bottom-3 left-3 z-10 max-w-[min(22rem,calc(100%-1.5rem))] space-y-1.5 rounded-lg bg-sky-50/95 dark:bg-sky-950/90 p-2.5 text-xs text-sky-950 dark:text-sky-50 shadow ring-1 ring-sky-300 dark:ring-sky-800">
               <p id="gps-status" class="font-medium"></p>
@@ -539,6 +544,9 @@ import Layout from '../layouts/Layout.astro';
   .locate-handle { border-radius: 9999px; border: 3px solid #fff; box-shadow: 0 0 0 1px #1c1917, 0 1px 4px rgb(0 0 0 / 0.4); }
   .locate-handle-origin { background: #15803d; cursor: move; }
   .locate-handle-rot { background: #facc15; cursor: grab; }
+  #plan-scale[hidden]{display:none!important}
+  #plan-wrap:has(#gps-box:not([hidden])) #plan-scale{bottom:7.5rem}
+  html.pdk-feld #plan-scale{display:none!important}
 </style>
 
 <script>
@@ -572,6 +580,7 @@ import Layout from '../layouts/Layout.astro';
   import { shoppingRows, shoppingTotal, shoppingCsv, exportShoppingPDF, downloadText, type ShoppingLabels } from '../lib/plan-shopping';
   import { crowdingWarnings, shadeWarnings, grownOccluders, WARN_YEARS } from '../lib/plan-warnings';
   import { fetchBuildings, BUILDINGS_ATTRIBUTION, type Building } from '../lib/osm-buildings';
+  import { niceScale, scaleLabel } from '../lib/scale-bar';
   import { sunSamples, sunHoursAt, sunClass, planOccluders, planCells, SEASON_DATES, type SunScene, type SunSample, type SunClass, type Occluder } from '../lib/sun-hours';
   import type { Scene3DLayer } from '../lib/gartenplan-3d';
   import { BOOL_FIELDS } from '../lib/plant-fields';
@@ -2640,9 +2649,22 @@ import Layout from '../layouts/Layout.astro';
   }
 
   let rescaleQueued = false;
+  const scaleBarEl = document.getElementById('plan-scale') as HTMLElement;
+  const scaleLineEl = scaleBarEl.querySelector('[data-scale-line]') as HTMLElement;
+  const scaleLabelEl = scaleBarEl.querySelector('[data-scale-label]') as HTMLElement;
+  /** The scale bar follows the zoom: a round length in at most 120 px. */
+  function updateScaleBar() {
+    const sc = editing && plan3dContainer.hidden && planView.w ? niceScale(pxPerUnit() * U) : null;
+    scaleBarEl.hidden = !sc;
+    if (!sc) return;
+    scaleLineEl.style.width = `${Math.round(sc.widthPx)}px`;
+    scaleLabelEl.textContent = scaleLabel(sc.meters, lang);
+  }
+  new MutationObserver(updateScaleBar).observe(plan3dContainer, { attributes: true, attributeFilter: ['hidden'] });
   function rescaleUi() {
     rescaleQueued = false;
     if (!editing) return;
+    updateScaleBar();
     const k = viewK();
     const grid = planSvg.querySelector('#plan-grid-layer');
     if (grid) grid.innerHTML = gridDefsAndBackground(editing.areaWidthM, editing.areaHeightM, editing.gridSpacingM, 'plan-grid', k, pxPerUnit() * U, editing.gridRotationDeg ?? 0, editing.boundary);
