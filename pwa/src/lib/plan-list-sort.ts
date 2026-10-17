@@ -31,6 +31,8 @@ export function sortPlans(plans: GardenPlan[], field: PlanSortField, dir: SortDi
   };
   const sign = dir === 'asc' ? 1 : -1;
   return [...plans].sort((a, b) => {
+    // pinned plans (favourites) always come first, sorted among themselves like the rest
+    if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
     const ka = key(a), kb = key(b);
     // unnamed plans last in either direction
     if (field === 'name' && (!ka || !kb) && ka !== kb) return ka ? -1 : 1;

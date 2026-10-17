@@ -136,6 +136,7 @@ export function normalizeGardenPlan(raw: unknown): GardenPlan | null {
       ? raw.areas.map(a => normalizeGardenPlanArea(a, point)).filter((a): a is GardenPlanArea => a !== null)
       : [],
     ...(typeof raw.showGrid === 'boolean' ? { showGrid: raw.showGrid } : {}),
+    ...(raw.pinned === true ? { pinned: true } : {}),
     ...(finite(raw.gridRotationDeg) ? { gridRotationDeg: normalizeGridAngle(finite(raw.gridRotationDeg)!) } : {}),
     ...(sanitizeZones(raw.zones) ? { zones: sanitizeZones(raw.zones)! } : {}),
     ...(finite(raw.startYear) != null && finite(raw.startYear)! >= 1900 && finite(raw.startYear)! <= 2200 ? { startYear: Math.round(finite(raw.startYear)!) } : {}),

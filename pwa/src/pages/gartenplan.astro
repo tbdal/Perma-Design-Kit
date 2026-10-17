@@ -43,7 +43,7 @@ import Layout from '../layouts/Layout.astro';
       </select>
       <button id="plan-sort-dir" type="button" data-i18n-title="planSortDirTitle" data-i18n-aria-label="planSortDirTitle" aria-label="Sortierrichtung umkehren" title="Sortierrichtung umkehren" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-2.5 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700">↓</button>
     </div>
-    <div id="plan-list" class="grid gap-4 sm:grid-cols-2"></div>
+    <div id="plan-list" class="grid gap-4 sm:grid-cols-2 2xl:grid-cols-3"></div>
     <div id="plan-empty" class="hidden rounded-xl border-2 border-dashed border-stone-300 dark:border-stone-600 py-16 text-center">
       <p class="text-stone-500 dark:text-stone-400" data-i18n="emptyStateText">Noch keine Waldgartenpläne angelegt.</p>
       <button id="btn-empty-new" data-i18n="btnEmptyNew" class="mt-3 inline-block rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white shadow hover:bg-green-800">Ersten Waldgartenplan anlegen</button>
@@ -1015,9 +1015,9 @@ import Layout from '../layouts/Layout.astro';
     listEl.innerHTML = sortPlans(plans, planSort.field, planSort.dir, lang).map(plan => {
       const poly = plan.polycultureId ? polyculturesById.get(plan.polycultureId) : undefined;
       return `
-        <article data-plan-id="${plan.id}" class="flex cursor-pointer items-start gap-3 rounded-xl bg-white dark:bg-stone-800 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:ring-green-300 dark:hover:ring-green-700">
+        <article data-plan-id="${plan.id}" class="flex cursor-pointer items-start gap-3 rounded-xl bg-white dark:bg-stone-800 p-4 shadow-sm ring-1 ${plan.pinned ? 'ring-amber-300 dark:ring-amber-700' : 'ring-stone-200 dark:ring-stone-700'} transition hover:ring-green-300 dark:hover:ring-green-700">
           <div class="min-w-0 flex-1">
-            <h3 class="text-base font-semibold text-stone-900 dark:text-stone-100">${escapeHtml(plan.name || t('planUnnamed'))}</h3>
+            <h3 class="flex items-start gap-1.5 text-base font-semibold text-stone-900 dark:text-stone-100"><button type="button" data-plan-action="pin" aria-pressed="${!!plan.pinned}" title="${escapeHtml(t(plan.pinned ? 'planUnpin' : 'planPin'))}" aria-label="${escapeHtml(t(plan.pinned ? 'planUnpin' : 'planPin'))}" class="-ml-1 shrink-0 rounded px-1 text-lg leading-none ${plan.pinned ? 'text-amber-500' : 'text-stone-300 hover:text-amber-500 dark:text-stone-600'}">${plan.pinned ? '★' : '☆'}</button><span>${escapeHtml(plan.name || t('planUnnamed'))}</span></h3>
             ${plan.description ? `<p class="mt-0.5 text-xs text-stone-500 dark:text-stone-400">${escapeHtml(plan.description)}</p>` : ''}
             ${poly ? `<p class="mt-2 text-xs text-stone-500 dark:text-stone-400">${t('linkedPolycultureLabel')} ${escapeHtml(poly.name || '—')}</p>` : ''}
             <p class="mt-2 text-sm text-stone-700 dark:text-stone-200">${t('placementCount', { count: plan.placements.length })}</p>
@@ -1061,9 +1061,14 @@ import Layout from '../layouts/Layout.astro';
       plan.updatedAt = new Date().toISOString();
       await saveGardenPlan(plan);
       notifyPlanSaved(plan);
+    } else if (action === 'pin') {
+      if (plan.pinned) delete plan.pinned; else plan.pinned = true;
+      await saveGardenPlan(plan);
+      notifyPlanSaved(plan);
     } else if (action === 'duplicate') {
       const now = new Date().toISOString();
       const copy: GardenPlan = { ...structuredClone(plan), id: newId(), name: t('planCopyName', { name }), createdAt: now, updatedAt: now };
+      delete copy.pinned;   // the copy is no favourite
       await saveGardenPlan(copy);
       const view = readPlanView(plan.id);
       if (view) writePlanView(copy.id, view);   // same map section / 3D camera
@@ -2555,6 +2560,36 @@ import Layout from '../layouts/Layout.astro';
     if (!rescaleQueued) { rescaleQueued = true; requestAnimationFrame(rescaleUi); }
   }
 
+  let flightId = 0;
+  /** Moves the 2D view to `to` (same size) in a smooth flight: a long way zooms out in the middle and back in. */
+  function flyPlanView(to: typeof planView) {
+    const from = { ...planView };
+    const c0 = { x: from.x + from.w / 2, y: from.y + from.h / 2 }, c1 = { x: to.x + to.w / 2, y: to.y + to.h / 2 };
+    const dist = Math.hypot(c1.x - c0.x, c1.y - c0.y);
+    const id = ++flightId;
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const finish = () => { planView = { ...to }; planViewFitted = false; applyPlanView(); };
+    if (reduce || dist < from.w * 0.05) { finish(); return; }
+    // zoom-out only when the way is long compared with what is seen
+    const peak = dist > from.w * 0.3 ? 1 + Math.min(40, (dist / from.w) * 1.1) : 1;
+    const D = Math.min(1100, 450 + dist / U * 6);
+    const t0 = performance.now();
+    const ease = (k: number) => (k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2);
+    const step = (now: number) => {
+      if (id !== flightId) return;                       // another move started
+      const k = Math.min(1, (now - t0) / D), e = ease(k);
+      const f = 1 + (peak - 1) * Math.sin(Math.PI * k);   // 1 → peak → 1
+      const w = from.w * f, h = from.h * f;
+      const cx = c0.x + (c1.x - c0.x) * e, cy = c0.y + (c1.y - c0.y) * e;
+      planView = { x: cx - w / 2, y: cy - h / 2, w, h };
+      planViewFitted = false;
+      applyPlanView();
+      if (k < 1) requestAnimationFrame(step); else finish();
+    };
+    requestAnimationFrame(step);
+    setTimeout(() => { if (id === flightId && planView.w !== to.w) finish(); }, D + 150);   // frames can stall
+  }
+
   /** Screen pixels per SVG unit at the current zoom. */
   // The canvas size is read once per task: updateMarkerShape() runs for every
   // marker right after writing attributes, and a fresh getBoundingClientRect()
@@ -2708,6 +2743,7 @@ import Layout from '../layouts/Layout.astro';
     return { x: cx - (cx - base.x) * f, y: cy - (cy - base.y) * f, w, h: base.h * f };
   }
   function zoomAtCenter(factor: number) {
+    flightId++;
     planView = zoomedView(planView, factor, planView.x + planView.w / 2, planView.y + planView.h / 2); planViewFitted = false;
     applyPlanView();
   }
@@ -2716,6 +2752,7 @@ import Layout from '../layouts/Layout.astro';
   document.getElementById('zoom-fit')!.addEventListener('click', () => { resetPlanViewState(); applyPlanView(); });
   planSvg.addEventListener('wheel', (e: WheelEvent) => {
     if (!(e.ctrlKey || e.metaKey) || !editing) return;
+    flightId++;
     e.preventDefault();
     const p = clientToMeters(planSvg, e.clientX, e.clientY);
     planView = zoomedView(planView, Math.exp(-e.deltaY * 0.0025), p.xM * U, p.yM * U); planViewFitted = false;
@@ -4676,14 +4713,13 @@ import Layout from '../layouts/Layout.astro';
     },
     revealPoint(xM, yM) {
       if (!editing || !plan3dContainer.hidden || !planView.w) return;
-      // Pans the 2D view just far enough that the point is inside it with some room around (zoom stays).
+      // Pans the 2D view just far enough that the point is inside it with some room around (zoom stays) —
+      // far away: out and in again like a map flight, ending on the zoom the user had.
       const px = xM * U, py = yM * U, mx = planView.w * 0.18, my = planView.h * 0.18;
       const dx = px < planView.x + mx ? px - (planView.x + mx) : px > planView.x + planView.w - mx ? px - (planView.x + planView.w - mx) : 0;
       const dy = py < planView.y + my ? py - (planView.y + my) : py > planView.y + planView.h - my ? py - (planView.y + planView.h - my) : 0;
       if (!dx && !dy) return;
-      planView = { ...planView, x: planView.x + dx, y: planView.y + dy };
-      planViewFitted = false;
-      applyPlanView();
+      flyPlanView({ ...planView, x: planView.x + dx, y: planView.y + dy });
     },
     placePlantAt(plantId, xM, yM) {
       if (!editing || !plantsById.has(plantId) || xM < 0 || yM < 0 || xM > editing.areaWidthM || yM > editing.areaHeightM) return null;

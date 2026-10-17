@@ -435,3 +435,18 @@ test('3D compass: shows where north is, a click turns the view to look north', a
   await expect(compass).toHaveCount(0);
   void errors;
 });
+
+test('plans can be pinned to the top of the overview', async ({ page, errors }) => {
+  await stubNetwork(page);
+  await seedNeighbourPlan(page, {});
+  await page.goto('/gartenplan/');
+  const star = page.locator('[data-plan-id="np"] [data-plan-action="pin"]');
+  await expect(star).toHaveAttribute('aria-pressed', 'false');
+  await star.click();
+  await expect(page.locator('[data-plan-id="np"] [data-plan-action="pin"]')).toHaveAttribute('aria-pressed', 'true');
+  await page.reload();
+  await expect(page.locator('[data-plan-id="np"] [data-plan-action="pin"]')).toHaveAttribute('aria-pressed', 'true');   // kept
+  await page.locator('[data-plan-id="np"] [data-plan-action="pin"]').click();
+  await expect(page.locator('[data-plan-id="np"] [data-plan-action="pin"]')).toHaveAttribute('aria-pressed', 'false');
+  void errors;
+});

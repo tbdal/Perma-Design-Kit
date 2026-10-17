@@ -35,3 +35,13 @@ describe('project list sorting', () => {
     expect(defaultDir('created')).toBe('desc');
   });
 });
+
+describe('pinned plans', () => {
+  it('come first in every sorting, sorted among themselves like the rest', () => {
+    const mk = (id: string, created: string, pinned?: boolean) => ({ id, name: id, createdAt: created, updatedAt: created, placements: [], areaWidthM: 1, areaHeightM: 1, ...(pinned ? { pinned } : {}) }) as any;
+    const list = [mk('a', '2026-01-01'), mk('b', '2026-02-01', true), mk('c', '2026-03-01'), mk('d', '2026-04-01', true)];
+    expect(sortPlans(list, 'created', 'desc').map(p => p.id).join('')).toBe('dbca');
+    expect(sortPlans(list, 'created', 'asc').map(p => p.id).join('')).toBe('bdac');
+    expect(sortPlans(list, 'name', 'desc').map(p => p.id).join('')).toBe('dbca');
+  });
+});

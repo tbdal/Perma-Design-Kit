@@ -110,6 +110,8 @@ export interface GardenPlan {
   gridSpacingM: number;          // 0.1 | 0.5 | 1 | 2
   /** Meter lines shown in the plan (chosen when the plan was made); absent = the device's last choice. */
   showGrid?: boolean;
+  /** Pinned to the top of the plan list (favourite). */
+  pinned?: boolean;
   /** Grid lines turned clockwise by this many degrees (−45…45), e.g. along
    *  a slanted plot; absent/0 = along the plan axes. Only the grid turns. */
   gridRotationDeg?: number;

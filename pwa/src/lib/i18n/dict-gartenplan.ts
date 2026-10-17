@@ -27,6 +27,8 @@ export const gartenplanDict: Dict = {
   planSortPlants: { de: 'Anzahl Pflanzen', en: 'Number of plants' },
   planSortDirTitle: { de: 'Sortierrichtung umkehren', en: 'Reverse sort order' },
   planDates: { de: 'angelegt {created} · bearbeitet {updated}', en: 'created {created} · edited {updated}' },
+  planPin: { de: 'Oben anpinnen (Favorit)', en: 'Pin to the top (favourite)' },
+  planUnpin: { de: 'Nicht mehr oben anpinnen', en: 'Unpin' },
   planRename: { de: 'Umbenennen', en: 'Rename' },
   planDuplicate: { de: 'Duplizieren', en: 'Duplicate' },
   planDelete: { de: 'Löschen', en: 'Delete' },

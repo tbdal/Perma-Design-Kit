@@ -80,7 +80,7 @@ export const layoutDict: Dict = {
   welcomeDone: { de: 'Los geht’s', en: 'Get started' },
 
   shortcutsTitle: { de: 'Tastatur-Shortcuts', en: 'Keyboard shortcuts' },
-  scGpProjects: { de: 'Zurück zur Projektübersicht (auch Klick auf „Waldgartenplan“)', en: 'Back to the project list (also a click on “Forest garden plan”)' },
+  scGpProjects: { de: 'Zurück zur Projektübersicht (Alt + Zahl des Menüpunkts „Waldgartenplan“, auch ein Klick darauf)', en: 'Back to the project list (Alt + the number of the “Forest garden plan” menu item, or a click on it)' },
   scGpView: { de: '2D- / 3D-Ansicht', en: '2D / 3D view' },
   scGpPan: { de: 'Bewegen (Karte verschieben)', en: 'Move (pan the map)' },
   scGpSelect: { de: 'Markieren – einzeln', en: 'Select – single' },
@@ -91,7 +91,7 @@ export const layoutDict: Dict = {
   scGpArea: { de: 'Fläche einzeichnen', en: 'Draw area' },
   scGpRow: { de: 'Reihe pflanzen (gewählte Pflanze)', en: 'Plant a row (chosen plant)' },
   scGpBoundary: { de: 'Umriss bearbeiten', en: 'Edit outline' },
-  shortcutsNav: { de: 'Pflanzen / Kalender / Polykulturen / Waldgartenplan', en: 'Plants / Calendar / Polycultures / Forest garden plan' },
+  shortcutsNav: { de: 'Menüpunkte der Reihe nach: Pflanzen, Kalender, Polykulturen, Waldgartenplan …', en: 'Menu items in order: Plants, Calendar, Polycultures, Forest garden plan …' },
   scGpMeasure: { de: 'Messen (Enter schließt Fläche, ⌫ letzter Punkt weg)', en: 'Measure (Enter closes the area, ⌫ removes last point)' },
   scGpSnapshot: { de: '3D: Ansicht als Bild speichern', en: '3D: save the view as an image' },
   scGpSunTime: { de: '3D-Sonne: Tageszeit zurück / vor (15 min, mit Shift 1 h)', en: '3D sun: time of day back / forward (15 min, with Shift 1 h)' },
