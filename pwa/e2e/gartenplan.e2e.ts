@@ -450,3 +450,27 @@ test('plans can be pinned to the top of the overview', async ({ page, errors }) 
   await expect(page.locator('[data-plan-id="np"] [data-plan-action="pin"]')).toHaveAttribute('aria-pressed', 'false');
   void errors;
 });
+
+test('status at the bottom right shows what is still loading (buildings, terrain, climate) and disappears again', async ({ page, errors }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  let release!: () => void;
+  const gate = new Promise<void>(r => { release = r; });
+  await stubNetwork(page, {
+    overpass: async route => { await gate; await route.fulfill({ contentType: 'application/json', body: JSON.stringify({ elements: [] }) }); },
+  });
+  await page.route('**/geo/terrain/**', async route => { await gate; await route.fulfill({ status: 404, body: '' }); });
+  await seedNeighbourPlan(page, { geo: { lat: 50.9, lon: 7.0, rotationDeg: 0, basemap: 'none', opacity: 0.6 } });
+  await openPlan(page, 'np');
+  const status = page.locator('#plan-loading');
+  await expect(status).toBeVisible();
+  await expect(status).toContainText('Lädt:');
+  await expect(status).toContainText('Gebäude');
+  await expect(status).toContainText('Topografie');
+  // at the bottom right of the plan
+  const wrap = (await page.locator('#plan-wrap').boundingBox())!, b = (await status.boundingBox())!;
+  expect(wrap.x + wrap.width - (b.x + b.width)).toBeLessThan(40);
+  expect(wrap.y + wrap.height - (b.y + b.height)).toBeLessThan(40);
+  release();
+  await expect(status).toBeHidden({ timeout: 15000 });
+  void errors;
+});

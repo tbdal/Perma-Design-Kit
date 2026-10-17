@@ -52,6 +52,8 @@ export interface GartenplanApi {
   pickPoint(): Promise<GardenPlanPoint | null>;
   /** All plants of the user's list, by id (the plan's placements refer to them). */
   plantsById(): Map<string, PlantData>;
+  /** Shows (label) or removes (null) a "loading …" item in the status at the bottom right of the plan (buildings, forest, …). `key` identifies the item. */
+  setLoadStatus(key: string, label: string | null): void;
   /** Pans the 2D view just far enough that this plan point is in view with some room around it (zoom stays; no effect in 3D). */
   revealPoint(xM: number, yM: number): void;
   /** Trees (plants of the tree layer) drawn see-through in 2D and 3D: 1 = solid (default), 0 = invisible; null = back to solid. */
