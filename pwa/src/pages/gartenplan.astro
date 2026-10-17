@@ -4133,6 +4133,7 @@ import Layout from '../layouts/Layout.astro';
     return new Date();
   }
   let terrainMaxZ: { grid: ElevationGrid; z: number } | null = null;
+  let hoverSun: { key: string; at: number; scene: SunScene; samples: SunSample[]; maxHours: number } | null = null;
   function sunContext(): { scene: SunScene } {
     const tg = terrain;
     const groundZ = tg ? (x: number, y: number) => sampleGrid(tg, x, y) : () => 0;
@@ -4659,6 +4660,30 @@ import Layout from '../layouts/Layout.astro';
       });
     },
     groundAt: (xM, yM) => (terrain && editing?.geo ? sampleGrid(terrain, xM, yM) : null),
+    placePlantAt(plantId, xM, yM) {
+      if (!editing || !plantsById.has(plantId) || xM < 0 || yM < 0 || xM > editing.areaWidthM || yM > editing.areaHeightM) return null;
+      const placement = newPlacement(plantId, Math.round(xM * 100) / 100, Math.round(yM * 100) / 100);
+      editing.placements.push(placement);
+      unplacedPlantIds = unplacedPlantIds.filter(id => id !== plantId);
+      renderUnplacedList();
+      renderSuggestions();
+      renderPlanSvg();
+      view3d?.refreshPlacements();
+      scheduleAutosave();
+      return placement.id;
+    },
+    sunHoursAt(xM, yM) {
+      if (!editing) return null;
+      const mode = coverageSelect.value === 'sun-day' ? 'day' : 'season';
+      const ll = sunLatLon();
+      // One scene and one sample set for a second at a time (a mouse over the plan asks many times).
+      const key = `${editing.id}|${editing.yearsSincePlanting}|${mode}|${mode === 'day' ? chosenDay().toDateString() : ''}|${ll.lat},${ll.lon},${ll.rot}`;
+      if (!hoverSun || hoverSun.key !== key || Date.now() - hoverSun.at > 1500) {
+        const samples = mode === 'day' ? sunSamples([chosenDay()], ll.lat, ll.lon, ll.rot, 15, sunTz) : seasonSamples();
+        hoverSun = { key, at: Date.now(), scene: sunContext().scene, samples, maxHours: Math.max(1, samples.reduce((a, s) => a + s.hours, 0)) };
+      }
+      return { hours: sunHoursAt(xM, yM, hoverSun.scene, hoverSun.samples), maxHours: hoverSun.maxHours, mode };
+    },
     refresh() {
       if (!editing) return;
       renderPluginOverlays();

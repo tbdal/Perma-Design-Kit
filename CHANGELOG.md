@@ -5,6 +5,7 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
 ## Pflanzennamen für Module und Luftbild-Zwischenspeicher 2026-10-16
+- [x] **Waldgartenplan:** Neue Schnittstellen für Module: Pflanze an einen Punkt setzen (`placePlantAt`) und Sonnenstunden an einem Punkt (`sunHoursAt`); Meterlinien-Kürzel im neuen Planer Umschalt+G (G = GPS, N = Notiz) #minor #prüfen
 - [x] **Waldgartenplan:** Maßstabsbalken unten links im 2D-Plan (Desktop), der sich mit der Zoomstufe anpasst #minor #prüfen
 - [x] **Waldgartenplan, Karte beim Anlegen und Standort-Dialog:** Gebäude und Wald (OpenStreetMap) aus der Umgebung werden unabhängig von einem Plan auf der Karte eingezeichnet, einzeln abschaltbar; neue Route `/geo/wald` mit Zwischenspeicher #major #prüfen
 - [x] **Waldgartenplan:** Die gewählte Ansicht bleibt beim Ändern der Fenstergröße (Vollbild an/aus, Drehen) und beim erneuten Öffnen erhalten – vorher sprang die Karte auf „ganzes Projekt“ zurück; die Ansicht wird zudem laufend gesichert, nicht nur beim Schließen #bugs #prüfen

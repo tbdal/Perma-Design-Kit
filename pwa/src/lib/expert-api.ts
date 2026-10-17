@@ -52,6 +52,10 @@ export interface GartenplanApi {
   pickPoint(): Promise<GardenPlanPoint | null>;
   /** All plants of the user's list, by id (the plan's placements refer to them). */
   plantsById(): Map<string, PlantData>;
+  /** Puts a plant of the list on the plan at this point (current planting year like a click would); returns the new placement's id, null outside the plan area or without a plan. */
+  placePlantAt(plantId: string, xM: number, yM: number): string | null;
+  /** Direct sun hours per day at a plan point with what the plan has now (plants at the shown age, terrain, buildings, plugins' shade casters); `mode` follows the "Einfärben" choice (a chosen day, else the summer half-year). Null without a plan. */
+  sunHoursAt(xM: number, yM: number): { hours: number; maxHours: number; mode: 'day' | 'season' } | null;
   /** Ground height (m above sea level) at a plan point, or null without terrain data. */
   groundAt(xM: number, yM: number): number | null;
   /** Redraw what depends on plugin data: 2D overlays, the 3D view, sun hours, hints. */
