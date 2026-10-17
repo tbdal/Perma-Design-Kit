@@ -5,7 +5,7 @@ import {
 import { loadSettings, saveSettings, type AppSettings } from './settings';
 import type { PlantData, Polyculture, GardenPlan } from './types';
 import type { VarietyList } from './varieties';
-import { normalizePlants, normalizePolycultures, normalizeGardenPlans, normalizeVarietyLists } from './plant-normalize';
+import { normalizePlants, normalizePolycultures, normalizeGardenPlans, normalizeVarietyLists, safeIdKeys } from './plant-normalize';
 import { readPlanView, writePlanView, sanitizePlanViews, type PlanView } from './plan-view';
 
 export const GIST_FILENAME = 'perma-design-kit-backup.json';
@@ -172,7 +172,7 @@ export function parseBackup(text: string): ParsedBackup {
   if (typeof data !== 'object' || data === null) return empty;
   const d = data as Record<string, unknown>;
   const gardenPlans = normalizeGardenPlans(d.gardenPlans);
-  const views = sanitizePlanViews(d.views, new Set(gardenPlans.map(g => g.id)));
+  const views = sanitizePlanViews(safeIdKeys(d.views), new Set(gardenPlans.map(g => g.id)));
   return {
     plants: normalizePlants(d.plants),
     polycultures: normalizePolycultures(d.polycultures ?? d.guilds),

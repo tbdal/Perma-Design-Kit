@@ -982,7 +982,7 @@ import Layout from '../layouts/Layout.astro';
       listEl.innerHTML = displayPlants.map((p, i) => {
         const cardHtml = cardHtmls[i];
         return `
-        <div class="group relative overflow-hidden rounded-xl shadow-md ring-1 ring-stone-200 dark:ring-stone-700 transition hover:shadow-lg hover:ring-green-300${(p.printCount ?? 1) === 0 ? ' opacity-60' : ''}" data-id="${p.id}" data-idx="${i}">
+        <div class="group relative overflow-hidden rounded-xl shadow-md ring-1 ring-stone-200 dark:ring-stone-700 transition hover:shadow-lg hover:ring-green-300${(p.printCount ?? 1) === 0 ? ' opacity-60' : ''}" data-id="${escapeHtml(p.id)}" data-idx="${i}">
           <div class="pointer-events-none${isStripe ? ' overflow-x-auto' : ''}">${cardHtml}</div>
           <div class="relative z-10 flex items-center justify-between bg-white/90 dark:bg-stone-800/90 px-3 py-1.5">
             <span class="text-xs text-stone-500 dark:text-stone-400">${escapeHtml(displayName(p))}</span>
@@ -1018,7 +1018,7 @@ import Layout from '../layouts/Layout.astro';
         const pct = completenessPercent(p);
         const barColor = pct >= 80 ? 'bg-green-400' : pct >= 50 ? 'bg-amber-400' : 'bg-red-300';
         return `
-        <div class="group relative flex flex-col overflow-hidden rounded-xl bg-white dark:bg-stone-800 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:shadow-md hover:ring-green-300${(p.printCount ?? 1) === 0 ? ' opacity-60' : ''}" data-id="${p.id}">
+        <div class="group relative flex flex-col overflow-hidden rounded-xl bg-white dark:bg-stone-800 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:shadow-md hover:ring-green-300${(p.printCount ?? 1) === 0 ? ' opacity-60' : ''}" data-id="${escapeHtml(p.id)}">
           <!-- Accent left border -->
           <div class="absolute left-0 top-0 h-full w-1 ${accentColor(p)}"></div>
           <!-- Image thumbnail -->
@@ -1094,7 +1094,7 @@ import Layout from '../layouts/Layout.astro';
         <!-- Mobile card list (< sm) -->
         <div class="sm:hidden divide-y divide-stone-100">
           ${rowData.map(({ p, srcHtml, sel, pct, barColor, usageDots, functionDots, sunDots, waterDots, growthDots, layerDotHtml, phenologyHtml, printHtml, off }) => `
-          <div data-id="${p.id}" class="flex items-start gap-2.5 px-3 py-3 ${sel ? 'bg-green-50 dark:bg-green-900/30' : ''}${off ? ' opacity-60' : ''}">
+          <div data-id="${escapeHtml(p.id)}" class="flex items-start gap-2.5 px-3 py-3 ${sel ? 'bg-green-50 dark:bg-green-900/30' : ''}${off ? ' opacity-60' : ''}">
             <input type="checkbox" aria-label="${escapeHtml(t('a11ySelect', { name: displayName(p) }))}" class="row-check mt-1 shrink-0 accent-green-600" ${sel ? 'checked' : ''} />
             <div class="w-0.5 self-stretch rounded-full ${accentColor(p)} shrink-0"></div>
             <div class="min-w-0 flex-1">
@@ -1165,7 +1165,7 @@ import Layout from '../layouts/Layout.astro';
             </thead>
             <tbody class="divide-y divide-stone-100">
               ${rowData.map(({ p, srcHtml, sel, pct, barColor, usageDots, functionDots, sunDots, waterDots, growthDots, layerDotHtml, phenologyHtml, printHtml, off }) => `
-              <tr data-id="${p.id}" class="hover:bg-stone-50 dark:hover:bg-stone-800 ${sel ? 'bg-green-50 dark:bg-green-900/30' : ''}${off ? ' opacity-60' : ''}">
+              <tr data-id="${escapeHtml(p.id)}" class="hover:bg-stone-50 dark:hover:bg-stone-800 ${sel ? 'bg-green-50 dark:bg-green-900/30' : ''}${off ? ' opacity-60' : ''}">
                 <td class="px-2 py-2"><input type="checkbox" aria-label="${escapeHtml(t('a11ySelect', { name: displayName(p) }))}" class="row-check accent-green-600" ${sel ? 'checked' : ''} /></td>
                 <td class="px-2 py-2">
                   <div class="flex items-center gap-1.5">

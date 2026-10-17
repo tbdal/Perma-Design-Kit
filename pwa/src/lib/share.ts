@@ -2,6 +2,7 @@ import { createEmptyPlant, type PlantData, type Polyculture, type GardenPlan } f
 import { parseBackup, type ParsedBackup } from './sync';
 import { newId } from './id';
 import { sanitizePlanViews, type PlanView } from './plan-view';
+import { safeId, safeIdKeys } from './plant-normalize';
 
 // "Projekt als Link teilen": the whole project travels inside the link's
 // #fragment — deflate-compressed JSON, base64url-encoded. Nothing is stored
@@ -92,8 +93,10 @@ export type DecodedShare = ParsedBackup & Pick<ShareContent, 'views' | 'start'>;
 export function shareExtras(json: string, planIds: Set<string>): Pick<ShareContent, 'views' | 'start'> {
   let raw: any;
   try { raw = JSON.parse(json); } catch { return {}; }
-  const views = sanitizePlanViews(raw?.views, planIds);
-  const startId = typeof raw?.start?.planId === 'string' && planIds.has(raw.start.planId) ? raw.start.planId : null;
+  // Plan ids were made safe by parseBackup (safeId); map these the same way.
+  const views = sanitizePlanViews(safeIdKeys(raw?.views), planIds);
+  const rawStart = typeof raw?.start?.planId === 'string' ? safeId(raw.start.planId) : null;
+  const startId = rawStart && planIds.has(rawStart) ? rawStart : null;
   return { ...(Object.keys(views).length ? { views } : {}), start: startId ? { planId: startId } : null };
 }
 
