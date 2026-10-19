@@ -124,6 +124,8 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
         <div class="ml-auto flex items-center gap-1">
           <!-- Menus added by expert modules (lib/expert-api.ts, LayoutApi.addHeaderMenu) -->
           <div id="header-extra" class="contents"></div>
+          <!-- Visible sign-in for visitors without an account (hidden once logged in, kept in the Ansicht menu too) -->
+          <a id="header-login" href="/anmelden/" data-i18n="modeLogin" class="rounded-lg border border-green-300/60 px-2.5 py-1 text-sm font-semibold text-white transition hover:bg-green-800 dark:hover:bg-green-900">Anmelden</a>
           <!-- Ansicht: Einfach / Klassisch / Experte (src/lib/ui-mode.ts) -->
           <div class="relative">
             <button id="mode-toggle" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="mode-menu" data-i18n-title="modeMenuLabel" title="Ansicht: Einfach, Klassisch oder Experte" class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm font-medium text-green-100 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900">
@@ -934,6 +936,9 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
         const login = document.getElementById('mode-login') as HTMLAnchorElement;
         login.hidden = !!auth;
         login.href = loginHref();
+        const headerLogin = document.getElementById('header-login') as HTMLAnchorElement;
+        headerLogin.hidden = !!auth || /^\/anmelden\/?$/.test(location.pathname);
+        headerLogin.href = loginHref();
         document.getElementById('mode-auth')!.hidden = !auth;
         document.getElementById('mode-auth-name')!.textContent = auth ? t('modeLoggedInAs', { name: auth.name }) : '';
         document.getElementById('mode-admin-link')!.hidden = auth?.role !== 'admin';

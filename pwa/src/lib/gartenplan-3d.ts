@@ -111,6 +111,8 @@ export interface GardenPlan3DView {
   setCoverage(overlay: CoverageOverlay3D | null): void;
   /** Flow paths, sinks and swale suggestions draped on the ground (null hides them). */
   setWater(water: Water3D | null): void;
+  /** Own position (GPS) as a pole with an accuracy ring on the ground; null hides it. */
+  setPositionMarker(pos: { xM: number; yM: number; accM: number } | null): void;
   updateYears(years: number): void;
   /** See-through trees: 1 = solid (default), 0 = invisible. Only plants of the tree layer. */
   setTreeOpacity(opacity: number): void;
@@ -414,6 +416,7 @@ export function createGardenPlan3DView(
   const tileLoader = new THREE.TextureLoader();
   tileLoader.setCrossOrigin('anonymous');
   let tileGroup: THREE.Group | null = null;
+  let posMarker: THREE.Group | null = null;
   let oldTileGroup: THREE.Group | null = null;
   let tileKey = '';
   if (layoutSrc) lawn.visible = false; // the map/terrain tiles are the ground inside the plan too
@@ -1394,6 +1397,33 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
     refreshAreas(id: string | null) {
       selectedAreaId = id;
       rebuildAreas();
+    },
+    setPositionMarker(pos) {
+      if (posMarker) {
+        scene.remove(posMarker);
+        posMarker.traverse(o => { const m = o as THREE.Mesh; m.geometry?.dispose(); (m.material as THREE.Material | undefined)?.dispose(); });
+        posMarker = null;
+      }
+      if (pos) {
+        const g = new THREE.Group();
+        const mat = (opacity: number) => new THREE.MeshBasicMaterial({ color: 0x0284c7, transparent: true, opacity, depthWrite: false, side: THREE.DoubleSide });
+        // Sized by the plan, so it stays visible zoomed out and does not swallow a small garden.
+        const poleH = Math.max(2, maxDim * 0.04), headR = Math.max(0.3, poleH * 0.12);
+        const ring = new THREE.Mesh(new THREE.RingGeometry(Math.max(0.1, pos.accM - 0.15), Math.max(0.25, pos.accM), 48), mat(0.55));
+        ring.rotation.x = -Math.PI / 2; ring.position.y = 0.06;
+        const disc = new THREE.Mesh(new THREE.CircleGeometry(Math.max(0.2, pos.accM), 48), mat(0.12));
+        disc.rotation.x = -Math.PI / 2; disc.position.y = 0.05;
+        const pole = new THREE.Mesh(new THREE.CylinderGeometry(headR * 0.18, headR * 0.18, poleH, 8), mat(0.9));
+        pole.position.y = poleH / 2;
+        const head = new THREE.Mesh(new THREE.SphereGeometry(headR, 16, 12), new THREE.MeshBasicMaterial({ color: 0x0284c7 }));
+        head.position.y = poleH + headR;
+        g.add(ring, disc, pole, head);
+        g.position.set(pos.xM, ground(pos.xM, pos.yM), pos.yM);
+        g.renderOrder = 10;
+        scene.add(g);
+        posMarker = g;
+      }
+      requestRender();
     },
     setSelectedPlacement(placementId: string | null) {
       selectedPlacementId = placementId;

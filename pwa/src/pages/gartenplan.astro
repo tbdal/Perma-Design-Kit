@@ -1657,6 +1657,7 @@ import Layout from '../layouts/Layout.astro';
     view3d.refreshAreas(selectedAreaId);
     view3d.setCoverage(coverage3d);
     view3d.setWater(water3d);
+    view3d.setPositionMarker(gpsPos);
     sunControls.hidden = false;
     if (!sunDateInput.value) {
       setSunNow();
@@ -3685,6 +3686,7 @@ import Layout from '../layouts/Layout.astro';
   function renderGps() {
     const g = planSvg.querySelector('#gps-layer');
     syncGpsButton();
+    view3d?.setPositionMarker(editing ? gpsPos : null);
     if (!g) return;
     if (!gpsPos || !editing) { g.innerHTML = ''; return; }
     const k = viewK();

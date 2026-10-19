@@ -213,6 +213,11 @@ test('field mode: own GPS position, way to a plant, place a plant here', async (
   await page.click('#tool-gps');
   await expect(page.locator('#gps-status')).toContainText('im Garten');
   await expect(page.locator('#gps-layer circle')).toHaveCount(2);
+  // the same position is drawn in 3D (a pole on the ground); switching views with GPS on must not fail
+  await page.click('#btn-view-3d');
+  await expect(page.locator('#plan-3d-container canvas')).toBeVisible({ timeout: 20000 });
+  await page.click('#btn-view-2d');
+  await expect(page.locator('#gps-layer circle')).toHaveCount(2);
   // select the apple at (16, 10): 4 m to the east
   await page.locator('[data-placement-id="a"] .marker-blob').click({ force: true });
   await expect(page.locator('#gps-way')).toContainText('Noch 4 m nach O');

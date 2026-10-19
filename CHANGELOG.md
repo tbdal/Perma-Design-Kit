@@ -4,6 +4,10 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Anmelden in der Kopfzeile, eigene Position in 3D 2026-10-19
+- [x] **Kopfzeile:** „Anmelden“ steht als sichtbarer Knopf neben dem Ansichts-Menü, solange niemand angemeldet ist (vorher nur im Menü versteckt) #minor #prüfen
+- [x] **Waldgartenplan, 3D:** Die eigene GPS-Position erscheint auch in 3D (Stab mit Genauigkeitsring auf dem Boden) #bugs #prüfen
+
 ## Pflanzennamen für Module und Luftbild-Zwischenspeicher 2026-10-16
 - [x] **Waldgartenplan:** Pfeiltasten bewegen die Karte (2D) bzw. die Ansicht über dem Boden (3D), mit Umschalt weiter; zweimal schnell Esc führt aus dem Plan zurück zur Projektübersicht; im 3D wird ein fehlgeschlagenes Luftbild-Stück zweimal neu versucht, bevor das grobe Satellitenbild einspringt, und später noch einmal scharf nachgeladen #minor #bugs #prüfen
 - [x] **Waldgartenplan:** Unten rechts im Plan steht, was noch lädt (Gebäude, Topografie, Wasser, Klima; Module melden ihres über `setLoadStatus`) #minor #prüfen

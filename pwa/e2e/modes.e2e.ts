@@ -28,6 +28,18 @@ test('new visitors start in simple mode; returning ones keep the full app', asyn
   await fresh.close();
 });
 
+test('sign-in is a visible link in the header until someone is logged in', async ({ page, errors }) => {
+  await stubNetwork(page);
+  await setMode(page, 'classic');
+  await page.goto('/');
+  const link = page.locator('#header-login');
+  await expect(link).toBeVisible();
+  await link.click();
+  await expect(page).toHaveURL(/\/anmelden\/\?next=/);
+  await expect(page.locator('#header-login')).toBeHidden();
+  void errors;
+});
+
 test('simple mode: steps, layers and one tip instead of the tool boxes', async ({ page, errors }) => {
   await stubNetwork(page);
   await setMode(page, 'simple');
