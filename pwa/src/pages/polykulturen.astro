@@ -187,7 +187,7 @@ import Layout from '../layouts/Layout.astro';
       const more = g.members.length > 6 ? `<span class="text-xs text-stone-500 dark:text-stone-400">+${g.members.length - 6}</span>` : '';
       const memberCount = g.members.length === 1 ? t('memberCountSingular', { count: g.members.length }) : t('memberCountPlural', { count: g.members.length });
       return `
-        <article data-polyculture-id="${g.id}" class="cursor-pointer rounded-xl bg-white dark:bg-stone-800 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:ring-green-300 dark:hover:ring-green-700">
+        <article data-polyculture-id="${escapeHtml(g.id)}" class="cursor-pointer rounded-xl bg-white dark:bg-stone-800 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:ring-green-300 dark:hover:ring-green-700">
           <h3 class="text-base font-semibold text-stone-900 dark:text-stone-100">${escapeHtml(g.name || t('guildUnnamed'))}</h3>
           ${g.description ? `<p class="mt-0.5 text-xs text-stone-500 dark:text-stone-400">${escapeHtml(g.description)}</p>` : ''}
           <p class="mt-2 text-sm text-stone-700 dark:text-stone-200"><span class="text-stone-500 dark:text-stone-400">${t('anchorLabel')}</span> ${plantLabel(anchor)}</p>
@@ -208,7 +208,7 @@ import Layout from '../layouts/Layout.astro';
     fDescription.value = editing.description;
     fNotes.value = editing.notes;
     fAnchor.innerHTML = `<option value="">${t('anchorPleaseSelect')}</option>` + plants
-      .map(p => `<option value="${p.id}" ${p.id === editing!.anchorPlantId ? 'selected' : ''}>${plantLabel(p)}</option>`)
+      .map(p => `<option value="${escapeHtml(p.id)}" ${p.id === editing!.anchorPlantId ? 'selected' : ''}>${plantLabel(p)}</option>`)
       .join('');
     renderMembers();
     renderSuggestions();
@@ -310,7 +310,7 @@ import Layout from '../layouts/Layout.astro';
         <div class="flex items-center justify-between gap-2 rounded px-2 py-1 text-xs hover:bg-stone-100 dark:hover:bg-stone-700">
           <span class="min-w-0 flex-1 truncate text-stone-800 dark:text-stone-100" title="${plantLabel(p)}">${plantLabel(p)}</span>
           <span class="shrink-0 font-mono text-[10px] text-stone-500 dark:text-stone-400" title="${t('sunWaterPhTitle')}">${score}/3</span>
-          <button data-add-plant="${p.id}" data-add-role="${role}" class="shrink-0 rounded bg-green-100 dark:bg-green-900/40 px-2 py-0.5 font-medium text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/60">${t('btnAdd')}</button>
+          <button data-add-plant="${escapeHtml(p.id)}" data-add-role="${role}" class="shrink-0 rounded bg-green-100 dark:bg-green-900/40 px-2 py-0.5 font-medium text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/60">${t('btnAdd')}</button>
         </div>`).join('');
 
       // Kuratierte Vorschläge aus role-suggestions.json, die noch nicht im Bestand sind.

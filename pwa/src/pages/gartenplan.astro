@@ -889,7 +889,7 @@ import Layout from '../layouts/Layout.astro';
 
   function snapIfClose(svg: SVGSVGElement, pt: GardenPlanPoint, spacingM: number): GardenPlanPoint {
     const ctm = svg.getScreenCTM();
-    if (!ctm) return pt;
+    if (!ctm || !(spacingM > 0)) return pt;
     const screenPxPerSvgUnit = Math.sqrt(ctm.a * ctm.a + ctm.b * ctm.b);
     const toleranceM = (SNAP_TOLERANCE_PX / screenPxPerSvgUnit) / SVG_UNITS_PER_METER;
     const near = nearestGridPoint(pt, spacingM, editing?.gridRotationDeg ?? 0);
@@ -906,14 +906,21 @@ import Layout from '../layouts/Layout.astro';
   /** Smallest "nice" multiple (1, 2, 5, 10, 20, 50 …) of `base` that is at
    *  least `minM` — keeps grid lines and meter numbers readable at any zoom. */
   function niceStep(base: number, minM: number): number {
+    if (!(base > 0)) base = 1;   // 0/negative/NaN would make every step 0
     for (const m of [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000]) if (base * m >= minM) return base * m;
     return base * 1000;
   }
 
+  // More labels than this per edge are unreadable anyway; the cap also keeps a
+  // broken spacing (0 or tiny, e.g. from a plan saved before imports were
+  // checked) from turning these loops into an endless one.
+  const MAX_TICK_LABELS = 2000;
   function gridTickLabels(widthM: number, heightM: number, spacingM: number, k = 1): string {
+    if (!(spacingM > 0)) return '';
     const round2 = (n: number) => Math.round(n * 100) / 100;
     const xSteps = Math.floor(widthM / spacingM);
     const ySteps = Math.floor(heightM / spacingM);
+    if (!(xSteps <= MAX_TICK_LABELS && ySteps <= MAX_TICK_LABELS)) return '';
     const labels: string[] = [];
     for (let i = 1; i <= xSteps; i++) {
       const m = round2(i * spacingM);
@@ -1022,7 +1029,7 @@ import Layout from '../layouts/Layout.astro';
     listEl.innerHTML = sortPlans(plans, planSort.field, planSort.dir, lang).map(plan => {
       const poly = plan.polycultureId ? polyculturesById.get(plan.polycultureId) : undefined;
       return `
-        <article data-plan-id="${plan.id}" class="flex cursor-pointer items-start gap-3 rounded-xl bg-white dark:bg-stone-800 p-4 shadow-sm ring-1 ${plan.pinned ? 'ring-amber-300 dark:ring-amber-700' : 'ring-stone-200 dark:ring-stone-700'} transition hover:ring-green-300 dark:hover:ring-green-700">
+        <article data-plan-id="${escapeHtml(plan.id)}" class="flex cursor-pointer items-start gap-3 rounded-xl bg-white dark:bg-stone-800 p-4 shadow-sm ring-1 ${plan.pinned ? 'ring-amber-300 dark:ring-amber-700' : 'ring-stone-200 dark:ring-stone-700'} transition hover:ring-green-300 dark:hover:ring-green-700">
           <div class="min-w-0 flex-1">
             <h3 class="flex items-start gap-1.5 text-base font-semibold text-stone-900 dark:text-stone-100"><button type="button" data-plan-action="pin" aria-pressed="${!!plan.pinned}" title="${escapeHtml(t(plan.pinned ? 'planUnpin' : 'planPin'))}" aria-label="${escapeHtml(t(plan.pinned ? 'planUnpin' : 'planPin'))}" class="-ml-1 shrink-0 rounded px-1 text-lg leading-none ${plan.pinned ? 'text-amber-500' : 'text-stone-300 hover:text-amber-500 dark:text-stone-600'}">${plan.pinned ? '★' : '☆'}</button><span>${escapeHtml(plan.name || t('planUnnamed'))}</span></h3>
             ${plan.description ? `<p class="mt-0.5 text-xs text-stone-500 dark:text-stone-400">${escapeHtml(plan.description)}</p>` : ''}
@@ -1129,7 +1136,7 @@ import Layout from '../layouts/Layout.astro';
     newGridCb.checked = drawMode() === 'grid';
     syncMapBar();
     fPolyculture.innerHTML = `<option value="">${t('linkedPolycultureNone')}</option>` + polycultures
-      .map(pc => `<option value="${pc.id}" ${pc.id === editing!.polycultureId ? 'selected' : ''}>${escapeHtml(pc.name || t('planUnnamed'))}</option>`)
+      .map(pc => `<option value="${escapeHtml(pc.id)}" ${pc.id === editing!.polycultureId ? 'selected' : ''}>${escapeHtml(pc.name || t('planUnnamed'))}</option>`)
       .join('');
 
     const lockInputs = editing.boundary.length > 0;
@@ -1934,7 +1941,7 @@ import Layout from '../layouts/Layout.astro';
       return;
     }
     plantPickerEl.innerHTML = filtered.map(p => `
-      <button data-picker-plant="${p.id}" class="block w-full truncate rounded px-2 py-1 text-left text-xs ${p.id === armedPlantId ? 'bg-green-700 text-white' : 'text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800'}">${plantLabel(p)}</button>
+      <button data-picker-plant="${escapeHtml(p.id)}" class="block w-full truncate rounded px-2 py-1 text-left text-xs ${p.id === armedPlantId ? 'bg-green-700 text-white' : 'text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800'}">${plantLabel(p)}</button>
     `).join('');
     plantPickerEl.querySelectorAll<HTMLButtonElement>('[data-picker-plant]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1959,7 +1966,7 @@ import Layout from '../layouts/Layout.astro';
     unplacedSection.classList.remove('hidden');
     unplacedListEl.innerHTML = unplacedPlantIds.map(id => {
       const p = plantsById.get(id);
-      return `<button data-unplaced-plant="${id}" class="block w-full truncate rounded px-2 py-1 text-left text-xs ${id === armedPlantId ? 'bg-green-700 text-white' : 'text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800'}">${plantLabel(p)}</button>`;
+      return `<button data-unplaced-plant="${escapeHtml(id)}" class="block w-full truncate rounded px-2 py-1 text-left text-xs ${id === armedPlantId ? 'bg-green-700 text-white' : 'text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800'}">${plantLabel(p)}</button>`;
     }).join('');
     unplacedListEl.querySelectorAll<HTMLButtonElement>('[data-unplaced-plant]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -2004,7 +2011,7 @@ import Layout from '../layouts/Layout.astro';
       <div class="flex items-center justify-between gap-2 rounded px-2 py-1 text-xs hover:bg-stone-100 dark:hover:bg-stone-800">
         <span class="min-w-0 flex-1 truncate text-stone-700 dark:text-stone-200" title="${plantLabel(p)}">${plantLabel(p)}</span>
         <span class="shrink-0 font-mono text-[10px] text-stone-500 dark:text-stone-400" title="${t('sunWaterPhTitle')}">${score.toFixed(1)}/3</span>
-        <button data-suggest-plant="${p.id}" class="shrink-0 rounded bg-green-100 dark:bg-green-900/40 px-2 py-0.5 font-medium text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/60">${t('btnAdd')}</button>
+        <button data-suggest-plant="${escapeHtml(p.id)}" class="shrink-0 rounded bg-green-100 dark:bg-green-900/40 px-2 py-0.5 font-medium text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/60">${t('btnAdd')}</button>
       </div>`).join('');
     suggestionsListEl.querySelectorAll<HTMLButtonElement>('[data-suggest-plant]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -2925,7 +2932,7 @@ import Layout from '../layouts/Layout.astro';
     if (!editing) return;
     areasEmpty.classList.toggle('hidden', editing.areas.length > 0);
     areasList.innerHTML = editing.areas.map(a => `
-      <li data-area-id="${a.id}" class="flex items-center gap-1.5 rounded-md p-1">
+      <li data-area-id="${escapeHtml(a.id)}" class="flex items-center gap-1.5 rounded-md p-1">
         <input type="color" value="${a.color}" class="area-color h-7 w-8 shrink-0 cursor-pointer rounded border border-stone-300 dark:border-stone-600 bg-transparent p-0" aria-label="${escapeHtml(t('areaColor'))}" title="${escapeHtml(t('areaColor'))}" />
         <input type="text" value="${escapeHtml(a.name)}" maxlength="80" class="area-name min-w-0 flex-1 rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2 py-1 text-xs" aria-label="${escapeHtml(t('areaName'))}" />
         <button type="button" class="area-delete shrink-0 rounded px-1.5 py-1 text-stone-400 hover:text-red-600 dark:hover:text-red-400" aria-label="${escapeHtml(t('areaDelete'))}" title="${escapeHtml(t('areaDelete'))}">✕</button>
@@ -2981,7 +2988,7 @@ import Layout from '../layouts/Layout.astro';
     endAreaDraw();
     renderAreasList();
     afterGeometryEdit();
-    const input = areasList.querySelector<HTMLInputElement>(`[data-area-id="${area.id}"] .area-name`);
+    const input = areasList.querySelector<HTMLInputElement>(`[data-area-id="${CSS.escape(area.id)}"] .area-name`);
     input?.focus();
     input?.select();
   }
@@ -3543,7 +3550,7 @@ import Layout from '../layouts/Layout.astro';
         const sunH = sunHoursAt(g.xM, g.yM, gapScene!, seasonSamples());
         const sugg = suggestPlants(mode, plants, plan, plantsById, g, g.areaM2, 3, sunClass(sunH));
         const btns = sugg.length
-          ? sugg.map(p => `<button type="button" data-gap="${gi}" data-plant="${p.id}" class="mt-1 block w-full rounded bg-white dark:bg-stone-800 px-2 py-1 text-left ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-green-50 hover:ring-green-500 focus-visible:ring-green-500 dark:hover:bg-green-900/30">
+          ? sugg.map(p => `<button type="button" data-gap="${gi}" data-plant="${escapeHtml(p.id)}" class="mt-1 block w-full rounded bg-white dark:bg-stone-800 px-2 py-1 text-left ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-green-50 hover:ring-green-500 focus-visible:ring-green-500 dark:hover:bg-green-900/30">
               <span class="block truncate">${escapeHtml(t('coveragePlantHere', { name: displayName(p) }))}</span>
               <span class="block truncate text-[11px] text-stone-500 dark:text-stone-400">${escapeHtml(suggestionMeta(p))}</span></button>`).join('')
           : `<p class="text-stone-500 dark:text-stone-400">${t('coverageNoPlants')}</p>`;
@@ -5147,7 +5154,7 @@ import Layout from '../layouts/Layout.astro';
   function fillPackageSelect() {
     const usable = polycultures.filter(pc => pc.anchorPlantId || pc.members.length);
     pcPackage.innerHTML = `<option value="">${escapeHtml(t(usable.length ? 'pkgPlaceholder' : 'pkgNone'))}</option>`
-      + usable.map(pc => `<option value="${pc.id}">${escapeHtml(pc.name || t('planUnnamed'))}</option>`).join('');
+      + usable.map(pc => `<option value="${escapeHtml(pc.id)}">${escapeHtml(pc.name || t('planUnnamed'))}</option>`).join('');
     pcPackage.disabled = usable.length === 0;
     (document.getElementById('btn-pc-package') as HTMLButtonElement).disabled = usable.length === 0;
   }

@@ -15,6 +15,10 @@ Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerb
 - [x] **Kopfzeile:** „Anmelden“ steht als sichtbarer Knopf neben dem Ansichts-Menü, solange niemand angemeldet ist (vorher nur im Menü versteckt) #minor #prüfen
 - [x] **Waldgartenplan, 3D:** Die eigene GPS-Position erscheint auch in 3D (Stab mit Genauigkeitsring auf dem Boden) #bugs #prüfen
 
+## Import gehärtet: sichere IDs, Rasterweite 2026-10-17
+- [x] **Import (Backup, Teilen-Link, CSV, GeoJSON):** IDs von Pflanzen, Polykulturen, Plänen, Pflanzungen, Flächen und Sortenlisten werden geprüft. Unsichere IDs (z. B. mit `"`, `<`) konnten aus HTML-Attributen ausbrechen und Markup einschleusen; sie werden jetzt durch eine daraus abgeleitete, sichere ID ersetzt, Verweise (Anker, Mitglieder, Pflanzungen, Preise, Plan-Ansichten, Startplan) zeigen weiter auf denselben Datensatz. Zusätzlich werden IDs in den Listen-Templates maskiert #bugs #prüfen
+- [x] **Waldgartenplan:** Eine Rasterweite von 0 oder winzig (aus einer Datei oder einem Link) ließ den Editor in eine Endlosschleife laufen und die Seite einfrieren. Beim Import wird sie auf 0,1–50 m begrenzt; der Editor fängt kaputte Werte bereits gespeicherter Pläne ab #bugs #prüfen
+
 ## Pflanzennamen für Module und Luftbild-Zwischenspeicher 2026-10-16
 - [x] **Waldgartenplan:** Pfeiltasten bewegen die Karte (2D) bzw. die Ansicht über dem Boden (3D), mit Umschalt weiter; zweimal schnell Esc führt aus dem Plan zurück zur Projektübersicht; im 3D wird ein fehlgeschlagenes Luftbild-Stück zweimal neu versucht, bevor das grobe Satellitenbild einspringt, und später noch einmal scharf nachgeladen #minor #bugs #prüfen
 - [x] **Waldgartenplan:** Unten rechts im Plan steht, was noch lädt (Gebäude, Topografie, Wasser, Klima; Module melden ihres über `setLoadStatus`) #minor #prüfen
