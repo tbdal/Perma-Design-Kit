@@ -172,7 +172,7 @@ export interface Scene3DContext {
   /** Ground height at plan x/y, relative to the plan centre (as the scene uses it). */
   ground(xM: number, yM: number): number;
   requestRender(): void;
-  /** Widen the sun's shadow area so objects up to this distance from the plan centre cast shadows. */
+  /** Kept for modules; the shadow area now follows the view by itself (see placeShadow), so this only redraws. */
   coverShadow(radiusM: number): void;
 }
 /** Adds content; may return a cleanup, called when the view is disposed. */
@@ -362,15 +362,19 @@ export function createGardenPlan3DView(
   scene.add(hemi);
   const sun = new THREE.DirectionalLight(0xfff1d6, 2.4);
   sun.castShadow = !simple;
-  // Shadow frustum covers the plan and every building around it (OSM, up to
-  // ~150 m away) — otherwise buildings outside it cast no shadow while their
-  // neighbours do. A larger area gets a larger shadow map to stay sharp;
-  // biases scale with the texel size against acne / striped artifacts.
-  let shadowR = maxDim * 0.75;
-  for (const b of opts.buildings ?? []) for (const p of b.pts) shadowR = Math.max(shadowR, Math.hypot(p.xM - cx, p.yM - cz) + 5);
-  let sunDist = 0;
-  function fitShadow(r: number) {
-    shadowR = Math.min(Math.max(shadowR, r), 450);
+  // The shadow area follows the view: a square around the point the camera looks at, as large
+  // as what is seen plus a margin for casters just outside it (buildings, forest edges). A fixed
+  // square around the plan left a hard edge across big plans (3 km) where the shadows stopped,
+  // which looked like a giant object's shadow. Seen from very far, shadows are switched off.
+  // Biases scale with the texel size against acne / striped artifacts.
+  const SHADOW_MARGIN = 120, SHADOW_MAX = 2200;
+  let shadowR = 0, sunDist = 0, sunUp = true;
+  const sunDir = new THREE.Vector3(0.3, 1, 0.3).normalize();
+  function placeShadow() {
+    const t = controls.target;
+    const r = Math.max(40, camera.position.distanceTo(t) * 1.5 + SHADOW_MARGIN);
+    sun.castShadow = sunUp && !simple && r <= SHADOW_MAX;
+    shadowR = Math.min(r, SHADOW_MAX);
     const mapSize = shadowR > 60 ? Math.min(4096, renderer.capabilities.maxTextureSize) : 2048;
     if (sun.shadow.mapSize.x !== mapSize) {
       sun.shadow.mapSize.set(mapSize, mapSize);
@@ -378,15 +382,15 @@ export function createGardenPlan3DView(
       sun.shadow.map = null as any; // re-created at the new size on the next render
     }
     const texel = (2 * shadowR) / mapSize;
-    const d = sunDist;
-    sunDist = Math.max(maxDim * 3, shadowR * 2);
-    if (d > 0 && d !== sunDist) sun.position.sub(sun.target.position).multiplyScalar(sunDist / d).add(sun.target.position);
+    sunDist = Math.max(500, shadowR * 2);
+    sun.target.position.set(t.x, 0, t.z);
+    sun.target.updateMatrixWorld();
+    sun.position.copy(sun.target.position).addScaledVector(sunDir, sunDist);
     Object.assign(sun.shadow.camera, { left: -shadowR, right: shadowR, top: shadowR, bottom: -shadowR, near: 0.5, far: sunDist + shadowR * 2 });
     sun.shadow.camera.updateProjectionMatrix();
     sun.shadow.bias = -0.0002;
     sun.shadow.normalBias = texel * 1.5;
   }
-  fitShadow(shadowR);
   sun.shadow.radius = 2; // soft edges (PCF)
   sun.target.position.set(cx, 0, cz);
   scene.add(sun, sun.target);
@@ -802,6 +806,8 @@ export function createGardenPlan3DView(
     if (tileTimer) clearTimeout(tileTimer);
     tileTimer = setTimeout(refreshTiles, 350);
   });
+  controls.addEventListener('change', placeShadow);
+  placeShadow();
   // Untouched camera → hand the original 2D section back unchanged (the
   // camera may have been raised above the canopies, which would zoom out).
   const startPos = camera.position.clone(), startTarget = controls.target.clone();
@@ -931,9 +937,10 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
     const p = sunPosition(date, opts.latLon.lat, opts.latLon.lon);
     const dir = sunVector(p.bearingDeg, p.altitudeDeg);
     const up = p.altitudeDeg > 0;
-    sun.position.set(cx, 0, cz).add(dir.clone().multiplyScalar(sunDist));
+    sunDir.copy(dir);
+    sunUp = up;
+    placeShadow();
     sun.intensity = up ? 2.6 * Math.min(1, Math.max(0.2, Math.sin(p.altitudeDeg * RAD) * 2)) : 0;
-    sun.castShadow = up && !simple;
     hemi.intensity = up ? 0.7 + 0.5 * Math.min(1, p.altitudeDeg / 35) : 0.3;
     sunBall.visible = up;
     sunBall.position.set(cx, 0, cz).add(dir.multiplyScalar(skyR));
@@ -958,7 +965,7 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
   const layerCleanups: (() => void)[] = [];
   for (const layer of opts.layers ?? []) {
     try {
-      const done = layer({ THREE, scene, plan, ground: (x, y) => ground(x, y), requestRender, coverShadow: r => { fitShadow(r); requestRender(); } });
+      const done = layer({ THREE, scene, plan, ground: (x, y) => ground(x, y), requestRender, coverShadow: () => requestRender() });
       if (typeof done === 'function') layerCleanups.push(done);
     } catch (err) { console.warn('3D layer failed', err); }
   }
