@@ -1401,23 +1401,46 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
     setPositionMarker(pos) {
       if (posMarker) {
         scene.remove(posMarker);
-        posMarker.traverse(o => { const m = o as THREE.Mesh; m.geometry?.dispose(); (m.material as THREE.Material | undefined)?.dispose(); });
+        posMarker.traverse(o => {
+          const m = o as THREE.Mesh;
+          m.geometry?.dispose();
+          const mat = m.material as (THREE.Material & { map?: THREE.Texture | null }) | undefined;
+          mat?.map?.dispose();
+          mat?.dispose();
+        });
         posMarker = null;
       }
       if (pos) {
         const g = new THREE.Group();
-        const mat = (opacity: number) => new THREE.MeshBasicMaterial({ color: 0x0284c7, transparent: true, opacity, depthWrite: false, side: THREE.DoubleSide });
-        // Sized by the plan, so it stays visible zoomed out and does not swallow a small garden.
-        const poleH = Math.max(2, maxDim * 0.04), headR = Math.max(0.3, poleH * 0.12);
-        const ring = new THREE.Mesh(new THREE.RingGeometry(Math.max(0.1, pos.accM - 0.15), Math.max(0.25, pos.accM), 48), mat(0.55));
-        ring.rotation.x = -Math.PI / 2; ring.position.y = 0.06;
-        const disc = new THREE.Mesh(new THREE.CircleGeometry(Math.max(0.2, pos.accM), 48), mat(0.12));
-        disc.rotation.x = -Math.PI / 2; disc.position.y = 0.05;
-        const pole = new THREE.Mesh(new THREE.CylinderGeometry(headR * 0.18, headR * 0.18, poleH, 8), mat(0.9));
-        pole.position.y = poleH / 2;
-        const head = new THREE.Mesh(new THREE.SphereGeometry(headR, 16, 12), new THREE.MeshBasicMaterial({ color: 0x0284c7 }));
-        head.position.y = poleH + headR;
-        g.add(ring, disc, pole, head);
+        // As in map apps: a blue dot with a white rim that keeps ~22 px on screen at any zoom,
+        // plus the accuracy as a faint circle on the ground (that one in metres).
+        const acc = Math.max(0.3, pos.accM);
+        const area = new THREE.Mesh(new THREE.CircleGeometry(acc, 48), new THREE.MeshBasicMaterial({ color: 0x0ea5e9, transparent: true, opacity: 0.15, depthWrite: false }));
+        area.rotation.x = -Math.PI / 2; area.position.y = 0.05;
+        const rim = new THREE.Mesh(new THREE.RingGeometry(acc * 0.97, acc, 64), new THREE.MeshBasicMaterial({ color: 0x0284c7, transparent: true, opacity: 0.45, depthWrite: false }));
+        rim.rotation.x = -Math.PI / 2; rim.position.y = 0.06;
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = 64;
+        const c = canvas.getContext('2d')!;
+        c.fillStyle = 'rgba(2,132,199,0.25)'; c.beginPath(); c.arc(32, 32, 31, 0, Math.PI * 2); c.fill(); // halo
+        c.fillStyle = '#ffffff'; c.beginPath(); c.arc(32, 32, 19, 0, Math.PI * 2); c.fill(); // white rim
+        c.fillStyle = '#0284c7'; c.beginPath(); c.arc(32, 32, 14, 0, Math.PI * 2); c.fill(); // blue dot
+        const tex = new THREE.CanvasTexture(canvas);
+        tex.colorSpace = THREE.SRGBColorSpace;
+        const dot = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false, transparent: true }));
+        dot.renderOrder = 11;
+        const wp = new THREE.Vector3(), size = new THREE.Vector2();
+        dot.onBeforeRender = (r, _s, camera) => {
+          const cam = camera as THREE.PerspectiveCamera;
+          r.getSize(size);
+          if (!(size.y > 0) || !cam.isPerspectiveCamera) return;
+          dot.getWorldPosition(wp);
+          const worldPerPx = 2 * wp.distanceTo(cam.position) * Math.tan((cam.fov * Math.PI) / 360) / size.y;
+          const s = 22 * worldPerPx;
+          dot.scale.set(s, s, 1);
+          dot.position.y = s * 0.15; // sits on the ground, a hair above it
+        };
+        g.add(area, rim, dot);
         g.position.set(pos.xM, ground(pos.xM, pos.yM), pos.yM);
         g.renderOrder = 10;
         scene.add(g);

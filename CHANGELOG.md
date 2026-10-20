@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Eigene Position in 3D als Punkt 2026-10-20
+- [x] **Waldgartenplan, 3D:** Die eigene GPS-Position ist jetzt ein blauer Punkt mit weißem Rand wie in Kartenapps, der beim Zoomen immer gleich groß auf dem Bildschirm bleibt (vorher ein riesiger Stab); die Genauigkeit liegt als heller Kreis auf dem Boden #bugs #prüfen
+
 ## Anmelden in der Kopfzeile, eigene Position in 3D 2026-10-19
 - [x] **Kopfzeile:** „Anmelden“ steht als sichtbarer Knopf neben dem Ansichts-Menü, solange niemand angemeldet ist (vorher nur im Menü versteckt) #minor #prüfen
 - [x] **Waldgartenplan, 3D:** Die eigene GPS-Position erscheint auch in 3D (Stab mit Genauigkeitsring auf dem Boden) #bugs #prüfen
