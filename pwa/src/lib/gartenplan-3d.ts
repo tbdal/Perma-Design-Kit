@@ -6,7 +6,7 @@ import { deriveLayer, LAYER_STYLE, type PlantLayer } from './plant-layer';
 import { buildPlantModel, buildSimplePlantModel, crownShape } from './plant-mesh-3d';
 import { pointInPolygon } from './gartenplan-geometry';
 import { polygonCentroid } from './gartenplan-render';
-import { enuToPlan, tilesForRect, planToLatLon } from './gartenplan-geo';
+import { enuToPlan, tilesForRect, lodTilesForRect, metersPerPixel, planToLatLon, type PlanTile } from './gartenplan-geo';
 import { OSM_TILES, sourceForGeo, tileUrl, fallbackTileUrl } from './gartenplan-background';
 import { browserTimeZone, wallClock, zonedDate } from './plan-time';
 import { sunPosition, sunDirectionEnu } from './sun-position';
@@ -137,8 +137,15 @@ export interface GardenPlan3DView {
   /** Ground rectangle (plan meters) roughly visible around the camera target
    *  — used to keep the same section when switching back to 2D. */
   getViewRect(): { minX: number; minY: number; maxX: number; maxY: number };
+  /** Loading state of the ground tiles on display. */
+  tileStatus(): GroundTileStatus;
   dispose(): void;
 }
+
+export type GroundTileState = 'sharp' | 'coarse' | 'failed';
+/** Ground tiles of the current view: `coarse` = replaced by the satellite / map because the aerial-photo service
+ *  failed; `belowWanted` = less sharp than the screen could show (tile budget reached). */
+export interface GroundTileStatus { total: number; loading: number; sharp: number; coarse: number; failed: number; belowWanted: number; }
 
 export interface Camera3DState { position: [number, number, number]; target: [number, number, number]; }
 
@@ -154,6 +161,8 @@ export interface View3DOptions {
   terrain?: ElevationGrid | null;
   /** Called once when an aerial-photo tile failed and a fallback was used. */
   onTileFallback?: () => void;
+  /** Called whenever ground tiles start or finish loading. */
+  onTileStatus?: (status: GroundTileStatus) => void;
   /** Building footprints (plan meters) with heights, e.g. from OSM. */
   buildings?: { pts: { xM: number; yM: number }[]; heightM: number; holes?: { xM: number; yM: number }[][]; roof?: Roof }[];
   /** Extra scene content from plugins (expert-api.ts add3dLayer). */
@@ -470,10 +479,35 @@ export function createGardenPlan3DView(
   }
   let lowestY = groundMin;
 
+  // One entry per ground tile, so a refresh keeps the tiles that are still
+  // wanted (already loaded, no flicker) and only fetches the new ones.
+  interface GroundTile { mesh: THREE.Mesh; mat: THREE.MeshStandardMaterial; state: 'loading' | GroundTileState; alive: boolean; settle: () => void; }
+  const groundTiles = new Map<string, GroundTile>();
+  const tileAniso = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+  let belowWanted = 0;
+  // At most a dozen downloads at a time, in the order asked (nearest first): a few hundred uncached tiles at
+  // once must not make the service or our cache in front of it fail some of them. Tiles gone meanwhile are skipped.
+  const tileQueue: (() => void)[] = [];
+  let tileLoads = 0;
+  function loadTile(entry: GroundTile, url: string, onLoad: (tex: THREE.Texture) => void, onError: () => void) {
+    const done = () => {
+      tileLoads--;
+      tileQueue.shift()?.();
+    };
+    const run = () => {
+      if (!entry.alive) { tileLoads++; done(); return; }
+      tileLoads++;
+      tileLoader.load(url, tex => { done(); onLoad(tex); }, undefined, () => { done(); onError(); });
+    };
+    if (tileLoads < 12) run(); else tileQueue.push(run);
+  }
+
   function disposeTiles(g: THREE.Group | null) {
     if (!g) return;
     g.traverse(o => {
       const m = o as THREE.Mesh;
+      const entry = m.userData?.tileKey ? groundTiles.get(m.userData.tileKey) : undefined;
+      if (entry?.mesh === m) { entry.alive = false; groundTiles.delete(m.userData.tileKey); }
       m.geometry?.dispose();
       const mat = (m as any).material as THREE.MeshStandardMaterial | undefined;
       mat?.map?.dispose();
@@ -482,28 +516,64 @@ export function createGardenPlan3DView(
     scene.remove(g);
   }
 
+  function tileStatus(): GroundTileStatus {
+    const st: GroundTileStatus = { total: 0, loading: 0, sharp: 0, coarse: 0, failed: 0, belowWanted };
+    tileGroup?.children.forEach(m => {
+      const e = groundTiles.get(m.userData.tileKey);
+      if (!e) return;
+      st.total++;
+      st[e.state]++;
+    });
+    return st;
+  }
+  const reportTiles = () => opts.onTileStatus?.(tileStatus());
+
   function refreshTiles() {
     if (!geo || !layoutSrc) return;
     const t = controls.target;
     const R = Math.max(maxDim * 1.5, camera.position.distanceTo(t) * 1.8);
     const rect = { minX: t.x - R, minY: t.z - R, maxX: t.x + R, maxY: t.z + R };
-    const tiles = tilesForRect(rect, geo, (2 * R) / 2048, layoutSrc.maxZoom);
+    const even = tilesForRect(rect, geo, (2 * R) / 2048, layoutSrc.maxZoom);
+    if (!even.length) return;
+    // Aerial photo / map: each tile as sharp as the screen needs it at its distance from the camera (up to the
+    // service's finest zoom), within a tile budget. Plain meadow-coloured terrain needs no detail.
+    let tiles = even;
+    belowWanted = 0;
+    if (tileSrc) {
+      const th = geo.rotationDeg * Math.PI / 180, ct = Math.cos(th), st = Math.sin(th);
+      const cp = camera.position;
+      const lx = cp.x * ct - cp.z * st, lz = cp.x * st + cp.z * ct; // camera in the tiles' (east/south) frame
+      const h = Math.abs(cp.y - t.y);
+      const mPerPxAt = 2 * Math.tan((VFOV / 2) * Math.PI / 180) / Math.max(1, renderer.domElement.height);
+      const mpp0 = metersPerPixel(geo.lat, 0);
+      const wantZoom = (q: PlanTile) => {
+        const dx = Math.max(q.eM - lx, 0, lx - q.eM - q.sizeM), dz = Math.max(q.sM - lz, 0, lz - q.sM - q.sizeM);
+        const need = Math.max(1e-3, Math.hypot(dx, dz, h) * mPerPxAt);
+        return Math.max(0, Math.log2(mpp0 / need));
+      };
+      // 256 px tiles: 256 of them ≈ 90 MB of video memory, a weak device gets a quarter.
+      tiles = lodTilesForRect(rect, geo, layoutSrc.maxZoom, simple ? 64 : 256, wantZoom);
+      belowWanted = tiles.filter(q => q.z < Math.min(layoutSrc.maxZoom, Math.ceil(wantZoom(q) - 1e-9))).length;
+      // Nearest first: they are requested first.
+      tiles.sort((a, b) => wantZoom(b) - wantZoom(a) || b.z - a.z);
+    }
     const key = tiles.map(q => `${q.z}/${q.x}/${q.y}`).join(',');
-    if (!tiles.length || key === tileKey) return;
+    if (key === tileKey) return;
     tileKey = key;
     if (!terrain) { buildTiles(tiles, -1); return; }
-    // Terrain ~2 zoom levels coarser than the map: 64 px per map tile is
+    // Terrain ~2 zoom levels coarser than an even map tiling: 64 px per map tile is
     // plenty for ≤ 48 segments, and it keeps the downloads few.
-    terrainTiles.ensureRect(geo, rect, tiles[0].z - 2)
+    terrainTiles.ensureRect(geo, rect, even[0].z - 2)
       .then(tz => { if (tileKey === key) buildTiles(tiles, tz); })
       .catch(() => { if (tileKey === key) buildTiles(tiles, -1); });
   }
 
-  function buildTiles(tiles: ReturnType<typeof tilesForRect>, tz: number) {
+  function buildTiles(tiles: PlanTile[], tz: number) {
     if (!geo || !layoutSrc) return;
-    disposeTiles(oldTileGroup);
-    oldTileGroup = tileGroup;
-    if (oldTileGroup) oldTileGroup.position.y = -0.02;
+    // The last complete tile set stays (slightly lowered) until the new one is complete; an unfinished one in
+    // between is dropped — except for the tiles the new set takes over.
+    const backdrop = oldTileGroup ?? tileGroup;
+    const dropped = oldTileGroup ? tileGroup : null;
     const next = new THREE.Group();
     next.rotation.y = geo.rotationDeg * Math.PI / 180;
     tileGroup = next;
@@ -512,17 +582,35 @@ export function createGardenPlan3DView(
       if (--pending > 0 || tileGroup !== next) return;
       disposeTiles(oldTileGroup);
       oldTileGroup = null;
+      reportTiles();
       requestRender();
     };
     for (const q of tiles) {
+      const tileKeyQ = `${q.z}/${q.x}/${q.y}@${tz}`;
+      const have = groundTiles.get(tileKeyQ);
+      if (have?.alive) {
+        next.add(have.mesh); // taken over: already loaded (or on its way)
+        if (have.state === 'loading') have.settle = settled; else settled();
+        continue;
+      }
       const seg = terrain ? Math.max(1, Math.min(48, Math.round(q.sizeM / terrain.cellM))) : 1;
-      const g = new THREE.PlaneGeometry(q.sizeM * 1.002, q.sizeM * 1.002, seg, seg);
+      // On terrain a ring of extra vertices hangs from the edge as a skirt: where a fine tile meets a coarser one
+      // their edges follow the ground differently, and the gap would show the sky.
+      const ring = terrain ? 1 : 0, n = seg + 2 * ring;
+      const side = q.sizeM * 1.002;
+      const g = new THREE.PlaneGeometry(side, side, n, n);
       g.rotateX(-Math.PI / 2);
       const mx = q.eM + q.sizeM / 2, mz = q.sM + q.sizeM / 2;
       if (terrain) {
+        const pos = g.attributes.position as THREE.BufferAttribute, uv = g.attributes.uv as THREE.BufferAttribute;
+        const step = side / seg, clamp = (i: number) => Math.min(Math.max(i - ring, 0), seg);
+        for (let iy = 0; iy <= n; iy++) for (let ix = 0; ix <= n; ix++) {
+          const i = iy * (n + 1) + ix, cx = clamp(ix), cy = clamp(iy);
+          pos.setX(i, -side / 2 + cx * step); pos.setZ(i, -side / 2 + cy * step);
+          uv.setXY(i, cx / seg, 1 - cy / seg);
+        }
         // Vertex → plan coords through the group's rotation about y.
         const th = geo.rotationDeg * Math.PI / 180, ct = Math.cos(th), st = Math.sin(th);
-        const pos = g.attributes.position as THREE.BufferAttribute;
         for (let i = 0; i < pos.count; i++) {
           const lx = pos.getX(i) + mx, lz = pos.getZ(i) + mz;
           const px = lx * ct + lz * st, pz = -lx * st + lz * ct;
@@ -530,23 +618,43 @@ export function createGardenPlan3DView(
           pos.setY(i, y);
           if (y < lowestY) lowestY = y;
         }
+        // Normals while the skirt still lies flat at the edge (its faces have no area then), then let it hang.
         g.computeVertexNormals();
+        const nrm = g.attributes.normal as THREE.BufferAttribute, skirt = 1 + step / 2;
+        for (let iy = 0; iy <= n; iy++) for (let ix = 0; ix <= n; ix++) {
+          if (ix > 0 && ix < n && iy > 0 && iy < n) continue;
+          const i = iy * (n + 1) + ix, j = (clamp(iy) + ring) * (n + 1) + clamp(ix) + ring;
+          pos.setY(i, pos.getY(i) - skirt);
+          nrm.setXYZ(i, nrm.getX(j), nrm.getY(j), nrm.getZ(j));
+        }
       }
       const mat = new THREE.MeshStandardMaterial({ roughness: 1, color: tileSrc ? 0xffffff : 0xb5c98f });
       const mesh = new THREE.Mesh(g, mat);
       mesh.position.set(mx, 0, mz);
       mesh.receiveShadow = true;
-      if (!tileSrc) { next.add(mesh); settled(); continue; }
+      mesh.userData.tileKey = tileKeyQ;
+      const entry: GroundTile = { mesh, mat, state: tileSrc ? 'loading' : 'sharp', alive: true, settle: settled };
+      groundTiles.set(tileKeyQ, entry);
+      next.add(mesh);
+      if (!tileSrc) { settled(); continue; }
       mesh.visible = false; // until its texture has arrived
-      const onTex = (tex: THREE.Texture) => {
-        if (tileGroup !== next && oldTileGroup !== next) { tex.dispose(); return; }
+      const onTex = (tex: THREE.Texture, state: GroundTileState) => {
+        if (!entry.alive) { tex.dispose(); return; }
         tex.colorSpace = THREE.SRGBColorSpace;
-        tex.anisotropy = 4;
+        tex.anisotropy = tileAniso;
+        mat.map?.dispose();
         mat.map = tex;
         mat.needsUpdate = true;
         mesh.visible = true;
+        const first = entry.state === 'loading';
+        entry.state = state;
         requestRender();
-        settled();
+        if (first) entry.settle(); else reportTiles();
+      };
+      const fail = () => {
+        if (!entry.alive || entry.state !== 'loading') return;
+        entry.state = 'failed';
+        entry.settle();
       };
       // Aerial-photo service not answering → coarse satellite / OSM instead.
       const fb = fallbackTileUrl(tileSrc, q.z, q.x, q.y);
@@ -554,30 +662,25 @@ export function createGardenPlan3DView(
       // A tile that fails once is tried again (twice, a little later) before the coarse picture takes its place — a busy
       // moment of the service or of our cache must not leave a blurry patch on the ground — and the sharp one is fetched
       // once more later and swapped in if it works by then.
-      const attempt = (left: number) => tileLoader.load(url, onTex, undefined, () => {
-        if (left > 0 && (tileGroup === next || oldTileGroup === next)) { setTimeout(() => attempt(left - 1), left === 2 ? 600 : 1800); return; }
-        if (!fb) { settled(); return; }
+      const attempt = (left: number) => loadTile(entry, url, tex => onTex(tex, 'sharp'), () => {
+        if (left > 0 && entry.alive) { setTimeout(() => attempt(left - 1), left === 2 ? 600 : 1800); return; }
+        if (!fb) { fail(); return; }
         opts.onTileFallback?.();
-        tileLoader.load(fb, onTex, undefined, settled);
+        loadTile(entry, fb, tex => onTex(tex, 'coarse'), fail);
         setTimeout(() => {
-          if (tileGroup !== next) return;
-          tileLoader.load(url, tex => {
-            if (tileGroup !== next) { tex.dispose(); return; }
-            tex.colorSpace = THREE.SRGBColorSpace;
-            tex.anisotropy = 4;
-            mat.map?.dispose();
-            mat.map = tex;
-            mat.needsUpdate = true;
-            requestRender();
-          }, undefined, () => { /* stays coarse */ });
+          if (!entry.alive) return;
+          loadTile(entry, url, tex => onTex(tex, 'sharp'), () => { /* stays coarse */ });
         }, 20000);
       });
       attempt(2);
-      next.add(mesh);
     }
+    disposeTiles(dropped);
+    oldTileGroup = backdrop;
+    if (oldTileGroup) oldTileGroup.position.y = -0.02;
     scene.add(next);
     // Valleys around the plan may lie below the fine grid's lowest point.
     meadow.position.y = Math.min(meadow.position.y, lowestY - 0.5);
+    reportTiles();
     requestRender();
   }
   const drapeCell = terrain ? Math.max(0.5, terrain.cellM / 2) : 1e9;
@@ -1487,6 +1590,7 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
       }
       requestRender();
     },
+    tileStatus,
     dispose() {
       for (const done of layerCleanups) { try { done(); } catch { /* plugin */ } }
       resizeObserver.disconnect();

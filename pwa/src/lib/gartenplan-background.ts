@@ -99,12 +99,12 @@ export function basemapAttribution(plan: GardenPlan): string {
  *  show too). Tiles are laid out in the local east/south frame and the group
  *  is turned by rotate(−θ) — exactly the ENU → plan mapping of
  *  gartenplan-geo.ts with SVG's y-down axis. `screenMPerPx` = ground meters
- *  per device pixel on screen. */
-export function basemapSvg(plan: GardenPlan, view: PlanRect, screenMPerPx: number): string {
+ *  per device pixel on screen; `maxTiles` see maxTilesForScreen(). */
+export function basemapSvg(plan: GardenPlan, view: PlanRect, screenMPerPx: number, maxTiles?: number): string {
   const geo = plan.geo;
   if (!geo || geo.basemap === 'none') return '';
   const src = sourceFor(plan);
-  const tiles = tilesForRect(view, geo, screenMPerPx, src.maxZoom);
+  const tiles = tilesForRect(view, geo, screenMPerPx, src.maxZoom, maxTiles);
   const u = SVG_UNITS_PER_METER;
   // A hair of overlap hides the anti-aliasing seams between rotated tiles.
   const images = tiles.map(t => {

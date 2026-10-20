@@ -242,6 +242,8 @@ export const gartenplanDict: Dict = {
   terrainLoadingDgm: { de: 'Lade Geländemodell {region} (1 m)…', en: 'Loading terrain model {region} (1 m)…' },
   confirmCloseAreaBeforeSave: { de: 'Die Fläche ist noch nicht abgeschlossen ({n} Eckpunkte gesetzt). Jetzt abschließen und speichern?\n\nAbbrechen: weiter zeichnen.', en: 'The area isn’t closed yet ({n} corners set). Close it now and save?\n\nCancel: keep drawing.' },
   confirmSaveWithoutArea: { de: 'Erst {n} Eckpunkt(e) gesetzt — für eine Fläche braucht es mindestens 3. Ohne Fläche speichern?\n\nAbbrechen: weiter zeichnen.', en: 'Only {n} corner(s) set — an area needs at least 3. Save without an area?\n\nCancel: keep drawing.' },
+  tilesLoading: { de: 'Luftbild lädt … {done}/{total}', en: 'Loading aerial photo … {done}/{total}' },
+  tilesFailed: { de: 'Luftbild: {n} Kacheln nicht geladen', en: 'Aerial photo: {n} tiles not loaded' },
   orthoUnavailable: { de: 'Luftbild {region} antwortet gerade nicht — stattdessen grobes Satellitenbild bzw. Karte.', en: 'Aerial photo {region} is not responding right now — showing coarse satellite / map instead.' },
   buildings3dBtn: { de: 'Gebäude', en: 'Buildings' },
   buildings3dTitle: { de: 'Gebäude ein-/ausblenden (B)', en: 'Show / hide buildings (B)' },

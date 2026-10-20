@@ -95,18 +95,27 @@ export interface PlanTile {
 
 const MAX_TILES = 64;
 
+/** Tile cap for a screen of `wPx` × `hPx` device pixels: at the chosen zoom a
+ *  tile shows at 128–256 px, plus the tiles cut by the edges of a turned view —
+ *  a fixed 64 dropped high-DPI screens one zoom level (half as sharp) at about
+ *  every second zoom step. */
+export function maxTilesForScreen(wPx: number, hPx: number): number {
+  const a = wPx / 128, b = hPx / 128;
+  return Math.max(MAX_TILES, Math.min(1200, Math.ceil((a + 2) * (b + 2) + 1.5 * (a + b))));
+}
+
 /** Tiles covering the (rotated) plan rectangle, at the coarsest zoom that is
  *  still at least as sharp as the screen (`screenMPerPx` ground meters per
- *  device pixel), capped at `maxZoom` and at MAX_TILES tiles. */
-export function tilesForPlan(widthM: number, heightM: number, geo: GardenPlanGeo, screenMPerPx: number, maxZoom: number): PlanTile[] {
-  return tilesForRect({ minX: 0, minY: 0, maxX: widthM, maxY: heightM }, geo, screenMPerPx, maxZoom);
+ *  device pixel), capped at `maxZoom` and at `maxTiles` tiles. */
+export function tilesForPlan(widthM: number, heightM: number, geo: GardenPlanGeo, screenMPerPx: number, maxZoom: number, maxTiles = MAX_TILES): PlanTile[] {
+  return tilesForRect({ minX: 0, minY: 0, maxX: widthM, maxY: heightM }, geo, screenMPerPx, maxZoom, maxTiles);
 }
 
 export interface PlanRect { minX: number; minY: number; maxX: number; maxY: number; }
 
 /** Same as tilesForPlan() for any rectangle in plan meters — the visible part
  *  of a zoomed/panned canvas, which may also reach beyond the plan itself. */
-export function tilesForRect(r: PlanRect, geo: GardenPlanGeo, screenMPerPx: number, maxZoom: number): PlanTile[] {
+export function tilesForRect(r: PlanRect, geo: GardenPlanGeo, screenMPerPx: number, maxZoom: number, maxTiles = MAX_TILES): PlanTile[] {
   const corners = [
     { xM: r.minX, yM: r.minY }, { xM: r.maxX, yM: r.minY }, { xM: r.maxX, yM: r.maxY }, { xM: r.minX, yM: r.maxY },
   ].map(p => planToEnu(p, geo.rotationDeg));
@@ -114,6 +123,17 @@ export function tilesForRect(r: PlanRect, geo: GardenPlanGeo, screenMPerPx: numb
   const o = lonLatToMerc(geo.lat, geo.lon);
   const mx = corners.map(c => o.x + c.e / k), my = corners.map(c => o.y + c.n / k);
   const [minX, maxX, minY, maxY] = [Math.min(...mx), Math.max(...mx), Math.min(...my), Math.max(...my)];
+  // A turned rectangle: tiles of its bounding box that miss it are left out (separating-axis test along its edges).
+  const axes = [[mx[1] - mx[0], my[1] - my[0]], [mx[3] - mx[0], my[3] - my[0]]];
+  const span = (xs: number[], ys: number[], [ax, ay]: number[]) => {
+    const d = xs.map((x, i) => x * ax + ys[i] * ay);
+    return [Math.min(...d), Math.max(...d)];
+  };
+  const rectSpans = axes.map(a => span(mx, my, a));
+  const touches = (x: number, y: number, t: number) => geo.rotationDeg % 90 === 0 || axes.every((a, i) => {
+    const [lo, hi] = span([x, x + t, x + t, x], [y, y, y - t, y - t], a);
+    return hi >= rectSpans[i][0] && lo <= rectSpans[i][1];
+  });
 
   let z = 0;
   while (z < maxZoom && metersPerPixel(geo.lat, z) > screenMPerPx) z++;
@@ -123,17 +143,59 @@ export function tilesForRect(r: PlanRect, geo: GardenPlanGeo, screenMPerPx: numb
     const n = 2 ** z;
     const x0 = Math.max(0, Math.floor((minX + HALF_WORLD) / t)), x1 = Math.min(n - 1, Math.floor((maxX + HALF_WORLD) / t));
     const y0 = Math.max(0, Math.floor((HALF_WORLD - maxY) / t)), y1 = Math.min(n - 1, Math.floor((HALF_WORLD - minY) / t));
-    if ((x1 - x0 + 1) * (y1 - y0 + 1) > MAX_TILES) continue;
+    if ((x1 - x0 + 1) * (y1 - y0 + 1) > 4 * maxTiles) continue;
     const tiles: PlanTile[] = [];
     for (let x = x0; x <= x1; x++) {
       for (let y = y0; y <= y1; y++) {
         const nw = tileToMerc(x, y, z);
-        tiles.push({ z, x, y, eM: (nw.x - o.x) * k, sM: -(nw.y - o.y) * k, sizeM: t * k });
+        if (touches(nw.x, nw.y, t)) tiles.push({ z, x, y, eM: (nw.x - o.x) * k, sM: -(nw.y - o.y) * k, sizeM: t * k });
       }
     }
+    if (tiles.length > maxTiles) continue;
     return tiles;
   }
   return [];
+}
+
+/** Tiles for a perspective view (3D): the rectangle starts as at most
+ *  `startTiles` coarse tiles, and of the tiles below their wanted zoom
+ *  (`wantZoom`, fractional, e.g. from their distance to the camera) the one wanting the
+ *  finest zoom — the nearest — is split into its four children, until every
+ *  tile is sharp enough or `budget` tiles are reached: the foreground first. So the ground in front of the camera gets the
+ *  service's finest zoom and the horizon stays coarse — one zoom for the whole
+ *  area made a big plan blurry everywhere. Tiles never overlap. */
+export function lodTilesForRect(
+  r: PlanRect, geo: GardenPlanGeo, maxZoom: number, budget: number,
+  wantZoom: (t: PlanTile) => number, startTiles = 16,
+): PlanTile[] {
+  const tiles = tilesForRect(r, geo, 0, maxZoom, startTiles);
+  if (!tiles.length) return tiles;
+  const k = scale(geo);
+  const o = lonLatToMerc(geo.lat, geo.lon);
+  const want = new Map<PlanTile, number>();
+  const lack = (t: PlanTile) => Math.min(maxZoom, Math.ceil(want.get(t)! - 1e-9)) - t.z;
+  for (const t of tiles) want.set(t, wantZoom(t));
+  while (tiles.length + 3 <= budget) {
+    let best = -1;
+    for (let i = 0; i < tiles.length; i++) {
+      if (lack(tiles[i]) <= 0) continue;
+      const d = best < 0 ? 1 : want.get(tiles[i])! - want.get(tiles[best])! || lack(tiles[i]) - lack(tiles[best]);
+      if (d > 0) best = i;
+    }
+    if (best < 0) break;
+    const p = tiles[best];
+    const z = p.z + 1, t = tileSizeMerc(z);
+    const kids: PlanTile[] = [];
+    for (const dx of [0, 1]) for (const dy of [0, 1]) {
+      const x = p.x * 2 + dx, y = p.y * 2 + dy;
+      const nw = tileToMerc(x, y, z);
+      const c: PlanTile = { z, x, y, eM: (nw.x - o.x) * k, sM: -(nw.y - o.y) * k, sizeM: t * k };
+      want.set(c, wantZoom(c));
+      kids.push(c);
+    }
+    tiles.splice(best, 1, ...kids);
+  }
+  return tiles;
 }
 
 export interface PlanFromMap {

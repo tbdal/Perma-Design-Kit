@@ -66,4 +66,14 @@ describe('nginx cache knows every aerial photo service', () => {
       expect(conf).toMatch(new RegExp(`\\n\\s+${o.id} ${host.replace(/\./g, '\\.')};`));
     }
   });
+
+  it('has a kept-alive upstream with the same host for each source', async () => {
+    const { readFileSync } = await import('node:fs');
+    const conf = readFileSync(new URL('../server/nginx/permadesignkit.org.conf', import.meta.url), 'utf8');
+    const { ORTHO_SOURCES } = await import('../src/lib/ortho-sources');
+    for (const o of ORTHO_SOURCES) {
+      const host = new URL(o.url.replace(/\{[a-z]+\}/g, '0')).host;
+      expect(conf).toContain(`upstream pdk_ortho_${o.id} { zone pdk_ortho_${o.id} 64k; resolver 127.0.0.53 valid=300s; server ${host}:443 resolve; keepalive 8; }`);
+    }
+  });
 });

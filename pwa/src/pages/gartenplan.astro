@@ -317,6 +317,7 @@ import Layout from '../layouts/Layout.astro';
               <button data-feature="measure" id="tool-measure" type="button" data-tool="measure" aria-pressed="false" data-i18n-aria-label="toolMeasure" data-i18n-title="toolMeasure" aria-label="Messen (M)" title="Messen (M)" class="flex h-8 w-8 items-center justify-center rounded-md bg-white/90 dark:bg-stone-800/90 text-base font-semibold text-stone-700 dark:text-stone-200 shadow ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-white dark:hover:bg-stone-700 aria-pressed:bg-amber-200 aria-pressed:ring-amber-500 dark:aria-pressed:bg-amber-800 text-sm">📏</button>
             </div>
             <div aria-hidden="true" class="cursor-readout pointer-events-none absolute hidden rounded bg-stone-900/80 px-1.5 py-0.5 font-mono text-[11px] text-white"></div>
+            <div id="tile-progress" role="status" hidden class="pointer-events-none absolute bottom-8 right-3 z-10 rounded bg-white/90 px-1.5 py-0.5 text-[11px] text-stone-700 shadow dark:bg-stone-800/90 dark:text-stone-200"></div>
             <div class="basemap-attrib absolute bottom-3 right-3 z-10 hidden rounded-tl bg-white/80 px-1 text-[10px] text-stone-600"></div>
           </div>
           <div id="plan-resize" role="separator" aria-orientation="horizontal" tabindex="0" data-i18n-aria-label="planResize" data-i18n-title="planResizeTitle" aria-label="Kartenhöhe ändern" title="Ziehen: Kartenhöhe ändern · Doppelklick: automatisch" class="group -mt-1 flex h-4 cursor-ns-resize touch-none items-center justify-center">
@@ -563,7 +564,7 @@ import Layout from '../layouts/Layout.astro';
   import { LAST_PLAN_KEY, planViewKey, readPlanView, writePlanView, type PlanView } from '../lib/plan-view';
   import { neighborHints } from '../lib/neighbors';
   import { wayTo, arrived } from '../lib/field-mode';
-  import { latLonToPlan } from '../lib/gartenplan-geo';
+  import { latLonToPlan, maxTilesForScreen } from '../lib/gartenplan-geo';
   import { ageAt, isPlanted, phaseLabel, phaseGroups, phaseOf, clampPhase, MAX_PHASE, MIN_PHASE } from '../lib/phases';
   import { analyzeWater, roofRainM3, type WaterAnalysis } from '../lib/water';
   import { planYield, careTasks, buildIcs, type CareTask } from '../lib/yield-care';
@@ -1195,11 +1196,12 @@ import Layout from '../layouts/Layout.astro';
     const isPlan = svg === planSvg;
     const plan = isPlan ? editing : { ...editing, areaWidthM: areaWidthM(), areaHeightM: areaHeightM() };
     const view = isPlan ? viewRectM() : { minX: 0, minY: 0, maxX: plan.areaWidthM, maxY: plan.areaHeightM };
-    const px = svg.getBoundingClientRect().width;
-    const mPerPx = px > 0 ? (view.maxX - view.minX) / px / (window.devicePixelRatio || 1) : 0.02;
+    const box = svg.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+    const px = box.width;
+    const mPerPx = px > 0 ? (view.maxX - view.minX) / px / dpr : 0.02;
     // Tiles already on screen keep their element (no flicker, no reload while zooming):
     // only new ones are created, vanished ones dropped.
-    const html = basemapSvg(plan, view, mPerPx);
+    const html = basemapSvg(plan, view, mPerPx, maxTilesForScreen(box.width * dpr, box.height * dpr));
     const old = new Map<string, Element>();
     layer.querySelectorAll('image[data-k]').forEach(i => old.set(i.getAttribute('data-k')!, i));
     const holder = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -1213,7 +1215,46 @@ import Layout from '../layouts/Layout.astro';
     });
     layer.replaceChildren(...holder.childNodes);
     updateAttribution(svg);
+    if (svg === planSvg) showTileProgress();
   }
+
+  // Loading state of the background tiles, shown until every tile of the view is there — so a blurry
+  // picture can be told apart from one that is still loading (or from a service that does not answer).
+  const tileProgress = document.getElementById('tile-progress') as HTMLElement;
+  let tileStatus3d: import('../lib/gartenplan-3d').GroundTileStatus | null = null;
+  let tileProgressFrame = 0;
+  function showTileProgress() {
+    if (tileProgressFrame) return;
+    tileProgressFrame = requestAnimationFrame(() => {
+      tileProgressFrame = 0;
+      let st = tileStatus3d;
+      if (!view3d) {
+        const imgs = [...planSvg.querySelectorAll<SVGImageElement>('.basemap-layer image')];
+        const n = (s: string) => imgs.filter(i => i.dataset.tile === s).length;
+        st = { total: imgs.length, loading: imgs.length - n('ok') - n('failed'), sharp: 0, coarse: 0, failed: n('failed'), belowWanted: 0 };
+      }
+      const text = !st || !st.total ? ''
+        : st.loading ? t('tilesLoading', { done: st.total - st.loading, total: st.total })
+        : st.failed ? t('tilesFailed', { n: st.failed })
+        : '';
+      tileProgress.textContent = text;
+      tileProgress.hidden = !text;
+      planSvg.dataset.tilesLoading = String(st?.loading ?? 0);
+    });
+  }
+  planSvg.addEventListener('load', e => {
+    const img = e.target as SVGImageElement;
+    if (img?.tagName !== 'image') return;
+    img.dataset.tile = 'ok';
+    showTileProgress();
+  }, true);
+  planSvg.addEventListener('error', e => {
+    const img = e.target as SVGImageElement;
+    if (img?.tagName !== 'image') return;
+    // Without a fallback left the tile stays empty; with one it is retried / replaced (handler below).
+    if (!img.getAttribute('data-fallback')) img.dataset.tile = 'failed';
+    showTileProgress();
+  }, true);
 
   // An aerial-photo service that doesn't answer (e.g. 403/500): its tiles are
   // swapped for coarse satellite / OSM (data-fallback, see basemapSvg) and the
@@ -1677,6 +1718,7 @@ import Layout from '../layouts/Layout.astro';
       layers: pluginLayers.filter(l => featureOn(l.featureId)).map(l => l.layer),
       hidden: hiddenByPlugin,
       onTileFallback: noteOrthoFallback,
+      onTileStatus(st) { tileStatus3d = st; showTileProgress(); },
       simple: simple3d || phoneBigPlan(),
     });
     if (from2d) camera3dAtEnter = view3d.getCameraState();

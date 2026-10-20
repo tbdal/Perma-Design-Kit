@@ -550,6 +550,36 @@ test('2D aerial photo: a tile that fails once is tried again before the coarse s
   void errors;
 });
 
+test('aerial photo of a big plan: 3D loads the ground in front at the finest zoom, the status shows until every tile is there', async ({ page, errors }) => {
+  await stubNetwork(page);
+  const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/58BAwAI/AL+hc2rNAAAAABJRU5ErkJggg==', 'base64');
+  const zooms: number[] = [];
+  await page.route('**/geo/ortho/**', async route => {
+    const b = /BBOX=([^&]+)/.exec(decodeURIComponent(route.request().url()))?.[1].split(',').map(Number);
+    if (b) zooms.push(Math.round(Math.log2(2 * 20037508.342789244 / (b[2] - b[0]))));
+    await new Promise(r => setTimeout(r, 30));
+    return route.fulfill({ contentType: 'image/png', body: PNG });
+  });
+  await seedNeighbourPlan(page, {
+    areaWidthM: 300, areaHeightM: 300, boundary: [{ xM: 5, yM: 5 }, { xM: 295, yM: 5 }, { xM: 295, yM: 295 }, { xM: 5, yM: 295 }],
+    geo: { lat: 53.5511, lon: 9.9937, rotationDeg: 0, basemap: 'ortho', opacity: 0.6 },
+  });
+  await openPlan(page, 'np');
+  await expect.poll(() => page.locator('#plan-svg').getAttribute('data-tiles-loading'), { timeout: 15000 }).toBe('0');
+  await expect(page.locator('#tile-progress')).toBeHidden();
+  await page.click('#btn-view-3d');
+  const canvas = page.locator('#plan-3d-container canvas');
+  await expect(canvas).toBeVisible({ timeout: 20000 });
+  // Before: one zoom for a square three times the plan — z17 here. Now each tile as sharp as its distance needs.
+  await expect.poll(() => Math.max(0, ...zooms), { timeout: 15000 }).toBeGreaterThanOrEqual(18);
+  const box = (await canvas.boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  for (let i = 0; i < 12; i++) { await page.mouse.wheel(0, -400); await page.waitForTimeout(60); }
+  await expect.poll(() => zooms.filter(z => z === 19).length, { timeout: 15000 }).toBeGreaterThan(0);
+  await expect(page.locator('#tile-progress')).toBeHidden({ timeout: 15000 });
+  void errors;
+});
+
 test('arrow keys move the map (2D) and the view over the ground (3D)', async ({ page, errors }) => {
   await stubNetwork(page);
   await seedNeighbourPlan(page, {});

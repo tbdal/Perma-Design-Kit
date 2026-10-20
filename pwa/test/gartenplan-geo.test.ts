@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   enuToPlan, planToEnu, planToLatLon, latLonToPlan, metersPerPixel, tilesForPlan,
   planCornersToLatLon, bearingFromOrigin, lonLatToMerc, mercToLonLat, planFromLatLngPolygon,
+  tilesForRect, maxTilesForScreen, lodTilesForRect, type PlanTile,
 } from '../src/lib/gartenplan-geo';
 import { formatMeters } from '../src/lib/gartenplan-geometry';
 import type { GardenPlanGeo } from '../src/lib/types';
@@ -76,6 +77,53 @@ describe('tilesForPlan', () => {
 
   it('never returns more than 64 tiles', () => {
     expect(tilesForPlan(500, 500, geo(10), 0.01, 19).length).toBeLessThanOrEqual(64);
+  });
+
+  it('with the cap of the screen it is never coarser than the screen (high-DPI, turned plans)', () => {
+    const wantZ = (mpp: number) => { let z = 0; while (z < 19 && metersPerPixel(50, z) > mpp) z++; return z; };
+    for (const [cssW, cssH, dpr] of [[1200, 800, 1], [1200, 800, 2], [390, 700, 3], [2400, 1300, 1.5]]) {
+      const cap = maxTilesForScreen(cssW * dpr, cssH * dpr);
+      for (const rot of [0, 25, 45]) {
+        for (let viewW = 50; viewW < 3000; viewW *= 1.07) {
+          const mpp = viewW / cssW / dpr;
+          const tiles = tilesForRect({ minX: 0, minY: 0, maxX: viewW, maxY: viewW * cssH / cssW }, geo(rot), mpp, 19, cap);
+          expect(tiles[0].z).toBe(wantZ(mpp));
+        }
+      }
+    }
+  });
+});
+
+describe('lodTilesForRect', () => {
+  // Camera 30 m above the anchor: the wanted zoom falls with the distance, as in 3D.
+  const want = (t: PlanTile) => {
+    const d = Math.hypot(Math.max(t.eM, 0, -t.eM - t.sizeM), Math.max(t.sM, 0, -t.sM - t.sizeM), 30);
+    return Math.max(0, Math.log2(metersPerPixel(50, 0) / (d * 0.0006)));
+  };
+  const rect = { minX: -1500, minY: -1500, maxX: 1500, maxY: 1500 };
+
+  it('is sharp in front of the camera, coarse far away, within the budget', () => {
+    const tiles = lodTilesForRect(rect, geo(0), 19, 256, want);
+    expect(tiles.length).toBeLessThanOrEqual(256);
+    const near = tiles.find(t => t.eM <= 0 && t.eM + t.sizeM >= 0 && t.sM <= 0 && t.sM + t.sizeM >= 0)!;
+    expect(near.z).toBe(19);
+    expect(Math.min(...tiles.map(t => t.z))).toBeLessThan(17);
+    // The nearest ~200 m as sharp as the screen needs (nearest first while the budget lasts).
+    const gap = (t: PlanTile) => Math.hypot(Math.max(t.eM, 0, -t.eM - t.sizeM), Math.max(t.sM, 0, -t.sM - t.sizeM));
+    expect(tiles.filter(t => gap(t) < 200).every(t => t.z >= Math.min(19, Math.ceil(want(t))))).toBe(true);
+  });
+
+  it('covers the start tiles exactly once (no gaps, no overlaps)', () => {
+    const start = tilesForRect(rect, geo(20), 0, 19, 16);
+    const tiles = lodTilesForRect(rect, geo(20), 19, 160, want);
+    const area = (ts: PlanTile[]) => ts.reduce((s, t) => s + t.sizeM ** 2, 0);
+    close(area(tiles), area(start), 1e-3 * area(start));
+    for (const a of tiles) for (const b of tiles) {
+      if (a === b) continue;
+      const ox = Math.min(a.eM + a.sizeM, b.eM + b.sizeM) - Math.max(a.eM, b.eM);
+      const oy = Math.min(a.sM + a.sizeM, b.sM + b.sizeM) - Math.max(a.sM, b.sM);
+      expect(ox <= 1e-6 || oy <= 1e-6).toBe(true);
+    }
   });
 });
 
