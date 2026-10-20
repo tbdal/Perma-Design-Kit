@@ -485,21 +485,30 @@ export function createGardenPlan3DView(
   function refreshTiles() {
     if (!geo || !layoutSrc) return;
     const t = controls.target;
-    const R = Math.max(maxDim * 1.5, camera.position.distanceTo(t) * 1.8);
+    // Sharp tiles around what the camera looks at; their size follows the camera distance only.
+    // (Sized at least to the whole plan, a large plan – 1–3 km – seen from close up got tiles
+    // of several metres per pixel: a blurry aerial photo.)
+    const R = Math.max(120, camera.position.distanceTo(t) * 1.8);
     const rect = { minX: t.x - R, minY: t.z - R, maxX: t.x + R, maxY: t.z + R };
     const tiles = tilesForRect(rect, geo, (2 * R) / 2048, layoutSrc.maxZoom);
-    const key = tiles.map(q => `${q.z}/${q.x}/${q.y}`).join(',');
+    // …and when that does not reach over the whole plan, a coarser layer for all of it underneath,
+    // so the rest of the plan does not end in plain meadow.
+    const wideR = maxDim * 1.5;
+    const wide = { minX: cx - wideR, minY: cz - wideR, maxX: cx + wideR, maxY: cz + wideR };
+    const under = R < wideR ? tilesForRect(wide, geo, (2 * wideR) / 1024, layoutSrc.maxZoom).map(q => ({ ...q, under: true })) : [];
+    const all = [...under, ...tiles];
+    const key = all.map(q => `${q.z}/${q.x}/${q.y}`).join(',');
     if (!tiles.length || key === tileKey) return;
     tileKey = key;
-    if (!terrain) { buildTiles(tiles, -1); return; }
+    if (!terrain) { buildTiles(all, -1); return; }
     // Terrain ~2 zoom levels coarser than the map: 64 px per map tile is
     // plenty for ≤ 48 segments, and it keeps the downloads few.
     terrainTiles.ensureRect(geo, rect, tiles[0].z - 2)
-      .then(tz => { if (tileKey === key) buildTiles(tiles, tz); })
-      .catch(() => { if (tileKey === key) buildTiles(tiles, -1); });
+      .then(tz => { if (tileKey === key) buildTiles(all, tz); })
+      .catch(() => { if (tileKey === key) buildTiles(all, -1); });
   }
 
-  function buildTiles(tiles: ReturnType<typeof tilesForRect>, tz: number) {
+  function buildTiles(tiles: (ReturnType<typeof tilesForRect>[number] & { under?: boolean })[], tz: number) {
     if (!geo || !layoutSrc) return;
     disposeTiles(oldTileGroup);
     oldTileGroup = tileGroup;
@@ -534,7 +543,7 @@ export function createGardenPlan3DView(
       }
       const mat = new THREE.MeshStandardMaterial({ roughness: 1, color: tileSrc ? 0xffffff : 0xb5c98f });
       const mesh = new THREE.Mesh(g, mat);
-      mesh.position.set(mx, 0, mz);
+      mesh.position.set(mx, q.under ? -0.04 : 0, mz); // the coarse layer lies just below the sharp one
       mesh.receiveShadow = true;
       if (!tileSrc) { next.add(mesh); settled(); continue; }
       mesh.visible = false; // until its texture has arrived

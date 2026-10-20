@@ -1230,13 +1230,31 @@ import Layout from '../layouts/Layout.astro';
       updateAttribution(planSvg);
     }
   }
+  // A tile that fails is tried twice more (a busy moment of the service or of our cache must not
+  // leave a blurry patch); only then the coarse picture takes its place, and the sharp one is
+  // tried once more later and swapped back in when it loads.
+  const retryUrl = (url: string, n: number | string) => `${url}${url.includes('?') ? '&' : '?'}_r=${n}`;
   [planSvg, drawingSvg].forEach(svg => svg.addEventListener('error', e => {
     const img = e.target as SVGImageElement;
     const fb = img?.getAttribute?.('data-fallback');
     if (!fb) return;
+    const sharp = img.getAttribute('data-k') ?? '';
+    const tries = Number(img.dataset.tries ?? 0);
+    if (sharp && tries < 2) {
+      img.dataset.tries = String(tries + 1);
+      setTimeout(() => { if (img.isConnected && img.getAttribute('data-fallback')) img.setAttribute('href', retryUrl(sharp, tries + 1)); }, tries ? 1800 : 600);
+      return;
+    }
     img.removeAttribute('data-fallback');
     img.setAttribute('href', fb);
     noteOrthoFallback();
+    if (!sharp) return;
+    setTimeout(() => {
+      if (!img.isConnected) return;
+      const later = retryUrl(sharp, 'later'), probe = new Image();
+      probe.onload = () => { if (img.isConnected) img.setAttribute('href', later); };
+      probe.src = later;
+    }, 20000);
   }, true));
 
   /** Source credits (map / aerial photo / satellite, elevation) — required by

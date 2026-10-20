@@ -5,6 +5,7 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
 ## Eigene Position in 3D als Punkt 2026-10-20
+- [x] **Waldgartenplan, Luftbild:** In 3D war das Luftbild bei großen Plänen (1–3 km) aus der Nähe verschwommen, weil die Kacheln immer für den ganzen Plan berechnet wurden; jetzt sind sie um den Blickpunkt scharf, der Rest des Plans liegt grob darunter. In 2D wird eine Kachel, die nicht lädt, zweimal neu versucht, bevor das grobe Satellitenbild einspringt, und später noch einmal scharf geholt #bugs #prüfen
 - [x] **Waldgartenplan:** Den Jahre-Regler zu bewegen ist kein Rückgängig-Schritt mehr (eine Ansicht, keine Änderung am Plan); Rückgängig lässt die eingestellten Jahre stehen #minor #prüfen
 - [x] **Waldgartenplan, 2D:** Gebäude aus OpenStreetMap erscheinen jetzt auch im 2D-Plan als graue Grundrisse (gleicher Schalter „Gebäude“ wie in 3D); Module können unter Umriss, Flächen und Pflanzen zeichnen (`addPlanOverlay(…, { under: true })`) #minor #prüfen
 - [x] **Waldgartenplan, 3D:** Der Schattenbereich folgt jetzt der Ansicht. Bei großen Plänen (mehrere km) endete er vorher an einem festen Quadrat um die Planmitte – das sah aus wie der Schatten eines riesigen Objekts; aus sehr großer Höhe sind Schatten aus #bugs #prüfen

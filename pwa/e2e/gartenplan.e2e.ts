@@ -525,6 +525,31 @@ test('3D aerial photo: a tile that fails once is tried again before the coarse s
   void errors;
 });
 
+test('2D aerial photo: a tile that fails once is tried again before the coarse satellite replaces it', async ({ page, errors }) => {
+  await stubNetwork(page);
+  const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/58BAwAI/AL+hc2rNAAAAABJRU5ErkJggg==', 'base64');
+  const seen = new Map<string, number>();
+  let ok = 0;
+  await page.route('**/geo/ortho/**', route => {
+    const u = route.request().url().replace(/[?&]_r=[^&]*/, '');   // a retry is the same tile
+    const n = (seen.get(u) ?? 0) + 1; seen.set(u, n);
+    if (n === 1) return route.fulfill({ status: 503, body: '' });    // the first try of every tile fails
+    ok++;
+    return route.fulfill({ contentType: 'image/png', body: PNG });
+  });
+  const coarse: string[] = [];
+  page.on('request', r => { if (/maps\.eox\.at/.test(r.url())) coarse.push(r.url()); });
+  await seedNeighbourPlan(page, { geo: { lat: 53.5511, lon: 9.9937, rotationDeg: 0, basemap: 'ortho', opacity: 0.6 } });
+  await openPlan(page, 'np');
+  await expect.poll(() => ok, { timeout: 15000 }).toBeGreaterThan(0);
+  await page.waitForTimeout(2500);
+  expect(coarse).toEqual([]);
+  const hrefs = await page.locator('#plan-svg .basemap-layer image').evaluateAll(els => els.map(e => e.getAttribute('href') ?? ''));
+  expect(hrefs.length).toBeGreaterThan(0);
+  expect(hrefs.every(h => h.includes('/geo/ortho/'))).toBe(true);
+  void errors;
+});
+
 test('arrow keys move the map (2D) and the view over the ground (3D)', async ({ page, errors }) => {
   await stubNetwork(page);
   await seedNeighbourPlan(page, {});
