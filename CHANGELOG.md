@@ -5,6 +5,7 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
 ## Eigene Position in 3D als Punkt 2026-10-20
+- [x] **Waldgartenplan:** Den Jahre-Regler zu bewegen ist kein Rückgängig-Schritt mehr (eine Ansicht, keine Änderung am Plan); Rückgängig lässt die eingestellten Jahre stehen #minor #prüfen
 - [x] **Waldgartenplan, 2D:** Gebäude aus OpenStreetMap erscheinen jetzt auch im 2D-Plan als graue Grundrisse (gleicher Schalter „Gebäude“ wie in 3D); Module können unter Umriss, Flächen und Pflanzen zeichnen (`addPlanOverlay(…, { under: true })`) #minor #prüfen
 - [x] **Waldgartenplan, 3D:** Der Schattenbereich folgt jetzt der Ansicht. Bei großen Plänen (mehrere km) endete er vorher an einem festen Quadrat um die Planmitte – das sah aus wie der Schatten eines riesigen Objekts; aus sehr großer Höhe sind Schatten aus #bugs #prüfen
 - [x] **Waldgartenplan:** GPS bzw. „Mich zeigen“ fliegt zur eigenen Position – im 2D-Plan als Flug, in 3D mit der Kamera (höchstens 60 m entfernt); Module können die 3D-Ansicht ebenso zu einem Punkt fliegen lassen (`centerOn`) #minor #prüfen

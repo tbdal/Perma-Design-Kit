@@ -16,6 +16,26 @@ async function seedNeighbourPlan(page: import('@playwright/test').Page, extra: R
   `, { m9: months(9), m89: months(8, 9), plan: planRecord('np', { yearsSincePlanting: 15, ...extra }) });
 }
 
+test('the years slider is no undo step; undo keeps the years as set', async ({ page, errors }) => {
+  await stubNetwork(page);
+  await seedNeighbourPlan(page);
+  await openPlan(page, 'np');
+  const setYears = (v: number) => page.evaluate(n => { const i = document.getElementById('g-years') as HTMLInputElement; i.value = String(n); i.dispatchEvent(new Event('input', { bubbles: true })); i.dispatchEvent(new Event('change', { bubbles: true })); }, v);
+  await expect(page.locator('#btn-undo')).toBeDisabled();
+  await setYears(3);
+  await page.waitForTimeout(700);
+  await expect(page.locator('#btn-undo')).toBeDisabled();
+  // a real change is undoable, and undoing it leaves the years where they are
+  await page.locator('[data-placement-id="a"] .marker-blob').click({ force: true });
+  await page.keyboard.press('Delete');
+  await page.waitForTimeout(700);
+  await expect(page.locator('#btn-undo')).toBeEnabled();
+  await page.click('#btn-undo');
+  await expect(page.locator('[data-placement-id="a"]')).toHaveCount(1);
+  await expect(page.locator('#g-years')).toHaveValue('3');
+  void errors;
+});
+
 test('placement view: search only there, neighbours, yield, zones', async ({ page, errors }) => {
   await stubNetwork(page);
   await seedNeighbourPlan(page);

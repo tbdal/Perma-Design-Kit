@@ -783,10 +783,13 @@ import Layout from '../layouts/Layout.astro';
   const btnUndo = document.getElementById('btn-undo') as HTMLButtonElement;
   const btnRedo = document.getElementById('btn-redo') as HTMLButtonElement;
 
+  // The years slider is a way of looking at the plan, not a change to it: it is no undo step.
   function planSnapshot(): string {
-    const { updatedAt: _u, ...rest } = editing!;
+    const { updatedAt: _u, yearsSincePlanting: _y, ...rest } = editing!;
     return JSON.stringify(rest);
   }
+  /** A snapshot back as a plan, with the years as they are set now. */
+  const fromSnapshot = (snap: string): GardenPlan => ({ ...JSON.parse(snap), yearsSincePlanting: editing?.yearsSincePlanting ?? 0 });
   const historyListeners: (() => void)[] = [];
   function syncUndoButtons() {
     btnUndo.disabled = historyIndex <= 0;
@@ -825,7 +828,7 @@ import Layout from '../layouts/Layout.astro';
     const target = historyIndex + dir;
     if (target < 0 || target >= history.length) return;
     historyIndex = target;
-    applyPlanData(JSON.parse(history[historyIndex]) as GardenPlan);
+    applyPlanData(fromSnapshot(history[historyIndex]));
     restoringHistory = true;
     scheduleAutosave();
     restoringHistory = false;
@@ -4839,7 +4842,7 @@ import Layout from '../layouts/Layout.astro';
     },
     onPlanChange: cb => { planChangeListeners.push(cb); },
     getHistory: () => {
-      const at = (i: number) => (i >= 0 && i < history.length ? JSON.parse(history[i]) as GardenPlan : null);
+      const at = (i: number) => (i >= 0 && i < history.length ? fromSnapshot(history[i]) : null);
       return { current: at(historyIndex), undo: at(historyIndex - 1), redo: at(historyIndex + 1) };
     },
     onHistoryChange: cb => { historyListeners.push(cb); },
