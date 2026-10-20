@@ -2777,7 +2777,7 @@ import Layout from '../layouts/Layout.astro';
 
   const activePointers = new Map<number, { x: number; y: number }>();
   let pan: { id: number; sx: number; sy: number; view: typeof planView; moved: boolean; target: Element | null } | null = null;
-  let pinch: { d: number; view: typeof planView; cx: number; cy: number } | null = null;
+  let pinch: { d: number; view: typeof planView; cx: number; cy: number; mx: number; my: number } | null = null;
 
   // Marker and corner-handle presses never get here: they stop propagation.
   planSvg.addEventListener('pointerdown', (e: PointerEvent) => {
@@ -2786,7 +2786,7 @@ import Layout from '../layouts/Layout.astro';
     if (activePointers.size === 2) {
       const [a, b] = [...activePointers.values()];
       const mid = clientToMeters(planSvg, (a.x + b.x) / 2, (a.y + b.y) / 2);
-      pinch = { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, view: { ...planView }, cx: mid.xM * U, cy: mid.yM * U };
+      pinch = { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, view: { ...planView }, cx: mid.xM * U, cy: mid.yM * U, mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2 };
       pan = null;
       return;
     }
@@ -2798,7 +2798,12 @@ import Layout from '../layouts/Layout.astro';
     if (lasso && e.pointerId === lasso.id) { extendLasso(e); return; }
     if (pinch && activePointers.size === 2) {
       const [a, b] = [...activePointers.values()];
-      planView = zoomedView(pinch.view, Math.hypot(a.x - b.x, a.y - b.y) / pinch.d, pinch.cx, pinch.cy); planViewFitted = false;
+      const z = zoomedView(pinch.view, Math.hypot(a.x - b.x, a.y - b.y) / pinch.d, pinch.cx, pinch.cy);
+      // …and moves with the fingers: the spot that was between them stays between them.
+      const r = canvasRect();
+      const unitsPerPx = Math.max(z.w / Math.max(1, r.width), z.h / Math.max(1, r.height));
+      planView = { ...z, x: z.x - ((a.x + b.x) / 2 - pinch.mx) * unitsPerPx, y: z.y - ((a.y + b.y) / 2 - pinch.my) * unitsPerPx }; planViewFitted = false;
+      flightId++;
       applyPlanView();
       return;
     }
@@ -3637,11 +3642,12 @@ import Layout from '../layouts/Layout.astro';
     gpsBox.hidden = true;
     renderGps();
   }
+  /** Flies to the own position: in 3D the camera, in 2D the section (about 30 m wide, never zoomed out). */
   function centerOnGps() {
-    if (!gpsPos || !plan3dContainer.hidden) return;
+    if (!gpsPos) return;
+    if (view3d && !plan3dContainer.hidden) { view3d.flyTo(gpsPos.xM, gpsPos.yM, 60); return; }
     const w = Math.min(planView.w, 30 * U), h = w * canvasAspect();
-    planView = { x: gpsPos.xM * U - w / 2, y: gpsPos.yM * U - h / 2, w, h }; planViewFitted = false;
-    applyPlanView();
+    flyPlanView({ x: gpsPos.xM * U - w / 2, y: gpsPos.yM * U - h / 2, w, h });
   }
   gpsBtn.addEventListener('click', () => {
     if (gpsWatch != null) { stopGps(); return; }
@@ -4862,7 +4868,8 @@ import Layout from '../layouts/Layout.astro';
       if (editing && plan3dContainer.hidden && (planViewFitted || !planView.w)) { resetPlanViewState(); applyPlanView(); }
     },
     centerOn(xM, yM, widthM) {
-      if (!editing || !plan3dContainer.hidden) return;
+      if (!editing) return;
+      if (view3d && !plan3dContainer.hidden) { view3d.flyTo(xM, yM, widthM ? widthM * 1.2 : undefined); return; }
       const w = widthM ? widthM * U : planView.w, h = w * canvasAspect();
       planView = { x: xM * U - w / 2, y: yM * U - h / 2, w, h }; planViewFitted = false;
       applyPlanView();

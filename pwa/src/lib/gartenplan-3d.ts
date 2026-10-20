@@ -130,6 +130,8 @@ export interface GardenPlan3DView {
   projectToScreen(xM: number, yM: number): { x: number; y: number } | null;
   /** Moves the view over the ground (arrow keys): `right` and `forward` as fractions of the distance to the target, relative to where the camera looks. */
   panView(right: number, forward: number): void;
+  /** Flies the view to a plan point (same angle); `maxDistM` = no farther away than this when it arrives. */
+  flyTo(xM: number, yM: number, maxDistM?: number): void;
   /** Jump to a straight top view or an oblique view from the south. */
   setViewPreset(preset: 'top' | 'oblique'): void;
   /** Ground rectangle (plan meters) roughly visible around the camera target
@@ -417,6 +419,7 @@ export function createGardenPlan3DView(
   tileLoader.setCrossOrigin('anonymous');
   let tileGroup: THREE.Group | null = null;
   let posMarker: THREE.Group | null = null;
+  let flyId = 0; // a newer flight (or none) wins
   let oldTileGroup: THREE.Group | null = null;
   let tileKey = '';
   if (layoutSrc) lawn.visible = false; // the map/terrain tiles are the ground inside the plan too
@@ -1368,6 +1371,27 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
       t.x += dx; t.z += dz;
       controls.update();
       requestRender();
+    },
+    flyTo(xM: number, yM: number, maxDistM?: number) {
+      const t = controls.target;
+      const from = { tx: t.x, ty: t.y, tz: t.z, off: camera.position.clone().sub(t) };
+      const toY = ground(xM, yM);
+      const d0 = from.off.length();
+      const d1 = maxDistM ? Math.min(d0, maxDistM) : d0;
+      const id = ++flyId;
+      const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+      const D = reduce ? 0 : 900, t0 = performance.now();
+      const ease = (k: number) => (k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2);
+      const step = () => {
+        if (id !== flyId) return;
+        const k = D ? Math.min(1, (performance.now() - t0) / D) : 1, e = ease(k);
+        t.set(from.tx + (xM - from.tx) * e, from.ty + (toY - from.ty) * e, from.tz + (yM - from.tz) * e);
+        camera.position.copy(t).add(from.off.clone().setLength(d0 + (d1 - d0) * e));
+        controls.update();
+        requestRender();
+        if (k < 1) requestAnimationFrame(step);
+      };
+      step();
     },
     setViewPreset(preset: 'top' | 'oblique') {
       const t = controls.target;
