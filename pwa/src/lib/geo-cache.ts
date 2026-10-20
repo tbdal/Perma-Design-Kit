@@ -70,3 +70,17 @@ export function hashKey(s: string): string {
 export async function clearGeoCache(): Promise<void> {
   try { if (typeof caches !== 'undefined') await caches.delete(CACHE_NAME); } catch { /* ignore */ }
 }
+
+const REFRESH_KEY = 'pdk-geo-refresh';
+const REFRESH_MS = 3 * 60 * 1000;
+
+/** "Load the outside data again": empties this cache and, for a few minutes (also across a page reload),
+ *  asks our server caches for a fresh answer where they offer one (`geoRefreshing()`). */
+export async function refreshGeoData(): Promise<void> {
+  await clearGeoCache();
+  try { sessionStorage.setItem(REFRESH_KEY, String(Date.now())); } catch { /* ignore */ }
+}
+
+export function geoRefreshing(): boolean {
+  try { const t = Number(sessionStorage.getItem(REFRESH_KEY)); return t > 0 && Date.now() - t < REFRESH_MS; } catch { return false; }
+}

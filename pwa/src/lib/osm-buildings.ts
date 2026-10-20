@@ -1,6 +1,6 @@
 import type { GardenPlanGeo, GardenPlanPoint } from './types';
 import { latLonToPlan, planToLatLon, type PlanRect } from './gartenplan-geo';
-import { cachedFetch, hashKey, DAY_MS } from './geo-cache';
+import { cachedFetch, hashKey, DAY_MS, geoRefreshing } from './geo-cache';
 import { orientedBox, nearlyRectangular, roofHeightFromPitch, type Roof, type RoofShape } from './building-roof';
 
 // Buildings around the garden from OpenStreetMap (Overpass API): footprints
@@ -243,7 +243,7 @@ async function timedFetch(url: string, init: RequestInit, ms: number): Promise<R
  *  often just briefly overloaded. First valid answer wins. */
 async function overpass(bb: string, q: string): Promise<Response> {
   let lastErr: unknown = null;
-  for (const refresh of [false, true]) {
+  for (const refresh of geoRefreshing() ? [true] : [false, true]) {
     try {
       return await checkedJson(await timedFetch(`${OVERPASS_PROXY}?bbox=${bb}${refresh ? '&refresh=1' : ''}`, {}, 45000));
     } catch (e) {

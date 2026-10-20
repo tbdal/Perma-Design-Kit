@@ -233,6 +233,39 @@ export function findInvite(invites, token, now = new Date()) {
 
 export const inviteStatus = (i, now = new Date()) => (i.used ? 'used' : Date.parse(i.expires) > now.getTime() ? 'open' : 'expired');
 
+// ── Login on a further device (QR code) ──────────────────────────────────
+export const DEVICE_MINUTES = 5;
+
+/**
+ * One-time codes with which a logged-in person signs in on another device
+ * (the phone scans a QR code). Valid for DEVICE_MINUTES, used once, kept only
+ * in memory as a hash — a restart of the process simply ends open codes.
+ */
+export function createDeviceCodes(now = () => Date.now()) {
+  const codes = new Map(); // hash → { n, exp }
+  const purge = () => { const t = now(); for (const [h, c] of codes) if (c.exp <= t) codes.delete(h); };
+  return {
+    issue(name) {
+      purge();
+      if (codes.size > 1000) codes.clear(); // memory cap under abuse
+      const token = randomBytes(24).toString('base64url');
+      const exp = now() + DEVICE_MINUTES * 60_000;
+      codes.set(tokenHash(token), { n: name, exp });
+      return { token, expires: new Date(exp).toISOString() };
+    },
+    /** The account name for a valid code (and the code is gone), else null. */
+    redeem(token) {
+      if (typeof token !== 'string' || token.length < 20 || token.length > 100) return null;
+      purge();
+      const h = tokenHash(token);
+      const c = codes.get(h);
+      if (!c) return null;
+      codes.delete(h);
+      return c.n;
+    },
+  };
+}
+
 // ── Login rate limit ─────────────────────────────────────────────────────
 export function createLoginLimiter({ max = 5, windowMs = 15 * 60_000 } = {}) {
   const fails = new Map();
@@ -278,7 +311,7 @@ function cookieHeader(value, maxAgeS, secure) {
  * @param {{ store: ReturnType<typeof createStore>, isAllowedOrigin?: (origin: string | null) => boolean,
  *          now?: () => number, limiter?: ReturnType<typeof createLoginLimiter> }} opts
  */
-export function createAuthHandler({ store, isAllowedOrigin = () => true, now = () => Date.now(), limiter = createLoginLimiter(), onInviteRedeemed = null }) {
+export function createAuthHandler({ store, isAllowedOrigin = () => true, now = () => Date.now(), limiter = createLoginLimiter(), onInviteRedeemed = null, deviceCodes = createDeviceCodes(now) }) {
   function session(req) {
     const p = verifySession(parseCookies(req.headers.cookie)[SESSION_COOKIE], store.secret(), now());
     if (!p) return null;
@@ -333,6 +366,25 @@ export function createAuthHandler({ store, isAllowedOrigin = () => true, now = (
         const code = err instanceof Error ? err.message : 'error';
         send(res, 400, { error: code });
       }
+      return true;
+    }
+    // A logged-in person asks for a code to sign in on another device (shown as a QR code in Einstellungen).
+    if (path === '/api/auth/device' && method === 'POST') {
+      const s = session(req);
+      if (!s) { send(res, 401, { error: 'login' }); return true; }
+      send(res, 200, deviceCodes.issue(s.name));
+      return true;
+    }
+    // The other device redeems it (/anmelden/?geraet=…) and gets its own session.
+    if (path === '/api/auth/device/redeem' && method === 'POST') {
+      if (limiter.blocked(ip, now())) { send(res, 429, { error: 'rate' }); return true; }
+      let body;
+      try { body = await readJsonBody(req); } catch { send(res, 400, { error: 'body' }); return true; }
+      const name = deviceCodes.redeem(body?.token);
+      const user = name ? findUser(store.users(), name) : null;
+      if (!user) { limiter.fail(ip, now()); send(res, 404, { error: 'invalid' }); return true; }
+      const token = signSession({ n: user.name, r: user.role, e: now() + SESSION_DAYS * 86_400_000, v: user.v || 1 }, store.secret());
+      send(res, 200, { name: user.name, role: user.role }, { 'Set-Cookie': cookieHeader(token, SESSION_DAYS * 86_400, secure) });
       return true;
     }
     if (path === '/api/auth/login' && method === 'POST') {

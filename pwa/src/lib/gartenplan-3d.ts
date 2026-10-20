@@ -887,6 +887,9 @@ export function createGardenPlan3DView(
   controls.maxDistance = 50000; // zoom out without limit (≈ region scale)
   controls.maxPolarAngle = Math.PI / 2 - 0.02;
   controls.enableDamping = false;
+  // Moving the view (right / Cmd / Ctrl / Shift + drag, two fingers) slides over the ground at the same height —
+  // in screen space an oblique view climbed or sank with every drag.
+  controls.screenSpacePanning = false;
   if (opts.camera) {
     camera.position.set(...opts.camera.position);
     controls.target.set(...opts.camera.target);

@@ -106,6 +106,29 @@ import Layout from '../layouts/Layout.astro';
   </div>
 
   <!-- Daten -->
+  <!-- Sign-in: who is logged in, and a QR code that signs the phone in (one-time code, /api/auth/device) -->
+  <section id="login-section" class="mb-8 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+    <h2 class="text-lg font-semibold text-stone-800 dark:text-stone-100" data-i18n="sectionLogin">Anmeldung</h2>
+    <p id="login-who" class="mt-1 text-sm text-stone-600 dark:text-stone-300"></p>
+    <div class="mt-3 flex flex-wrap gap-2">
+      <a id="login-go" href="/anmelden/?next=/settings%23login-section" data-i18n="loginTo" class="rounded-lg bg-green-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-green-800">Anmelden</a>
+      <button id="login-phone" type="button" hidden data-i18n="loginPhone" class="rounded-lg bg-green-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-green-800">Auf dem Handy anmelden (QR-Code)</button>
+      <button id="login-out" type="button" hidden data-i18n="loginOutBtn" class="rounded-lg bg-white dark:bg-stone-800 px-3 py-1.5 text-sm font-medium ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">Abmelden</button>
+    </div>
+    <div id="login-qr-box" hidden class="mt-4 flex flex-wrap items-start gap-4">
+      <canvas id="login-qr" class="rounded-lg bg-white p-1 ring-1 ring-stone-200" width="220" height="220"></canvas>
+      <div class="min-w-0 max-w-sm space-y-2 text-sm">
+        <p id="login-qr-hint" class="text-stone-600 dark:text-stone-300"></p>
+        <p id="login-qr-left" class="font-medium tabular-nums"></p>
+        <div class="flex flex-wrap gap-2">
+          <button id="login-qr-new" type="button" data-i18n="loginPhoneNew" class="rounded-lg bg-white dark:bg-stone-800 px-3 py-1.5 text-sm font-medium ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">Neuer Code</button>
+          <button id="login-qr-copy" type="button" data-i18n="loginPhoneCopy" class="rounded-lg bg-white dark:bg-stone-800 px-3 py-1.5 text-sm font-medium ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">Link kopieren</button>
+        </div>
+      </div>
+    </div>
+    <p id="login-qr-err" role="alert" class="mt-2 text-sm text-red-700 dark:text-red-300"></p>
+  </section>
+
   <section id="daten-section" class="mb-8 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
     <h2 class="text-lg font-semibold text-stone-800 dark:text-stone-100" data-i18n="sectionData">Daten</h2>
     <p class="mt-1 text-xs text-stone-500 dark:text-stone-400" data-i18n="dataSubtitle">Alle Pflanzen­daten und Polykulturen leben lokal in deinem Browser (IndexedDB).</p>
@@ -319,8 +342,51 @@ import Layout from '../layouts/Layout.astro';
   import { providePageApi } from '../lib/expert-api';
   import { createT, applyStaticI18n, getLang } from '../lib/i18n/core';
   import { settingsDict } from '../lib/i18n/dict-settings';
+  import { getAuth, logout, refreshAuth } from '../lib/ui-mode';
 
   const t = createT(settingsDict);
+
+  // ── Sign-in and the phone's QR code ──
+  {
+    const who = document.getElementById('login-who')!, go = document.getElementById('login-go')!;
+    const phone = document.getElementById('login-phone') as HTMLButtonElement, out = document.getElementById('login-out') as HTMLButtonElement;
+    const box = document.getElementById('login-qr-box')!, left = document.getElementById('login-qr-left')!, err = document.getElementById('login-qr-err')!;
+    let url = '', until = 0, tick: ReturnType<typeof setInterval> | undefined;
+    const ROLE: Record<string, string> = { expert: 'Experte', team: 'Team', admin: 'Admin' };
+    const showWho = () => {
+      const a = getAuth();
+      who.textContent = a ? t('loginAs', { name: a.name, role: getLang() === 'en' ? a.role : ROLE[a.role] ?? a.role }) : t('loginOut');
+      go.hidden = !!a; phone.hidden = !a; out.hidden = !a;
+      if (!a) { box.hidden = true; clearInterval(tick); }
+    };
+    async function makeCode() {
+      err.textContent = '';
+      const res = await fetch('/api/auth/device', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }).catch(() => null);
+      if (!res?.ok) { err.textContent = t('loginPhoneErr'); box.hidden = true; return; }
+      const code = await res.json() as { token: string; expires: string };
+      url = `${location.origin}/anmelden/?geraet=${encodeURIComponent(code.token)}`;
+      until = Date.parse(code.expires);
+      const { default: QRCode } = await import('qrcode');
+      await QRCode.toCanvas(document.getElementById('login-qr'), url, { width: 220, margin: 1 });
+      document.getElementById('login-qr-hint')!.textContent = t('loginPhoneHint', { min: Math.round((until - Date.now()) / 60000) });
+      box.hidden = false;
+      document.getElementById('login-qr')!.style.opacity = '1';
+      clearInterval(tick);
+      const step = () => {
+        const s = Math.max(0, Math.round((until - Date.now()) / 1000));
+        left.textContent = s ? t('loginPhoneLeft', { s }) : t('loginPhoneGone');
+        if (!s) { clearInterval(tick); document.getElementById('login-qr')!.style.opacity = '0.15'; url = ''; }
+      };
+      step();
+      tick = setInterval(step, 1000);
+    }
+    phone.addEventListener('click', () => void withButtonSpinner(phone, makeCode));
+    document.getElementById('login-qr-new')!.addEventListener('click', () => void makeCode());
+    document.getElementById('login-qr-copy')!.addEventListener('click', async () => { if (url) { try { await navigator.clipboard.writeText(url); } catch { /* no permission */ } } });
+    out.addEventListener('click', () => void logout());
+    showWho();
+    void refreshAuth().then(showWho);
+  }
   applyStaticI18n(settingsDict);
 
   // DEFAULT_SOURCES' name/description (src/lib/settings.ts) are German-only —

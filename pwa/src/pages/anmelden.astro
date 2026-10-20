@@ -20,6 +20,7 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
       <p id="invite-error" role="alert" class="text-sm font-medium text-red-700 dark:text-red-300"></p>
       <button type="submit" data-i18n="acInvCreateBtn" class={`${btn} bg-green-700 text-white hover:bg-green-800 disabled:opacity-60`}>Konto anlegen</button>
     </form>
+    <p id="device-status" hidden role="status" class="rounded-lg bg-stone-50 dark:bg-stone-800 px-3 py-2 text-sm ring-1 ring-stone-200 dark:ring-stone-700"></p>
     <p id="invite-invalid" hidden role="alert" class="rounded-lg bg-amber-50 dark:bg-amber-900/30 px-3 py-2 text-sm text-amber-900 dark:text-amber-100 ring-1 ring-amber-200 dark:ring-amber-800" data-i18n="acInvInvalid">Diese Einladung gilt nicht mehr.</p>
 
     <form id="login-form" class="space-y-4 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
@@ -106,6 +107,33 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
       else setMode('expert');
     });
     document.getElementById('btn-logout')!.addEventListener('click', () => void logout());
+
+    // QR code from another, logged-in device (Einstellungen → Anmeldung): one-time code, no password here.
+    const deviceToken = params.get('geraet') || '';
+    async function redeemDevice() {
+      if (!deviceToken) return;
+      // the code must not stay in the address bar or the history
+      params.delete('geraet');
+      history.replaceState(null, '', `${location.pathname}${params.size ? `?${params}` : ''}`);
+      const status = document.getElementById('device-status')!;
+      status.hidden = false;
+      status.textContent = t('acDevBusy');
+      try {
+        const res = await fetch('/api/auth/device/redeem', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: deviceToken }) });
+        if (res.ok) {
+          const who = await res.json() as { role?: string };
+          await refreshAuth();
+          // same as an invitation: the account's mode right away (a team account may use expert mode too)
+          try { if (!['expert', 'team'].includes(localStorage.getItem('pdk-mode') ?? '')) localStorage.setItem('pdk-mode', who.role === 'team' || who.role === 'admin' ? 'team' : 'expert'); } catch { /* ignore */ }
+          location.href = next;
+          return;
+        }
+        status.textContent = res.status === 429 ? t('acErrRate') : t('acDevInvalid');
+      } catch {
+        status.textContent = t('acErrServer');
+      }
+    }
+    void redeemDevice();
 
     // Invitation link: the role is preset, the person only chooses name and password.
     async function loadInvite() {

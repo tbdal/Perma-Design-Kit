@@ -74,6 +74,8 @@ export const accessDict: Dict = {
   acInvIntroExpert: { de: 'Du bist als Experte eingeladen. Lege dein Konto an: Name und ein Passwort mit mindestens 10 Zeichen.', en: 'You are invited as an expert. Create your account: a name and a password of at least 10 characters.' },
   acInvForLabel: { de: 'Für: {label}', en: 'For: {label}' },
   acInvCreateBtn: { de: 'Konto anlegen', en: 'Create account' },
+  acDevBusy: { de: 'Melde dieses Gerät an …', en: 'Signing in this device …' },
+  acDevInvalid: { de: 'Dieser Code gilt nicht mehr (nach 5 Minuten oder einmal benutzt). Auf dem anderen Gerät unter Einstellungen → Anmeldung einen neuen QR-Code erzeugen.', en: 'This code is no longer valid (after 5 minutes or once used). Make a new QR code on the other device under Settings → Sign-in.' },
   acInvInvalid: { de: 'Diese Einladung gilt nicht mehr: sie wurde schon benutzt, ist abgelaufen oder wurde zurückgezogen. Bitte um einen neuen Link.', en: 'This invitation is no longer valid: it was already used, has expired or was revoked. Please ask for a new link.' },
   acInvPasswordHint: { de: 'mindestens 10 Zeichen', en: 'at least 10 characters' },
   adErr_generic: { de: 'Das ging nicht ({error}).', en: 'That didn’t work ({error}).' },

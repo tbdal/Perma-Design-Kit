@@ -4,6 +4,7 @@ import { planToLatLon } from './gartenplan-geo';
 import { latLonToUtm } from './utm';
 import { ORTHO_SOURCES } from './ortho-sources';
 import type { ElevationGrid } from './terrain';
+import { cachedFetch, DAY_MS } from './geo-cache';
 
 // Official 1 m terrain models ("DGM1") of the German states — open data,
 // queried as WCS 2.0 GetCoverage (float32 GeoTIFF) straight from the
@@ -108,8 +109,17 @@ export async function refineWithDgm(grid: ElevationGrid, geo: GardenPlanGeo): Pr
   if (!d.scaling && spanM > MAX_UNSCALED_M) return null;
   const w = Math.max(16, Math.min(MAX_PX, Math.round((d.crs === 4326 ? (box.maxX - box.minX) * 111320 * Math.cos(geo.lat * Math.PI / 180) : box.maxX - box.minX) / d.resolutionM)));
   const h = Math.max(16, Math.min(MAX_PX, Math.round((d.crs === 4326 ? (box.maxY - box.minY) * 111320 : box.maxY - box.minY) / d.resolutionM)));
-  const res = await fetch(coverageUrl(d, box, w, h));
-  if (!res.ok || !(res.headers.get('content-type') ?? '').includes('tiff')) return null;
+  // Kept in the browser like the other terrain data: the survey offices' WCS answers slowly.
+  const url = coverageUrl(d, box, w, h);
+  let res: Response;
+  try {
+    res = await cachedFetch(url, 90 * DAY_MS, async () => {
+      const r = await fetch(url);
+      if (!r.ok || !(r.headers.get('content-type') ?? '').includes('tiff')) throw new Error(`dgm ${r.status}`);
+      return r;
+    });
+  } catch { return null; }
+  if (!(res.headers.get('content-type') ?? '').includes('tiff')) return null;
   const { fromArrayBuffer } = await import('geotiff');
   const tiff = await fromArrayBuffer(await res.arrayBuffer());
   const img = await tiff.getImage();

@@ -87,6 +87,21 @@ describe('HTTP endpoints', () => {
   });
   const cookieOf = (res: Response) => (res.headers.get('set-cookie') || '').split(';')[0];
 
+  it('signs in a further device with a one-time code from a logged-in session', async () => {
+    const post = (path: string, body: unknown, cookie = '') => fetch(`${base}${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(cookie ? { cookie } : {}) }, body: JSON.stringify(body) });
+    expect((await post('/api/auth/device', {})).status).toBe(401);
+    const cookie = cookieOf(await login('gast', 'gast-passwort'));
+    const code = await (await post('/api/auth/device', {}, cookie)).json();
+    expect(code.token.length).toBeGreaterThan(20);
+    expect(Date.parse(code.expires) - Date.now()).toBeLessThanOrEqual(5 * 60_000 + 1000);
+    const phone = await post('/api/auth/device/redeem', { token: code.token });
+    expect(phone.status).toBe(200);
+    expect(await phone.json()).toEqual({ name: 'Gast', role: 'expert' });
+    expect((await fetch(`${base}/api/auth/me`, { headers: { cookie: cookieOf(phone) } })).status).toBe(200);
+    // once only
+    expect((await post('/api/auth/device/redeem', { token: code.token })).status).toBe(404);
+  });
+
   it('leaves other paths to the plant proxy', async () => {
     expect((await fetch(`${base}/api/plant-proxy?name=x`)).status).toBe(418);
   });

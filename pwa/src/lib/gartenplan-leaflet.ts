@@ -4,6 +4,7 @@ import { OSM_TILES, S2_TILES, orthoTiles, tileUrl, fallbackTileUrl, FALLBACK_ATT
 import { orthoFor } from './ortho-sources';
 import type { Lang } from './i18n/core';
 import { boxesFor, endpoint, isUsable, parseRings, MIN_ZOOM, type SurrKind } from './map-surroundings';
+import { cachedFetch, DAY_MS, geoRefreshing } from './geo-cache';
 
 // Shared Leaflet plumbing for the garden plan: base map with the OSM / coarse
 // satellite layers, Nominatim address search and "my location". Used by the
@@ -194,15 +195,17 @@ export function attachSurroundings(map: L.Map, els: SurroundingsEls, t: (k: stri
     pending.add(key);
     setHint();
     try {
-      let json: unknown = null;
-      // A cached Overpass "remark" (overload) is refreshed once.
-      for (const refresh of [false, true]) {
-        const res = await fetch(`${endpoint(kind)}?bbox=${box}${refresh ? '&refresh=1' : ''}`);
-        if (!res.ok) throw new Error(String(res.status));
-        json = await res.json();
-        if (isUsable(json)) break;
-        if (refresh) throw new Error('overpass');
-      }
+      // In the browser for 30 days (the server keeps it as long); a cached Overpass "remark" (overload) is refreshed once.
+      const res = await cachedFetch(`surr:${key}`, 30 * DAY_MS, async () => {
+        for (const refresh of geoRefreshing() ? [true] : [false, true]) {
+          const r = await fetch(`${endpoint(kind)}?bbox=${box}${refresh ? '&refresh=1' : ''}`);
+          if (!r.ok) throw new Error(String(r.status));
+          const text = await r.text();
+          if (isUsable(JSON.parse(text))) return new Response(text, { headers: { 'Content-Type': 'application/json' } });
+        }
+        throw new Error('overpass');
+      });
+      const json: unknown = await res.json();
       const g = L.layerGroup();
       for (const rings of parseRings(json)) L.polygon(rings.map(r => r.map(p => [p.lat, p.lon] as L.LatLngTuple)), { ...SURR_STYLE[kind], renderer: renderers[kind] }).addTo(g);
       groups.set(key, g);
