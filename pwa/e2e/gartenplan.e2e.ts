@@ -127,6 +127,8 @@ test('buildings of the previous plan never show in the next one', async ({ page,
   const attrib = page.locator('#plan-wrap .basemap-attrib');
   await openPlan(page, 'A');
   await expect(attrib).toContainText('Gebäude');
+  // the footprint is drawn on the 2D plan too
+  await expect(page.locator('#buildings-layer path')).toHaveCount(1);
   delayB = true;
   await page.click('#btn-back-to-list');
   await page.click('[data-plan-id="B"]');

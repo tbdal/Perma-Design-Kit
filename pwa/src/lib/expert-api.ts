@@ -43,10 +43,10 @@ export interface GartenplanApi {
   add3dLayer(featureId: string, layer: Scene3DLayer): void;
   /** Extra shade casters for sun hours and shade hints (while the feature is on); groundZ = absolute ground height. */
   addSunOccluders(featureId: string, occluders: (groundZ: (x: number, y: number) => number) => Occluder[]): void;
-  /** A drawing on the 2D plan (above everything, not clickable): SVG markup in plan
+  /** A drawing on the 2D plan (above everything, or with `under` below outline, areas and plants; not clickable): SVG markup in plan
    *  metres; `px` = metres per screen pixel, for line widths and text sizes. Redrawn
    *  with the plan and by refresh(); the returned function redraws just the overlays. */
-  addPlanOverlay(featureId: string, draw: (px: number) => string): () => void;
+  addPlanOverlay(featureId: string, draw: (px: number) => string, opts?: { under?: boolean }): () => void;
   /** Waits for the next tap on the 2D plan and gives its point (plan metres);
    *  null when cancelled (Esc, another pick, editor closed, 3D view open). */
   pickPoint(): Promise<GardenPlanPoint | null>;

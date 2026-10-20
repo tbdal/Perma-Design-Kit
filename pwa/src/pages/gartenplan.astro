@@ -2227,6 +2227,8 @@ import Layout from '../layouts/Layout.astro';
     planSvg.innerHTML = `
       <g class="basemap-layer"></g>
       <g id="contour-layer" pointer-events="none"></g>
+      <g id="plugin-under-layer" pointer-events="none"></g>
+      <g id="buildings-layer" pointer-events="none"></g>
       <g id="water-layer" pointer-events="none"></g>
       <g id="coverage-layer" pointer-events="none"></g>
       <g id="plan-grid-layer">${gridDefsAndBackground(w, h, editing.gridSpacingM, 'plan-grid', k, pxPerUnit() * U, editing.gridRotationDeg ?? 0, editing.boundary)}</g>
@@ -2245,6 +2247,7 @@ import Layout from '../layouts/Layout.astro';
       <g id="plugin-layer" pointer-events="none"></g>`;
     renderBasemap(planSvg);
     renderContours();
+    renderBuildings2d();
     renderCoverage();
     renderAreaDraft();
     renderRowDraft();
@@ -4203,7 +4206,17 @@ import Layout from '../layouts/Layout.astro';
     }
     afterBuildingsChanged();
   }
+  /** Building footprints on the 2D plan (same setting as in 3D), grey, under everything planned. */
+  function renderBuildings2d() {
+    const g = planSvg.querySelector('#buildings-layer');
+    if (!g) return;
+    const ring = (pts: { xM: number; yM: number }[]) => `M${pts.map(p => `${(p.xM * U).toFixed(1)},${(p.yM * U).toFixed(1)}`).join('L')}Z`;
+    g.innerHTML = showBuildings()
+      ? `<path d="${buildings.map(b => ring(b.pts) + (b.holes ?? []).map(ring).join('')).join('')}" fill="#a8a29e" fill-opacity="0.8" fill-rule="evenodd" stroke="#57534e" stroke-width="1" vector-effect="non-scaling-stroke"/>`
+      : '';
+  }
   function afterBuildingsChanged() {
+    renderBuildings2d();
     updateAttribution(planSvg);
     scheduleWarnings();
     if (coverageSelect.value.startsWith('sun')) scheduleCoverage();
@@ -4652,7 +4665,7 @@ import Layout from '../layouts/Layout.astro';
   const pluginOccluderFns: { featureId: string; fn: (groundZ: (x: number, y: number) => number) => Occluder[] }[] = [];
   // Each overlay draws into its own group; unchanged output is not written again,
   // and a plugin's redraw() redraws only its own overlay, once per frame.
-  const pluginOverlays: { featureId: string; draw: (px: number) => string; el?: SVGGElement; last?: string; queued?: boolean }[] = [];
+  const pluginOverlays: { featureId: string; draw: (px: number) => string; el?: SVGGElement; last?: string; queued?: boolean; under?: boolean }[] = [];
   // Placements and areas plugins hide (setHidden): a style rule keeps them out
   // of the 2D plan across redraws; the 3D view leaves them out when built.
   const pluginHidden = new Map<string, Set<string>>();
@@ -4704,11 +4717,11 @@ import Layout from '../layouts/Layout.astro';
     if (featureOn(o.featureId)) { try { html = o.draw(px); } catch { html = ''; } }
     if (html !== o.last) { o.el.innerHTML = html; o.last = html; }
   }
+  const overlayLayer = (o: typeof pluginOverlays[number]) => planSvg.querySelector(o.under ? '#plugin-under-layer' : '#plugin-layer');
   function renderPluginOverlays() {
-    const g = planSvg.querySelector('#plugin-layer');
-    if (!g || !editing) return;
+    if (!editing) return;
     const px = viewK() / U;
-    for (const o of pluginOverlays) drawOverlay(o, g, px);
+    for (const o of pluginOverlays) { const g = overlayLayer(o); if (g) drawOverlay(o, g, px); }
   }
   function pluginOccluders(groundZ: (x: number, y: number) => number): Occluder[] {
     return pluginOccluderFns.filter(o => featureOn(o.featureId)).flatMap(o => { try { return o.fn(groundZ); } catch { return []; } });
@@ -4725,8 +4738,8 @@ import Layout from '../layouts/Layout.astro';
       if (!plan3dContainer.hidden && featureOn(featureId)) btnView3d.click();
     },
     addSunOccluders(featureId, fn) { pluginOccluderFns.push({ featureId, fn }); },
-    addPlanOverlay(featureId, draw) {
-      const o: typeof pluginOverlays[number] = { featureId, draw };
+    addPlanOverlay(featureId, draw, opts) {
+      const o: typeof pluginOverlays[number] = { featureId, draw, under: !!opts?.under };
       pluginOverlays.push(o);
       renderPluginOverlays();
       return () => {
@@ -4734,7 +4747,7 @@ import Layout from '../layouts/Layout.astro';
         o.queued = true;
         requestAnimationFrame(() => {
           o.queued = false;
-          const g = planSvg.querySelector('#plugin-layer');
+          const g = overlayLayer(o);
           if (g && editing) drawOverlay(o, g, viewK() / U);
         });
       };
