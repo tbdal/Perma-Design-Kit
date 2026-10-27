@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Einstellungen: Speicher aufgeschlüsselt 2026-10-27
+- [x] **Einstellungen → Daten → „Wofür geht der Speicher drauf?“:** Pflanzen/Pläne, App-Dateien, externe Daten getrennt nach Gelände, amtlichem Höhenmodell, Klima, OpenStreetMap und Wald, dazu Luftbilder pro Land (Näherung: Summe der online geladenen Kacheln, da der Browser-Zwischenspeicher selbst nicht auslesbar ist) #minor
+
 ## Luftbilder: Fehlerseiten der Dienste nicht mehr zwischenspeichern 2026-10-27
 - [x] **Luftbild Sachsen-Anhalt (und andere Länder) fehlte stellenweise:** Überlastete Dienste antworten mit „200“ und einer XML-/HTML-Fehlerseite; der Zwischenspeicher (nginx) und der Browser hielten diese Fehlerseite 30 Tage bzw. eine Woche fest, sodass die Kachel durch den Ersatz ersetzt blieb. Jetzt werden nur echte Bilder gespeichert (Konfiguration `permadesignkit.org.conf`), die ~3 900 schon gespeicherten Fehlerseiten wurden gelöscht #bugs
 

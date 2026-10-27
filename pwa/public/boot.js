@@ -63,6 +63,9 @@
   } catch (_) {}
 })();
 
+// Aerial tiles are counted per country from Resource Timing (settings → storage): the default buffer of 250 entries is too small.
+try { performance.setResourceTimingBufferSize(3000); } catch (_) {}
+
 // Last 20 script errors of this tab, for the debug file on /fehler-melden/
 // (src/lib/bug-report.ts). sessionStorage: stays in the tab, nothing is sent.
 (function () {

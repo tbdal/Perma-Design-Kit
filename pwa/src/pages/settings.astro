@@ -150,6 +150,10 @@ import Layout from '../layouts/Layout.astro';
         </dd>
       </div>
     </dl>
+    <details id="storage-breakdown" class="mt-3 rounded-lg border border-stone-200 dark:border-stone-700 p-3">
+      <summary class="cursor-pointer text-xs font-semibold text-stone-700 dark:text-stone-200" data-i18n="storageBreakdown">Details: Wofür geht der Speicher drauf?</summary>
+      <div id="storage-breakdown-body" class="mt-2 space-y-3 text-xs text-stone-700 dark:text-stone-200"></div>
+    </details>
 
     <p id="last-backup-info" class="mt-3 text-xs text-stone-500 dark:text-stone-400"></p>
 
@@ -333,6 +337,8 @@ import Layout from '../layouts/Layout.astro';
   import { getAllPlants, clearAllData, getVarietyLists, saveVarietyList, deleteVarietyList } from '../lib/db';
   import { fetchWikidataVarieties, parseVarietyCsv, varietyListToCsv, dedupeEntries, speciesKey, VARIETY_CSV_TEMPLATE, WIKIDATA_LIST_ID, type VarietyList } from '../lib/varieties';
   import { newId } from '../lib/id';
+  import { geoCacheUsage } from '../lib/geo-cache';
+  import { aerialTotals, orthoRegion } from '../lib/aerial-usage';
   import {
     buildBackup, buildBackupJson, parseBackup, backupIsEmpty, applyBackup, rememberBackupAt, rememberPulled, isAutoSyncEnabled,
     webdavPush, webdavPull, gistPush, gistPull, getSyncProblem, clearSyncProblem, forgetSyncState, syncProviderLabel, SYNC_PROBLEM_EVENT,
@@ -505,6 +511,25 @@ import Layout from '../layouts/Layout.astro';
     return `${(n / (1024 * 1024)).toFixed(2)} MB`;
   }
 
+  /** Table of "what takes how much": local data, geo cache per kind, aerial photos per country (this session). */
+  const breakdownEl = document.getElementById('storage-breakdown') as HTMLDetailsElement;
+  async function renderBreakdown() {
+    const body = document.getElementById('storage-breakdown-body')!;
+    const row = (name: string, value: string, note = '') => `<tr><td class="py-0.5 pr-3">${escapeHtml(name)}${note ? `<span class="block text-[11px] text-stone-500 dark:text-stone-400">${escapeHtml(note)}</span>` : ''}</td><td class="py-0.5 text-right font-mono whitespace-nowrap">${escapeHtml(value)}</td></tr>`;
+    const table = (title: string, rows: string) => `<div><p class="font-semibold">${escapeHtml(title)}</p><table class="mt-1 w-full">${rows || row('–', '')}</table></div>`;
+    const est: any = await navigator.storage?.estimate?.().catch(() => null) ?? {};
+    const d = est.usageDetails ?? {};
+    const geo = await geoCacheUsage();
+    const geoNames: Record<string, string> = { terrain: t('stoTerrain'), dgm: t('stoDgm'), climate: t('stoClimate'), osm: t('stoOsm'), forest: t('stoForest') };
+    const geoRows = Object.entries(geo).map(([k, v]) => row(geoNames[k], fmtBytes(v.bytes), `${v.count} ${t('stoEntries')}`)).join('');
+    const local = [d.indexedDB != null ? row(t('stoIndexedDb'), fmtBytes(d.indexedDB), t('stoIndexedDbNote')) : '', d.caches != null ? row(t('stoCaches'), fmtBytes(d.caches), t('stoCachesNote')) : ''].join('');
+    const lang = (document.documentElement.lang || 'de').startsWith('en') ? 'en' : 'de';
+    const aerial = Object.entries(aerialTotals()).sort((a, b) => b[1].bytes - a[1].bytes).map(([id, u]) => row(orthoRegion(id, lang), `≈ ${fmtBytes(u.bytes)}`, `${u.tiles} ${t('stoTiles')}`)).join('');
+    body.innerHTML = table(t('stoLocal'), local) + table(t('stoGeo'), geoRows)
+      + table(t('stoAerial'), aerial) + `<p class="text-[11px] text-stone-500 dark:text-stone-400">${escapeHtml(t('stoAerialNote'))}</p>`;
+  }
+  breakdownEl.addEventListener('toggle', () => { if (breakdownEl.open) void renderBreakdown(); });
+
   async function renderStats() {
     const plants = await getAllPlants();
     statsPlants.textContent = `${plants.length}`;
@@ -523,6 +548,7 @@ import Layout from '../layouts/Layout.astro';
       statsStorage.textContent = '—';
     }
     await renderPersist();
+    void renderBreakdown();
   }
 
   // Persistent storage: status + manual request (the banner in Layout asks

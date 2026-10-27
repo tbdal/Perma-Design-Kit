@@ -577,6 +577,7 @@ import Layout from '../layouts/Layout.astro';
   import { deriveLayer, LAYER_STYLE, LAYER_I18N, type PlantLayer } from '../lib/plant-layer';
   import { blobPathD } from '../lib/blob-shape';
   import { pointInPolygon, formatMeters, polygonAreaM2, polygonPerimeterM, pointsAlongPolyline, nearestGridPoint, gridAngleAlongOutline, normalizeGridAngle } from '../lib/gartenplan-geometry';
+  import { recordAerialUsage } from '../lib/aerial-usage';
   import { areasSvg, AREA_PALETTE, uiScale, polygonCentroid } from '../lib/gartenplan-render';
   import { planFromLatLngPolygon, planToLatLon } from '../lib/gartenplan-geo';
   import type { MapDrawer } from '../lib/gartenplan-mapdraw';
@@ -1219,6 +1220,9 @@ import Layout from '../layouts/Layout.astro';
     updateAttribution(svg);
     if (svg === planSvg) showTileProgress();
   }
+
+  document.addEventListener('visibilitychange', () => { if (document.hidden) recordAerialUsage(); });
+  addEventListener('pagehide', recordAerialUsage);
 
   // Loading state of the background tiles, shown until every tile of the view is there — so a blurry
   // picture can be told apart from one that is still loading (or from a service that does not answer).
