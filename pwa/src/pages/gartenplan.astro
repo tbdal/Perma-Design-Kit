@@ -4000,7 +4000,7 @@ import Layout from '../layouts/Layout.astro';
       for (const s of w.sinks) {
         const r = Math.sqrt(s.areaM2 / Math.PI);
         parts.push(`<circle cx="${s.xM * U}" cy="${s.yM * U}" r="${r * U}" fill="#0ea5e9" fill-opacity="0.25" stroke="#0369a1" stroke-width="${1.2 * k}"/>`);
-        parts.push(label(s.xM, s.yM, t('waterSinkLabel', { d: nf(s.depthM, 1) }), '#075985'));
+        parts.push(label(s.xM, s.yM, t('waterSinkLabel', { n: w.sinks.indexOf(s) + 1, d: nf(s.depthM, 1) }), '#075985'));
       }
       for (const s of w.swales) {
         parts.push(`<line x1="${s.x1 * U}" y1="${s.y1 * U}" x2="${s.x2 * U}" y2="${s.y2 * U}" stroke="#d97706" stroke-width="${4 * k}" stroke-dasharray="${6 * k} ${3 * k}" stroke-linecap="round"/>`);
@@ -4022,7 +4022,9 @@ import Layout from '../layouts/Layout.astro';
     const rows: string[] = [];
     rows.push(`<p>${escapeHtml(fine ? t('waterBasisFine', { region: terrain.dgm!.region[lang], res: nf(terrain.dgm!.resolutionM) }) : t('waterBasisCoarse'))}</p>`);
     if (fine) {
-      rows.push(`<p><span class="font-medium">${escapeHtml(t('waterSinks'))}:</span> ${w.sinks.length ? escapeHtml(w.sinks.slice(0, 4).map(s => t('waterSinkItem', { d: nf(s.depthM, 1), a: nf(s.areaM2), v: nf(s.volumeM3) })).join(' · ')) : escapeHtml(t('waterNone'))}</p>`);
+      rows.push(`<div><p class="font-medium">${escapeHtml(t('waterSinks'))}</p>${w.sinks.length
+        ? `<ul class="list-disc space-y-0.5 pl-4">${w.sinks.slice(0, 4).map((s, i) => `<li>${escapeHtml(t('waterSinkItem', { n: i + 1, d: nf(s.depthM, 1), a: nf(s.areaM2), v: nf(s.volumeM3, s.volumeM3 < 10 ? 1 : 0), l: nf(s.volumeM3 * 1000, 0) }))}</li>`).join('')}</ul><p class="mt-0.5 text-[11px] text-stone-500 dark:text-stone-400">${escapeHtml(t('waterSinksExplain'))}</p>`
+        : `<p>${escapeHtml(t('waterNone'))}</p>`}</div>`);
       rows.push(`<p><span class="font-medium">${escapeHtml(t('waterSwales'))}:</span> ${w.swales.length ? escapeHtml(t('waterSwaleItems', { n: w.swales.length })) : escapeHtml(t('waterSwalesNone'))}</p>`);
     }
     // Roof rain (buildings in or right next to the plan)
