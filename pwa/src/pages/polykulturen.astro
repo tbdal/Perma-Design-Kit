@@ -8,6 +8,7 @@ import Layout from '../layouts/Layout.astro';
       <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-100" data-i18n="pageTitle">Polykulturen</h1>
       <div class="flex flex-wrap items-center gap-2">
         <select id="from-group" data-i18n-aria-label="fromGroupLabel" aria-label="Polykultur aus einer Pflanzengruppe anlegen" class="rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-2 text-sm text-stone-700 dark:text-stone-200"></select>
+        <button id="btn-examples" type="button" data-i18n="btnExamples" class="rounded-lg bg-white dark:bg-stone-800 px-3.5 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-50 dark:hover:bg-stone-700">Beispiele laden</button>
         <button id="btn-new-polyculture" data-i18n="btnNewGuild" class="rounded-lg bg-green-700 px-3.5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">+ Neue Polykultur</button>
       </div>
     </div>
@@ -72,6 +73,19 @@ import Layout from '../layouts/Layout.astro';
     </div>
   </section>
 
+  <dialog id="examples-dialog" class="m-auto w-[min(60rem,calc(100vw-2rem))] max-h-[88vh] overflow-y-auto rounded-2xl bg-white dark:bg-stone-900 p-0 text-stone-800 dark:text-stone-100 shadow-2xl backdrop:bg-black/40">
+    <div class="p-5 sm:p-6">
+      <div class="mb-3 flex items-start justify-between gap-3">
+        <div>
+          <h2 class="text-lg font-bold" data-i18n="examplesTitle">Beispiel-Polykulturen</h2>
+          <p class="mt-1 text-sm text-stone-600 dark:text-stone-300" data-i18n="examplesIntro">Suche dir eine aus: Sie wird mit ihren Pflanzen in deine Listen kopiert und lässt sich danach beliebig ändern.</p>
+        </div>
+        <button id="examples-close" type="button" aria-label="Schließen" class="rounded-md px-2 py-1 text-lg leading-none text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800">✕</button>
+      </div>
+      <p id="examples-status" role="status" class="mb-2 text-sm text-stone-500 dark:text-stone-400"></p>
+      <div id="examples-grid" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"></div>
+    </div>
+  </dialog>
   <div id="toast" class="fixed bottom-6 right-6 hidden rounded-lg bg-green-700 px-4 py-2.5 text-sm font-medium text-white shadow-lg"></div>
 </Layout>
 
@@ -87,6 +101,8 @@ import Layout from '../layouts/Layout.astro';
     type Polyculture, type PolycultureMember, type PolycultureRole, type PlantData,
   } from '../lib/types';
   import { escapeHtml } from '../lib/html';
+  import { installExample, type Example } from '../lib/beispiele';
+  import { importPlants } from '../lib/db';
   import { providePageApi } from '../lib/expert-api';
   import { compatScore } from '../lib/compat';
   import { polycultureFromGroup, allGroups } from '../lib/polyculture-from-group';
@@ -462,6 +478,53 @@ import Layout from '../layouts/Layout.astro';
     renderList();
     closeEditor();
     showToast(t('toastGuildDeleted'));
+  });
+
+  // ── Beispiele laden ─────────────────────────────────────────────────────
+  const examplesDialog = document.getElementById('examples-dialog') as HTMLDialogElement;
+  const examplesGrid = document.getElementById('examples-grid')!;
+  const examplesStatus = document.getElementById('examples-status')!;
+  let examples: Example[] | null = null;
+  function renderExamples() {
+    examplesGrid.innerHTML = (examples ?? []).map((ex, i) => `
+      <article class="flex flex-col overflow-hidden rounded-xl bg-white dark:bg-stone-800 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+        ${ex.image ? `<div data-img-wrapper class="h-36 bg-stone-100 dark:bg-stone-700"><img src="${escapeHtml(ex.image)}" alt="" loading="lazy" class="h-full w-full object-cover" /></div>` : ''}
+        <div class="flex flex-1 flex-col gap-1.5 p-3">
+          <h3 class="font-semibold">${escapeHtml(ex.title)}</h3>
+          <p class="flex-1 text-sm text-stone-600 dark:text-stone-300">${escapeHtml(ex.description)}</p>
+          <p class="text-xs text-stone-500 dark:text-stone-400">${escapeHtml(t('examplesPlants', { n: ex.plants.length }))}</p>
+          <button type="button" data-example="${i}" class="mt-1 rounded-lg bg-green-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-800">${escapeHtml(t('examplesLoad'))}</button>
+        </div>
+      </article>`).join('');
+  }
+  document.getElementById('btn-examples')!.addEventListener('click', async () => {
+    examplesDialog.showModal();
+    if (examples) return;
+    examplesStatus.textContent = t('examplesLoading');
+    try {
+      const res = await fetch('/api/polykultur-beispiele', { cache: 'no-store' });
+      if (!res.ok) throw new Error(String(res.status));
+      examples = ((await res.json()) as { items: Example[] }).items;
+      examplesStatus.textContent = examples.length ? '' : t('examplesNone');
+      renderExamples();
+    } catch { examplesStatus.textContent = t('examplesFailed'); }
+  });
+  document.getElementById('examples-close')!.addEventListener('click', () => examplesDialog.close());
+  examplesGrid.addEventListener('click', async e => {
+    const b = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-example]');
+    const ex = b && examples?.[Number(b.dataset.example)];
+    if (!b || !ex) return;
+    b.disabled = true;
+    const { newPlants, polyculture } = installExample(ex, plants);
+    if (newPlants.length) await importPlants(newPlants);
+    await savePolyculture(polyculture);
+    plants = await getAllPlants();
+    plantsById = new Map(plants.map(p => [p.id, p]));
+    polycultures = await getAllPolycultures();
+    renderList();
+    examplesDialog.close();
+    showToast(t('examplesLoaded', { name: ex.title, n: newPlants.length }));
+    b.disabled = false;
   });
 
   init();

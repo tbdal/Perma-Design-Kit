@@ -74,6 +74,8 @@ export interface GartenplanApi {
   importGeoJson(data: unknown): Promise<void>;
   /** A box under the selected plant(s) in the selection panel, drawn again with every change of selection; `ids` = the selected placements. */
   addSelectionExtra(featureId: string, render: (box: HTMLElement, ids: string[]) => void): void;
+  /** Saves a plant into the user's list when it is not there yet (so placePlantAt() and the placements can use it). */
+  addPlant(plant: PlantData): Promise<void>;
   /** Puts these placements on another plant of the list (saved into the list first when it is new); an undo step like any edit. */
   setPlacementPlant(placementIds: string[], plant: PlantData): Promise<void>;
   /** Whether a placement or area is hidden by some feature (setHidden). */

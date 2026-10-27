@@ -12,6 +12,7 @@ import { fileURLToPath } from 'node:url';
 import { parsePfafHtml, pfafNameCandidates } from './pfaf-parse.mjs';
 import { lookupEfg, efgIndex } from './efg.mjs';
 import { createAuthHandler, createStore } from './auth.mjs';
+import { createBeispiele, createBeispieleHandler } from './beispiele.mjs';
 
 const PORT = process.env.PLANT_PROXY_PORT || 8787;
 const UPSTREAM_TIMEOUT_MS = 15_000;
@@ -288,6 +289,10 @@ const handleAuth = createAuthHandler({
   onInviteRedeemed: (invite, user) => expertServer?.onInviteRedeemed?.(invite, user),
 });
 
+// Example polycultures: public list, admins edit it (server/beispiele.mjs).
+const authStore = createStore();
+const handleBeispiele = createBeispieleHandler({ store: createBeispiele({ dir: authStore.dir }), session: (req) => handleAuth.session(req), isAllowedOrigin });
+
 // Private server routes under /api/x/ from the expert repo (src/expert/server/,
 // only on the VPS), loaded when this checkout has it. Logged-in accounts only.
 const expertServerUrl = new URL('../src/expert/server/index.mjs', import.meta.url);
@@ -307,6 +312,7 @@ async function handleExpert(req, res, url) {
 async function handleRequest(req, res) {
   const url = new URL(req.url, `http://${req.headers.host}`);
   if (url.pathname.startsWith('/api/x/')) return handleExpert(req, res, url);
+  if (await handleBeispiele(req, res, url)) return;
   if (await handleAuth(req, res, url, clientIp(req))) return;
   const origin = req.headers.origin || null;
   const headers = corsHeaders(origin);

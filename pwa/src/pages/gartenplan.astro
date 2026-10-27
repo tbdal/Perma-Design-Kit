@@ -4925,6 +4925,12 @@ import Layout from '../layouts/Layout.astro';
     isHidden: id => hiddenByPlugin(id),
     importGeoJson: data => importGeoJsonData(data),
     addSelectionExtra(featureId, render) { selectionExtras.push({ featureId, render }); renderSelectedPanel(); },
+    async addPlant(plant) {
+      if (plantsById.has(plant.id)) return;
+      await importPlants([plant]);
+      plants = await getAllPlants();
+      rebuildPlantsById();
+    },
     async setPlacementPlant(placementIds, plant) {
       if (!editing) return;
       if (!plantsById.has(plant.id)) {

@@ -1,0 +1,611 @@
+{
+ "items": [
+  {
+   "id": "apfel-gilde",
+   "title": "Apfelbaum-Gilde",
+   "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Tree_with_red_apples_in_Barkedal_4.jpg?width=480",
+   "description": "Der Klassiker: Apfelbaum mit Beinwell (holt Mineralien, Mulch), Schnittlauch und Narzissen gegen Gras und Schädlinge, Ringelblume für Insekten und Walderdbeere als Bodendecker.",
+   "anchor": "Malus domestica",
+   "hidden": false,
+   "plants": [
+    {
+     "latinName": "Malus domestica",
+     "commonName": "Kulturapfel",
+     "commonNameEn": "Apple",
+     "heightM": 8,
+     "widthM": 8,
+     "habit": "tree",
+     "eatable": true,
+     "insects": true,
+     "sunFull": true,
+     "waterMid": true,
+     "growSpeedMid": true
+    },
+    {
+     "latinName": "Symphytum officinale",
+     "commonName": "Echter Beinwell",
+     "commonNameEn": "Comfrey",
+     "heightM": 1,
+     "widthM": 1,
+     "habit": "herb",
+     "meds": true,
+     "mineralFix": true,
+     "insects": true,
+     "groundCover": true,
+     "sunMid": true,
+     "sunFull": true,
+     "waterMid": true,
+     "growSpeedHigh": true
+    },
+    {
+     "latinName": "Allium schoenoprasum",
+     "commonName": "Schnittlauch",
+     "commonNameEn": "Chives",
+     "heightM": 0.4,
+     "widthM": 0.3,
+     "habit": "herb",
+     "eatable": true,
+     "culinaric": true,
+     "pest": true,
+     "insects": true,
+     "sunFull": true,
+     "waterMid": true
+    },
+    {
+     "latinName": "Narcissus pseudonarcissus",
+     "commonName": "Wilde Narzisse",
+     "commonNameEn": "Wild daffodil",
+     "heightM": 0.4,
+     "widthM": 0.2,
+     "habit": "herb",
+     "pest": true,
+     "insects": true,
+     "sunMid": true,
+     "waterMid": true
+    },
+    {
+     "latinName": "Calendula officinalis",
+     "commonName": "Ringelblume",
+     "commonNameEn": "Pot marigold",
+     "heightM": 0.5,
+     "widthM": 0.3,
+     "habit": "herb",
+     "meds": true,
+     "insects": true,
+     "pest": true,
+     "sunFull": true,
+     "waterMid": true
+    },
+    {
+     "latinName": "Fragaria vesca",
+     "commonName": "Walderdbeere",
+     "commonNameEn": "Wild strawberry",
+     "heightM": 0.2,
+     "widthM": 0.3,
+     "habit": "herb",
+     "eatable": true,
+     "groundCover": true,
+     "sunMid": true,
+     "sunShadow": true,
+     "waterMid": true
+    }
+   ],
+   "members": [
+    {
+     "latinName": "Symphytum officinale",
+     "role": "mineralFixer",
+     "notes": "Tiefwurzler; Blätter als Mulch unter den Baum schneiden"
+    },
+    {
+     "latinName": "Allium schoenoprasum",
+     "role": "pestConfuser",
+     "notes": "Duft gegen Läuse, auch essbar"
+    },
+    {
+     "latinName": "Narcissus pseudonarcissus",
+     "role": "pestConfuser",
+     "notes": "Ring um den Stamm gegen Gras und Wühlmäuse"
+    },
+    {
+     "latinName": "Calendula officinalis",
+     "role": "insectary",
+     "notes": "Blüht lange, lockt Schwebfliegen"
+    },
+    {
+     "latinName": "Fragaria vesca",
+     "role": "groundCover",
+     "notes": "Deckt den Boden, trägt Beeren"
+    }
+   ]
+  },
+  {
+   "id": "drei-schwestern",
+   "title": "Drei Schwestern",
+   "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Three_Sisters_Garden.jpg?width=480",
+   "description": "Mais, Stangenbohne und Kürbis wachsen seit Jahrhunderten zusammen: Der Mais trägt die Bohne, die Bohne düngt mit Stickstoff, der Kürbis beschattet den Boden.",
+   "anchor": "Zea mays",
+   "hidden": false,
+   "plants": [
+    {
+     "latinName": "Zea mays",
+     "commonName": "Mais",
+     "commonNameEn": "Maize",
+     "heightM": 2.2,
+     "widthM": 0.4,
+     "habit": "herb",
+     "eatable": true,
+     "material": true,
+     "sunFull": true,
+     "waterMid": true,
+     "growSpeedHigh": true
+    },
+    {
+     "latinName": "Phaseolus vulgaris",
+     "commonName": "Stangenbohne",
+     "commonNameEn": "Climbing bean",
+     "heightM": 2.5,
+     "widthM": 0.3,
+     "habit": "climber",
+     "eatable": true,
+     "nitrogenFix": true,
+     "sunFull": true,
+     "waterMid": true,
+     "growSpeedHigh": true
+    },
+    {
+     "latinName": "Cucurbita pepo",
+     "commonName": "Gartenkürbis",
+     "commonNameEn": "Squash",
+     "heightM": 0.4,
+     "widthM": 2,
+     "habit": "herb",
+     "eatable": true,
+     "groundCover": true,
+     "sunFull": true,
+     "waterMid": true,
+     "growSpeedHigh": true
+    }
+   ],
+   "members": [
+    {
+     "latinName": "Phaseolus vulgaris",
+     "role": "nFixer",
+     "notes": "Klettert am Mais, bindet Stickstoff"
+    },
+    {
+     "latinName": "Cucurbita pepo",
+     "role": "groundCover",
+     "notes": "Große Blätter beschatten den Boden und halten Unkraut klein"
+    }
+   ]
+  },
+  {
+   "id": "walnuss-gilde",
+   "title": "Walnuss-Gilde",
+   "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Walnut_forest_in_Arslanbab.jpg?width=480",
+   "description": "Unter der Walnuss wächst vieles schlecht (Juglon). Diese Gilde setzt auf Pflanzen, die damit zurechtkommen: Holunder, Himbeere, Johannisbeere und Bärlauch im Halbschatten.",
+   "anchor": "Juglans regia",
+   "hidden": false,
+   "plants": [
+    {
+     "latinName": "Juglans regia",
+     "commonName": "Echte Walnuss",
+     "commonNameEn": "Walnut",
+     "heightM": 20,
+     "widthM": 15,
+     "habit": "tree",
+     "eatable": true,
+     "meds": true,
+     "material": true,
+     "sunFull": true,
+     "waterMid": true,
+     "growSpeedMid": true
+    },
+    {
+     "latinName": "Sambucus nigra",
+     "commonName": "Schwarzer Holunder",
+     "commonNameEn": "Elder",
+     "heightM": 5,
+     "widthM": 4,
+     "habit": "shrub",
+     "eatable": true,
+     "meds": true,
+     "insects": true,
+     "sunMid": true,
+     "sunShadow": true,
+     "waterMid": true,
+     "growSpeedHigh": true
+    },
+    {
+     "latinName": "Rubus idaeus",
+     "commonName": "Himbeere",
+     "commonNameEn": "Raspberry",
+     "heightM": 1.8,
+     "widthM": 1,
+     "habit": "shrub",
+     "eatable": true,
+     "insects": true,
+     "sunMid": true,
+     "waterMid": true
+    },
+    {
+     "latinName": "Ribes rubrum",
+     "commonName": "Rote Johannisbeere",
+     "commonNameEn": "Redcurrant",
+     "heightM": 1.5,
+     "widthM": 1.5,
+     "habit": "shrub",
+     "eatable": true,
+     "insects": true,
+     "sunMid": true,
+     "sunShadow": true,
+     "waterMid": true
+    },
+    {
+     "latinName": "Allium ursinum",
+     "commonName": "Bärlauch",
+     "commonNameEn": "Wild garlic",
+     "heightM": 0.3,
+     "widthM": 0.2,
+     "habit": "herb",
+     "eatable": true,
+     "culinaric": true,
+     "sunShadow": true,
+     "waterMid": true
+    }
+   ],
+   "members": [
+    {
+     "latinName": "Sambucus nigra",
+     "role": "fruitProducer",
+     "notes": "Verträgt Juglon, Blüten und Beeren nutzbar"
+    },
+    {
+     "latinName": "Rubus idaeus",
+     "role": "fruitProducer",
+     "notes": "Verträgt den Halbschatten"
+    },
+    {
+     "latinName": "Ribes rubrum",
+     "role": "fruitProducer",
+     "notes": "Verträgt Juglon, trägt auch im Schatten"
+    },
+    {
+     "latinName": "Allium ursinum",
+     "role": "groundCover",
+     "notes": "Frühjahrsgemüse unter dem noch kahlen Baum"
+    }
+   ]
+  },
+  {
+   "id": "beeren-hecke",
+   "title": "Beeren-Windschutzhecke",
+   "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Reife_Früchte_des_Sanddorn.JPG?width=480",
+   "description": "Eine essbare Hecke, die Wind bremst und Vögeln Nahrung bietet: Hasel als Rückgrat, Sanddorn bindet Stickstoff, dazu Kornelkirsche, Hagebutte und Holunder.",
+   "anchor": "Corylus avellana",
+   "hidden": false,
+   "plants": [
+    {
+     "latinName": "Corylus avellana",
+     "commonName": "Gemeine Hasel",
+     "commonNameEn": "Hazel",
+     "heightM": 5,
+     "widthM": 4,
+     "habit": "shrub",
+     "eatable": true,
+     "material": true,
+     "fuel": true,
+     "windBreaking": true,
+     "insects": true,
+     "sunMid": true,
+     "sunShadow": true,
+     "waterMid": true,
+     "growSpeedMid": true
+    },
+    {
+     "latinName": "Hippophae rhamnoides",
+     "commonName": "Sanddorn",
+     "commonNameEn": "Sea buckthorn",
+     "heightM": 4,
+     "widthM": 3,
+     "habit": "shrub",
+     "eatable": true,
+     "meds": true,
+     "nitrogenFix": true,
+     "windBreaking": true,
+     "sunFull": true,
+     "waterDry": true,
+     "growSpeedHigh": true
+    },
+    {
+     "latinName": "Cornus mas",
+     "commonName": "Kornelkirsche",
+     "commonNameEn": "Cornelian cherry",
+     "heightM": 5,
+     "widthM": 4,
+     "habit": "shrub",
+     "eatable": true,
+     "insects": true,
+     "windBreaking": true,
+     "sunMid": true,
+     "waterMid": true,
+     "growSpeedLow": true
+    },
+    {
+     "latinName": "Rosa canina",
+     "commonName": "Hundsrose",
+     "commonNameEn": "Dog rose",
+     "heightM": 3,
+     "widthM": 3,
+     "habit": "shrub",
+     "eatable": true,
+     "meds": true,
+     "insects": true,
+     "animalProtection": true,
+     "windBreaking": true,
+     "sunFull": true,
+     "sunMid": true,
+     "waterMid": true
+    },
+    {
+     "latinName": "Sambucus nigra",
+     "commonName": "Schwarzer Holunder",
+     "commonNameEn": "Elder",
+     "heightM": 5,
+     "widthM": 4,
+     "habit": "shrub",
+     "eatable": true,
+     "meds": true,
+     "insects": true,
+     "windBreaking": true,
+     "sunMid": true,
+     "sunShadow": true,
+     "waterMid": true,
+     "growSpeedHigh": true
+    }
+   ],
+   "members": [
+    {
+     "latinName": "Hippophae rhamnoides",
+     "role": "nFixer",
+     "notes": "Stickstoff für die Nachbarn; Beeren; sehr windfest"
+    },
+    {
+     "latinName": "Cornus mas",
+     "role": "fruitProducer",
+     "notes": "Blüht im Februar, wichtige erste Bienenweide"
+    },
+    {
+     "latinName": "Rosa canina",
+     "role": "insectary",
+     "notes": "Dornen als Schutz, Hagebutten"
+    },
+    {
+     "latinName": "Sambucus nigra",
+     "role": "fruitProducer",
+     "notes": "Schnellwüchsig, Blüten und Beeren"
+    }
+   ]
+  },
+  {
+   "id": "kraeuterspirale",
+   "title": "Kräuterspirale",
+   "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Kräuterspirale.JPG?width=480",
+   "description": "Auf kleinem Raum viele Kräuter nach ihrem Feuchtebedarf: oben trocken und sonnig (Rosmarin, Thymian, Salbei), unten feucht (Schnittlauch, Petersilie).",
+   "anchor": "Salvia officinalis",
+   "hidden": false,
+   "plants": [
+    {
+     "latinName": "Salvia officinalis",
+     "commonName": "Echter Salbei",
+     "commonNameEn": "Sage",
+     "heightM": 0.6,
+     "widthM": 0.6,
+     "habit": "shrub",
+     "culinaric": true,
+     "meds": true,
+     "insects": true,
+     "sunFull": true,
+     "waterDry": true,
+     "growSpeedMid": true
+    },
+    {
+     "latinName": "Rosmarinus officinalis",
+     "commonName": "Rosmarin",
+     "commonNameEn": "Rosemary",
+     "heightM": 1,
+     "widthM": 1,
+     "habit": "shrub",
+     "culinaric": true,
+     "meds": true,
+     "insects": true,
+     "sunFull": true,
+     "waterDry": true
+    },
+    {
+     "latinName": "Thymus vulgaris",
+     "commonName": "Echter Thymian",
+     "commonNameEn": "Thyme",
+     "heightM": 0.2,
+     "widthM": 0.3,
+     "habit": "herb",
+     "culinaric": true,
+     "meds": true,
+     "insects": true,
+     "groundCover": true,
+     "sunFull": true,
+     "waterDry": true
+    },
+    {
+     "latinName": "Origanum vulgare",
+     "commonName": "Oregano",
+     "commonNameEn": "Oregano",
+     "heightM": 0.5,
+     "widthM": 0.4,
+     "habit": "herb",
+     "culinaric": true,
+     "insects": true,
+     "sunFull": true,
+     "waterDry": true
+    },
+    {
+     "latinName": "Allium schoenoprasum",
+     "commonName": "Schnittlauch",
+     "commonNameEn": "Chives",
+     "heightM": 0.4,
+     "widthM": 0.3,
+     "habit": "herb",
+     "eatable": true,
+     "culinaric": true,
+     "pest": true,
+     "sunFull": true,
+     "waterMid": true
+    },
+    {
+     "latinName": "Petroselinum crispum",
+     "commonName": "Petersilie",
+     "commonNameEn": "Parsley",
+     "heightM": 0.4,
+     "widthM": 0.3,
+     "habit": "herb",
+     "eatable": true,
+     "culinaric": true,
+     "sunMid": true,
+     "waterMid": true
+    }
+   ],
+   "members": [
+    {
+     "latinName": "Rosmarinus officinalis",
+     "role": "companion",
+     "notes": "Oben, trocken und warm"
+    },
+    {
+     "latinName": "Thymus vulgaris",
+     "role": "groundCover",
+     "notes": "Oben, trocken"
+    },
+    {
+     "latinName": "Origanum vulgare",
+     "role": "insectary",
+     "notes": "Mitte, Insektenmagnet"
+    },
+    {
+     "latinName": "Allium schoenoprasum",
+     "role": "pestConfuser",
+     "notes": "Unten, feuchter"
+    },
+    {
+     "latinName": "Petroselinum crispum",
+     "role": "companion",
+     "notes": "Unten, feuchter und etwas Schatten"
+    }
+   ]
+  },
+  {
+   "id": "kirsch-gilde",
+   "title": "Kirschbaum-Gilde",
+   "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Vogelkirsche_Roscheiderhof_Baum_Früchte.jpg?width=480",
+   "description": "Kirschbaum mit Knoblauch (gegen Pilze und Läuse), Kapuzinerkresse als Läusefalle, Beinwell als Mulchlieferant und Schnittlauch in der Baumscheibe.",
+   "anchor": "Prunus avium",
+   "hidden": false,
+   "plants": [
+    {
+     "latinName": "Prunus avium",
+     "commonName": "Vogelkirsche",
+     "commonNameEn": "Wild cherry",
+     "heightM": 15,
+     "widthM": 10,
+     "habit": "tree",
+     "eatable": true,
+     "insects": true,
+     "material": true,
+     "sunFull": true,
+     "waterMid": true,
+     "growSpeedHigh": true
+    },
+    {
+     "latinName": "Allium sativum",
+     "commonName": "Knoblauch",
+     "commonNameEn": "Garlic",
+     "heightM": 0.5,
+     "widthM": 0.2,
+     "habit": "herb",
+     "eatable": true,
+     "culinaric": true,
+     "meds": true,
+     "pest": true,
+     "sunFull": true,
+     "waterMid": true
+    },
+    {
+     "latinName": "Tropaeolum majus",
+     "commonName": "Kapuzinerkresse",
+     "commonNameEn": "Nasturtium",
+     "heightM": 0.3,
+     "widthM": 1.5,
+     "habit": "herb",
+     "eatable": true,
+     "pest": true,
+     "groundCover": true,
+     "insects": true,
+     "sunFull": true,
+     "waterMid": true,
+     "growSpeedHigh": true
+    },
+    {
+     "latinName": "Symphytum officinale",
+     "commonName": "Echter Beinwell",
+     "commonNameEn": "Comfrey",
+     "heightM": 1,
+     "widthM": 1,
+     "habit": "herb",
+     "meds": true,
+     "mineralFix": true,
+     "insects": true,
+     "groundCover": true,
+     "sunMid": true,
+     "sunFull": true,
+     "waterMid": true,
+     "growSpeedHigh": true
+    },
+    {
+     "latinName": "Allium schoenoprasum",
+     "commonName": "Schnittlauch",
+     "commonNameEn": "Chives",
+     "heightM": 0.4,
+     "widthM": 0.3,
+     "habit": "herb",
+     "eatable": true,
+     "culinaric": true,
+     "pest": true,
+     "insects": true,
+     "sunFull": true,
+     "waterMid": true
+    }
+   ],
+   "members": [
+    {
+     "latinName": "Allium sativum",
+     "role": "pestConfuser",
+     "notes": "Duft hält Läuse und Pilze in Schach"
+    },
+    {
+     "latinName": "Tropaeolum majus",
+     "role": "pestConfuser",
+     "notes": "Läusefalle, essbare Blüten"
+    },
+    {
+     "latinName": "Symphytum officinale",
+     "role": "mineralFixer",
+     "notes": "Mulch und Mineralien"
+    },
+    {
+     "latinName": "Allium schoenoprasum",
+     "role": "pestConfuser",
+     "notes": "Ring in der Baumscheibe"
+    }
+   ]
+  }
+ ]
+}

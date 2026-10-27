@@ -73,6 +73,7 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
         </div>
         <ul id="invite-list" class="divide-y divide-stone-100 dark:divide-stone-700 rounded-xl bg-white dark:bg-stone-800 text-sm shadow-sm ring-1 ring-stone-200 dark:ring-stone-700"></ul>
       </section>
+      <section id="beispiele-admin" class="space-y-3 xl:col-span-3"></section>
     </div>
   </article>
 
@@ -372,6 +373,7 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
       renderRows();
       await loadUsers();
       await loadInvites();
+      void import('../lib/admin-beispiele').then(m => m.mountBeispieleAdmin(document.getElementById('beispiele-admin')!, lang === 'en' ? 'en' : 'de'));
     })();
   </script>
 </Layout>

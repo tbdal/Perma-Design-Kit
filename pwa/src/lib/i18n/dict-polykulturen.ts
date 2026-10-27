@@ -2,6 +2,15 @@ import type { Dict } from './core';
 
 export const polyculturesDict: Dict = {
   pageTitle: { de: 'Polykulturen', en: 'Polycultures' },
+  btnExamples: { de: 'Beispiele laden', en: 'Load examples' },
+  examplesTitle: { de: 'Beispiel-Polykulturen', en: 'Example polycultures' },
+  examplesIntro: { de: 'Suche dir eine aus: Sie wird mit ihren Pflanzen in deine Listen kopiert und lässt sich danach beliebig ändern.', en: 'Pick one: it is copied with its plants into your lists and can be changed freely afterwards.' },
+  examplesLoading: { de: 'Lade …', en: 'Loading …' },
+  examplesNone: { de: 'Gerade gibt es keine Beispiele.', en: 'There are no examples right now.' },
+  examplesFailed: { de: 'Die Beispiele konnten nicht geladen werden.', en: 'The examples could not be loaded.' },
+  examplesPlants: { de: '{n} Pflanzen', en: '{n} plants' },
+  examplesLoad: { de: 'Laden', en: 'Load' },
+  examplesLoaded: { de: '„{name}“ geladen ({n} neue Pflanzen)', en: '“{name}” loaded ({n} new plants)' },
   btnNewGuild: { de: '+ Neue Polykultur', en: '+ New polyculture' },
   fromGroupLabel: { de: 'Polykultur aus einer Pflanzengruppe anlegen', en: 'Create a polyculture from a plant group' },
   fromGroupPlaceholder: { de: 'Aus Gruppe anlegen…', en: 'Create from group…' },

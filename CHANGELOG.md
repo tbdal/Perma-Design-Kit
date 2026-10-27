@@ -4,6 +4,11 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Beispiel-Polykulturen 2026-10-27
+- [x] **Polykulturen → „Beispiele laden“:** Ein Menü mit Kacheln (Bild, Beschreibung, Zahl der Pflanzen) – sechs Beispiele: Apfelbaum-Gilde, Drei Schwestern, Walnuss-Gilde, Beeren-Windschutzhecke, Kräuterspirale, Kirschbaum-Gilde. „Laden“ legt die Polykultur und die Pflanzen an, die es in der eigenen Liste noch nicht gibt #major
+- [x] **Admins** verwalten die Beispiele auf /admin/: ein- und ausblenden, umbenennen, Reihenfolge, entfernen und neue aus einer Polykultur des eigenen Browsers hinzufügen (zunächst ausgeblendet) #minor
+- [x] **Waldgartenplan, Rechtsklick → Pflanze setzen:** Steht die Pflanze nicht in der Liste, lässt sie sich online suchen (Wikidata, PFAF füllen sie) oder nur mit dem Namen anlegen und wird gleich gesetzt #minor
+
 ## Karten- und Plandaten teilen sich den Zwischenspeicher 2026-10-27
 - [x] **Gebäude, Wald und Höhenmodell** werden pro Kartenfeld (≈ 1 km bzw. 50 m) statt pro Plan zwischengespeichert: Pläne in derselben Gegend nutzen dieselben gespeicherten Daten. Luftbild-Kacheln und Gelände waren schon projektunabhängig #minor
 - [x] **Dossier-Dateien** gehen beim Speichern eines Plans nicht mehr verloren (Grenze für Modul-Daten im Plan für das Dossier auf 8 MB angehoben); in Teilen-Links bleibt das Dossier draußen #bugs
