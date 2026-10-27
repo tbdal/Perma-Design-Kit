@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Seite „Unterstützen“ 2026-10-27
+- [x] **Unterstützen:** Neue Seite `/unterstuetzen`, im Fuß neben Impressum verlinkt („💚 Unterstützen“). Sie zeigt den Girocode und die Bankverbindung (Empfänger Jörn Müller, IBAN, Verwendungszweck „Unterstützung PermaDesignKit“, Betrag frei) und nennt Technik als Verwendung. Bewusst „Unterstützung“ statt „Spende“: keine Spendenquittung, keine Gegenleistung. Der Girocode wurde mit der IBAN abgeglichen. #minor #prüfen
+
 ## Newsletter-Link im Fuß 2026-10-27
 - [x] **Newsletter:** Im Fuß der Seite führt „Newsletter“ zum gehosteten Brevo-Anmeldeformular (Double-Opt-In, Liste von Jörn); die Datenschutzerklärung hat einen neuen Abschnitt „Newsletter (Brevo)“. Keine Änderung an der Content-Security-Policy nötig, da nur verlinkt wird. #minor #prüfen
 

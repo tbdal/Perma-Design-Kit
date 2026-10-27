@@ -1,0 +1,42 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="Perma Design Kit — Unterstützen">
+  <article class="mx-auto max-w-3xl space-y-6 text-stone-800 dark:text-stone-100">
+    <h1 class="text-2xl font-bold"><span aria-hidden="true">💚</span> <span data-i18n="suTitle">Das Perma Design Kit unterstützen</span></h1>
+    <p class="text-lg" data-i18n="suIntro">Das Perma Design Kit ist ein freies Werkzeug, das allen gehört: geschenkt und weitergegeben, nicht verkauft. Wenn es dir nützt und du etwas zurückgeben möchtest, freuen wir uns über deine Unterstützung.</p>
+    <p data-i18n="suUse">Das Geld deckt die Technik: Server, Domain und Hosting.</p>
+
+    <section class="space-y-4 rounded-2xl bg-green-50 dark:bg-green-900/30 p-5 ring-1 ring-green-200 dark:ring-green-800">
+      <h2 class="text-xl font-semibold"><span aria-hidden="true">🌱</span> <span data-i18n="suTransferTitle">Per Überweisung</span></h2>
+      <p class="text-sm" data-i18n="suScan">Scanne den Girocode mit deiner Banking-App oder überweise manuell. Das ist eine SEPA-Überweisung, ohne Gebühren und ohne Drittanbieter.</p>
+      <div class="flex flex-wrap items-start gap-6">
+        <img src="/girocode.png" width="200" height="200" alt="Girocode für die Unterstützung des PermaDesignKit" class="h-[200px] w-[200px] rounded-xl bg-white p-2 ring-1 ring-stone-200">
+        <dl class="grid min-w-0 grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
+          <dt class="font-semibold" data-i18n="suPayee">Empfänger</dt>
+          <dd>Jörn Müller</dd>
+          <dt class="font-semibold" data-i18n="suIban">IBAN</dt>
+          <dd><code class="select-all break-all font-mono text-base">DE28 4306 0967 1070 2858 01</code></dd>
+          <dt class="font-semibold" data-i18n="suPurpose">Verwendungszweck</dt>
+          <dd><code class="select-all font-mono">Unterstützung PermaDesignKit</code></dd>
+          <dt class="font-semibold" data-i18n="suAmount">Betrag</dt>
+          <dd data-i18n="suAmountValue">frei wählbar</dd>
+        </dl>
+      </div>
+      <p class="text-sm text-stone-600 dark:text-stone-300" data-i18n="suNote">Wichtig: Das ist eine Unterstützung, keine Spende. Es gibt keine Spendenquittung, und es gibt keine Gegenleistung.</p>
+    </section>
+
+    <section class="space-y-2">
+      <h2 class="text-xl font-semibold" data-i18n="suOtherTitle">Es muss nicht Geld sein</h2>
+      <p data-i18n="suOtherBody">Wissen, Pflanzendaten, Übersetzungen, geteilte Pläne und gute Vorbilder helfen dem Projekt genauso. Sag es weiter, ergänze Pflanzen oder melde, was nicht stimmt.</p>
+      <p><a href="/fehler-melden/" data-i18n="suReport" class="text-green-700 dark:text-green-400 underline underline-offset-2 hover:no-underline">Fehler melden</a></p>
+    </section>
+
+    <p class="font-semibold"><span aria-hidden="true">💚</span> <span data-i18n="suThanks">Danke, dass du dabei bist.</span></p>
+  </article>
+  <script>
+    import { applyStaticI18n } from '../lib/i18n/core';
+    import { unterstuetzenDict } from '../lib/i18n/dict-unterstuetzen';
+    applyStaticI18n(unterstuetzenDict);
+  </script>
+</Layout>

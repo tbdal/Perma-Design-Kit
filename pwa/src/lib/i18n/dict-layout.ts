@@ -50,6 +50,7 @@ export const layoutDict: Dict = {
 
   footerHelp: { de: 'Hilfe', en: 'Help' },
   footerNewsletter: { de: 'Newsletter', en: 'Newsletter' },
+  footerSupport: { de: 'Unterstützen', en: 'Support' },
   footerPrivacy: { de: 'Datenschutz', en: 'Privacy' },
   footerImprint: { de: 'Impressum', en: 'Imprint' },
 
