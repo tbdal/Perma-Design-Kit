@@ -5,7 +5,7 @@
 // (b) each page walking its own DOM for [data-i18n*] attributes on load.
 //
 // Static markup: give an element data-i18n="key" (textContent), or
-// data-i18n-title / data-i18n-placeholder / data-i18n-aria-label (that
+// data-i18n-title / data-i18n-placeholder / data-i18n-alt / data-i18n-aria-label (that
 // attribute) and call applyStaticI18n(...dicts) once on page load.
 //
 // Dynamic/JS-rendered markup (template strings built in a render function):
@@ -79,6 +79,10 @@ export function applyStaticI18n(...dicts: Dict[]): void {
   document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[data-i18n-placeholder]').forEach(el => {
     const key = el.dataset.i18nPlaceholder;
     if (key && merged[key]) el.placeholder = merged[key][lang];
+  });
+  document.querySelectorAll<HTMLElement>('[data-i18n-alt]').forEach(el => {
+    const key = el.dataset.i18nAlt;
+    if (key && merged[key]) el.setAttribute('alt', merged[key][lang]);
   });
   document.querySelectorAll<HTMLElement>('[data-i18n-aria-label]').forEach(el => {
     const key = el.dataset.i18nAriaLabel;

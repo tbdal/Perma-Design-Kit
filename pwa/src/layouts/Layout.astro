@@ -241,24 +241,64 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
     </footer>
 
     <!-- Willkommens-Tour beim ersten Besuch (erklärt u.a. das lokale Speichern im Browser) -->
-    <dialog id="welcome-modal" class="m-auto w-full max-w-lg rounded-2xl bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-100 p-0 shadow-2xl backdrop:bg-black/50">
-      <div class="p-6">
-        <div class="mb-3 flex items-center justify-between">
-          <h2 class="text-lg font-bold" id="welcome-title" data-i18n="welcomeTitle">Willkommen im Perma Design Kit</h2>
-          <button id="welcome-close" type="button" data-i18n-aria-label="closeBtn" aria-label="Schließen" class="text-2xl leading-none text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200">×</button>
+    <dialog id="welcome-modal" aria-labelledby="welcome-title">
+      <button id="welcome-close" type="button" data-i18n-aria-label="closeBtn" aria-label="Schließen" class="w-close">×</button>
+      <div class="w-body">
+        <div class="w-sky"><div class="w-wordmark" aria-label="Perma Design Kit">PERMA<br>DESIGN<br>KIT</div></div>
+        <div class="w-content">
+          <header class="w-welcome">
+            <h2 id="welcome-title" data-i18n="welcomeTitle">Willkommen im Perma Design Kit</h2>
+            <p data-i18n="welcomeIntro">Ein Werkzeug, mit dem Menschen Polykulturen und Waldgärten planen: nach den Funktionen, dem Nutzen und dem Standort der Pflanzen.</p>
+          </header>
+
+          <section class="w-pics">
+            <figure>
+              <img src="/einfuehrung-baumscheiben.jpg" width="1000" height="900" loading="lazy" decoding="async" alt="Baumscheiben aus Papier, ausgelegt auf einem mit Klebeband markierten Gartenplan auf Holzdielen" data-i18n-alt="welcomeAlt1">
+              <figcaption data-i18n="welcomeCap1">Baumscheiben auf einem ausgelegten Gartenplan. Jede Scheibe ist eine Pflanze mit ihren Eigenschaften.</figcaption>
+            </figure>
+            <figure>
+              <img src="/einfuehrung-3d.jpg" width="984" height="656" loading="lazy" decoding="async" alt="Waldgartenplan in der 3D-Ansicht: eine Reihe Bäume auf einer gezeichneten Fläche im Gelände" data-i18n-alt="welcomeAlt2">
+              <figcaption data-i18n="welcomeCap2">Der Waldgartenplan in 3D: Fläche zeichnen, Pflanzen setzen, den Garten über die Jahre wachsen sehen.</figcaption>
+            </figure>
+          </section>
+
+          <section class="w-vision">
+            <p class="w-lead" data-i18n="welcomeLead">Wir möchten Teil eines Kulturwandels sein: Hin zu einer Schenkökonomie und einem fürsorglichen Umgang mit Natur.</p>
+            <div>
+              <p data-i18n="welcomeTool1">Das Kit begleitet dich vom Pflanzensteckbrief über den Waldgartenplan bis zur Pflanzung draußen, am Schreibtisch, im Feld und in Gruppen, Vereinen und Gemeinden.</p>
+              <p data-i18n="welcomeTool2">Es ist ein freies Werkzeug, das allen gehört: geschenkt und weitergegeben, nicht verkauft.</p>
+            </div>
+            <p class="w-support"><span aria-hidden="true">💚</span> <span data-i18n="welcomeSupport">Möchtest du uns unterstützen?</span> <a id="welcome-support" href="/unterstuetzen" data-i18n="welcomeSupportLink">Zur Seite „Unterstützen“</a></p>
+          </section>
+
+          <section class="w-steps">
+            <div class="w-step">
+              <h3 data-i18n="navPlants">Pflanzen</h3>
+              <p data-i18n="welcomeStepPlants">Lerne Pflanzen kennen: Steckbriefe mit Ökologie, Nutzen und Standortansprüchen. Zu jeder Angabe steht, woher sie stammt.</p>
+            </div>
+            <div class="w-step">
+              <h3 data-i18n="navGuilds">Polykulturen</h3>
+              <p data-i18n="welcomeStepGuilds">Stelle Pflanzen nach ihren Funktionen zusammen und drucke sie als Karten oder Baumscheiben aus.</p>
+            </div>
+            <div class="w-step">
+              <h3 data-i18n="navGardenPlan">Waldgartenplan</h3>
+              <p data-i18n="welcomeStepPlan">Plane deinen Garten: Zeichne die Fläche auf der Karte, setze Pflanzen und sieh mit dem Regler, wie der Garten in Jahren aussieht.</p>
+            </div>
+            <div class="w-step">
+              <h3 data-i18n="navCalendar">Kalender</h3>
+              <p data-i18n="welcomeStepCalendar">Behalte das Gartenjahr im Blick: Lege fest, wann du aussäst, pflanzt, pflegst und erntest.</p>
+            </div>
+          </section>
         </div>
-        <div class="welcome-step space-y-2 text-sm text-stone-600 dark:text-stone-300">
-          <p class="font-semibold text-stone-900 dark:text-stone-100" data-i18n="welcomeStorageHead">💾 Deine Daten bleiben in deinem Browser</p>
-          <p data-i18n="welcomeStorage1">Es gibt kein Benutzerkonto und keinen Server, der deine Pflanzen oder Waldgartenpläne speichert. Alles wird dauerhaft im Speicher dieses Browsers auf diesem Gerät abgelegt (IndexedDB).</p>
-          <p data-i18n="welcomeStorage2">Das bedeutet: Es ist privat und funktioniert offline — aber die Daten sind nicht auf anderen Geräten oder in anderen Browsern verfügbar. Wenn du die Website-Daten löschst (Browser zurücksetzen, „Cookies &amp; Websitedaten löschen", Privatmodus), sind sie weg.</p>
-          <p data-i18n="welcomeStorage3">Lege deshalb regelmäßig ein Backup an (Einstellungen → Daten) oder richte die automatische Sicherung per WebDAV / GitHub Gist ein.</p>
+      </div>
+
+      <div class="w-foot">
+        <div class="w-cta">
+          <button id="welcome-next" type="button" autofocus class="w-btn w-primary" data-i18n="welcomeStartTour">Rundgang starten</button>
+          <a id="welcome-example" href="/beispiel" class="w-btn w-ghost" data-i18n="welcomeExample">Beispielprojekt ansehen</a>
+          <button id="welcome-skip" type="button" class="w-btn w-quiet" data-i18n="tourSkip">Überspringen</button>
         </div>
-        <div class="mt-5 flex items-center justify-between">
-          <button id="welcome-skip" type="button" data-i18n="tourSkip" class="rounded-lg px-3 py-1.5 text-sm text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800">Überspringen</button>
-          <div class="flex gap-2">
-            <button id="welcome-next" type="button" data-i18n="welcomeStartTour" class="rounded-lg bg-green-700 px-4 py-1.5 text-sm font-medium text-white hover:bg-green-800">Rundgang starten</button>
-          </div>
-        </div>
+        <p class="w-privacy"><strong data-i18n="welcomePrivacyHead">Deine Daten bleiben in deinem Browser.</strong> <span data-i18n="welcomePrivacyBody">Es gibt kein Konto und keinen Server, der deine Pflanzen oder Pläne speichert. Lege regelmäßig ein Backup an (Einstellungen, Daten).</span></p>
       </div>
     </dialog>
 
@@ -462,6 +502,7 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
         document.getElementById('welcome-next')?.addEventListener('click', startTour);
         document.getElementById('welcome-skip')?.addEventListener('click', () => { markSeen(); modal.close(); });
         document.getElementById('welcome-close')?.addEventListener('click', () => { markSeen(); modal.close(); });
+        for (const id of ['welcome-example', 'welcome-support']) document.getElementById(id)?.addEventListener('click', markSeen);
         modal.addEventListener('cancel', markSeen);
         const open = () => { if (!modal.open) modal.showModal(); };
         document.getElementById('open-welcome')?.addEventListener('click', open);

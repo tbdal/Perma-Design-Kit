@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Neue Einführung als Willkommens-Popup 2026-10-27
+- [x] **Einführung:** Beim ersten Besuch (und über „Einführung“ im Fuß) erscheint ein Popup auf zwei Dritteln der Seitenbreite über der abgedunkelten Seite: Himmel mit Baumlinie und Wortmarke, „Willkommen im Perma Design Kit“, Baumscheiben-Foto und 3D-Ansicht des Waldgartenplans, Leitgedanke aus dem Visions-Doc, Hinweis „Möchtest du uns unterstützen?“ (Link auf `/unterstuetzen`), die vier Bereiche (Pflanzen, Polykulturen, Waldgartenplan, Kalender) und unten immer sichtbar „Rundgang starten“, „Beispielprojekt ansehen“, „Überspringen“ plus der Hinweis zum lokalen Speichern. Deutsch und Englisch, hell und dunkel, in beiden Designs gleich. #minor #prüfen
+
 ## BIC auf der Seite „Unterstützen“ 2026-10-27
 - [x] **BIC:** Die Seite „Unterstützen“ nennt jetzt auch die BIC (GENODEM1GLS); der Girocode wurde neu erzeugt und enthält die BIC, mit dem Text abgeglichen. #minor #prüfen
 
