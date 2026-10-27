@@ -80,7 +80,7 @@ export const settingsDict: Dict = {
   stoEntries: { de: 'Einträge', en: 'entries' },
   stoAerial: { de: 'Luftbilder pro Land (geschätzt)', en: 'Aerial photos per country (estimate)' },
   stoTiles: { de: 'Kacheln', en: 'tiles' },
-  stoAerialNote: { de: 'Luftbilder liegen im Zwischenspeicher des Browsers; dessen Gesamtgröße lässt sich nicht auslesen – gezeigt ist die Summe der online geladenen Kacheln (Näherung; der Browser kann älteres selbst löschen).', en: 'Aerial photos sit in the browser’s own cache, whose total size cannot be read – shown is the sum of tiles loaded online (an estimate; the browser may drop older ones itself).' },
+  stoAerialNote: { de: 'Luftbilder liegen im Zwischenspeicher des Browsers und sind in der Gesamtzahl „Speicherverbrauch“ oben nicht enthalten; dessen Größe lässt sich nicht auslesen. Gezeigt ist die Summe der online geladenen Kacheln (Näherung; der Browser kann älteres selbst löschen).', en: 'Aerial photos sit in the browser’s own cache and are not part of the “Storage used” total above; its size cannot be read. Shown is the sum of tiles loaded online (an estimate; the browser may drop older ones itself).' },
   statLabelStorage: { de: 'Speicherverbrauch', en: 'Storage used' },
   btnBackupDownload: { de: 'Backup herunterladen (JSON)', en: 'Download backup (JSON)' },
   btnShareBackup: { de: 'Backup teilen…', en: 'Share backup…' },
