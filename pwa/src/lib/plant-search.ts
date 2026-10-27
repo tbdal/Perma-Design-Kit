@@ -30,7 +30,7 @@ function searchDB(db: DBEntry[], query: string): SearchResult[] {
     .map(p => ({
       latinName: p.latinName,
       commonName: p.commonName || p.latinName,
-      description: getLang() === 'en' ? 'Local database' : 'Lokale Datenbank',
+      description: getLang() === 'en' ? 'Built-in plant database (offline, no lookup needed)' : 'Mitgelieferte Pflanzendatenbank der App (offline, ohne Abruf)',
     }));
 }
 

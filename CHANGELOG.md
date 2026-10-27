@@ -4,6 +4,14 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Pflanzentabelle, Bearbeiten, Zeichnen 2026-10-27
+- [x] **Pflanzentabelle:** neue Spalte „Bewertung“ (Ess/Med/Mat 0–5, sortierbar); Gruppen direkt in der Tabelle bearbeiten (Klick in die Zelle); mehrere gewählte Pflanzen mit „Zu Gruppe“ in eine Gruppe legen; die Sortierauswahl steht auch über der Tabelle #minor
+- [x] **Pflanze bearbeiten:** speichert automatisch kurz nach der letzten Änderung (Hinweis „automatisch gespeichert“); der Knopf heißt dann „Schließen“ #minor
+- [x] **Suche:** „Lokale Datenbank“ heißt jetzt „Mitgelieferte Pflanzendatenbank der App (offline, ohne Abruf)“ #minor
+- [x] **Fläche zeichnen und Messen:** die Linie vom letzten Punkt zum Mauszeiger wird live gezeigt, beim Messen mit Abstand #minor
+- [x] **Waldgartenplan:** Logo und Menü beginnen an der linken Kante der Karte; „Perma Design Kit“ wird nicht mehr zusammengequetscht #bugs
+- [x] **3D-Kompass:** Klick auf den Kompass kippte die Ansicht seitlich (Kamera-„oben“ blieb waagerecht) – behoben #bugs
+
 ## Fehlerhinweis, Kachelansicht, Kopfzeile, Debug-Datei 2026-10-27
 - [x] **„Etwas ist schiefgelaufen“** nennt jetzt die Fehlermeldung (Klick: Fundstelle); harmlose Browser-Hinweise lösen ihn nicht mehr aus #bugs
 - [x] **Kopfzeile (Standard-Design):** „Perma Design Kit“ bricht nicht mehr in drei Zeilen um und ragt nicht mehr in die Menüzeile #bugs

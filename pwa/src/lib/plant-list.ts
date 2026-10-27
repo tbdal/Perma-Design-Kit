@@ -72,7 +72,7 @@ export function allGroups(plants: PlantData[]): string[] {
 
 export type SortField =
   | 'commonName' | 'latinName' | 'heightM' | 'widthM' | 'completeness'
-  | 'growSpeed' | 'layer' | 'flowerMonth' | 'fruitMonth' | 'groups' | 'createdAt';
+  | 'growSpeed' | 'layer' | 'flowerMonth' | 'fruitMonth' | 'groups' | 'createdAt' | 'rating';
 
 /** Slow=1 / Mid=2 / High=3; unset sorts last. */
 function growSpeedRank(p: PlantData): number {
@@ -91,9 +91,14 @@ function earliestMonth(months: boolean[] | undefined): number {
 }
 
 /** Numbers and strings compared uniformly; missing values sort last. */
+/** Usefulness rating of a plant: eating + medicine + material scores (each 0–5). */
+export const ratingTotal = (p: PlantData): number => (p.eatableScore || 0) + (p.medsScore || 0) + (p.materialScore || 0);
+
 function sortKey(p: PlantData, field: SortField): string | number {
   switch (field) {
     case 'completeness': return completenessPercent(p);
+    // Best rated first in "asc"; plants without any rating last.
+    case 'rating': { const n = ratingTotal(p); return n ? -n : Infinity; }
     case 'heightM': return p.heightM ?? Infinity;
     case 'widthM': return p.widthM ?? Infinity;
     case 'growSpeed': return growSpeedRank(p);

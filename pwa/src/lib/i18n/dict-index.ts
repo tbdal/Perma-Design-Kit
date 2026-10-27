@@ -13,6 +13,10 @@ export const indexDict: Dict = {
 
   // ── View toggle + heading ────────────────────────────────────────────
   viewLabel: { de: 'Ansicht', en: 'View' },
+  thRating: { de: 'Bewertung', en: 'Rating' },
+  rateEat: { de: 'Ess', en: 'Eat' }, rateEatTitle: { de: 'Wert als Nahrungspflanze (0–5)', en: 'Value as food plant (0–5)' },
+  rateMed: { de: 'Med', en: 'Med' }, rateMedTitle: { de: 'Wert als Heilpflanze (0–5)', en: 'Value as medicinal plant (0–5)' },
+  rateMat: { de: 'Mat', en: 'Mat' }, rateMatTitle: { de: 'Wert als Materialpflanze (0–5)', en: 'Value as material plant (0–5)' },
   viewGridTitle: { de: 'Kachelansicht', en: 'Tile view' },
   viewListTitle: { de: 'Listenansicht', en: 'List view' },
   viewCardsTitle: { de: 'Kartenansicht', en: 'Card view' },
@@ -107,6 +111,10 @@ export const indexDict: Dict = {
   bulkEnrich: { de: 'Ergänzen', en: 'Enrich' },
   bulkDelete: { de: 'Löschen', en: 'Delete' },
   bulkJson: { de: 'JSON', en: 'JSON' },
+  bulkGroup: { de: 'Zu Gruppe', en: 'To group' },
+  bulkGroupAsk: { de: '{n} Pflanzen in welche Gruppe? (neuer oder vorhandener Name)', en: 'Put {n} plants into which group? (new or existing name)' },
+  bulkGroupExisting: { de: 'Vorhanden', en: 'Existing' },
+  groupEditHint: { de: 'Klicken, um die Gruppen zu bearbeiten (durch Komma getrennt)', en: 'Click to edit the groups (comma separated)' },
   bulkCsv: { de: 'CSV', en: 'CSV' },
   bulkPdf: { de: 'PDF', en: 'PDF' },
   bulkEnrichProgress: { de: 'Ergänzen {done}/{total}…', en: 'Enriching {done}/{total}…' },
@@ -231,7 +239,10 @@ export const indexDict: Dict = {
   monthNov: { de: 'Nov', en: 'Nov' },
   monthDec: { de: 'Dez', en: 'Dec' },
 
+  autosaved: { de: '✓ automatisch gespeichert', en: '✓ saved automatically' },
+  autosaveFailed: { de: 'Speichern fehlgeschlagen', en: 'Saving failed' },
   btnCancel: { de: 'Abbrechen', en: 'Cancel' },
+  btnCloseEditor: { de: 'Schließen', en: 'Close' },
   btnSave: { de: 'Speichern', en: 'Save' },
 
   // ── Alerts / confirms ────────────────────────────────────────────────

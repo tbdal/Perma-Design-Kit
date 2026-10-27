@@ -956,7 +956,10 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
   compass.addEventListener('click', () => {
     // The camera moves round the target on its circle (same height, same distance) to the south of it, looking north.
     const t = controls.target, c0 = camera.position.clone();
-    const dist = Math.hypot(c0.x - t.x, c0.z - t.z) || Math.hypot(c0.y - t.y, 1);
+    // Straight above the target the circle has no size: a hair south of it makes "up" on screen north without touching camera.up
+    // (a sideways up vector rolled the whole view by 90° as soon as the person moved it).
+    const dist = Math.max(Math.hypot(c0.x - t.x, c0.z - t.z), 0.002 * Math.max(1, Math.abs(c0.y - t.y)));
+    camera.up.set(0, 1, 0);
     const to = new THREE.Vector3(t.x - northV.x * dist, c0.y, t.z - northV.z * dist);
     const a0 = Math.atan2(c0.z - t.z, c0.x - t.x);
     let da = Math.atan2(to.z - t.z, to.x - t.x) - a0;
@@ -970,7 +973,6 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
       if (k >= 1) finished = true;
       const a = a0 + da * e;
       camera.position.set(t.x + Math.cos(a) * dist, c0.y, t.z + Math.sin(a) * dist);
-      if (dist < 1e-3) camera.up.set(-northV.x, 0, -northV.z);       // straight above: "up" on screen is north
       controls.update();
       requestRender();
       if (k < 1) northAnim = requestAnimationFrame(step);
