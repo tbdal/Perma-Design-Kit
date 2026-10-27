@@ -6,7 +6,7 @@ FSL-1.1-MIT
 
 ## Notice
 
-Copyright 2026 Andreas Linder and Jörn Müller
+Copyright 2026 Andreas Linder, Jörn Müller and Jens Steger
 
 ## Terms and Conditions
 

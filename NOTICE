@@ -1,10 +1,11 @@
 Perma Design Kit
-Copyright 2026 Andreas Linder and Jörn Müller
+Copyright 2026 Andreas Linder, Jörn Müller and Jens Steger
 
 AUTHORS
 
   Andreas Linder        https://github.com/tbdal
   Jörn Müller           https://github.com/permagruen, https://www.permagruen.de
+  Jens Steger           https://github.com/js32
 
 BASED ON
 
@@ -12,6 +13,7 @@ BASED ON
     https://github.com/SZzip/PermacultureTreeGuildsDesigner
   Perma-Guild-Forge by Jens Steger
     https://github.com/js32/Perma-Guild-Forge
+    (also FSL-1.1-MIT since 2026-10-04)
 
 LICENSING
 
@@ -30,8 +32,9 @@ LICENSING
 
    All versions published before `fsl-start` were released under the MIT
    license and remain available under it. Parts of the current code are
-   derived from those versions and from the upstream projects above; the
-   original MIT notice is retained below as that license requires.
+   derived from those versions and from the upstream projects above. Jens
+   Steger agreed that his contributions are published under FSL-1.1-MIT;
+   the original MIT notice is retained below as that license requires.
 
    ------------------------------------------------------------------------
    MIT License

@@ -1,7 +1,7 @@
 {
   "name": "pwa",
   "type": "module",
-  "version": "0.0.1",
+  "version": "2026.10.0",
   "license": "FSL-1.1-MIT",
   "engines": {
     "node": ">=22.12.0"
