@@ -4,6 +4,10 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Anmeldung auf neuem Gerät 2026-10-27
+- [x] **Bestehendes Konto auf neuem Gerät:** Nach der Anmeldung wird die Ansicht des Kontos (Team bzw. Experte) gleich eingestellt und der Einführungs-Rundgang nicht mehr gezeigt #minor
+- [x] **Backup-Hinweis:** Ist das Speichern auf dem Server an, erscheint der Hinweis „Letztes Backup ist eine Weile her“ nach dem ersten Wegklicken nicht mehr #minor
+
 ## Einstellungen: Speicher aufgeschlüsselt 2026-10-27
 - [x] **Einstellungen → Daten → „Wofür geht der Speicher drauf?“:** Pflanzen/Pläne, App-Dateien, externe Daten getrennt nach Gelände, amtlichem Höhenmodell, Klima, OpenStreetMap und Wald, dazu Luftbilder pro Land (Näherung: Summe der online geladenen Kacheln, da der Browser-Zwischenspeicher selbst nicht auslesbar ist) #minor
 

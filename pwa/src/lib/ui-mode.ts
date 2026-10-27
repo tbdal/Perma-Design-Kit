@@ -156,6 +156,18 @@ export async function login(name: string, password: string): Promise<LoginResult
   }
 }
 
+/** After signing in (also an existing account on a new device): the account's own mode right away
+ *  (team for team/admin, else expert) unless an account mode is already chosen, and no first-visit tour.
+ *  Returns whether the mode was changed. */
+export function adoptAccountMode(role: string): boolean {
+  try {
+    localStorage.setItem('pdk-welcome-seen', '1');
+    if (['expert', 'team'].includes(localStorage.getItem('pdk-mode') ?? '')) return false;
+    localStorage.setItem('pdk-mode', role === 'team' || role === 'admin' ? 'team' : 'expert');
+    return true;
+  } catch { return false; }
+}
+
 /** Logs out, drops private code from the offline cache and leaves expert mode. */
 export async function logout(): Promise<void> {
   try { await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' }); } catch { /* offline: cookie stays until it expires */ }

@@ -49,7 +49,7 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
   <script>
     import { applyStaticI18n, createT } from '../lib/i18n/core';
     import { accessDict } from '../lib/i18n/dict-access';
-    import { getAuth, login, logout, refreshAuth, setMode } from '../lib/ui-mode';
+    import { getAuth, login, logout, refreshAuth, setMode, adoptAccountMode } from '../lib/ui-mode';
 
     applyStaticI18n(accessDict);
     const t = createT(accessDict);
@@ -92,6 +92,7 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
         error.textContent = t(res.reason === 'credentials' ? 'acErrCredentials' : res.reason === 'rate' ? 'acErrRate' : 'acErrServer');
         return;
       }
+      const adopted = adoptAccountMode(res.auth.role);
       const wanted = params.get('mode');
       if (wanted === 'expert' || wanted === 'team') {
         // effectiveMode() falls back to expert if this account may not use team mode.
@@ -99,6 +100,7 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
         location.href = next;
         return;
       }
+      if (adopted) { location.href = next; return; } // new device: straight into the account's mode
       showDone();
     });
     document.getElementById('btn-to-expert')!.addEventListener('click', () => {
@@ -124,7 +126,7 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
           const who = await res.json() as { role?: string };
           await refreshAuth();
           // same as an invitation: the account's mode right away (a team account may use expert mode too)
-          try { if (!['expert', 'team'].includes(localStorage.getItem('pdk-mode') ?? '')) localStorage.setItem('pdk-mode', who.role === 'team' || who.role === 'admin' ? 'team' : 'expert'); } catch { /* ignore */ }
+          adoptAccountMode(who.role ?? '');
           location.href = next;
           return;
         }
@@ -166,7 +168,7 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
           history.replaceState(null, '', location.pathname); // the token is spent: out of the address bar
           await refreshAuth();
           // The invited role's mode is switched on right away (the team may use expert mode too).
-          try { localStorage.setItem('pdk-mode', inviteRole); } catch { /* ignore */ }
+          try { localStorage.setItem('pdk-mode', inviteRole); localStorage.setItem('pdk-welcome-seen', '1'); } catch { /* ignore */ }
           location.href = next;
           return;
         }

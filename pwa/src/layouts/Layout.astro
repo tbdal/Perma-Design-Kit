@@ -791,6 +791,8 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
 
         const todayKey = new Date().toISOString().slice(0, 10);
         if (lsGet2('backup-reminder-dismissed-on') === todayKey) return;
+        // Server storage on (Team): once dismissed, the hint stays away for good — the server holds the backup.
+        if (lsGet2('speicher-auto') === '1' && lsGet2('backup-reminder-dismissed-on')) return;
 
         // Check IndexedDB plant count without importing — just open the existing DB.
         const hasPlants = await new Promise<boolean>(resolve => {
