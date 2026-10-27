@@ -82,6 +82,26 @@ async function pipe(bytes: Uint8Array, stream: CompressionStream | Decompression
   return new Uint8Array(await out.arrayBuffer());
 }
 
+/** Decoded size cap: a tiny deflate link can otherwise expand to gigabytes (deflate bomb). */
+export const MAX_SHARE_BYTES = 50 * 1024 * 1024;
+
+async function inflateCapped(bytes: Uint8Array): Promise<Uint8Array> {
+  const reader = new Blob([bytes as BlobPart]).stream().pipeThrough(new DecompressionStream('deflate-raw')).getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.length;
+    if (total > MAX_SHARE_BYTES) { await reader.cancel(); throw new Error('Share link too large'); }
+    chunks.push(value);
+  }
+  const out = new Uint8Array(total);
+  let at = 0;
+  for (const c of chunks) { out.set(c, at); at += c.length; }
+  return out;
+}
+
 export async function encodeShare(c: ShareContent, o: ShareOptions): Promise<string> {
   const json = new TextEncoder().encode(sharePayload(c, o));
   return toBase64Url(await pipe(json, new CompressionStream('deflate-raw')));
@@ -102,7 +122,7 @@ export function shareExtras(json: string, planIds: Set<string>): Pick<ShareConte
 
 /** Throws on a damaged or truncated link. */
 export async function decodeShare(data: string): Promise<DecodedShare> {
-  const bytes = await pipe(fromBase64Url(data), new DecompressionStream('deflate-raw'));
+  const bytes = await inflateCapped(fromBase64Url(data));
   const json = new TextDecoder().decode(bytes);
   const backup = parseBackup(json);
   return { ...backup, ...shareExtras(json, new Set(backup.gardenPlans.map(g => g.id))) };

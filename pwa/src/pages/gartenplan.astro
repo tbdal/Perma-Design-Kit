@@ -554,6 +554,8 @@ import Layout from '../layouts/Layout.astro';
   #plan-wrap:has(#gps-box:not([hidden])) #plan-scale{bottom:7.5rem}
   html.pdk-feld #plan-scale{display:none!important}
   #plan-loading:not([hidden]){display:flex}
+  html:not(.pdk-feld) #plan-wrap #plan-loading, #plan-wrap #plan-scale { bottom: calc(0.75rem + var(--attrib-h, 0px)); }
+  #plan-wrap #tile-progress { bottom: calc(3.1rem + var(--attrib-h, 0px)); }
   html.pdk-feld #plan-loading{bottom:auto;top:76px;right:12px}
 </style>
 
@@ -1234,8 +1236,8 @@ import Layout from '../layouts/Layout.astro';
         st = { total: imgs.length, loading: imgs.length - n('ok') - n('failed'), sharp: 0, coarse: 0, failed: n('failed'), belowWanted: 0 };
       }
       const text = !st || !st.total ? ''
-        : st.loading ? t('tilesLoading', { done: st.total - st.loading, total: st.total })
-        : st.failed ? t('tilesFailed', { n: st.failed })
+        : st.loading ? t(editing?.geo?.basemap === 'osm' ? 'tilesLoadingMap' : 'tilesLoading', { done: st.total - st.loading, total: st.total })
+        : st.failed ? t(editing?.geo?.basemap === 'osm' ? 'tilesFailedMap' : 'tilesFailed', { n: st.failed })
         : '';
       tileProgress.textContent = text;
       tileProgress.hidden = !text;
@@ -1311,6 +1313,8 @@ import Layout from '../layouts/Layout.astro';
     const climAttr = isPlan && siteClimate && siteClimateKey === climateKeyOf(editing) ? CLIMATE_ATTRIBUTION : '';
     attrib.innerHTML = [basemapAttribution(editing), fbAttr, bAttr, terrainAttr, climAttr].filter(Boolean).join(' · ');
     attrib.classList.toggle('hidden', !attrib.innerHTML);
+    // The credit line sits at the bottom: loading status, scale bar and tile status stay above it (see --attrib-h in the CSS).
+    svg.parentElement!.style.setProperty('--attrib-h', attrib.innerHTML ? `${attrib.offsetHeight}px` : '0px');
   }
 
   function refreshBasemaps() {
@@ -2964,7 +2968,9 @@ import Layout from '../layouts/Layout.astro';
     const g = planSvg.querySelector('#area-draft');
     if (!g) return;
     if (!areaDraft || !editing) { g.innerHTML = ''; return; }
-    const u = SVG_UNITS_PER_METER, k = viewK();
+    // Sizes in screen pixels (viewK() only assumes a ~700 px canvas, so on a wide screen the draft got far too big when zoomed in).
+    const u = SVG_UNITS_PER_METER, canvasPx = planSvg.getBoundingClientRect().width;
+    const k = planView.w && canvasPx > 0 ? planView.w / canvasPx : viewK();
     const color = AREA_PALETTE[editing.areas.length % AREA_PALETTE.length];
     const pts = areaDraft.map(p => `${p.xM * u},${p.yM * u}`).join(' ');
     g.innerHTML = `

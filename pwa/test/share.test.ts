@@ -48,6 +48,13 @@ describe('share encode/decode', () => {
     expect(json.plants[0]).not.toHaveProperty('fruitMonths');
   });
 
+  it('rejects a deflate bomb instead of inflating it', async () => {
+    const zeros = new Blob([new Uint8Array(60 * 1024 * 1024)]).stream().pipeThrough(new CompressionStream('deflate-raw'));
+    const packed = new Uint8Array(await new Response(zeros).arrayBuffer());
+    expect(packed.length).toBeLessThan(200_000);
+    await expect(decodeShare(btoa(String.fromCharCode(...packed)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''))).rejects.toThrow(/too large/);
+  });
+
   it('rejects a damaged link', async () => {
     await expect(decodeShare('kaputt')).rejects.toThrow();
   });

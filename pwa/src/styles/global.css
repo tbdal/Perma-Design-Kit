@@ -204,6 +204,10 @@ html[data-design="horizont"] .site-header :where(a[data-nav], #mode-toggle, .hea
   color: #0f1208;
 }
 html[data-design="horizont"] .site-header a[data-nav="/gartenplan"] { color: #4f5b30; }
+/* The account menu is a light/dark panel of its own: the header link colours above must not reach its settings link (unreadable in dark mode). */
+html[data-design="horizont"] #user-menu a[href="/settings"] { color: inherit; font-weight: inherit; border-radius: 0.375rem; }
+html[data-design="horizont"] #user-menu a[href="/settings"]:hover { background: var(--color-stone-100); color: inherit; }
+html[data-design="horizont"].dark #user-menu a[href="/settings"]:hover { background: var(--color-stone-700); }
 @media (max-width: 639px) {
   html[data-design="horizont"] .site-header .hz-wordmark { font-size: 11px; }
   html[data-design="horizont"] .site-header :where(a[data-nav], #mode-toggle, .header-extra-toggle:not(.header-extra-accent), #lang-toggle, #display-toggle, #theme-toggle, a[href="/settings"]) {

@@ -899,7 +899,7 @@ import Layout from '../layouts/Layout.astro';
     const printCountHome = viewMode === 'cards' ? cardsToolbar : document.getElementById('filter-bar')!;
     if (printCount.parentElement !== printCountHome) printCountHome.appendChild(printCount);
     tableToolbar.style.display = viewMode === 'list' ? 'flex' : 'none';
-    sortToolbar.style.display = viewMode === 'list' ? 'none' : 'flex';
+    sortToolbar.style.display = 'flex'; // also in the table: the dropdown has "zuletzt hinzugefügt", which has no column
     (document.getElementById('sort-field-select') as HTMLSelectElement).value = sortField;
     document.getElementById('btn-sort-dir')!.textContent = sortDir === 'asc' ? '↑' : '↓';
     if (heading) heading.textContent = viewMode === 'cards' ? t('headingCards') : viewMode === 'list' ? t('headingList') : t('headingTiles');

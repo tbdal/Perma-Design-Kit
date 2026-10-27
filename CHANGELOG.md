@@ -4,6 +4,13 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Fehlerbehebungen: Teilen-Link, Fehlermeldung, Menü, Tabelle, Fläche zeichnen 2026-10-27
+- [x] **Teilen-Link:** wird beim Entpacken auf 50 MB begrenzt – ein winziger Link, der zu Gigabytes aufquillt (Deflate-Bombe), bricht jetzt mit Fehler ab statt das Handy lahmzulegen #bugs
+- [x] **Unbehandelte Fehler** werden sichtbar gemeldet (Hinweis unten mit Link zu „Fehler melden“, einmal pro Seitenaufruf) statt nur im Debug-Protokoll zu landen #bugs
+- [x] **Dunkelmodus:** „Einstellungen“ im Konto-Menü oben rechts war im Horizont-Design nicht lesbar #bugs
+- [x] **Pflanzentabelle:** Sortierung „Zuletzt hinzugefügt“ jetzt auch in der Tabellenansicht (Auswahl über der Tabelle) #bugs
+- [x] **Waldgartenplan:** Ladehinweis, Maßstab und Kachelstatus liegen nicht mehr unter der Kartenquellen-Zeile; beim Kartenhintergrund OSM steht „Karte lädt“ statt „Luftbild lädt“; Punkte und Linien beim Flächenzeichnen bleiben beim Hineinzoomen klein #bugs
+
 ## Hilfe: Methode, Baumscheibe und Grundkarte 2026-10-27
 - [x] **Hilfe ergänzt** aus der Projektdokumentation, mit sieben Bildern: die Idee (Baumscheiben auf der Grundkarte, Einsatz in Flächendesign, Ko-Design und Bildung, Brettspiel-Idee), Designprozess und Polykultur-Design nach Farben, „Die Baumscheibe lesen“ (Legende), „Drucken und auslegen“ (Maßstab, Material, Grundkarte, Infoboard, Szenario, Grenzen) sowie Hintergrund und Quellen; deutscher Text steht schon im ausgelieferten HTML, Sprunglinks verschwinden nicht mehr unter der Kopfzeile #minor #prüfen
 

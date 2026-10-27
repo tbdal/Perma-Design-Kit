@@ -75,11 +75,38 @@
   }
   window.addEventListener('error', function (e) {
     remember(e.message || (e.target && e.target.src ? 'resource failed: ' + e.target.src : 'error'), e.filename ? e.filename.replace(location.origin, '') + ':' + e.lineno : '');
+    if (e.message) notify(); // script errors only, not broken images
   });
   window.addEventListener('unhandledrejection', function (e) {
     var r = e.reason;
     remember('unhandled rejection: ' + (r && r.message ? r.message : r), '');
+    notify();
   });
+  // Visible hint (once per page load) so a silent failure is not mistaken for "nothing happened".
+  var shown = false;
+  function notify() {
+    if (shown || !document.body) return;
+    shown = true;
+    try {
+      var de = (document.documentElement.lang || 'de').slice(0, 2) === 'de';
+      var sheet = new CSSStyleSheet();
+      sheet.replaceSync('#pdk-error-hint{position:fixed;left:50%;bottom:1rem;transform:translateX(-50%);z-index:9999;max-width:90vw;background:#44403c;color:#fff;padding:.6rem 1rem;border-radius:.5rem;font:14px system-ui,sans-serif;box-shadow:0 4px 12px #0006}#pdk-error-hint a{color:#fcd34d;margin-left:.5rem}#pdk-error-hint button{background:none;border:0;color:#fff;margin-left:.75rem;cursor:pointer;font-size:16px}');
+      document.adoptedStyleSheets = document.adoptedStyleSheets.concat([sheet]);
+      var el = document.createElement('div');
+      el.id = 'pdk-error-hint';
+      el.setAttribute('role', 'alert');
+      el.append(de ? 'Etwas ist schiefgelaufen.' : 'Something went wrong.');
+      var a = document.createElement('a');
+      a.href = '/fehler-melden/';
+      a.textContent = de ? 'Fehler melden' : 'Report a bug';
+      var x = document.createElement('button');
+      x.textContent = '×';
+      x.setAttribute('aria-label', de ? 'Schließen' : 'Close');
+      x.addEventListener('click', function () { el.remove(); });
+      el.append(a, x);
+      document.body.appendChild(el);
+    } catch (_) {}
+  }
 })();
 
 // /gartenplan/#neu (team mode): the new layout is built by a module that loads

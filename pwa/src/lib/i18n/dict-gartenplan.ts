@@ -243,6 +243,8 @@ export const gartenplanDict: Dict = {
   confirmCloseAreaBeforeSave: { de: 'Die Fläche ist noch nicht abgeschlossen ({n} Eckpunkte gesetzt). Jetzt abschließen und speichern?\n\nAbbrechen: weiter zeichnen.', en: 'The area isn’t closed yet ({n} corners set). Close it now and save?\n\nCancel: keep drawing.' },
   confirmSaveWithoutArea: { de: 'Erst {n} Eckpunkt(e) gesetzt — für eine Fläche braucht es mindestens 3. Ohne Fläche speichern?\n\nAbbrechen: weiter zeichnen.', en: 'Only {n} corner(s) set — an area needs at least 3. Save without an area?\n\nCancel: keep drawing.' },
   tilesLoading: { de: 'Luftbild lädt … {done}/{total}', en: 'Loading aerial photo … {done}/{total}' },
+  tilesLoadingMap: { de: 'Karte lädt … {done}/{total}', en: 'Loading map … {done}/{total}' },
+  tilesFailedMap: { de: 'Karte: {n} Kacheln nicht geladen', en: 'Map: {n} tiles not loaded' },
   tilesFailed: { de: 'Luftbild: {n} Kacheln nicht geladen', en: 'Aerial photo: {n} tiles not loaded' },
   orthoUnavailable: { de: 'Luftbild {region} antwortet gerade nicht — stattdessen grobes Satellitenbild bzw. Karte.', en: 'Aerial photo {region} is not responding right now — showing coarse satellite / map instead.' },
   buildings3dBtn: { de: 'Gebäude', en: 'Buildings' },
