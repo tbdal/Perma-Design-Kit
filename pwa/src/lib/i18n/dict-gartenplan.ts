@@ -113,6 +113,7 @@ export const gartenplanDict: Dict = {
   waterLimits: { de: 'Grenzen:', en: 'Limits:' },
   waterLimitsText: { de: 'Rohre, Durchlässe, Gräben und Bodenart sind im Gelände nicht enthalten; im Höhenmodell fehlende oder falsche Strukturen (Wege, Dämme) verändern die Linien. Starkregen verhält sich anders als der Jahresmittel-Regen. Die Ergebnisse sind Hinweise zum Prüfen vor Ort, keine Planung.', en: 'Pipes, culverts, ditches and soil type are not part of the terrain; missing or wrong structures in the elevation model (paths, embankments) change the lines. Heavy rain behaves differently from yearly mean rain. The results are hints to check on site, not a plan.' },
   waterPapers: { de: 'Quellen und Hintergrund', en: 'Sources and background' },
+  editPlant: { de: 'Pflanze bearbeiten', en: 'Edit plant' },
   waterHeading: { de: 'Wasser', en: 'Water' },
   waterNoTerrain: { de: 'Gelände wird geladen …', en: 'Loading terrain …' },
   waterBasisFine: { de: 'Berechnet aus dem amtlichen Geländemodell {region} ({res} m).', en: 'Computed from the official terrain model {region} ({res} m).' },

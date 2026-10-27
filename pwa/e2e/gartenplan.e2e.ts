@@ -623,3 +623,13 @@ test('Esc twice quickly leads from the plan back to the project list; one Esc on
   await expect(page.locator('#phase-b')).toBeHidden();
   void errors;
 });
+
+test('plant in the selection panel: the edit button and a click on its picture open the plant editor', async ({ page, errors }) => {
+  await stubNetwork(page);
+  await seedNeighbourPlan(page);
+  await openPlan(page, 'np');
+  await page.locator('[data-placement-id="a"] .marker-blob').click({ force: true });
+  await expect(page.locator('#btn-edit-plant')).toBeVisible();
+  await Promise.all([page.waitForURL(/\/\?edit=.+&return=%2Fgartenplan%2F%3Fplan%3Dnp/), page.click('#btn-edit-plant')]);
+  void errors;
+});

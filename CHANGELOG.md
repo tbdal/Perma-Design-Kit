@@ -4,6 +4,10 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Pflanze aus dem Plan bearbeiten 2026-10-27
+- [x] **Waldgartenplan:** Im Feld „Ausgewählt“ einer Pflanze öffnet „✎ Pflanze bearbeiten“ – und ein Klick auf ihr Bild – das Bearbeiten-Formular der Pflanzenliste und führt danach zum Plan zurück. Eine Pflanze, die nur über einen geteilten Plan mitkommt, wird dabei in die eigene Liste übernommen #minor
+- [x] **Freigabe:** Neuer Knopf „Pflanzen in meine Liste übernehmen“ legt alle Pflanzen eines geteilten Plans unter „Pflanzen“ ab #minor
+
 ## Beispiel-Polykulturen 2026-10-27
 - [x] **Polykulturen → „Beispiele laden“:** Ein Menü mit Kacheln (Bild, Beschreibung, Zahl der Pflanzen) – sechs Beispiele: Apfelbaum-Gilde, Drei Schwestern, Walnuss-Gilde, Beeren-Windschutzhecke, Kräuterspirale, Kirschbaum-Gilde. „Laden“ legt die Polykultur und die Pflanzen an, die es in der eigenen Liste noch nicht gibt #major
 - [x] **Admins** verwalten die Beispiele auf /admin/: ein- und ausblenden, umbenennen, Reihenfolge, entfernen und neue aus einer Polykultur des eigenen Browsers hinzufügen (zunächst ausgeblendet) #minor
