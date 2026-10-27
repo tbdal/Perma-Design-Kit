@@ -579,7 +579,7 @@ import Layout from '../layouts/Layout.astro';
   import { pointInPolygon, formatMeters, polygonAreaM2, polygonPerimeterM, pointsAlongPolyline, nearestGridPoint, gridAngleAlongOutline, normalizeGridAngle } from '../lib/gartenplan-geometry';
   import { recordAerialUsage } from '../lib/aerial-usage';
   import { areasSvg, AREA_PALETTE, uiScale, polygonCentroid } from '../lib/gartenplan-render';
-  import { planFromLatLngPolygon, planToLatLon } from '../lib/gartenplan-geo';
+  import { planFromLatLngPolygon, planToLatLon, planToEnu } from '../lib/gartenplan-geo';
   import type { MapDrawer } from '../lib/gartenplan-mapdraw';
   import { basemapSvg, basemapAttribution, sourceForGeo, FALLBACK_ATTRIBUTION, basemapSvgInline } from '../lib/gartenplan-background';
   import { growPlanToFit, MAX_PLAN_M } from '../lib/gartenplan-extent';
@@ -1405,6 +1405,14 @@ import Layout from '../layouts/Layout.astro';
   // ── Cursor position read-out (meters from 0,0) ─────────────────────────
   // Pointer capture during a marker drag retargets moves to the marker group,
   // which still bubble up to the SVG, so the read-out follows drags too.
+  /** The outline's corner furthest north-west (compass, so it holds for a turned plan too); null without an outline. */
+  function nwCorner(): GardenPlanPoint | null {
+    const b = editing?.boundary;
+    if (!b || b.length < 3) return null;
+    const rot = editing?.geo?.rotationDeg ?? 0;
+    const score = (q: GardenPlanPoint) => { const v = planToEnu(q, rot); return v.n - v.e; };
+    return b.reduce((best, q) => (score(q) > score(best) ? q : best), b[0]);
+  }
   function wireCursorReadout(svg: SVGSVGElement) {
     const wrap = svg.parentElement!;
     const label = wrap.querySelector<HTMLElement>('.cursor-readout')!;
@@ -1412,7 +1420,11 @@ import Layout from '../layouts/Layout.astro';
     svg.addEventListener('pointermove', (e: PointerEvent) => {
       if (!svg.getScreenCTM()) return;
       const p = clientToMeters(svg, e.clientX, e.clientY);
-      label.textContent = `x ${formatMeters(p.xM, lang)} · y ${formatMeters(p.yM, lang)}`;
+      // On the plan: meters from the north-western corner of the outline, plus the ground height there.
+      const ref = svg === planSvg ? nwCorner() : null;
+      let text = `x ${formatMeters(p.xM - (ref?.xM ?? 0), lang)} · y ${formatMeters(p.yM - (ref?.yM ?? 0), lang)}`;
+      if (svg === planSvg && terrain) text += ` · ${lang === 'de' ? 'Höhe' : 'elev.'} ${formatMeters(sampleGrid(terrain, p.xM, p.yM), lang)}`;
+      label.textContent = text;
       label.classList.remove('hidden');
       const r = wrap.getBoundingClientRect();
       let left = e.clientX - r.left + 14, top = e.clientY - r.top + 14;

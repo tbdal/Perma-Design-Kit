@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Mauszeiger im Plan 2026-10-27
+- [x] **Mauszeiger-Anzeige:** Die Meter-Angaben zählen ab der nordwestlichsten Ecke des Umrisses (auch bei gedrehtem Plan), und am Mauszeiger steht zusätzlich die Geländehöhe #minor
+
 ## Sachsen-Anhalt: amtliches Höhenmodell 2026-10-27
 - [x] **Höhendaten Sachsen-Anhalt:** Das amtliche Höhenmodell DGM1 (1 m, LVermGeo ST) wird über den WMS-Dienst des Landes (Höhen als Float-GeoTIFF) genutzt statt nur der groben AWS-Geländekacheln (≈ 30 m) #minor
 - [x] **Fehlermeldungen nennen die Daten:** Statt „nicht verfügbar“ steht jetzt, welche Daten fehlen (Luftbild mit Dienst-Host, Höhenmodell, Gelände, Wald/Gebäude über OpenStreetMap), im Info-Button mit Link zum Dienst #minor
