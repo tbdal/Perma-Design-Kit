@@ -34,6 +34,7 @@ describe('DGM sources', () => {
     expect(dgmFor(50.1109, 8.6821)?.id).toBe('he');   // Frankfurt
     expect(dgmFor(52.3759, 9.732)?.id).toBe('ni');    // Hannover
     expect(dgmFor(52.3676, 4.9041)?.id).toBe('nl');   // Amsterdam
+    expect(dgmFor(51.9, 11.6)?.id).toBe('st');        // Sachsen-Anhalt (DGM1 via WMS)
     expect(dgmFor(49.8105, 9.9195)).toBeNull();       // Würzburg (Bayern: no open WCS)
     expect(dgmFor(53.0758, 8.8072)).toBeNull();       // Bremen (enclave in the NI outline)
   });
@@ -49,5 +50,18 @@ describe('DGM sources', () => {
     const nl = DGM_SOURCES.find(d => d.id === 'nl')!;
     expect(toNative(nl, 52.36, 4.9)).toEqual({ x: 4.9, y: 52.36 });
     expect(coverageUrl(nl, { minX: 4.9, minY: 52.36, maxX: 4.91, maxY: 52.37 }, 10, 10)).toContain('OUTPUTCRS=');
+  });
+});
+
+describe('Sachsen-Anhalt DGM1 (WMS GeoTIFF)', () => {
+  it('asks a WMS GetMap in EPSG:25832 for float32 TIFF', () => {
+    const d = DGM_SOURCES.find(x => x.id === 'st')!;
+    const u = coverageUrl(d, { minX: 683000, minY: 5755000, maxX: 683100, maxY: 5755100 }, 100, 100);
+    expect(u).toContain('ST_LVermGeo_DGM1_WMS_OpenData');
+    expect(u).toContain('REQUEST=GetMap');
+    expect(u).toContain('LAYERS=DGM1');
+    expect(u).toContain('CRS=EPSG:25832');
+    expect(u).toContain('BBOX=683000.0,5755000.0,683100.0,5755100.0');
+    expect(u).toContain('FORMAT=image/tiff');
   });
 });

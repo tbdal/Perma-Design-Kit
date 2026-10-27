@@ -11,13 +11,16 @@ import { cachedFetch, DAY_MS } from './geo-cache';
 // browser (CORS checked 2026-10-04). Where one covers the garden, its heights
 // replace the coarse Terrain Tiles in the elevation grid; outside its area
 // (nodata) the coarse value stays. Other states only offer downloads or
-// closed services so far (Bayern: paid WCS; Sachsen, Sachsen-Anhalt: 403).
+// closed services so far (Bayern: paid WCS; Sachsen: 403). Sachsen-Anhalt has no
+// DGM1 WCS, but its DGM1 WMS (ArcGIS) hands out the raw heights as a float32
+// GeoTIFF (FORMAT=image/tiff), so it is asked as WMS GetMap (`wmsLayer`).
 
 export interface DgmSource {
   id: string;
   region: Record<Lang, string>;
   url: string;
   coverageId: string;
+  wmsLayer?: string;             // a WMS GetMap (float32 GeoTIFF) instead of a WCS GetCoverage
   crs: 25832 | 25833 | 4326;
   axes: [string, string];        // subset axis names (x/E/Long, y/N/Lat)
   scaling: boolean;              // supports SCALESIZE
@@ -31,7 +34,11 @@ const DLBY = A('https://www.govdata.de/dl-de/by-2-0', 'dl-de/by-2-0');
 const DLZERO = A('https://www.govdata.de/dl-de/zero-2-0', 'dl-de/zero-2-0');
 const CCBY = A('https://creativecommons.org/licenses/by/4.0/', 'CC BY 4.0');
 
+const LVERMGEO_ST = A('https://www.lvermgeo.sachsen-anhalt.de', 'LVermGeo ST');
+
 export const DGM_SOURCES: DgmSource[] = [
+  { id: 'st', region: { de: 'Sachsen-Anhalt', en: 'Saxony-Anhalt' }, url: 'https://www.geodatenportal.sachsen-anhalt.de/wss/service/ST_LVermGeo_DGM1_WMS_OpenData/guest', coverageId: '', wmsLayer: 'DGM1', crs: 25832, axes: ['x', 'y'], scaling: true, resolutionM: 1,
+    attributionHtml: `Gelände: © GeoBasis-DE/${LVERMGEO_ST}, ${DLBY}`, coverage: 'st' },
   { id: 'nw', region: { de: 'NRW', en: 'NRW' }, url: 'https://www.wcs.nrw.de/geobasis/wcs_nw_dgm', coverageId: 'nw_dgm', crs: 25832, axes: ['x', 'y'], scaling: true, resolutionM: 1,
     attributionHtml: `Gelände: © ${A('https://www.bezreg-koeln.nrw.de/geobasis-nrw', 'Geobasis NRW')}, ${DLZERO}`, coverage: 'nw' },
   { id: 'bb', region: { de: 'Brandenburg/Berlin', en: 'Brandenburg/Berlin' }, url: 'https://isk.geobasis-bb.de/ows/dgm_wcs', coverageId: 'bb_dgm', crs: 25833, axes: ['x', 'y'], scaling: true, resolutionM: 1,
@@ -74,6 +81,7 @@ export function toNative(d: DgmSource, lat: number, lon: number): { x: number; y
 
 /** GetCoverage URL for a native bounding box and output size. */
 export function coverageUrl(d: DgmSource, b: { minX: number; minY: number; maxX: number; maxY: number }, w: number, h: number): string {
+  if (d.wmsLayer) return `${d.url}?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=${d.wmsLayer}&STYLES=&CRS=EPSG:${d.crs}&BBOX=${b.minX.toFixed(1)},${b.minY.toFixed(1)},${b.maxX.toFixed(1)},${b.maxY.toFixed(1)}&WIDTH=${w}&HEIGHT=${h}&FORMAT=image/tiff`;
   const f = (v: number) => (d.crs === 4326 ? v.toFixed(7) : v.toFixed(1));
   let u = `${d.url}?SERVICE=WCS&REQUEST=GetCoverage&VERSION=2.0.1&COVERAGEID=${d.coverageId}&FORMAT=image/tiff`
     + `&SUBSET=${d.axes[0]}(${f(b.minX)},${f(b.maxX)})&SUBSET=${d.axes[1]}(${f(b.minY)},${f(b.maxY)})`

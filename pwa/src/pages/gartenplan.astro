@@ -1273,7 +1273,9 @@ import Layout from '../layouts/Layout.astro';
     const key = editing?.id ?? '';
     if (orthoFallbackNotified !== key) {
       orthoFallbackNotified = key;
-      showToast(t('orthoUnavailable', { region: src?.region?.[lang] ?? '' }));
+      const og = editing?.geo ? orthoFor(editing.geo.lat, editing.geo.lon) : null;
+      let ogHost = ''; try { ogHost = og ? new URL(og.url).hostname : ''; } catch { /* keep empty */ }
+      showToast(t('orthoUnavailable', { region: src?.region?.[lang] ?? '', host: ogHost }));
       updateAttribution(planSvg);
     }
   }
@@ -3466,7 +3468,7 @@ import Layout from '../layouts/Layout.astro';
     void loadClimate();
     const plan = editing;
     const geo = plan?.geo;
-    if (!plan || !geo) { terrain = null; terrainKey = ''; geoGate(contoursToggle, false); terrainInfo.textContent = ''; renderContours(); return; }
+    if (!plan || !geo) { terrain = null; terrainKey = ''; geoGate(contoursToggle, false); terrainInfo.textContent = ''; terrainInfo.dataset.dgmMissing = ''; renderContours(); return; }
     const key = `${plan.id}|${geo.lat}|${geo.lon}|${geo.rotationDeg}|${plan.areaWidthM}|${plan.areaHeightM}`;
     if (key === terrainKey) return;
     terrainKey = key;
@@ -3475,6 +3477,7 @@ import Layout from '../layouts/Layout.astro';
     renderContours();
     renderWater();
     terrainInfo.textContent = t('terrainLoading');
+    terrainInfo.dataset.failed = '';
     setLoad('topo', t('loadingTopo'));
     if (waterInput.checked && featureOn('water')) setLoad('wasser', t('loadingWater'));   // the water map waits for the terrain
     const doneLoading = () => { if (terrainKey === key) { setLoad('topo', null); setLoad('wasser', null); } };
@@ -3492,7 +3495,12 @@ import Layout from '../layouts/Layout.astro';
       let grid = await fetchElevationGrid(geo, { minX: -m, minY: -m, maxX: plan.areaWidthM + m, maxY: plan.areaHeightM + m }, Math.max(span / 800, Math.min(4, Math.max(1, span / (dgm ? 300 : 100)))));
       if (dgm && terrainKey === key) {
         terrainInfo.textContent = t('terrainLoadingDgm', { region: dgm.region[lang] });
-        try { grid = (await refineWithDgm(grid, geo)) ?? grid; } catch { /* keep the coarse grid */ }
+        let refined: typeof grid | null = null;
+        try { refined = await refineWithDgm(grid, geo); } catch { /* keep the coarse grid */ }
+        if (refined) grid = refined;
+        // Tell the info button which official model was expected but did not come (service down, no data here).
+        terrainInfo.dataset.dgmMissing = refined ? '' : `${dgm.region[lang]} (${dgm.resolutionM} m)`;
+        terrainInfo.dataset.dgmMissingHref = refined ? '' : /href="([^"]+)"/.exec(dgm.attributionHtml)?.[1] ?? '';
       }
       if (terrainKey !== key || editing !== plan) return; // plan changed meanwhile
       terrain = grid;
@@ -3501,6 +3509,7 @@ import Layout from '../layouts/Layout.astro';
       doneLoading();
       terrain = null;
       terrainInfo.textContent = t('terrainUnavailable');
+      terrainInfo.dataset.failed = '1';
       contoursToggle.hidden = true;
       return;
     }
@@ -3514,6 +3523,10 @@ import Layout from '../layouts/Layout.astro';
   }
 
   function updateTerrainInfo() {
+    // The layer list's info button reads where the heights come from (official model: region, resolution, link).
+    const dg = terrain?.dgm;
+    terrainInfo.dataset.dgm = dg ? `${dg.region[lang]} (${dg.resolutionM} m)` : '';
+    terrainInfo.dataset.dgmHref = dg ? /href="([^"]+)"/.exec(dg.attributionHtml)?.[1] ?? '' : '';
     if (!editing || !terrain) { terrainInfo.textContent = ''; return; }
     const boundary = editing.boundary;
     const s = slopeInfo(terrain, (x, y) => boundary.length >= 3 ? pointInPolygon({ xM: x, yM: y }, boundary) : true, editing.geo?.rotationDeg ?? 0);

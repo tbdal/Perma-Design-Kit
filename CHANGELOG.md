@@ -4,6 +4,10 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Sachsen-Anhalt: amtliches Höhenmodell 2026-10-27
+- [x] **Höhendaten Sachsen-Anhalt:** Das amtliche Höhenmodell DGM1 (1 m, LVermGeo ST) wird über den WMS-Dienst des Landes (Höhen als Float-GeoTIFF) genutzt statt nur der groben AWS-Geländekacheln (≈ 30 m) #minor
+- [x] **Fehlermeldungen nennen die Daten:** Statt „nicht verfügbar“ steht jetzt, welche Daten fehlen (Luftbild mit Dienst-Host, Höhenmodell, Gelände, Wald/Gebäude über OpenStreetMap), im Info-Button mit Link zum Dienst #minor
+
 ## Anmeldung auf neuem Gerät 2026-10-27
 - [x] **Bestehendes Konto auf neuem Gerät:** Nach der Anmeldung wird die Ansicht des Kontos (Team bzw. Experte) gleich eingestellt und der Einführungs-Rundgang nicht mehr gezeigt #minor
 - [x] **Backup-Hinweis:** Ist das Speichern auf dem Server an, erscheint der Hinweis „Letztes Backup ist eine Weile her“ nach dem ersten Wegklicken nicht mehr #minor
