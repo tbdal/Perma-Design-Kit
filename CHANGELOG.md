@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Luftbilder: Fehlerseiten der Dienste nicht mehr zwischenspeichern 2026-10-27
+- [x] **Luftbild Sachsen-Anhalt (und andere Länder) fehlte stellenweise:** Überlastete Dienste antworten mit „200“ und einer XML-/HTML-Fehlerseite; der Zwischenspeicher (nginx) und der Browser hielten diese Fehlerseite 30 Tage bzw. eine Woche fest, sodass die Kachel durch den Ersatz ersetzt blieb. Jetzt werden nur echte Bilder gespeichert (Konfiguration `permadesignkit.org.conf`), die ~3 900 schon gespeicherten Fehlerseiten wurden gelöscht #bugs
+
 ## Fehlerbehebungen: Teilen-Link, Fehlermeldung, Menü, Tabelle, Fläche zeichnen 2026-10-27
 - [x] **Teilen-Link:** wird beim Entpacken auf 50 MB begrenzt – ein winziger Link, der zu Gigabytes aufquillt (Deflate-Bombe), bricht jetzt mit Fehler ab statt das Handy lahmzulegen #bugs
 - [x] **Unbehandelte Fehler** werden sichtbar gemeldet (Hinweis unten mit Link zu „Fehler melden“, einmal pro Seitenaufruf) statt nur im Debug-Protokoll zu landen #bugs
