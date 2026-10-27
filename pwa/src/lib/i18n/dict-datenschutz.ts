@@ -3,7 +3,7 @@ import type { Dict } from './core';
 export const datenschutzDict: Dict = {
   dsTitle: { de: 'Datenschutz­erklärung', en: 'Privacy Policy' },
   dsAsOfLabel: { de: 'Stand:', en: 'Last updated:' },
-  dsAsOfDate: { de: '21. September 2026', en: 'September 21, 2026' },
+  dsAsOfDate: { de: '27. Oktober 2026', en: 'October 27, 2026' },
 
   dsSummaryTitle: { de: 'Kurzfassung', en: 'Summary' },
   dsSummaryBody: {
@@ -83,6 +83,16 @@ export const datenschutzDict: Dict = {
 
   dsCookiesTitle: { de: 'Cookies', en: 'Cookies' },
   dsCookiesBody1: { de: 'Ohne Experten-Zugang setzt diese Anwendung keine Cookies (mit Zugang siehe „Experten-Zugang“). Für lokale Einstellungen wird ausschließlich', en: 'Without expert access this application does not use cookies (with access, see “Expert access”). For local settings it uses exclusively' },
+  dsNewsletterTitle: { de: 'Newsletter (Brevo)', en: 'Newsletter (Brevo)' },
+  dsNewsletterBody1: {
+    de: 'Der Newsletter ist freiwillig. Über den Link „Newsletter“ im Fuß der Seite gelangst du zu einem Anmeldeformular, das beim Anbieter Brevo (Sendinblue SAS, Paris, Frankreich) liegt. Erst dort gibst du deine E-Mail-Adresse ein; sie wird nicht über unseren Server geleitet, und diese Anwendung speichert sie nicht. Beim Aufruf des Formulars verarbeitet Brevo deine IP-Adresse.',
+    en: 'The newsletter is voluntary. The “Newsletter” link in the page footer takes you to a sign-up form hosted by Brevo (Sendinblue SAS, Paris, France). You enter your e-mail address only there; it does not pass through our server and this application does not store it. When you open the form, Brevo processes your IP address.',
+  },
+  dsNewsletterBody2: {
+    de: 'Für den Versand speichert Brevo deine E-Mail-Adresse und die Angaben, die du im Formular machst, sowie den Zeitpunkt deiner Anmeldung und Bestätigung. Wir nutzen das Double-Opt-In-Verfahren: Du bekommst zuerst eine Bestätigungs-E-Mail und wirst erst nach deinem Klick auf den Bestätigungslink in die Liste aufgenommen. Rechtsgrundlage ist deine Einwilligung (Art. 6 Abs. 1 lit. a DSGVO). Du kannst sie jederzeit widerrufen, indem du dich über den Abmeldelink in jedem Newsletter abmeldest. Mit Brevo besteht ein Auftragsverarbeitungsvertrag. Mehr dazu in der',
+    en: 'For sending, Brevo stores your e-mail address and the details you enter in the form, plus the time of your sign-up and confirmation. We use double opt-in: you first receive a confirmation e-mail and are added to the list only after clicking the confirmation link. The legal basis is your consent (Art. 6(1)(a) GDPR). You can withdraw it at any time with the unsubscribe link in every newsletter. A data processing agreement is in place with Brevo. More in the',
+  },
+  dsNewsletterLink: { de: 'Datenschutzerklärung von Brevo', en: 'Brevo privacy policy' },
   dsExpertTitle: { de: 'Experten-Zugang', en: 'Expert access' },
   dsExpertBody1: { de: 'Für den Experten-Modus vergibt das Team einzelne Zugänge (Name und Passwort). Auf dem Server gespeichert werden nur der Zugangsname, die Rolle, das Anlagedatum und ein nicht umkehrbarer Hash des Passworts.', en: 'For expert mode the team hands out individual accounts (name and password). The server stores only the account name, the role, the creation date and a non-reversible hash of the password.' },
   dsExpertBody2: { de: 'Nach der Anmeldung setzt der Server ein Cookie („pdk_s“), das den Zugangsnamen, die Rolle und das Ablaufdatum enthält, signiert gegen Fälschung. Es ist technisch notwendig, um den Zugang zu prüfen (§ 25 Abs. 2 Nr. 2 TDDDG, Art. 6 Abs. 1 lit. b DSGVO), und läuft nach 90 Tagen ab oder wird beim Abmelden gelöscht. Fehlgeschlagene Anmeldungen werden zur Abwehr von Passwort-Raten bis zu 15 Minuten mit der IP-Adresse im Arbeitsspeicher gezählt und nicht gespeichert.', en: 'After logging in, the server sets a cookie (“pdk_s”) holding the account name, the role and the expiry date, signed against forgery. It is technically necessary to check the access (§ 25(2) no. 2 TDDDG, Art. 6(1)(b) GDPR) and expires after 90 days or is deleted on logout. Failed logins are counted together with the IP address in memory for up to 15 minutes to stop password guessing, and are not stored.' },

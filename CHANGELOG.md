@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Newsletter-Link im Fuß 2026-10-27
+- [x] **Newsletter:** Im Fuß der Seite führt „Newsletter“ zum gehosteten Brevo-Anmeldeformular (Double-Opt-In, Liste von Jörn); die Datenschutzerklärung hat einen neuen Abschnitt „Newsletter (Brevo)“. Keine Änderung an der Content-Security-Policy nötig, da nur verlinkt wird. #minor #prüfen
+
 ## Release v2026.10.0, Jens Steger Mit-Lizenzgeber 2026-10-27
 - [x] **Erstes Release** `v2026.10.0` („Perma Design Kit 2026.10 – Fair Source“) auf GitHub; Versionsschema Jahr.Monat.Zähler, `pwa/package.json` auf `2026.10.0`. Diese Version wird am 27.10.2028 MIT. #minor #prüfen
 - [x] **Jens Steger** hat der FSL zugestimmt und Perma-Guild-Forge ebenfalls auf FSL-1.1-MIT umgestellt: Er steht jetzt in `LICENSE.md` und `NOTICE` im Copyright. #minor #prüfen

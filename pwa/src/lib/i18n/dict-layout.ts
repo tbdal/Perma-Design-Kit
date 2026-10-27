@@ -49,6 +49,7 @@ export const layoutDict: Dict = {
   displayHelp: { de: '„System“ folgt der Einstellung „Kontrast erhöhen“ deines Geräts. Gilt nur für dieses Gerät.', en: '“System” follows your device’s “increase contrast” setting. Applies to this device only.' },
 
   footerHelp: { de: 'Hilfe', en: 'Help' },
+  footerNewsletter: { de: 'Newsletter', en: 'Newsletter' },
   footerPrivacy: { de: 'Datenschutz', en: 'Privacy' },
   footerImprint: { de: 'Impressum', en: 'Imprint' },
 
