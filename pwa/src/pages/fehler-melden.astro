@@ -24,7 +24,7 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
         <p class="font-medium" data-i18n="rpFileTitle">Debug-Datei (optional)</p>
         <p class="mt-1 text-xs text-stone-500 dark:text-stone-400" data-i18n="rpFileBody">Enthält Version, Browser, Fenstergröße, Einstellungen ohne Zugangsdaten, die Anzahl deiner Pflanzen und Pläne und die letzten Fehlermeldungen dieses Tabs.</p>
         <label class="mt-2 inline-flex items-start gap-2 text-xs"><input type="checkbox" id="rp-project" class="mt-0.5 accent-green-600" /> <span data-i18n="rpIncludeProject">Auch mein Projekt beilegen (Pflanzen, Polykulturen, Pläne mit Standort und Notizen) – nur, wenn der Fehler damit zu tun hat.</span></label>
-        <div class="mt-2"><button type="button" id="rp-download" data-i18n="rpDownload" class={`${btn} bg-white dark:bg-stone-800 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700`}>Debug-Datei herunterladen</button></div>
+        <div class="mt-2"><p id="rp-status" role="status" class="mb-1 text-xs text-stone-600 dark:text-stone-300 break-all"></p><button type="button" id="rp-download" data-i18n="rpDownload" class={`${btn} bg-white dark:bg-stone-800 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700`}>Debug-Datei herunterladen</button></div>
       </div>
 
       <p class="text-xs text-stone-500 dark:text-stone-400" data-i18n="rpScreenshot">Ein Bildschirmfoto hilft oft: Windows Win+Umschalt+S, macOS Cmd+Umschalt+4, Android/iOS Ein-/Aus- und Leiser-Taste. Anhängen kannst du es in GitHub oder in der Mail.</p>
@@ -59,13 +59,22 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
 
     const text = (): ReportText => ({ page: page.value.trim(), what: what.value.trim(), expected: expected.value.trim() });
 
+    const status = document.getElementById('rp-status')!;
     document.getElementById('rp-download')!.addEventListener('click', async () => {
-      const info = await buildDebugInfo(text(), withProject.checked);
-      const url = URL.createObjectURL(new Blob([JSON.stringify(info, null, 2)], { type: 'application/json' }));
-      const a = document.createElement('a');
-      a.href = url; a.download = `pdk-debug-${APP_VERSION}-${new Date().toISOString().slice(0, 10)}.json`;
-      document.body.appendChild(a); a.click(); a.remove();
-      URL.revokeObjectURL(url);
+      status.textContent = '…';
+      try {
+        const info = await buildDebugInfo(text(), withProject.checked);
+        const blob = new Blob([JSON.stringify(info, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = `pdk-debug-${APP_VERSION}-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(a); a.click(); a.remove();
+        // Revoking at once cancels the download in Firefox/Safari: keep the link for a while.
+        setTimeout(() => URL.revokeObjectURL(url), 60_000);
+        status.textContent = `${a.download} (${(blob.size / 1024).toFixed(0)} kB)`;
+      } catch (err) {
+        status.textContent = `${getLang() === 'de' ? 'Die Datei konnte nicht erzeugt werden' : 'The file could not be created'}: ${err instanceof Error ? err.message : String(err)}`;
+      }
     });
 
     form.addEventListener('submit', e => {

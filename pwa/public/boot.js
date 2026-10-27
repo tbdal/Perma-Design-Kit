@@ -77,17 +77,20 @@ try { performance.setResourceTimingBufferSize(3000); } catch (_) {}
     } catch (_) {}
   }
   window.addEventListener('error', function (e) {
-    remember(e.message || (e.target && e.target.src ? 'resource failed: ' + e.target.src : 'error'), e.filename ? e.filename.replace(location.origin, '') + ':' + e.lineno : '');
-    if (e.message) notify(); // script errors only, not broken images
+    var where = e.filename ? e.filename.replace(location.origin, '') + ':' + e.lineno : '';
+    remember(e.message || (e.target && e.target.src ? 'resource failed: ' + e.target.src : 'error'), where);
+    // script errors only: not broken images, not the harmless browser notices
+    if (e.message && !/ResizeObserver loop|^Script error\.?$/.test(e.message)) notify(e.message, where);
   });
   window.addEventListener('unhandledrejection', function (e) {
     var r = e.reason;
-    remember('unhandled rejection: ' + (r && r.message ? r.message : r), '');
-    notify();
+    var msg = 'unhandled rejection: ' + (r && r.message ? r.message : r);
+    remember(msg, '');
+    notify(msg, r && r.stack ? String(r.stack).split('\n').slice(0, 4).join('\n') : '');
   });
   // Visible hint (once per page load) so a silent failure is not mistaken for "nothing happened".
   var shown = false;
-  function notify() {
+  function notify(msg, where) {
     if (shown || !document.body) return;
     shown = true;
     try {
@@ -98,7 +101,17 @@ try { performance.setResourceTimingBufferSize(3000); } catch (_) {}
       var el = document.createElement('div');
       el.id = 'pdk-error-hint';
       el.setAttribute('role', 'alert');
-      el.append(de ? 'Etwas ist schiefgelaufen.' : 'Something went wrong.');
+      // The message itself (click: where it happened), so it is clear what went wrong.
+      var what = document.createElement('button');
+      what.type = 'button';
+      what.style.cssText = 'all:unset;cursor:pointer;text-decoration:underline dotted';
+      what.textContent = (de ? 'Etwas ist schiefgelaufen: ' : 'Something went wrong: ') + String(msg || '').slice(0, 140);
+      var more = document.createElement('pre');
+      more.hidden = true;
+      more.style.cssText = 'margin:.4rem 0 0;white-space:pre-wrap;word-break:break-all;font-size:11px;max-width:80vw';
+      more.textContent = String(msg || '') + (where ? '\n' + String(where).slice(0, 400) : '') + '\n' + location.pathname;
+      what.addEventListener('click', function () { more.hidden = !more.hidden; });
+      el.append(what, more);
       var a = document.createElement('a');
       a.href = '/fehler-melden/';
       a.textContent = de ? 'Fehler melden' : 'Report a bug';

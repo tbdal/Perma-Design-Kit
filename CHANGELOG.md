@@ -4,6 +4,12 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Fehlerhinweis, Kachelansicht, Kopfzeile, Debug-Datei 2026-10-27
+- [x] **„Etwas ist schiefgelaufen“** nennt jetzt die Fehlermeldung (Klick: Fundstelle); harmlose Browser-Hinweise lösen ihn nicht mehr aus #bugs
+- [x] **Kopfzeile (Standard-Design):** „Perma Design Kit“ bricht nicht mehr in drei Zeilen um und ragt nicht mehr in die Menüzeile #bugs
+- [x] **Fehler melden:** Die Debug-Datei wird nicht mehr sofort „freigegeben“ (Firefox/Safari brachen den Download ab); Fehler beim Erzeugen werden angezeigt #bugs
+- [x] **Kachelansicht:** Fehlende Angaben (Latein, Maße, Merkmale) erzeugen keine leeren Zeilen mehr #minor
+
 ## Wasser: eigene Box mit Einstellungen und Erklärung 2026-10-27
 - [x] **Wasser in „Klima & Wetter“:** Schalter, Standort-Hinweis, Einstellungen (Abflusswege ab Einzugsgebiet, Abflussbeiwert Dach), „Neu berechnen“ und die Ergebnisse stehen in einer Box; darunter aufklappbar „Details: So wird gerechnet“ mit Modell (Priority-Flood, D8, Einzugsgebiet, Senken, Swales, Dachwasser), Grenzen und Links zu den Papern #minor
 
