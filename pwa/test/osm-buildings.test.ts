@@ -83,7 +83,7 @@ describe('fetching buildings', () => {
       if (url.startsWith(OVERPASS_PROXY)) return new Response(JSON.stringify({ elements: [], remark: 'runtime error: Query timed out in "query" at line 1' }), { status: 200 });
       return ok([house]);
     });
-    const b = await fetchBuildings(geo, { minX: -42, minY: -42, maxX: 43, maxY: 43 });
+    const b = await fetchBuildings({ ...geo, lat: 50.005, lon: 10.005 }, { minX: -42, minY: -42, maxX: 43, maxY: 43 });
     expect(b).toHaveLength(1);
     expect(calls[0]).not.toContain('refresh');
     expect(calls[1]).toContain('&refresh=1');
