@@ -568,17 +568,26 @@ function pushCircleClip(page: ReturnType<PDFDocument['addPage']>, cx: number, cy
   );
 }
 
+const FIXED_DISC_MM = 60; // fixedDisc mode: disc always 6 cm, a thin ring marks the true-scale crown
+
 /** Returns how many discs had to be shrunk to fit the paper (bigger than the
  *  page), plus the plants left out entirely for falling under minSizeMm
  *  (0 = no minimum, nothing discarded). */
-export async function exportBaumscheibeScaledPDF(plants: PlantData[], scale: number, paper: ScaledPaper, minSizeMm = 0): Promise<{ pages: number; shrunk: number; discarded: PlantData[] }> {
+export async function exportBaumscheibeScaledPDF(plants: PlantData[], scale: number, paper: ScaledPaper, minSizeMm = 0, fixedDisc = false): Promise<{ pages: number; shrunk: number; discarded: PlantData[] }> {
   plants = expandByPrintCount(plants);
   if (plants.length === 0 || !(scale > 0)) return { pages: 0, shrunk: 0, discarded: [] };
   const discarded = minSizeMm > 0 ? plants.filter(p => discDiameterMm(p, scale) < minSizeMm) : [];
   if (discarded.length > 0) plants = plants.filter(p => discDiameterMm(p, scale) >= minSizeMm);
   if (plants.length === 0) return { pages: 0, shrunk: 0, discarded };
   const { w: pw, h: ph } = PAPER_MM[paper];
-  const packed = packCircles(plants.map(p => discDiameterMm(p, scale)), pw, ph, SCALED_PAGE_MARGIN_MM, SCALED_GAP_MM);
+  const trueD = plants.map(p => discDiameterMm(p, scale));
+  const packD = trueD.map(d => fixedDisc ? Math.max(FIXED_DISC_MM, d) : d);
+  const packed = packCircles(packD, pw, ph, SCALED_PAGE_MARGIN_MM, SCALED_GAP_MM);
+  // Per placed circle: disc and ring diameter, both shrunk by whatever the packer shrank it by.
+  const sizes = (c: { index: number; r: number }) => {
+    const k = c.r * 2 / packD[c.index];
+    return { disc: (fixedDisc ? FIXED_DISC_MM : trueD[c.index]) * k, ring: trueD[c.index] * k };
+  };
   const pageCount = Math.max(...packed.map(c => c.page)) + 1;
   const shrunk = packed.filter(c => c.shrunk).length;
   // Disc artwork occupies DISC_RADIUS_UNITS of the crop's CROP_HALF; the image
@@ -590,10 +599,12 @@ export async function exportBaumscheibeScaledPDF(plants: PlantData[], scale: num
     const svgs = await Promise.all(plants.map(async p => cropSvgToDisc(await renderBaumscheibeSvg(p))));
     const pages = Array.from({ length: pageCount }, (_, pg) => {
       const cells = packed.filter(c => c.page === pg).map(c => {
-        const side = c.r * 2 * cropOverDisc, clipD = c.r * 2 * clipOverDisc;
+        const { disc, ring } = sizes(c);
+        const side = disc * cropOverDisc, clipD = disc * clipOverDisc;
         return `<div style="position:absolute;left:${c.cx - clipD / 2}mm;top:${c.cy - clipD / 2}mm;width:${clipD}mm;height:${clipD}mm;border-radius:50%;overflow:hidden;">` +
           `<div style="position:absolute;left:${(clipD - side) / 2}mm;top:${(clipD - side) / 2}mm;width:${side}mm;height:${side}mm;">` +
-          `${svgs[c.index].replace('<svg', '<svg style="width:100%;height:100%;display:block;"')}</div></div>`;
+          `${svgs[c.index].replace('<svg', '<svg style="width:100%;height:100%;display:block;"')}</div></div>` +
+          (fixedDisc ? `<div style="position:absolute;left:${c.cx - ring / 2}mm;top:${c.cy - ring / 2}mm;width:${ring}mm;height:${ring}mm;box-sizing:border-box;border:0.3mm solid #555;border-radius:50%;"></div>` : '');
       }).join('');
       const caption = `<div style="position:absolute;left:${SCALED_PAGE_MARGIN_MM}mm;bottom:1.2mm;font:6pt Helvetica,Arial,sans-serif;color:#999;">Maßstab 1:${scale}</div>`;
       return `<div style="position:relative;width:${pw}mm;height:${ph}mm;overflow:hidden;${pg < pageCount - 1 ? 'page-break-after:always;' : ''}">${cells}${caption}</div>`;
@@ -615,15 +626,17 @@ export async function exportBaumscheibeScaledPDF(plants: PlantData[], scale: num
   for (const pg of pages) pg.drawText(`Maßstab 1:${scale}`, { x: pt(SCALED_PAGE_MARGIN_MM), y: pt(1.2), size: 6, font: capFont, color: rgb(0.6, 0.6, 0.6) });
   for (const c of packed) {
     const page = pages[c.page];
-    const sideMm = c.r * 2 * cropOverDisc;
+    const { disc, ring } = sizes(c);
+    const sideMm = disc * cropOverDisc;
     // ~200 dpi at print size, capped so A2-sized discs don't blow up memory
     const px = Math.min(3000, Math.max(200, Math.round(sideMm / 25.4 * 200)));
     const svg = cropSvgToDisc(await renderBaumscheibeSvg(plants[c.index]));
     const img = await pdfDoc.embedJpg(canvasToJpegBytes(await svgStringToCanvas(svg, px, px)));
     const cxPt = pt(c.cx), cyPt = pt(ph - c.cy);
-    pushCircleClip(page, cxPt, cyPt, pt(c.r * clipOverDisc));
+    pushCircleClip(page, cxPt, cyPt, pt(disc / 2 * clipOverDisc));
     page.drawImage(img, { x: cxPt - pt(sideMm) / 2, y: cyPt - pt(sideMm) / 2, width: pt(sideMm), height: pt(sideMm) });
     page.pushOperators(popGraphicsState());
+    if (fixedDisc) page.drawCircle({ x: cxPt, y: cyPt, size: pt(ring / 2), borderWidth: pt(0.3), borderColor: rgb(0.33, 0.33, 0.33) });
   }
   downloadPdf(await finishPdf(pdfDoc, { title: `Perma Design Kit – Baumscheiben 1:${scale}`, plants, footerMm: 1.2, footerAlign: 'right' }), `baumscheiben-1zu${scale}-${paper}.pdf`);
   return { pages: pageCount, shrunk, discarded };

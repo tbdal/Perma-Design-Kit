@@ -263,7 +263,11 @@ import Layout from '../layouts/Layout.astro';
           </label>
           <label class="flex items-center gap-1.5">
             <span data-i18n="scaledMinSizeLabel" data-i18n-title="scaledMinSizeTitle" title="Pflanzen, deren Karte bei diesem Maßstab kleiner ausfallen würde, werden nicht gedruckt">Min. Größe (cm)</span>
-            <input type="number" id="scaled-min-size" min="0" max="100" step="0.5" value="0" class="w-16 rounded-md border-0 bg-white dark:bg-stone-900 px-1.5 py-0.5 text-sm ring-1 ring-stone-300 dark:ring-stone-600" />
+            <input type="number" id="scaled-min-size" min="0" max="100" step="0.5" value="4" class="w-16 rounded-md border-0 bg-white dark:bg-stone-900 px-1.5 py-0.5 text-sm ring-1 ring-stone-300 dark:ring-stone-600" />
+          </label>
+          <label class="flex items-center gap-1.5" data-i18n-title="scaledFixedTitle" title="Scheibe immer 6 cm groß; ein dünner Ring außen zeigt die Kronenbreite im Maßstab">
+            <input type="checkbox" id="scaled-fixed" />
+            <span data-i18n="scaledFixedLabel">Scheibe fix 6 cm + Maßstabsring</span>
           </label>
         </div>
       </div>
@@ -1481,7 +1485,7 @@ import Layout from '../layouts/Layout.astro';
     const minSizeCm = parseFloat((document.getElementById('scaled-min-size') as HTMLInputElement).value) || 0;
     if (!(scale > 0)) return;
     const btn = document.getElementById('btn-pdf-scaled') as HTMLButtonElement;
-    const res = await withButtonSpinner(btn, () => exportBaumscheibeScaledPDF(cachedPlants, scale, paper, minSizeCm * 10));
+    const res = await withButtonSpinner(btn, () => exportBaumscheibeScaledPDF(cachedPlants, scale, paper, minSizeCm * 10, (document.getElementById('scaled-fixed') as HTMLInputElement).checked));
     if (res && res.shrunk > 0) alert(t('pdfScaledShrunk', { n: res.shrunk }));
     if (res && res.discarded.length > 0) {
       const names = res.discarded.map(p => displayName(p)).join(', ');

@@ -48,6 +48,8 @@ export const indexDict: Dict = {
   pdfScaledBtn: { de: 'PDF (Maßstab)', en: 'PDF (to scale)' },
   pdfScaledTitle: { de: 'Baumscheiben im Maßstab (Kronenbreite der Pflanze), platzsparend auf Papier verteilt', en: 'Canopy cards to scale (plant crown width), packed compactly onto the paper' },
   pdfScaledShrunk: { de: '{n} Baumscheibe(n) sind bei diesem Maßstab größer als das Papier und wurden verkleinert.', en: '{n} card(s) are larger than the paper at this scale and were shrunk to fit.' },
+  scaledFixedLabel: { de: 'Scheibe fix 6 cm + Maßstabsring', en: 'Fixed 6 cm disc + scale ring' },
+  scaledFixedTitle: { de: 'Scheibe immer 6 cm groß; ein dünner Ring außen zeigt die Kronenbreite im Maßstab', en: 'Disc always 6 cm; a thin outer ring shows the crown width at scale' },
   scaledMinSizeLabel: { de: 'Min. Größe (cm)', en: 'Min. size (cm)' },
   scaledMinSizeTitle: { de: 'Pflanzen, deren Karte bei diesem Maßstab kleiner ausfallen würde, werden nicht gedruckt', en: 'Plants whose card would come out smaller than this at this scale are left out of the PDF' },
   pdfScaledDiscarded: { de: '{n} Pflanze(n) wurden bei diesem Maßstab/Mindestgröße nicht gedruckt: {names}', en: '{n} plant(s) were left out at this scale/minimum size: {names}' },

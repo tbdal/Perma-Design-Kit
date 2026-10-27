@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Baumscheiben: 6 cm mit Maßstabsring 2026-10-27
+- [x] **Maßstabsgetreues PDF:** Neue Option „Scheibe fix 6 cm + Maßstabsring“: jede Baumscheibe wird 6 cm groß gedruckt, ein dünner Ring außen zeigt die Kronenbreite im gewählten Maßstab; „Min. Größe“ steht jetzt standardmäßig auf 4 cm #minor #prüfen
+
 ## Neue Einführung als Willkommens-Popup 2026-10-27
 - [x] **Einführung:** Beim ersten Besuch (und über „Einführung“ im Fuß) erscheint ein Popup auf zwei Dritteln der Seitenbreite über der abgedunkelten Seite: Himmel mit Baumlinie und Wortmarke, „Willkommen im Perma Design Kit“, Baumscheiben-Foto und 3D-Ansicht des Waldgartenplans, Leitgedanke aus dem Visions-Doc, Hinweis „Möchtest du uns unterstützen?“ (Link auf `/unterstuetzen`), die vier Bereiche (Pflanzen, Polykulturen, Waldgartenplan, Kalender) und unten immer sichtbar „Rundgang starten“, „Beispielprojekt ansehen“, „Überspringen“ plus der Hinweis zum lokalen Speichern. Deutsch und Englisch, hell und dunkel, in beiden Designs gleich. #minor #prüfen
 
