@@ -5,6 +5,13 @@
  *  new one — so small circles fill the gaps left next to big ones and the
  *  fewest pages / least white space results. Units are arbitrary (mm). */
 
+/** Disc and ring diameter of a placed circle. The packer may have shrunk it (radius `r` of `packD`/2);
+ *  both shrink by the same factor. `fixedMm` = disc always that size (the ring is the true size). */
+export function discAndRing(trueD: number, packD: number, r: number, fixedMm = 0) {
+  const k = r * 2 / packD;
+  return { disc: (fixedMm || trueD) * k, ring: trueD * k };
+}
+
 export interface PackedCircle {
   /** index into the input array */
   index: number;

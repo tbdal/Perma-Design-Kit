@@ -4,7 +4,7 @@ import { renderBaumscheibeSvg } from './baumscheibe-render';
 import { renderGardenPlanInnerSvg, SVG_UNITS_PER_METER } from './gartenplan-render';
 import { dataCredits, type GardenPlan, type PlantData } from './types';
 import { escapeHtml } from './html';
-import { packCircles } from './circle-pack';
+import { discAndRing, packCircles } from './circle-pack';
 
 // Card dimensions in mm
 const POLY_MM   = { w: 70,  h: 120 };
@@ -576,7 +576,8 @@ const FIXED_DISC_MM = 60; // fixedDisc mode: disc always 6 cm, a thin ring marks
 export async function exportBaumscheibeScaledPDF(plants: PlantData[], scale: number, paper: ScaledPaper, minSizeMm = 0, fixedDisc = false): Promise<{ pages: number; shrunk: number; discarded: PlantData[] }> {
   plants = expandByPrintCount(plants);
   if (plants.length === 0 || !(scale > 0)) return { pages: 0, shrunk: 0, discarded: [] };
-  const discarded = minSizeMm > 0 ? plants.filter(p => discDiameterMm(p, scale) < minSizeMm) : [];
+  // Fixed discs stay readable at any plant size, so the minimum only applies to true-scale discs.
+  const discarded = minSizeMm > 0 && !fixedDisc ? plants.filter(p => discDiameterMm(p, scale) < minSizeMm) : [];
   if (discarded.length > 0) plants = plants.filter(p => discDiameterMm(p, scale) >= minSizeMm);
   if (plants.length === 0) return { pages: 0, shrunk: 0, discarded };
   const { w: pw, h: ph } = PAPER_MM[paper];
@@ -584,10 +585,7 @@ export async function exportBaumscheibeScaledPDF(plants: PlantData[], scale: num
   const packD = trueD.map(d => fixedDisc ? Math.max(FIXED_DISC_MM, d) : d);
   const packed = packCircles(packD, pw, ph, SCALED_PAGE_MARGIN_MM, SCALED_GAP_MM);
   // Per placed circle: disc and ring diameter, both shrunk by whatever the packer shrank it by.
-  const sizes = (c: { index: number; r: number }) => {
-    const k = c.r * 2 / packD[c.index];
-    return { disc: (fixedDisc ? FIXED_DISC_MM : trueD[c.index]) * k, ring: trueD[c.index] * k };
-  };
+  const sizes = (c: { index: number; r: number }) => discAndRing(trueD[c.index], packD[c.index], c.r, fixedDisc ? FIXED_DISC_MM : 0);
   const pageCount = Math.max(...packed.map(c => c.page)) + 1;
   const shrunk = packed.filter(c => c.shrunk).length;
   // Disc artwork occupies DISC_RADIUS_UNITS of the crop's CROP_HALF; the image
