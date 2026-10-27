@@ -1,12 +1,37 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { hilfeDict } from '../lib/i18n/dict-hilfe';
+// Pictures from the project documentation (public/hilfe/); a click opens them full size.
+const de = (k: string) => hilfeDict[k].de;
+const img = 'w-full rounded-lg ring-1 ring-stone-200 dark:ring-stone-700';
+const cap = 'mt-1 text-xs text-stone-500 dark:text-stone-400';
 ---
 <Layout title="Perma Design Kit — Hilfe">
-  <article class="mx-auto max-w-3xl space-y-8 text-stone-800 dark:text-stone-100">
+  <article class="mx-auto max-w-3xl space-y-8 text-stone-800 dark:text-stone-100 [&>section]:scroll-mt-28">
     <header>
       <h1 class="text-2xl font-bold" data-i18n="pageTitle">Hilfe & Glossar</h1>
       <p class="mt-2 text-sm text-stone-500 dark:text-stone-400" data-i18n="pageSubtitle">Konzepte, Ansichten und Funktionen kurz erklärt.</p>
     </header>
+
+    <section id="idee" class="space-y-2">
+      <h2 class="text-xl font-semibold" data-i18n="aboutHeading">{de('aboutHeading')}</h2>
+      <p data-i18n="aboutP1">{de('aboutP1')}</p>
+      <p data-i18n="aboutP2">{de('aboutP2')}</p>
+      <figure class="max-w-md">
+        <a href="/hilfe/ko-design.jpg" target="_blank" rel="noopener"><img src="/hilfe/ko-design.jpg" width="662" height="662" loading="lazy" decoding="async" class={img} alt={de('figCoDesignAlt')} data-i18n-alt="figCoDesignAlt" /></a>
+        <figcaption class={cap} data-i18n="figCoDesign">{de('figCoDesign')}</figcaption>
+      </figure>
+      <h3 class="pt-1 font-semibold" data-i18n="aboutUsesHeading">{de('aboutUsesHeading')}</h3>
+      <dl class="space-y-3">
+        <div><dt class="font-semibold" data-i18n="aboutUse1Term">{de('aboutUse1Term')}</dt><dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="aboutUse1Desc">{de('aboutUse1Desc')}</dd></div>
+        <div><dt class="font-semibold" data-i18n="aboutUse2Term">{de('aboutUse2Term')}</dt><dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="aboutUse2Desc">{de('aboutUse2Desc')}</dd></div>
+        <div><dt class="font-semibold" data-i18n="aboutUse3Term">{de('aboutUse3Term')}</dt><dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="aboutUse3Desc">{de('aboutUse3Desc')}</dd></div>
+      </dl>
+      <figure class="max-w-md">
+        <a href="/hilfe/spielidee.jpg" target="_blank" rel="noopener"><img src="/hilfe/spielidee.jpg" width="777" height="564" loading="lazy" decoding="async" class={img} alt={de('figGameAlt')} data-i18n-alt="figGameAlt" /></a>
+        <figcaption class={cap} data-i18n="figGame">{de('figGame')}</figcaption>
+      </figure>
+    </section>
 
     <section id="polykulturen" class="space-y-2">
       <h2 class="text-xl font-semibold" data-i18n="guildHeading">Was ist eine Permakultur-Polykultur?</h2>
@@ -20,6 +45,16 @@ import Layout from '../layouts/Layout.astro';
         (Begleiter, Bodendecker, N-Fixer, Mineraliensammler, Insekten- oder Duftpflanze, Obst/Beere).
         Das Vorschlags-Panel filtert deinen Pflanzen-Bestand nach offenen Rollen und
         zeigt dir eine Sonne/Wasser/pH-Kompatibilität (0–3) zur Ankerart an.</span></p>
+      <h3 class="pt-1 font-semibold" data-i18n="procHeading">{de('procHeading')}</h3>
+      <p data-i18n="procP1">{de('procP1')}</p>
+      <figure class="max-w-xl">
+        <a href="/hilfe/designprozess.jpg" target="_blank" rel="noopener"><img src="/hilfe/designprozess.jpg" width="622" height="455" loading="lazy" decoding="async" class={img} alt={de('figProcessAlt')} data-i18n-alt="figProcessAlt" /></a>
+        <figcaption class={cap} data-i18n="figProcess">{de('figProcess')}</figcaption>
+      </figure>
+      <p data-i18n="procP2">{de('procP2')}</p>
+      <h3 class="pt-1 font-semibold" data-i18n="colorsHeading">{de('colorsHeading')}</h3>
+      <p data-i18n="colorsP">{de('colorsP')}</p>
+      <p data-i18n="colorsPrinciples">{de('colorsPrinciples')}</p>
     </section>
 
     <section class="space-y-2">
@@ -58,10 +93,63 @@ import Layout from '../layouts/Layout.astro';
         </div>
         <div>
           <dt class="font-semibold" data-i18n="variantBaumscheibeTerm">Baumscheibe</dt>
-          <dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="variantBaumscheibeDesc">Großformat mit grafischer Darstellung
-            (Schichten, Sonne, Wasser, pH, Nutzung, Funktion). PDF im A4-Hochformat.</dd>
+          <dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="variantBaumscheibeDesc">{de('variantBaumscheibeDesc')}</dd>
         </div>
       </dl>
+    </section>
+
+    <section id="baumscheibe" class="space-y-2">
+      <h2 class="text-xl font-semibold" data-i18n="readHeading">{de('readHeading')}</h2>
+      <p data-i18n="readIntro">{de('readIntro')}</p>
+      <div class="grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,16rem)] sm:items-start">
+        <dl class="min-w-0 space-y-3">
+          <div><dt class="font-semibold" data-i18n="readTopTerm">{de('readTopTerm')}</dt><dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="readTopDesc">{de('readTopDesc')}</dd></div>
+          <div><dt class="font-semibold" data-i18n="readNicheTerm">{de('readNicheTerm')}</dt><dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="readNicheDesc">{de('readNicheDesc')}</dd></div>
+          <div><dt class="font-semibold" data-i18n="readSoilTerm">{de('readSoilTerm')}</dt><dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="readSoilDesc">{de('readSoilDesc')}</dd></div>
+          <div><dt class="font-semibold" data-i18n="readMonthsTerm">{de('readMonthsTerm')}</dt><dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="readMonthsDesc">{de('readMonthsDesc')}</dd></div>
+          <div><dt class="font-semibold" data-i18n="readFuncTerm">{de('readFuncTerm')}</dt><dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="readFuncDesc">{de('readFuncDesc')}</dd></div>
+        </dl>
+        <figure>
+          <a href="/hilfe/pflanzeninformationen.jpg" target="_blank" rel="noopener"><img src="/hilfe/pflanzeninformationen.jpg" width="447" height="632" loading="lazy" decoding="async" class={img} alt={de('figLegendAlt')} data-i18n-alt="figLegendAlt" /></a>
+          <figcaption class={cap} data-i18n="figLegend">{de('figLegend')}</figcaption>
+        </figure>
+      </div>
+      <p class="text-sm text-stone-600 dark:text-stone-300" data-i18n="readNote">{de('readNote')}</p>
+    </section>
+
+    <section id="auslegen" class="space-y-2">
+      <h2 class="text-xl font-semibold" data-i18n="layHeading">{de('layHeading')}</h2>
+      <h3 class="pt-1 font-semibold" data-i18n="layPrintHeading">{de('layPrintHeading')}</h3>
+      <p data-i18n="layPrint">{de('layPrint')}</p>
+      <p data-i18n="layMaterial">{de('layMaterial')}</p>
+      <h3 class="pt-1 font-semibold" data-i18n="layMapHeading">{de('layMapHeading')}</h3>
+      <p data-i18n="layMapIntro">{de('layMapIntro')}</p>
+      <ul class="list-disc space-y-1 pl-5">
+        <li data-i18n="layMap1">{de('layMap1')}</li>
+        <li data-i18n="layMap2">{de('layMap2')}</li>
+        <li data-i18n="layMap3">{de('layMap3')}</li>
+        <li data-i18n="layMap4">{de('layMap4')}</li>
+        <li data-i18n="layMap5">{de('layMap5')}</li>
+      </ul>
+      <p data-i18n="layMapP2">{de('layMapP2')}</p>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <figure class="min-w-0">
+          <a href="/hilfe/infoboard.jpg" target="_blank" rel="noopener"><img src="/hilfe/infoboard.jpg" width="852" height="564" loading="lazy" decoding="async" class={img} alt={de('figBoardAlt')} data-i18n-alt="figBoardAlt" /></a>
+          <figcaption class={cap} data-i18n="figBoard">{de('figBoard')}</figcaption>
+        </figure>
+        <figure class="min-w-0">
+          <a href="/hilfe/grundkarte-infoboard.jpg" target="_blank" rel="noopener"><img src="/hilfe/grundkarte-infoboard.jpg" width="509" height="337" loading="lazy" decoding="async" class={img} alt={de('figMapBoardAlt')} data-i18n-alt="figMapBoardAlt" /></a>
+          <figcaption class={cap} data-i18n="figMapBoard">{de('figMapBoard')}</figcaption>
+        </figure>
+      </div>
+      <figure class="max-w-xs">
+        <a href="/hilfe/szenario-a.jpg" target="_blank" rel="noopener"><img src="/hilfe/szenario-a.jpg" width="620" height="876" loading="lazy" decoding="async" class={img} alt={de('figScenarioAlt')} data-i18n-alt="figScenarioAlt" /></a>
+        <figcaption class={cap} data-i18n="figScenario">{de('figScenario')}</figcaption>
+      </figure>
+      <p data-i18n="layPlanP">{de('layPlanP')}</p>
+      <h3 class="pt-1 font-semibold" data-i18n="limitsHeading">{de('limitsHeading')}</h3>
+      <p data-i18n="limits1">{de('limits1')}</p>
+      <p data-i18n="limits2">{de('limits2')}</p>
     </section>
 
     <section id="quellen" class="space-y-2">
@@ -192,6 +280,16 @@ import Layout from '../layouts/Layout.astro';
       <p data-i18n="installOffline">Nach dem ersten Besuch funktioniert die ganze App auch ohne Netz, im Browser wie installiert; nur Suche, Datenquellen und Kartenhintergrund brauchen eine Verbindung. Gibt es eine neue Version, erscheint oben ein Hinweis mit „Neu laden“ — bis dahin arbeitest du mit der bisherigen weiter.</p>
       <p data-i18n="installStorage">Wichtig auf iPhone und iPad: Die App auf dem Home-Bildschirm hat ihren eigenen, leeren Speicher. Lege vorher im Browser ein Backup an (Einstellungen → Daten) und lies es in der installierten App ein. Im Safari-Tab kann iOS deine Daten nach 7 Tagen ohne Besuch löschen, in der installierten App nicht.</p>
       <p data-i18n="installTabs">Hast du die App in mehreren Tabs offen und änderst in einem etwas, lädt der andere beim Zurückkehren neu oder zeigt einen Hinweis — so überschreibt kein Tab die Änderungen des anderen.</p>
+    </section>
+
+    <section id="quellen-literatur" class="space-y-2">
+      <h2 class="text-xl font-semibold" data-i18n="litHeading">{de('litHeading')}</h2>
+      <ul class="list-disc space-y-1 pl-5 text-sm text-stone-600 dark:text-stone-300">
+        <li data-i18n="lit1">{de('lit1')}</li>
+        <li data-i18n="lit2">{de('lit2')}</li>
+      </ul>
+      <p class="text-sm text-stone-600 dark:text-stone-300" data-i18n="litOrigin">{de('litOrigin')}</p>
+      <p class="text-xs text-stone-500 dark:text-stone-400" data-i18n="litImages">{de('litImages')}</p>
     </section>
   </article>
 </Layout>

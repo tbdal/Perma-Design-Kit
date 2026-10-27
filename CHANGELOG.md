@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Hilfe: Methode, Baumscheibe und Grundkarte 2026-10-27
+- [x] **Hilfe ergänzt** aus der Projektdokumentation, mit sieben Bildern: die Idee (Baumscheiben auf der Grundkarte, Einsatz in Flächendesign, Ko-Design und Bildung, Brettspiel-Idee), Designprozess und Polykultur-Design nach Farben, „Die Baumscheibe lesen“ (Legende), „Drucken und auslegen“ (Maßstab, Material, Grundkarte, Infoboard, Szenario, Grenzen) sowie Hintergrund und Quellen; deutscher Text steht schon im ausgelieferten HTML, Sprunglinks verschwinden nicht mehr unter der Kopfzeile #minor #prüfen
+
 ## Baumscheiben: 6 cm mit Maßstabsring 2026-10-27
 - [x] **Maßstabsgetreues PDF:** Neue Option „Scheibe fix 6 cm + Maßstabsring“: jede Baumscheibe wird 6 cm groß gedruckt, ein dünner Ring außen zeigt die Kronenbreite im gewählten Maßstab; „Min. Größe“ steht jetzt standardmäßig auf 4 cm #minor #prüfen
 
