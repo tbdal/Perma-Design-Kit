@@ -226,13 +226,14 @@ export async function fetchBuildings(geo: GardenPlanGeo, rect: PlanRect): Promis
   // Per grid cell, not per plan: another plan next door finds its buildings already kept.
   const seen = new Set<string>();
   const elements: unknown[] = [];
-  for (const cell of bboxCells(bb)) {
+  const parts = await Promise.all(bboxCells(bb).map(async cell => {
     const cq = buildingsQueryForBbox(cell);
     const res = await cachedFetch(`overpass:${hashKey(cq)}`, 30 * DAY_MS, () => overpass(cell, cq));
-    for (const el of ((await res.json()) as { elements?: { type: string; id: number }[] }).elements ?? []) {
-      const k = `${el.type}/${el.id}`;
-      if (!seen.has(k)) { seen.add(k); elements.push(el); }
-    }
+    return ((await res.json()) as { elements?: { type: string; id: number }[] }).elements ?? [];
+  }));
+  for (const els of parts) for (const el of els) {
+    const k = `${el.type}/${el.id}`;
+    if (!seen.has(k)) { seen.add(k); elements.push(el); }
   }
   const list = parseBuildings({ elements } as never, geo);
   cache.set(q, list);
