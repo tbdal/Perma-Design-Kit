@@ -92,7 +92,6 @@ import Layout from '../layouts/Layout.astro';
           <option value="" data-i18n="contourStepAuto">automatisch</option>
           <option value="100">100 m</option><option value="50">50 m</option><option value="20">20 m</option><option value="10">10 m</option><option value="5">5 m</option><option value="2">2 m</option><option value="1">1 m</option>
         </select></label>
-      <label data-feature="water" id="water-toggle" hidden class="inline-flex items-center gap-1.5" data-i18n-title="mapWaterTitle" title="Abflusswege, Senken, Swale-Vorschläge und Regen vom Dach"><input id="g-water" type="checkbox" class="accent-sky-600" /> <span data-i18n="mapWater">Wasser</span></label>
       <label data-feature="zones" class="inline-flex items-center gap-1.5" data-i18n-title="mapZonesTitle" title="Permakultur-Zonen um das Haus und Sektoren (Sonne, Wind, Kaltluft)"><input id="g-zones" type="checkbox" class="accent-amber-600" /> <span data-i18n="mapZones">Zonen &amp; Sektoren</span></label>
       <span id="map-status" class="text-stone-500 dark:text-stone-400"></span>
       <span data-feature="terrain" id="terrain-info" class="text-stone-600 dark:text-stone-300"></span>
@@ -375,9 +374,23 @@ import Layout from '../layouts/Layout.astro';
             <p class="mt-1 text-[10px] text-stone-500 dark:text-stone-400" data-i18n="phasesHint">Pflanzjahr unter „Ausgewählt“ setzen (auch für eine Mehrfachauswahl). Jahre-Regler und Zeitraffer zeigen die Abschnitte nacheinander.</p>
           </details>
 
-          <details data-feature="water" data-panel="water" open id="water-section" hidden class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+          <details data-feature="water" data-panel="water" open id="water-section" class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="waterHeading">Wasser</h2><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-stone-500 dark:text-stone-400 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
-            <div id="water-body" class="space-y-1.5 text-xs text-stone-700 dark:text-stone-200"></div>
+            <div class="space-y-2 text-xs text-stone-700 dark:text-stone-200">
+              <label data-feature="water" id="water-toggle" hidden class="inline-flex items-center gap-1.5 text-sm font-medium" data-i18n-title="mapWaterTitle" title="Abflusswege, Senken, Swale-Vorschläge und Regen vom Dach"><input id="g-water" type="checkbox" class="accent-sky-600" /> <span data-i18n="mapWater">Wasser</span></label>
+              <p id="water-hint" class="text-[11px] text-stone-500 dark:text-stone-400" data-i18n="waterHint">Zeigt Abflusswege, Senken, Swale-Vorschläge und Regen vom Dach – braucht einen Standort.</p>
+              <button id="btn-water-locate" type="button" hidden data-i18n="waterLocate" class="rounded-md bg-stone-100 dark:bg-stone-800 px-2 py-1 text-xs font-medium ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-700">Standort festlegen</button>
+              <div id="water-body" class="space-y-1.5"></div>
+              <div id="water-config" hidden class="grid grid-cols-2 gap-2 rounded-lg bg-white dark:bg-stone-800 p-2 ring-1 ring-stone-200 dark:ring-stone-700">
+                <label class="flex flex-col gap-0.5"><span data-i18n="waterCfgCatch">Abflusswege ab Einzugsgebiet (m²)</span><input id="water-cfg-catch" type="number" min="25" max="5000" step="25" class="rounded border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-1.5 py-0.5" /></label>
+                <label class="flex flex-col gap-0.5"><span data-i18n="waterCfgRunoff">Abflussbeiwert Dach (0–1)</span><input id="water-cfg-runoff" type="number" min="0.1" max="1" step="0.05" class="rounded border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-1.5 py-0.5" /></label>
+              </div>
+              <button id="btn-water-recalc" type="button" hidden data-i18n="waterRecalc" class="rounded-md bg-sky-700 px-2.5 py-1 text-xs font-medium text-white hover:bg-sky-800">Neu berechnen</button>
+              <details id="water-details" class="rounded-lg ring-1 ring-stone-200 dark:ring-stone-700 p-2">
+                <summary class="cursor-pointer font-medium" data-i18n="waterDetails">Details: So wird gerechnet</summary>
+                <div id="water-details-body" class="mt-2 space-y-2"></div>
+              </details>
+            </div>
           </details>
 
           <details data-feature="zones" data-panel="zones" open id="zones-section" hidden class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
@@ -3903,30 +3916,69 @@ import Layout from '../layouts/Layout.astro';
   const waterSection = document.getElementById('water-section')!;
   const waterBody = document.getElementById('water-body')!;
   try { waterInput.checked = localStorage.getItem('pgd-water') === '1'; } catch {}
-  let waterCache: { grid: unknown; result: WaterAnalysis } | null = null;
+  let waterCache: { grid: unknown; result: WaterAnalysis; cfg: string } | null = null;
+  // Settings of the calculation (kept per device): smallest catchment drawn as a flow path, roof runoff coefficient.
+  const waterCfgCatch = document.getElementById('water-cfg-catch') as HTMLInputElement;
+  const waterCfgRunoff = document.getElementById('water-cfg-runoff') as HTMLInputElement;
+  const waterCfg = { minCatchmentM2: 150, runoff: 0.8 };
+  try { Object.assign(waterCfg, JSON.parse(localStorage.getItem('pgd-water-cfg') || '{}')); } catch {}
+  waterCfgCatch.value = String(waterCfg.minCatchmentM2); waterCfgRunoff.value = String(waterCfg.runoff);
+  const readWaterCfg = () => {
+    waterCfg.minCatchmentM2 = Math.min(5000, Math.max(25, Number(waterCfgCatch.value) || 150));
+    waterCfg.runoff = Math.min(1, Math.max(0.1, Number(waterCfgRunoff.value) || 0.8));
+    try { localStorage.setItem('pgd-water-cfg', JSON.stringify(waterCfg)); } catch {}
+  };
+  for (const el of [waterCfgCatch, waterCfgRunoff]) el.addEventListener('change', () => { readWaterCfg(); renderWater(); });
+  document.getElementById('btn-water-recalc')!.addEventListener('click', () => { readWaterCfg(); waterCache = null; renderWater(); showToast(t('waterRecalced')); });
+  document.getElementById('btn-water-locate')!.addEventListener('click', () => btnLocate.click());
   waterInput.addEventListener('change', () => {
     try { localStorage.setItem('pgd-water', waterInput.checked ? '1' : '0'); } catch {}
     renderWater();
   });
   function waterAnalysis(): WaterAnalysis | null {
     if (!editing || !terrain) return null;
-    if (waterCache?.grid !== terrain) {
+    const cfg = `${waterCfg.minCatchmentM2}`;
+    if (waterCache?.grid !== terrain || waterCache.cfg !== cfg) {
       const plan = editing;
       const b = plan.boundary;
-      waterCache = { grid: terrain, result: analyzeWater(terrain, {
+      waterCache = { grid: terrain, cfg, result: analyzeWater(terrain, {
         rect: { minX: 0, minY: 0, maxX: plan.areaWidthM, maxY: plan.areaHeightM },
         inside: b.length >= 3 ? (x, y) => pointInPolygon({ xM: x, yM: y }, b) : undefined,
+        minCatchmentM2: waterCfg.minCatchmentM2,
       }) };
     }
     return waterCache.result;
+  }
+  /** The folded part: model, steps, limits and papers — text from the dictionary, links fixed. */
+  const WATER_PAPERS: { href: string; text: string }[] = [
+    { href: 'https://doi.org/10.1016/j.cageo.2013.04.024', text: 'Barnes, Lehman & Mulla (2014): Priority-flood: An optimal depression-filling and watershed-labeling algorithm for digital elevation models. Computers & Geosciences 62, 117–127.' },
+    { href: 'https://doi.org/10.1016/S0734-189X(84)80011-0', text: 'O’Callaghan & Mark (1984): The extraction of drainage networks from digital elevation data. Computer Vision, Graphics, and Image Processing 28, 323–344.' },
+    { href: 'https://doi.org/10.1002/qj.3803', text: 'Hersbach et al. (2020): The ERA5 global reanalysis. Quarterly Journal of the Royal Meteorological Society 146, 1999–2049.' },
+    { href: 'https://en.wikipedia.org/wiki/Swale_(landform)', text: 'Swale (landform) – Wikipedia' },
+  ];
+  let waterDetailsFor = '';
+  function renderWaterDetails() {
+    if (waterDetailsFor === lang) return;
+    waterDetailsFor = lang;
+    const steps = ['waterStep1', 'waterStep2', 'waterStep3', 'waterStep4', 'waterStep5', 'waterStep6'].map(k => `<li>${escapeHtml(t(k))}</li>`).join('');
+    const papers = WATER_PAPERS.map(p => `<li><a href="${p.href}" target="_blank" rel="noopener" class="underline text-sky-700 dark:text-sky-300">${escapeHtml(p.text)}</a></li>`).join('');
+    document.getElementById('water-details-body')!.innerHTML =
+      `<p>${escapeHtml(t('waterModel'))}</p><ol class="list-decimal space-y-1 pl-4">${steps}</ol>`
+      + `<p><span class="font-medium">${escapeHtml(t('waterLimits'))}</span> ${escapeHtml(t('waterLimitsText'))}</p>`
+      + `<p class="font-medium">${escapeHtml(t('waterPapers'))}</p><ul class="list-disc space-y-1 pl-4">${papers}</ul>`;
   }
   function renderWater() {
     const layer = planSvg.querySelector('#water-layer');
     geoGate(waterToggle, !!editing?.geo);
     const on = !!editing?.geo && waterInput.checked && featureOn('water');
-    waterSection.hidden = !on;
+    // The box is always there (it holds the switch); config and recalculation only while the layer is on.
+    waterSection.hidden = !editing || !featureOn('water');
+    (document.getElementById('btn-water-locate') as HTMLElement).hidden = !editing || !!editing.geo;
+    (document.getElementById('water-config') as HTMLElement).hidden = !on;
+    (document.getElementById('btn-water-recalc') as HTMLElement).hidden = !on;
+    renderWaterDetails();
     if (!layer) return;
-    if (!on || !editing) { layer.innerHTML = ''; water3d = null; view3d?.setWater(null); return; }
+    if (!on || !editing) { layer.innerHTML = ''; water3d = null; view3d?.setWater(null); waterBody.textContent = ''; return; }
     if (!terrain) { layer.innerHTML = ''; water3d = null; view3d?.setWater(null); waterBody.textContent = t('waterNoTerrain'); return; }
     const fine = !!terrain.dgm;
     const w = waterAnalysis()!;
@@ -3980,7 +4032,7 @@ import Layout from '../layouts/Layout.astro';
       if (near.length) {
         const area = near.reduce((s, b) => s + polygonAreaM2(b.pts), 0);
         rows.push(`<p><span class="font-medium">${escapeHtml(t('waterRoof'))}:</span> ${escapeHtml(climate
-          ? t('waterRoofValue', { n: near.length, a: nf(area), m3: nf(roofRainM3(area, climate.precipMm)), mm: nf(climate.precipMm) })
+          ? t('waterRoofValue', { n: near.length, a: nf(area), m3: nf(roofRainM3(area, climate.precipMm, waterCfg.runoff)), mm: nf(climate.precipMm) })
           : t('waterRoofNoClimate', { n: near.length, a: nf(area) }))}</p>`);
       }
     }

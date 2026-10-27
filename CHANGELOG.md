@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Wasser: eigene Box mit Einstellungen und Erklärung 2026-10-27
+- [x] **Wasser in „Klima & Wetter“:** Schalter, Standort-Hinweis, Einstellungen (Abflusswege ab Einzugsgebiet, Abflussbeiwert Dach), „Neu berechnen“ und die Ergebnisse stehen in einer Box; darunter aufklappbar „Details: So wird gerechnet“ mit Modell (Priority-Flood, D8, Einzugsgebiet, Senken, Swales, Dachwasser), Grenzen und Links zu den Papern #minor
+
 ## Mauszeiger im Plan 2026-10-27
 - [x] **Mauszeiger-Anzeige:** Die Meter-Angaben zählen ab der nordwestlichsten Ecke des Umrisses (auch bei gedrehtem Plan), und am Mauszeiger steht zusätzlich die Geländehöhe #minor
 
