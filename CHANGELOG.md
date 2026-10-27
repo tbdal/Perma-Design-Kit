@@ -4,6 +4,10 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Karten- und Plandaten teilen sich den Zwischenspeicher 2026-10-27
+- [x] **Gebäude, Wald und Höhenmodell** werden pro Kartenfeld (≈ 1 km bzw. 50 m) statt pro Plan zwischengespeichert: Pläne in derselben Gegend nutzen dieselben gespeicherten Daten. Luftbild-Kacheln und Gelände waren schon projektunabhängig #minor
+- [x] **Dossier-Dateien** gehen beim Speichern eines Plans nicht mehr verloren (Grenze für Modul-Daten im Plan für das Dossier auf 8 MB angehoben); in Teilen-Links bleibt das Dossier draußen #bugs
+
 ## Pflanzentabelle, Bearbeiten, Zeichnen 2026-10-27
 - [x] **Pflanzentabelle:** neue Spalte „Bewertung“ (Ess/Med/Mat 0–5, sortierbar); Gruppen direkt in der Tabelle bearbeiten (Klick in die Zelle); mehrere gewählte Pflanzen mit „Zu Gruppe“ in eine Gruppe legen; die Sortierauswahl steht auch über der Tabelle #minor
 - [x] **Pflanze bearbeiten:** speichert automatisch kurz nach der letzten Änderung (Hinweis „automatisch gespeichert“); der Knopf heißt dann „Schließen“ #minor

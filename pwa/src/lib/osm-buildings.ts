@@ -203,6 +203,18 @@ export const OVERPASS_PROXY = '/geo/overpass';
 
 const cache = new Map<string, Building[]>();
 
+/** Grid cells of 0.01° (≈ 1 km) a bbox "s,w,n,e" covers, or just the bbox when it is big (many cells would hit the rate limit).
+ *  Cells are what the browser and the server cache keep, so every plan of the same area shares them. */
+export function bboxCells(bb: string, g = 0.01, maxCells = 12): string[] {
+  const [s, w, n, e] = bb.split(',').map(Number);
+  const i0 = Math.floor(s / g + 1e-9), i1 = Math.ceil(n / g - 1e-9), j0 = Math.floor(w / g + 1e-9), j1 = Math.ceil(e / g - 1e-9);
+  if ((i1 - i0) * (j1 - j0) > maxCells) return [bb];
+  const f = (v: number) => (Math.round(v * g * 1e4) / 1e4).toFixed(4);
+  const out: string[] = [];
+  for (let i = i0; i < Math.max(i1, i0 + 1); i++) for (let j = j0; j < Math.max(j1, j0 + 1); j++) out.push([f(i), f(j), f(i + 1), f(j + 1)].join(','));
+  return out;
+}
+
 /** Buildings in `rect` (cached per session); tries the endpoints in turn. */
 export async function fetchBuildings(geo: GardenPlanGeo, rect: PlanRect): Promise<Building[]> {
   const bb = buildingsBbox(geo, rect);
@@ -211,8 +223,18 @@ export async function fetchBuildings(geo: GardenPlanGeo, rect: PlanRect): Promis
   if (hit) return hit;
   // Persisted in the browser (30 days) — an unchanged plan never asks
   // Overpass again, and an expired copy still serves if every mirror is down.
-  const res = await cachedFetch(`overpass:${hashKey(q)}`, 30 * DAY_MS, () => overpass(bb, q));
-  const list = parseBuildings(await res.json(), geo);
+  // Per grid cell, not per plan: another plan next door finds its buildings already kept.
+  const seen = new Set<string>();
+  const elements: unknown[] = [];
+  for (const cell of bboxCells(bb)) {
+    const cq = buildingsQueryForBbox(cell);
+    const res = await cachedFetch(`overpass:${hashKey(cq)}`, 30 * DAY_MS, () => overpass(cell, cq));
+    for (const el of ((await res.json()) as { elements?: { type: string; id: number }[] }).elements ?? []) {
+      const k = `${el.type}/${el.id}`;
+      if (!seen.has(k)) { seen.add(k); elements.push(el); }
+    }
+  }
+  const list = parseBuildings({ elements } as never, geo);
   cache.set(q, list);
   return list;
 }

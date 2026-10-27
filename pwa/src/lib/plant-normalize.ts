@@ -190,11 +190,18 @@ export function normalizeGardenPlan(raw: unknown): GardenPlan | null {
 }
 
 /** Module data of a plan: a plain JSON object of at most 256 kB (it is copied as is). */
+/** Upper bound of the dossier inside plan.ext (data URLs of files are a third larger than the files). */
+const MAX_DOSSIER_JSON = 8 * 1024 * 1024;
+
 function normalizeExt(raw: unknown): Record<string, unknown> | null {
   if (!isObject(raw) || Object.keys(raw).length === 0) return null;
   try {
     const json = JSON.stringify(raw);
-    return json.length <= 256 * 1024 ? JSON.parse(json) : null;
+    // 256 kB for module data in general; the dossier (embedded files, expert/dossier) may bring up to ~8 MB of its own.
+    const { dossier, ...rest } = raw as Record<string, unknown>;
+    if (JSON.stringify(rest).length > 256 * 1024) return null;
+    if (dossier !== undefined && JSON.stringify(dossier).length > MAX_DOSSIER_JSON) return Object.keys(rest).length ? JSON.parse(JSON.stringify(rest)) : null;
+    return JSON.parse(json);
   } catch { return null; }
 }
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { buildingHeight, parseBuildings, buildingsQuery, buildingsBbox, fetchBuildings, OVERPASS_PROXY } from '../src/lib/osm-buildings';
+import { bboxCells, buildingHeight, parseBuildings, buildingsQuery, buildingsBbox, fetchBuildings, OVERPASS_PROXY } from '../src/lib/osm-buildings';
 
 const geo = { lat: 50, lon: 10, rotationDeg: 0, basemap: 'osm' as const, opacity: 1 };
 const sq = (lat: number, lon: number, d = 0.0001) => [
@@ -70,7 +70,7 @@ describe('fetching buildings', () => {
   it('asks our own server with just the bbox', async () => {
     const calls: string[] = [];
     vi.stubGlobal('fetch', async (url: string) => { calls.push(url); return ok([house]); });
-    const b = await fetchBuildings(geo, { minX: -40, minY: -40, maxX: 41, maxY: 41 });
+    const b = await fetchBuildings({ ...geo, lat: 50.005, lon: 10.005 }, { minX: -40, minY: -40, maxX: 41, maxY: 41 }); // inside one 0.01° cell
     expect(b).toHaveLength(1);
     expect(calls).toHaveLength(1);
     expect(calls[0]).toMatch(new RegExp(`^${OVERPASS_PROXY}\\?bbox=[\\d.,]+$`));
@@ -96,7 +96,17 @@ describe('fetching buildings', () => {
       calls.push(url);
       return url.startsWith(OVERPASS_PROXY) ? new Response('<!doctype html>', { status: 404 }) : ok([house]);
     });
-    await fetchBuildings(geo, { minX: -44, minY: -44, maxX: 45, maxY: 45 });
+    await fetchBuildings({ ...geo, lat: 50.005, lon: 10.005 }, { minX: -44, minY: -44, maxX: 45, maxY: 45 });
     expect(calls.map(u => u.startsWith(OVERPASS_PROXY))).toEqual([true, false]);
+  });
+});
+
+describe('bboxCells', () => {
+  it('covers a box with 0.01° cells, the same cells for plans in the same area', () => {
+    expect(bboxCells('52.6932,11.1401,52.6987,11.1455')).toEqual(['52.6900,11.1400,52.7000,11.1500']);
+    expect(bboxCells('52.6932,11.1301,52.6987,11.1455')).toEqual(['52.6900,11.1300,52.7000,11.1400', '52.6900,11.1400,52.7000,11.1500']);
+  });
+  it('keeps a big box whole (rate limit)', () => {
+    expect(bboxCells('52.60,11.00,52.90,11.40')).toEqual(['52.60,11.00,52.90,11.40']);
   });
 });

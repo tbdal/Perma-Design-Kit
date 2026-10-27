@@ -91,4 +91,11 @@ describe('normalizeGardenPlan', () => {
     expect('ext' in normalizeGardenPlan({ id: 'g', ext: [1] })!).toBe(false);
     expect('ext' in normalizeGardenPlan({ id: 'g', ext: { big: 'x'.repeat(300 * 1024) } })!).toBe(false);
   });
+
+  it('lets the dossier carry its files (up to 8 MB) without raising the limit for other module data', () => {
+    const dossier = { items: [{ id: 'f', kind: 'file', data: 'x'.repeat(2_000_000) }] };
+    expect(normalizeGardenPlan({ id: 'g', ext: { notizen: { a: 1 }, dossier } })!.ext).toEqual({ notizen: { a: 1 }, dossier });
+    expect(normalizeGardenPlan({ id: 'g', ext: { dossier: { items: [{ data: 'x'.repeat(9_000_000) }] }, notizen: { a: 1 } } })!.ext).toEqual({ notizen: { a: 1 } });
+    expect('ext' in normalizeGardenPlan({ id: 'g', ext: { other: 'y'.repeat(300_000) } })!).toBe(false);
+  });
 });

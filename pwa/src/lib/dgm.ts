@@ -112,7 +112,9 @@ export async function refineWithDgm(grid: ElevationGrid, geo: GardenPlanGeo): Pr
     if (p.y < by0) by0 = p.y; if (p.y > by1) by1 = p.y;
   }
   const pad = d.crs === 4326 ? 0.00003 : 2;
-  const box = { minX: bx0 - pad, minY: by0 - pad, maxX: bx1 + pad, maxY: by1 + pad };
+  let box = { minX: bx0 - pad, minY: by0 - pad, maxX: bx1 + pad, maxY: by1 + pad };
+  // Metre-based services: widened to a 50 m grid, so plans next to each other ask the same question and share the kept answer.
+  if (d.crs !== 4326) { const G = 50; box = { minX: Math.floor(box.minX / G) * G, minY: Math.floor(box.minY / G) * G, maxX: Math.ceil(box.maxX / G) * G, maxY: Math.ceil(box.maxY / G) * G }; }
   const spanM = d.crs === 4326 ? (box.maxY - box.minY) * 111320 : Math.max(box.maxX - box.minX, box.maxY - box.minY);
   if (!d.scaling && spanM > MAX_UNSCALED_M) return null;
   const w = Math.max(16, Math.min(MAX_PX, Math.round((d.crs === 4326 ? (box.maxX - box.minX) * 111320 * Math.cos(geo.lat * Math.PI / 180) : box.maxX - box.minX) / d.resolutionM)));
