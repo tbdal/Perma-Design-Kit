@@ -17,6 +17,7 @@ export const unterstuetzenDict: Dict = {
   },
   suPayee: { de: 'Empfänger', en: 'Recipient' },
   suIban: { de: 'IBAN', en: 'IBAN' },
+  suBic: { de: 'BIC', en: 'BIC' },
   suPurpose: { de: 'Verwendungszweck', en: 'Reference' },
   suAmount: { de: 'Betrag', en: 'Amount' },
   suAmountValue: { de: 'frei wählbar', en: 'your choice' },

@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## BIC auf der Seite „Unterstützen“ 2026-10-27
+- [x] **BIC:** Die Seite „Unterstützen“ nennt jetzt auch die BIC (GENODEM1GLS); der Girocode wurde neu erzeugt und enthält die BIC, mit dem Text abgeglichen. #minor #prüfen
+
 ## Seite „Unterstützen“ 2026-10-27
 - [x] **Unterstützen:** Neue Seite `/unterstuetzen`, im Fuß neben Impressum verlinkt („💚 Unterstützen“). Sie zeigt den Girocode und die Bankverbindung (Empfänger Jörn Müller, IBAN, Verwendungszweck „Unterstützung PermaDesignKit“, Betrag frei) und nennt Technik als Verwendung. Bewusst „Unterstützung“ statt „Spende“: keine Spendenquittung, keine Gegenleistung. Der Girocode wurde mit der IBAN abgeglichen. #minor #prüfen
 
