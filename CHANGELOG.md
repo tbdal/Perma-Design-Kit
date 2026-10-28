@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Beispiel-Polykulturen 2026-10-28
+- [x] **Beispiel-Polykulturen:** Apfelbaum, Walnuss und Kirschbaum heißen jetzt „…-Polykultur“ statt „…-Gilde“ #bugs #prüfen
+
 ## Fehler melden 2026-10-28
 - [x] **Fehler melden:** die letzten Fehlermeldungen der Sitzung stehen jetzt auch im Text für GitHub bzw. E-Mail (bisher nur in der Debug-Datei) #bugs #prüfen
 

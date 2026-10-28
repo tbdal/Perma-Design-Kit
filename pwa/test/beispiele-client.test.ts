@@ -13,7 +13,7 @@ describe('example polycultures (client)', () => {
     expect(r.newPlants.length).toBe(ex.plants.length - 1);
     expect(r.polyculture.anchorPlantId).toBe('mine');
     expect(r.polyculture.members).toHaveLength(ex.members.length);
-    expect(r.polyculture.name).toBe('Apfelbaum-Gilde');
+    expect(r.polyculture.name).toBe('Apfelbaum-Polykultur');
     expect(new Set(r.newPlants.map(p => p.id)).size).toBe(r.newPlants.length);
   });
   it('all six defaults load into a complete polyculture', () => {

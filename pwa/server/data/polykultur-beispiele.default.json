@@ -2,7 +2,7 @@
  "items": [
   {
    "id": "apfel-gilde",
-   "title": "Apfelbaum-Gilde",
+   "title": "Apfelbaum-Polykultur",
    "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Tree_with_red_apples_in_Barkedal_4.jpg?width=480",
    "description": "Der Klassiker: Apfelbaum mit Beinwell (holt Mineralien, Mulch), Schnittlauch und Narzissen gegen Gras und Schädlinge, Ringelblume für Insekten und Walderdbeere als Bodendecker.",
    "anchor": "Malus domestica",
@@ -181,9 +181,9 @@
   },
   {
    "id": "walnuss-gilde",
-   "title": "Walnuss-Gilde",
+   "title": "Walnuss-Polykultur",
    "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Walnut_forest_in_Arslanbab.jpg?width=480",
-   "description": "Unter der Walnuss wächst vieles schlecht (Juglon). Diese Gilde setzt auf Pflanzen, die damit zurechtkommen: Holunder, Himbeere, Johannisbeere und Bärlauch im Halbschatten.",
+   "description": "Unter der Walnuss wächst vieles schlecht (Juglon). Diese Polykultur setzt auf Pflanzen, die damit zurechtkommen: Holunder, Himbeere, Johannisbeere und Bärlauch im Halbschatten.",
    "anchor": "Juglans regia",
    "hidden": false,
    "plants": [
@@ -504,7 +504,7 @@
   },
   {
    "id": "kirsch-gilde",
-   "title": "Kirschbaum-Gilde",
+   "title": "Kirschbaum-Polykultur",
    "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Vogelkirsche_Roscheiderhof_Baum_Früchte.jpg?width=480",
    "description": "Kirschbaum mit Knoblauch (gegen Pilze und Läuse), Kapuzinerkresse als Läusefalle, Beinwell als Mulchlieferant und Schnittlauch in der Baumscheibe.",
    "anchor": "Prunus avium",
