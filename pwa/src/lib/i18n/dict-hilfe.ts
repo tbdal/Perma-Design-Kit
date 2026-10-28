@@ -29,6 +29,12 @@ export const hilfeDict: Dict = {
   pageTitle: { de: 'Hilfe & Glossar', en: 'Help & Glossary' },
   pageSubtitle: { de: 'Konzepte, Ansichten und Funktionen kurz erklärt.', en: 'A quick explanation of concepts, views and features.' },
 
+  defHeading: { de: 'Definitionen', en: 'Definitions' },
+  defPolyTerm: { de: 'Polykultur', en: 'Polyculture' },
+  defPolyDesc: { de: 'Eine Polykultur ist eine räumlich begrenzte Pflanzengemeinschaft.', en: 'A polyculture is a spatially bounded plant community.' },
+  defGuildTerm: { de: 'Gilde', en: 'Guild' },
+  defGuildDesc: { de: 'Eine Gilde bezeichnet systemübergreifende Ökosystemfunktionen (z. B. Bestäubung), die nicht auf eine Polykultur begrenzt sind.', en: 'A guild denotes ecosystem functions that cut across systems (e.g. pollination) and are not limited to a single polyculture.' },
+
   guildHeading: { de: 'Was ist eine Permakultur-Polykultur?', en: 'What is a permaculture polyculture?' },
   guildDefIntro: { de: 'Eine', en: 'A' },
   guildDefStrong: { de: 'Polykultur', en: 'polyculture' },

@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Definitionen 2026-10-28
+- [x] **Hilfe:** neuer Abschnitt „Definitionen“ (Polykultur = räumlich begrenzte Pflanzengemeinschaft, Gilde = systemübergreifende Ökosystemfunktion) #minor #prüfen
+
 ## Polykulturen 2026-10-28
 - [x] **Polykulturen:** das Beschreibungsfeld wächst mit dem Text; ein Mitglied kann eine eigene Position zur Ankerart tragen, die beim Setzen als Paket im Waldgartenplan gilt #minor #prüfen
 
