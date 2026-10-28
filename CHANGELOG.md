@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Definitionen 2026-10-28
+- [x] **Hilfe:** neuer Abschnitt „Definitionen“ (Polykultur = räumlich begrenzte Pflanzengemeinschaft, Gilde = systemübergreifende Ökosystemfunktion) #minor #prüfen
+
 ## Beispiel-Polykulturen 2026-10-28
 - [x] **Beispiel-Polykulturen:** Apfelbaum, Walnuss und Kirschbaum heißen jetzt „…-Polykultur“ statt „…-Gilde“ #bugs #prüfen
 
