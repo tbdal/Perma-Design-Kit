@@ -7,6 +7,7 @@ import { seededRandom } from './blob-shape';
 // support functions (N-fixer, accumulator, insectary, pest confuser) at the
 // drip line where the anchor's feeder roots are, fruit producers and general
 // companions in an outer ring. Positions are deterministic per polyculture.
+// Members with their own arrangement (dxM/dyM) keep it instead.
 
 const RING: Record<PolycultureRole, number> = {
   groundCover: 0, nFixer: 1, mineralFixer: 1, insectary: 1, pestConfuser: 1, fruitProducer: 2, companion: 2, other: 2,
@@ -23,6 +24,7 @@ export function layoutPolyculture(pc: Polyculture, plantsById: Map<string, Plant
   const rings: { plantId: string; r: number }[][] = [[], [], []];
   for (const m of pc.members) {
     if (m.plantId === pc.anchorPlantId) continue;
+    if (m.dxM !== undefined && m.dyM !== undefined) { out.push({ plantId: m.plantId, xM: center.xM + m.dxM, yM: center.yM + m.dyM }); continue; }
     const p = plantsById.get(m.plantId);
     rings[RING[m.role] ?? 2].push({ plantId: m.plantId, r: p ? displayRadiusM(p, Math.max(years, 5)) : 0.4 });
   }

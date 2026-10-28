@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Polykulturen 2026-10-28
+- [x] **Polykulturen:** das Beschreibungsfeld wächst mit dem Text; ein Mitglied kann eine eigene Position zur Ankerart tragen, die beim Setzen als Paket im Waldgartenplan gilt #minor #prüfen
+
 ## Beispiel-Polykulturen 2026-10-28
 - [x] **Beispiel-Polykulturen:** Apfelbaum, Walnuss und Kirschbaum heißen jetzt „…-Polykultur“ statt „…-Gilde“ #bugs #prüfen
 

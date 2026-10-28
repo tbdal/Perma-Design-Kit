@@ -137,6 +137,7 @@ export function normalizePolyculture(raw: unknown): Polyculture | null {
           plantId: safeId(m.plantId),
           role: ROLES.has(m.role as PolycultureRole) ? m.role as PolycultureRole : 'other',
           notes: str(m.notes, ''),
+          ...(Number.isFinite(m.dxM) && Number.isFinite(m.dyM) ? { dxM: m.dxM as number, dyM: m.dyM as number } : {}),
         }))
       : [],
     notes: str(raw.notes, ''),

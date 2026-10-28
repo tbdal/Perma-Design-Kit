@@ -40,6 +40,9 @@ export interface PolycultureMember {
   plantId: string;
   role: PolycultureRole;
   notes: string;
+  /** Own arrangement: metres from the anchor (x east, y south); placing the polyculture in a plan keeps it. */
+  dxM?: number;
+  dyM?: number;
 }
 
 export interface Polyculture {
