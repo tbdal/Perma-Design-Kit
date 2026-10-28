@@ -655,6 +655,18 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
         if (getContrast() === 'system') applyContrast('system');
       });
 
+      // Only one header menu open at a time: opening one closes the others (the toggles stop the
+      // click from bubbling to the "click anywhere closes" listeners, hence capture phase).
+      document.addEventListener('click', (e) => {
+        const btn = (e.target as Element).closest<HTMLElement>('.site-header .relative > button');
+        if (!btn?.nextElementSibling?.matches('div.absolute')) return;
+        document.querySelectorAll<HTMLElement>('.site-header .relative > button + div.absolute').forEach(panel => {
+          if (panel === btn.nextElementSibling) return;
+          panel.hidden = true;
+          panel.previousElementSibling?.setAttribute('aria-expanded', 'false');
+        });
+      }, true);
+
       const langToggle = document.getElementById('lang-toggle');
       const langMenu = document.getElementById('lang-menu');
       const langCurrent = document.getElementById('lang-current');

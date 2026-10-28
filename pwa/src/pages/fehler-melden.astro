@@ -40,7 +40,7 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
   <script>
     import { applyStaticI18n, getLang } from '../lib/i18n/core';
     import { reportDict } from '../lib/i18n/dict-report';
-    import { buildDebugInfo, environmentLine, issueUrl, mailtoUrl, APP_VERSION, type ReportText } from '../lib/bug-report';
+    import { buildDebugInfo, environmentLine, issueUrl, mailtoUrl, APP_VERSION, REPORT_MAIL, type ReportText } from '../lib/bug-report';
 
     applyStaticI18n(reportDict);
     const page = document.getElementById('rp-page') as HTMLInputElement;
@@ -60,28 +60,45 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
     const text = (): ReportText => ({ page: page.value.trim(), what: what.value.trim(), expected: expected.value.trim() });
 
     const status = document.getElementById('rp-status')!;
+    const makeFile = async () => {
+      const info = await buildDebugInfo(text(), withProject.checked);
+      return new File([JSON.stringify(info, null, 2)], `pdk-debug-${APP_VERSION}-${new Date().toISOString().slice(0, 10)}.json`, { type: 'application/json' });
+    };
+    function download(f: File) {
+      const url = URL.createObjectURL(f);
+      const a = document.createElement('a');
+      a.href = url; a.download = f.name;
+      document.body.appendChild(a); a.click(); a.remove();
+      // Revoking at once cancels the download in Firefox/Safari: keep the link for a while.
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      status.textContent = `${f.name} (${(f.size / 1024).toFixed(0)} kB)`;
+    }
+    const failed = (err: unknown) => { status.textContent = `${getLang() === 'de' ? 'Die Datei konnte nicht erzeugt werden' : 'The file could not be created'}: ${err instanceof Error ? err.message : String(err)}`; };
     document.getElementById('rp-download')!.addEventListener('click', async () => {
       status.textContent = '…';
-      try {
-        const info = await buildDebugInfo(text(), withProject.checked);
-        const blob = new Blob([JSON.stringify(info, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = `pdk-debug-${APP_VERSION}-${new Date().toISOString().slice(0, 10)}.json`;
-        document.body.appendChild(a); a.click(); a.remove();
-        // Revoking at once cancels the download in Firefox/Safari: keep the link for a while.
-        setTimeout(() => URL.revokeObjectURL(url), 60_000);
-        status.textContent = `${a.download} (${(blob.size / 1024).toFixed(0)} kB)`;
-      } catch (err) {
-        status.textContent = `${getLang() === 'de' ? 'Die Datei konnte nicht erzeugt werden' : 'The file could not be created'}: ${err instanceof Error ? err.message : String(err)}`;
-      }
+      try { download(await makeFile()); } catch (err) { failed(err); }
     });
 
-    form.addEventListener('submit', e => {
+    // A link can't carry a file: the debug file is made on sending and either handed to the phone's
+    // share sheet (mail app with attachment) or downloaded, ready to drag into the GitHub issue / mail.
+    form.addEventListener('submit', async e => {
       e.preventDefault();
       const action = ((e as SubmitEvent).submitter as HTMLButtonElement | null)?.dataset.action;
-      if (action === 'mail') location.href = mailtoUrl(text(), env, getLang() === 'de');
-      else window.open(issueUrl(text(), env), '_blank', 'noopener');
+      const de = getLang() === 'de';
+      let file: File | null = null;
+      status.textContent = '…';
+      try { file = await makeFile(); } catch (err) { failed(err); }
+      if (action === 'mail') {
+        const share = { files: file ? [file] : [] };
+        if (file && navigator.canShare?.(share)) {
+          try { await navigator.share({ ...share, title: `[${page.value.trim()}] PDK`, text: `${REPORT_MAIL}\n\n${what.value.trim()}\n\n${env}` }); status.textContent = file.name; return; } catch (err) { if ((err as Error).name === 'AbortError') return; }
+        }
+        if (file) download(file);
+        location.href = mailtoUrl(text(), env, de);
+      } else {
+        if (file) download(file);
+        if (!window.open(issueUrl(text(), env), '_blank', 'noopener')) location.href = issueUrl(text(), env);
+      }
     });
   </script>
 </Layout>

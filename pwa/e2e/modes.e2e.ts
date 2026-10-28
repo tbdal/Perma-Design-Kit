@@ -127,3 +127,17 @@ test('admin overrides from the server apply; admin page edits them', async ({ pa
   expect(saved).toEqual({ features: { 'simple-guide': [], water: ['simple', 'classic', 'expert', 'team'], zones: [] } });
   void errors;
 });
+
+test('only one header menu is open at a time', async ({ page }) => {
+  await stubNetwork(page);
+  await page.addInitScript(() => { try { localStorage.setItem('pdk-welcome-seen', '1'); } catch { /* ignore */ } });
+  await page.goto('/');
+  await page.click('#lang-toggle');
+  await expect(page.locator('#lang-menu')).toBeVisible();
+  await page.click('#display-toggle');
+  await expect(page.locator('#display-menu')).toBeVisible();
+  await expect(page.locator('#lang-menu')).toBeHidden();
+  await page.click('#mode-toggle');
+  await expect(page.locator('#mode-menu')).toBeVisible();
+  await expect(page.locator('#display-menu')).toBeHidden();
+});
