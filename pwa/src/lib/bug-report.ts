@@ -27,7 +27,9 @@ export function redact<T>(value: T): T {
 }
 
 export function environmentLine(): string {
-  return `Version ${APP_VERSION} · ${navigator.userAgent} · ${innerWidth}×${innerHeight} @${devicePixelRatio}x · ${document.documentElement.lang}`;
+  // The last script errors of this tab go into the issue / mail text, too (not only the debug file).
+  const errs = capturedErrors().slice(-3).map(e => `\n${e.t.slice(11, 19)} ${e.msg.slice(0, 200)} (${e.src ?? ''})`).join('');
+  return `Version ${APP_VERSION} · ${navigator.userAgent} · ${innerWidth}×${innerHeight} @${devicePixelRatio}x · ${document.documentElement.lang}${errs ? `\nFehler:${errs}` : ''}`;
 }
 
 export async function buildDebugInfo(text: ReportText, includeProject: boolean): Promise<Record<string, unknown>> {

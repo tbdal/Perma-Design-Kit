@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Fehler melden 2026-10-28
+- [x] **Fehler melden:** die letzten Fehlermeldungen der Sitzung stehen jetzt auch im Text für GitHub bzw. E-Mail (bisher nur in der Debug-Datei) #bugs #prüfen
+
 ## Kamerawinkel 2026-10-28
 - [x] **3D-Ansicht:** nach Verschieben des 2D-Ausschnitts behält die Rückkehr in 3D Blickwinkel und Abstand der Kamera (vorher Blick senkrecht von oben) #bugs #prüfen
 
