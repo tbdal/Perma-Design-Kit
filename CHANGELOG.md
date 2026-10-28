@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Kamerawinkel 2026-10-28
+- [x] **3D-Ansicht:** nach Verschieben des 2D-Ausschnitts behält die Rückkehr in 3D Blickwinkel und Abstand der Kamera (vorher Blick senkrecht von oben) #bugs #prüfen
+
 ## Hinweise, Zeichnen, Verlauf 2026-10-27
 - [x] **Hinweise zu einer Pflanze:** Klick auf eine Pflanze mit rotem Hinweis-Zeichen zeigt im Feld „Ausgewählt“ den Text der Hinweise (zu eng, Schatten, Nachbarn …). In der Hinweisliste steht, wie viele über die ersten 30 hinaus es gibt #bugs
 - [x] **Fläche zeichnen, Reihe, Messen:** die Linie vom letzten Punkt zum Mauszeiger zeigt live ihre Länge #minor

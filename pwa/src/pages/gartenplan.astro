@@ -1703,7 +1703,13 @@ import Layout from '../layouts/Layout.astro';
     // we restore the last 3D camera if 2D wasn't moved, else look straight
     // down onto the section 2D showed.
     const unchanged2d = last2dView && ['x', 'y', 'w', 'h'].every(k => Math.abs((last2dView as any)[k] - (planView as any)[k]) < 1e-6);
-    const camera = view3d?.getCameraState() ?? (unchanged2d ? last3dCamera : null);
+    let camera = view3d?.getCameraState() ?? (unchanged2d ? last3dCamera : null);
+    if (!camera && last3dCamera) {
+      // 2D was moved: keep the viewing angle and distance, only re-aim at the middle of the 2D section.
+      const { minX, maxX, minY, maxY } = viewRectM(), { position: p, target: t } = last3dCamera;
+      const cx = (minX + maxX) / 2, cz = (minY + maxY) / 2;
+      camera = { target: [cx, t[1], cz], position: [cx + p[0] - t[0], p[1], cz + p[2] - t[2]] };
+    }
     const from2d = !view3d; // not a rebuild of an open 3D view
     if (from2d) view2dAtEnter3d = { ...planView };
     view3d?.dispose();
