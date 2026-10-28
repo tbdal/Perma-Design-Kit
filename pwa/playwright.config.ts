@@ -11,7 +11,7 @@ export default defineConfig({
   testMatch: /.*\.e2e\.ts$/,
   timeout: 60_000,
   fullyParallel: true,
-  workers: 4,
+  workers: 2, // the VPS has 2 cores; 4 software-GL browsers made random tests time out
   reporter: [['list']],
   use: {
     baseURL: `http://127.0.0.1:${PORT}`,
