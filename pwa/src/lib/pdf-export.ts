@@ -568,7 +568,7 @@ function pushCircleClip(page: ReturnType<PDFDocument['addPage']>, cx: number, cy
   );
 }
 
-const FIXED_DISC_MM = 60; // fixedDisc mode: disc always 6 cm, a thin ring marks the true-scale crown
+const FIXED_DISC_MM = 60; // fixedDisc mode: disc always 6 cm, a thin ring marks the true-scale crown (only when bigger than the disc)
 
 /** Returns how many discs had to be shrunk to fit the paper (bigger than the
  *  page), plus the plants left out entirely for falling under minSizeMm
@@ -576,8 +576,7 @@ const FIXED_DISC_MM = 60; // fixedDisc mode: disc always 6 cm, a thin ring marks
 export async function exportBaumscheibeScaledPDF(plants: PlantData[], scale: number, paper: ScaledPaper, minSizeMm = 0, fixedDisc = false): Promise<{ pages: number; shrunk: number; discarded: PlantData[] }> {
   plants = expandByPrintCount(plants);
   if (plants.length === 0 || !(scale > 0)) return { pages: 0, shrunk: 0, discarded: [] };
-  // Fixed discs stay readable at any plant size, so the minimum only applies to true-scale discs.
-  const discarded = minSizeMm > 0 && !fixedDisc ? plants.filter(p => discDiameterMm(p, scale) < minSizeMm) : [];
+  const discarded = minSizeMm > 0 ? plants.filter(p => discDiameterMm(p, scale) < minSizeMm) : [];
   if (discarded.length > 0) plants = plants.filter(p => discDiameterMm(p, scale) >= minSizeMm);
   if (plants.length === 0) return { pages: 0, shrunk: 0, discarded };
   const { w: pw, h: ph } = PAPER_MM[paper];
@@ -602,7 +601,7 @@ export async function exportBaumscheibeScaledPDF(plants: PlantData[], scale: num
         return `<div style="position:absolute;left:${c.cx - clipD / 2}mm;top:${c.cy - clipD / 2}mm;width:${clipD}mm;height:${clipD}mm;border-radius:50%;overflow:hidden;">` +
           `<div style="position:absolute;left:${(clipD - side) / 2}mm;top:${(clipD - side) / 2}mm;width:${side}mm;height:${side}mm;">` +
           `${svgs[c.index].replace('<svg', '<svg style="width:100%;height:100%;display:block;"')}</div></div>` +
-          (fixedDisc ? `<div style="position:absolute;left:${c.cx - ring / 2}mm;top:${c.cy - ring / 2}mm;width:${ring}mm;height:${ring}mm;box-sizing:border-box;border:0.3mm solid #555;border-radius:50%;"></div>` : '');
+          (fixedDisc && ring > disc ? `<div style="position:absolute;left:${c.cx - ring / 2}mm;top:${c.cy - ring / 2}mm;width:${ring}mm;height:${ring}mm;box-sizing:border-box;border:0.3mm solid #555;border-radius:50%;"></div>` : '');
       }).join('');
       const caption = `<div style="position:absolute;left:${SCALED_PAGE_MARGIN_MM}mm;bottom:1.2mm;font:6pt Helvetica,Arial,sans-serif;color:#999;">Maßstab 1:${scale}</div>`;
       return `<div style="position:relative;width:${pw}mm;height:${ph}mm;overflow:hidden;${pg < pageCount - 1 ? 'page-break-after:always;' : ''}">${cells}${caption}</div>`;
@@ -634,7 +633,7 @@ export async function exportBaumscheibeScaledPDF(plants: PlantData[], scale: num
     pushCircleClip(page, cxPt, cyPt, pt(disc / 2 * clipOverDisc));
     page.drawImage(img, { x: cxPt - pt(sideMm) / 2, y: cyPt - pt(sideMm) / 2, width: pt(sideMm), height: pt(sideMm) });
     page.pushOperators(popGraphicsState());
-    if (fixedDisc) page.drawCircle({ x: cxPt, y: cyPt, size: pt(ring / 2), borderWidth: pt(0.3), borderColor: rgb(0.33, 0.33, 0.33) });
+    if (fixedDisc && ring > disc) page.drawCircle({ x: cxPt, y: cyPt, size: pt(ring / 2), borderWidth: pt(0.3), borderColor: rgb(0.33, 0.33, 0.33) });
   }
   downloadPdf(await finishPdf(pdfDoc, { title: `Perma Design Kit – Baumscheiben 1:${scale}`, plants, footerMm: 1.2, footerAlign: 'right' }), `baumscheiben-1zu${scale}-${paper}.pdf`);
   return { pages: pageCount, shrunk, discarded };

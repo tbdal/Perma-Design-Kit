@@ -551,6 +551,7 @@ test('2D aerial photo: a tile that fails once is tried again before the coarse s
 });
 
 test('aerial photo of a big plan: 3D loads the ground in front at the finest zoom, the status shows until every tile is there', async ({ page, errors }) => {
+  test.setTimeout(120_000); // software WebGL on the VPS is slow when the whole suite runs in parallel
   await stubNetwork(page);
   const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/58BAwAI/AL+hc2rNAAAAABJRU5ErkJggg==', 'base64');
   const zooms: number[] = [];

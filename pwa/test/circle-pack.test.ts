@@ -9,7 +9,7 @@ describe('discAndRing', () => {
     expect(discAndRing(40, 60, 30, 60)).toEqual({ disc: 60, ring: 40 });
     expect(discAndRing(120, 120, 60, 60)).toEqual({ disc: 60, ring: 120 });
   });
-  it('a circle the packer shrank to half shrinks disc and ring together', () => {
-    expect(discAndRing(400, 400, 100, 60)).toEqual({ disc: 30, ring: 200 });
+  it('a circle the packer shrank to half shrinks only the ring, the fixed disc stays', () => {
+    expect(discAndRing(400, 400, 100, 60)).toEqual({ disc: 60, ring: 200 });
   });
 });

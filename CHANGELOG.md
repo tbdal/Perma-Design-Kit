@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Maßstabs-PDF Nachbesserung 2026-10-28
+- [x] **Maßstabs-PDF (fixe Scheibe):** Scheibe bleibt immer exakt 6 cm (auch wenn der Ring verkleinert werden muss), Ring nur bei Pflanzen größer als 6 cm, Min. Größe gilt auch hier und steht standardmäßig auf 6 cm #bugs #prüfen
+
 ## Definitionen 2026-10-28
 - [x] **Hilfe:** neuer Abschnitt „Definitionen“ (Polykultur = räumlich begrenzte Pflanzengemeinschaft, Gilde = systemübergreifende Ökosystemfunktion) #minor #prüfen
 
