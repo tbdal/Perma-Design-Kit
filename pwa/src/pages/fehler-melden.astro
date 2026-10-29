@@ -20,7 +20,7 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
       </label>
       <p class="text-xs text-stone-500 dark:text-stone-400"><span data-i18n="rpEnv">Wird automatisch ergänzt:</span> <code id="rp-env" class="break-all"></code></p>
 
-      <div class="rounded-lg bg-stone-50 dark:bg-stone-900 p-3 text-sm">
+      <div id="rp-filebox" class="rounded-lg bg-stone-50 dark:bg-stone-900 p-3 text-sm">
         <p class="font-medium" data-i18n="rpFileTitle">Debug-Datei (optional)</p>
         <p class="mt-1 text-xs text-stone-500 dark:text-stone-400" data-i18n="rpFileBody">Enthält Version, Browser, Fenstergröße, Einstellungen ohne Zugangsdaten, die Anzahl deiner Pflanzen und Pläne und die letzten Fehlermeldungen dieses Tabs.</p>
         <label class="mt-2 inline-flex items-start gap-2 text-xs"><input type="checkbox" id="rp-project" class="mt-0.5 accent-green-600" /> <span data-i18n="rpIncludeProject">Auch mein Projekt beilegen (Pflanzen, Polykulturen, Pläne mit Standort und Notizen) – nur, wenn der Fehler damit zu tun hat.</span></label>
@@ -42,6 +42,16 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
     import { reportDict } from '../lib/i18n/dict-report';
     import { buildDebugInfo, environmentLine, issueUrl, mailtoUrl, APP_VERSION, REPORT_MAIL, type ReportText } from '../lib/bug-report';
 
+    // ?art=idee (Feedback → "Idee einreichen"): the same form for an idea; no debug file.
+    const idea = new URLSearchParams(location.search).get('art') === 'idee';
+    if (idea) {
+      for (const [from, to] of [['rpTitle', 'rpIdeaTitle'], ['rpIntro', 'rpIdeaIntro'], ['rpWhat', 'rpIdeaWhat'], ['rpWhatPlaceholder', 'rpIdeaWhatPlaceholder'], ['rpExpected', 'rpIdeaWhy'], ['rpGithub', 'rpIdeaGithub']]) {
+        document.querySelectorAll(`[data-i18n="${from}"]`).forEach(el => el.setAttribute('data-i18n', to));
+        document.querySelectorAll(`[data-i18n-placeholder="${from}"]`).forEach(el => el.setAttribute('data-i18n-placeholder', to));
+      }
+      document.getElementById('rp-filebox')!.hidden = true;
+      document.title = document.title.replace(/Fehler melden|Report a problem/, getLang() === 'de' ? 'Idee einreichen' : 'Suggest an idea');
+    }
     applyStaticI18n(reportDict);
     const page = document.getElementById('rp-page') as HTMLInputElement;
     const what = document.getElementById('rp-what') as HTMLTextAreaElement;
@@ -57,7 +67,7 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
     const env = environmentLine();
     document.getElementById('rp-env')!.textContent = env;
 
-    const text = (): ReportText => ({ page: page.value.trim(), what: what.value.trim(), expected: expected.value.trim() });
+    const text = (): ReportText => ({ page: page.value.trim(), what: what.value.trim(), expected: expected.value.trim(), ...(idea ? { idea } : {}) });
 
     const status = document.getElementById('rp-status')!;
     const makeFile = async () => {
@@ -87,7 +97,8 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
       const de = getLang() === 'de';
       let file: File | null = null;
       status.textContent = '…';
-      try { file = await makeFile(); } catch (err) { failed(err); }
+      if (!idea) { try { file = await makeFile(); } catch (err) { failed(err); } }
+      else status.textContent = '';
       if (action === 'mail') {
         const share = { files: file ? [file] : [] };
         if (file && navigator.canShare?.(share)) {

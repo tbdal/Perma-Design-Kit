@@ -4,6 +4,10 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Feedback-Knopf 2026-10-29
+- [x] **Feedback unten rechts auf jeder Seite:** führt zu „Fehler melden“ oder neu „Idee einreichen“ (dieselbe Seite ohne Debug-Datei; auf GitHub als Issue mit Label „enhancement“, sonst per E-Mail), jeweils mit der Seite, von der man kam. Im Waldgartenplan am Handy ausgeblendet #minor #prüfen
+- [x] **Filter „Plan“:** der gewählte Plan war im grünen Auswahlfeld kaum lesbar #bugs #prüfen
+
 ## Plan, Pflanzenliste und Polykultur koppeln 2026-10-29
 - [x] **Pflanzen zeigen ihre Pläne:** Kachel, Tabelle und Handy-Liste tragen je Waldgartenplan einen Chip („Garten Süd · 3“); ein Klick öffnet den Plan mit diesen Pflanzen markiert. Beim Löschen nennt der Rückgängig-Hinweis, in wie vielen Plänen die Pflanze stand #minor #prüfen
 - [x] **Filter „Plan“ auf der Pflanzenseite:** ordnet die Liste in „Im Plan“ und „Nicht im Plan“, darin nach Wuchsform, alles eingeklappt (wird je Gerät gemerkt), mit Zeile für gesetzte Pflanzen, die nicht in der Liste stehen. In der Kartenansicht druckt das PDF dann nur die Pflanzen des Plans, „Druckanzahl aus Plan“ übernimmt die Stückzahl #minor #prüfen

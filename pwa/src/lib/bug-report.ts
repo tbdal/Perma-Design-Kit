@@ -13,7 +13,8 @@ export const ERRORS_KEY = 'pdk-errors'; // written by public/boot.js
 declare const __PDK_VERSION__: string;
 export const APP_VERSION: string = typeof __PDK_VERSION__ !== 'undefined' ? __PDK_VERSION__ : 'dev';
 
-export interface ReportText { page: string; what: string; expected: string; }
+/** `idea`: an idea / wish instead of a problem (Feedback → "Idee einreichen"). */
+export interface ReportText { page: string; what: string; expected: string; idea?: boolean }
 
 export interface CapturedError { t: string; msg: string; src?: string; }
 
@@ -60,16 +61,23 @@ export async function buildDebugInfo(text: ReportText, includeProject: boolean):
 
 const body = (r: ReportText, env: string, de: boolean) => [
   `${de ? 'Seite' : 'Page'}: ${r.page}`, '',
-  `${de ? 'Was ist passiert?' : 'What happened?'}`, r.what || '…', '',
-  `${de ? 'Was hast du erwartet?' : 'What did you expect?'}`, r.expected || '…', '',
+  r.idea ? (de ? 'Idee' : 'Idea') : (de ? 'Was ist passiert?' : 'What happened?'), r.what || '…', '',
+  r.idea ? (de ? 'Wofür würde sie helfen?' : 'What would it help with?') : (de ? 'Was hast du erwartet?' : 'What did you expect?'), r.expected || '…', '',
   `${de ? 'Umgebung' : 'Environment'}: ${env}`,
 ].join('\n');
 
-const title = (r: ReportText) => `[${r.page}] ${(r.what.split('\n')[0] || 'Fehler').slice(0, 80)}`;
+const title = (r: ReportText) => `${r.idea ? 'Idee: ' : ''}[${r.page}] ${(r.what.split('\n')[0] || (r.idea ? 'Idee' : 'Fehler')).slice(0, 80)}`;
 
 /** New-issue link with the issue form (.github/ISSUE_TEMPLATE/bug_report.yml) pre-filled. */
 export function issueUrl(r: ReportText, env: string): string {
   const u = new URL(`https://github.com/${REPORT_REPO}/issues/new`);
+  if (r.idea) {
+    // Ideas skip the bug form: a plain issue labelled "enhancement".
+    u.searchParams.set('labels', 'enhancement');
+    u.searchParams.set('title', title(r));
+    u.searchParams.set('body', body(r, env, true).slice(0, 3500));
+    return u.toString();
+  }
   u.searchParams.set('template', 'bug_report.yml');
   u.searchParams.set('title', title(r));
   u.searchParams.set('seite', r.page);

@@ -1905,11 +1905,15 @@ import Layout from '../layouts/Layout.astro';
   function renderPlanFilterOptions() {
     filterPlanEl.classList.toggle('hidden', gardenPlans.length === 0);
     if (planFilter && !shownPlan()) { planFilter = ''; try { localStorage.removeItem('pdk-plan-filter'); } catch {} }
-    filterPlanEl.innerHTML = `<option value="">${escapeHtml(t('filterPlanAll'))}</option>`
-      + gardenPlans.map(g => `<option value="${escapeHtml(g.id)}">${escapeHtml(t('filterPlanOption', { name: g.name || '–' }))}</option>`).join('');
+    // Options keep dark text on light ground, also while the chosen plan makes the select green with white text.
+    const opt = 'class="bg-white text-stone-800 dark:bg-stone-800 dark:text-stone-100"';
+    filterPlanEl.innerHTML = `<option value="" ${opt}>${escapeHtml(t('filterPlanAll'))}</option>`
+      + gardenPlans.map(g => `<option value="${escapeHtml(g.id)}" ${opt}>${escapeHtml(t('filterPlanOption', { name: g.name || '–' }))}</option>`).join('');
     filterPlanEl.value = planFilter;
-    filterPlanEl.classList.toggle('bg-green-700', !!planFilter);
-    filterPlanEl.classList.toggle('text-white', !!planFilter);
+    const active = !!planFilter;
+    // Same switch as the other active filters (syncDropdownSummary): the stone ground and text must go, or they win over green/white.
+    for (const c of ['bg-green-700', 'text-white']) filterPlanEl.classList.toggle(c, active);
+    for (const c of ['bg-stone-100', 'dark:bg-stone-800', 'text-stone-600', 'dark:text-stone-300']) filterPlanEl.classList.toggle(c, !active);
   }
   filterPlanEl.addEventListener('change', () => {
     planFilter = filterPlanEl.value;
