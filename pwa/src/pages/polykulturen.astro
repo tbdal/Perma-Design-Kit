@@ -58,6 +58,16 @@ import Layout from '../layouts/Layout.astro';
           <h2 class="mb-3 text-base font-semibold text-stone-800 dark:text-stone-100" data-i18n="membersHeading">Mitglieder</h2>
           <div id="member-list" class="space-y-2"></div>
           <div class="mt-3 text-xs text-stone-500 dark:text-stone-400" data-i18n="membersHint">Mitglieder aus dem Vorschlags-Panel rechts hinzufügen.</div>
+          <!-- Issue 3: fill the open roles in one go, then straight into a plan -->
+          <div class="mt-3 flex flex-wrap items-center gap-2 border-t border-stone-200 dark:border-stone-700 pt-3">
+            <button id="btn-autofill" type="button" data-i18n="btnAutoFill" data-i18n-title="btnAutoFillTitle" title="Je offene Rolle die am besten passende Pflanze aus deinem Bestand" class="rounded-md bg-stone-100 dark:bg-stone-700 px-2.5 py-1 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Rollen automatisch füllen</button>
+            <span class="flex flex-wrap items-center gap-1.5">
+              <label for="place-plan" class="text-xs font-medium text-stone-500 dark:text-stone-400" data-i18n="placeInPlanLabel">Im Waldgartenplan setzen</label>
+              <select id="place-plan" class="max-w-[12rem] rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-1.5 py-1 text-xs"></select>
+              <button id="btn-place-in-plan" type="button" data-i18n="btnPlaceInPlan" class="rounded-md bg-green-700 px-2.5 py-1 text-xs font-medium text-white hover:bg-green-800 disabled:opacity-40">Setzen</button>
+            </span>
+          </div>
+          <p id="pc-in-plans" class="mt-2 hidden text-xs text-sky-800 dark:text-sky-300"></p>
         </div>
         <div id="polyculture-extra" class="space-y-4"></div>
 
@@ -105,6 +115,10 @@ import Layout from '../layouts/Layout.astro';
   import { importPlants } from '../lib/db';
   import { providePageApi } from '../lib/expert-api';
   import { compatScore } from '../lib/compat';
+  import { getAllGardenPlans } from '../lib/db';
+  import { polycultureUsage } from '../lib/plan-usage';
+  import { autoFillRoles } from '../lib/polyculture-autofill';
+  import type { GardenPlan } from '../lib/types';
   import { polycultureFromGroup, allGroups } from '../lib/polyculture-from-group';
   import { createT, applyStaticI18n } from '../lib/i18n/core';
   import { polyculturesDict } from '../lib/i18n/dict-polykulturen';
@@ -152,6 +166,12 @@ import Layout from '../layouts/Layout.astro';
   let plantsById = new Map<string, PlantData>();
   let polycultures: Polyculture[] = [];
   let editing: Polyculture | null = null;
+  let gardenPlans: GardenPlan[] = [];
+  /** "In Plänen: Garten Süd 2×" for a polyculture, from the packages placed in the plans (lib/plan-usage.ts). */
+  function inPlansText(pc: Polyculture): string {
+    const uses = polycultureUsage(gardenPlans).get(pc.id) ?? [];
+    return uses.length ? t('inPlans', { list: uses.map(u => t('inPlanItem', { name: u.name || '–', n: u.packages })).join(', ') }) : '';
+  }
 
   // ── Plugins (expert-api.ts PolykulturenApi) ────────────────────────────
   const cardExtras: ((pc: Polyculture) => string | null)[] = [];
@@ -212,6 +232,7 @@ import Layout from '../layouts/Layout.astro';
           <p class="mt-2 text-sm text-stone-700 dark:text-stone-200"><span class="text-stone-500 dark:text-stone-400">${t('anchorLabel')}</span> ${plantLabel(anchor)}</p>
           <div class="mt-3 flex flex-wrap items-center gap-1">${memberChips} ${more}</div>
           <p class="mt-3 text-xs text-stone-500 dark:text-stone-400">${memberCount} · ${t('rolesFilled', { filled: filledRoles.size, total: ROLES.length })}</p>
+          ${inPlansText(g) ? `<p class="mt-1 text-xs text-sky-800 dark:text-sky-300">${escapeHtml(inPlansText(g))}</p>` : ''}
           ${cardExtras.map(x => { try { return x(g) ?? ''; } catch { return ''; } }).join('')}
         </article>`;
     }).join('');
@@ -231,6 +252,7 @@ import Layout from '../layouts/Layout.astro';
       .join('');
     renderMembers();
     renderSuggestions();
+    renderPlacePlan();
     listView.hidden = true;
     editorView.hidden = false;
     fitDescription();
@@ -394,6 +416,45 @@ import Layout from '../layouts/Layout.astro';
     });
   }
 
+  // ── Issue 3: fill roles, place in a plan ───────────────────────────────
+  const placePlan = document.getElementById('place-plan') as HTMLSelectElement;
+  const placeBtn = document.getElementById('btn-place-in-plan') as HTMLButtonElement;
+  function renderPlacePlan() {
+    if (!editing) return;
+    placePlan.innerHTML = gardenPlans.length
+      ? gardenPlans.map(g => `<option value="${escapeHtml(g.id)}">${escapeHtml(g.name || '–')}</option>`).join('')
+      : `<option value="">${escapeHtml(t('placeNoPlans'))}</option>`;
+    placePlan.disabled = !gardenPlans.length;
+    placeBtn.disabled = !gardenPlans.length;
+    const text = inPlansText(editing);
+    const el = document.getElementById('pc-in-plans')!;
+    el.textContent = text;
+    el.classList.toggle('hidden', !text);
+  }
+  document.getElementById('btn-autofill')!.addEventListener('click', () => {
+    if (!editing) return;
+    const anchorId = fAnchor.value || editing.anchorPlantId;
+    const anchor = anchorId ? plantsById.get(anchorId) : undefined;
+    if (!anchor) { showToast(t('chooseAnchorFirst')); return; }
+    const filled = new Set(editing.members.map(m => m.role));
+    const open = ROLES.filter(r => !filled.has(r) && r !== 'other');
+    const add = autoFillRoles(anchor, plants, new Set([anchor.id, ...editing.members.map(m => m.plantId)]), open);
+    for (const a of add) editing.members.push({ ...a, notes: '' });
+    renderMembers();
+    renderSuggestions();
+    showToast(add.length ? t('toastAutoFill', { n: add.length }) : t('toastAutoFillNone'));
+  });
+  placeBtn.addEventListener('click', async () => {
+    if (!editing || !placePlan.value) return;
+    if (!fName.value.trim()) { alert(t('alertEnterName')); return; }
+    editing.name = fName.value.trim();
+    editing.description = fDescription.value.trim();
+    editing.notes = fNotes.value;
+    editing.anchorPlantId = fAnchor.value || null;
+    await savePolyculture(editing);
+    location.href = `/gartenplan/?plan=${encodeURIComponent(placePlan.value)}&paket=${encodeURIComponent(editing.id)}`;
+  });
+
   // ── Init + handlers ────────────────────────────────────────────────────
   async function loadCurated() {
     try {
@@ -407,8 +468,21 @@ import Layout from '../layouts/Layout.astro';
     plants = await getAllPlants();
     plantsById = new Map(plants.map(p => [p.id, p]));
     polycultures = await getAllPolycultures();
+    gardenPlans = await getAllGardenPlans();
     renderList();
     renderGroupSelect();
+    // Issue 3: from a plant ("Polykultur mit dieser Pflanze als Anker") straight into a new polyculture.
+    const anker = new URLSearchParams(location.search).get('anker');
+    if (anker && plantsById.has(anker)) {
+      openEditor(null);
+      editing!.anchorPlantId = anker;
+      fName.value = displayName(plantsById.get(anker)!) || plantsById.get(anker)!.latinName;
+      fAnchor.value = anker;
+      renderSuggestions();
+      const url = new URL(location.href);
+      url.searchParams.delete('anker');
+      history.replaceState(history.state, '', url.pathname + url.search + url.hash);
+    }
   }
 
   // ── Gruppe als Polykultur ──────────────────────────────────────────────

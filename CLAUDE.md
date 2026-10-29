@@ -39,7 +39,7 @@ Run `npm run check` and `npm test` before committing (check the summary for `1 e
 
 **Central field table** (`src/lib/plant-fields.ts`): every boolean `PlantData` field is listed once in `BOOL_FIELDS` with its DE/EN label, CSV column, legacy CSV column, and badge/dot/PDF-chip styling. Form bindings, CSV import/export, table dots and legend, table-PDF chips and the `fld_<key>` i18n labels are all derived from it. A new boolean field = one entry there + its checkbox markup (`data-field` + `id="f-<key>"`); `test/plant-fields.test.ts` fails if a boolean field is missing from the table.
 
-**Plant list logic** lives outside `index.astro`: filtering/sorting in `src/lib/plant-list.ts`, badges/completeness/group pills in `src/lib/plant-detail.ts`, enrichment (Wikidata + PFAF merge) in `src/lib/enrich.ts`, CSV in `src/lib/csv.ts`.
+**Plant list logic** lives outside `index.astro`: filtering/sorting in `src/lib/plant-list.ts`, badges/completeness/group pills in `src/lib/plant-detail.ts`, enrichment (Wikidata + PFAF merge) in `src/lib/enrich.ts`, CSV in `src/lib/csv.ts`. Where a plant stands (plan chips, "Plan" filter, "In Plänen" on polycultures) is never stored on the plant: `src/lib/plan-usage.ts` reads it from the plans' placements on every render. Placements may carry `plantedYear` and, when placed as a polyculture package, `polycultureId` + `packageId`. Rollback point before this: git tag `vor-435` (both repos).
 
 **Data flow:**
 1. Plant data lives in IndexedDB (`permaculture-guilds` DB, `plants` store) — `src/lib/db.ts`

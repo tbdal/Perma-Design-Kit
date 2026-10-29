@@ -5,6 +5,7 @@ import { deriveLayer } from './plant-layer';
 import { AREA_PALETTE } from './gartenplan-render';
 import { newId } from './id';
 import { ageAt } from './phases';
+import { tidyName } from './plant-match';
 
 // GeoJSON exchange with QGIS & co. One FeatureCollection in WGS84 (RFC 7946,
 // lon/lat): the garden outline and areas as polygons, plants as points with
@@ -121,18 +122,18 @@ export function planFromGeoJson(fc: unknown, existingPlants: PlantData[], spacin
   })).filter(a => a.points.length >= 3);
 
   const byId = new Map(existingPlants.map(p => [p.id, p]));
-  const byLatin = new Map(existingPlants.filter(p => p.latinName).map(p => [p.latinName.trim().toLowerCase(), p]));
+  const byLatin = new Map(existingPlants.filter(p => p.latinName).map(p => [tidyName(p.latinName), p]));
   const newPlants: PlantData[] = [];
   let matched = 0;
   for (const pt of points) {
     const pid = str(pt.props.plant_id);
     const latin = (str(pt.props.latin_name) || str(pt.props.name) || str(pt.props.Name)).trim();
-    let plant = (pid && byId.get(pid)) || (latin && byLatin.get(latin.toLowerCase())) || undefined;
+    let plant = (pid && byId.get(pid)) || (latin && byLatin.get(tidyName(latin))) || undefined;
     if (plant) matched++;
     else {
       plant = { ...createEmptyPlant(), latinName: latin || 'Unbekannte Pflanze', commonName: str(pt.props.common_name) };
       newPlants.push(plant);
-      if (latin) byLatin.set(latin.toLowerCase(), plant);
+      if (latin) byLatin.set(tidyName(latin), plant);
     }
     const q = toPlan(pt.pos);
     plan.placements.push({ id: str(pt.props.pdk_id) || newId(), plantId: plant.id, xM: q.xM, yM: q.yM, notes: str(pt.props.notes) });

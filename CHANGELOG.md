@@ -4,6 +4,14 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Plan, Pflanzenliste und Polykultur koppeln 2026-10-29
+- [x] **Pflanzen zeigen ihre Pläne:** Kachel, Tabelle und Handy-Liste tragen je Waldgartenplan einen Chip („Garten Süd · 3“); ein Klick öffnet den Plan mit diesen Pflanzen markiert. Beim Löschen nennt der Rückgängig-Hinweis, in wie vielen Plänen die Pflanze stand #minor #prüfen
+- [x] **Filter „Plan“ auf der Pflanzenseite:** ordnet die Liste in „Im Plan“ und „Nicht im Plan“, darin nach Wuchsform, alles eingeklappt (wird je Gerät gemerkt), mit Zeile für gesetzte Pflanzen, die nicht in der Liste stehen. In der Kartenansicht druckt das PDF dann nur die Pflanzen des Plans, „Druckanzahl aus Plan“ übernimmt die Stückzahl #minor #prüfen
+- [x] **Druckanzahl nur noch, wo gedruckt wird:** Kartenansicht, Tabelle und Bearbeiten-Formular; in Kacheln und Handy-Liste entfällt sie #minor #prüfen
+- [x] **Polykultur in einem Zug in den Plan (GitHub-Issue 3):** im Bearbeiten-Formular „Polykultur mit dieser Pflanze als Anker“, im Polykultur-Editor „Rollen automatisch füllen“ und „Im Waldgartenplan setzen“ (öffnet den Plan mit dem Paket in der Hand); „Polykultur als Paket“ gibt es jetzt auch im Modus „Einfach“ #minor #prüfen
+- [x] **Gesetzte Pakete merken sich ihre Polykultur:** „Ganzes Paket markieren“ im Feld „Ausgewählt“, und die Polykultur zeigt „In Plänen: Garten Süd 2×“ #minor #prüfen
+- [x] **Doppelte Pflanzen beim Import:** Teilen-Link und GeoJSON-Import erkennen eine vorhandene Pflanze auch bei anderer Schreibweise (Groß/klein, Anführungszeichen, Bindestriche, Umlaute) #bugs #prüfen
+
 ## Maßstabs-PDF Nachbesserung 2026-10-28
 - [x] **Maßstabs-PDF (fixe Scheibe):** Scheibe bleibt immer exakt 6 cm (auch wenn der Ring verkleinert werden muss), Ring nur bei Pflanzen größer als 6 cm, Min. Größe gilt auch hier und steht standardmäßig auf 6 cm #bugs #prüfen
 

@@ -85,6 +85,8 @@ import Layout from '../layouts/Layout.astro';
   <div id="filter-bar" class="mb-4 flex flex-wrap items-center gap-2 text-xs">
     <span class="text-sm font-medium text-stone-500 dark:text-stone-400" data-i18n="filterLabel">Filter:</span>
     <input type="search" id="filter-text" data-i18n-placeholder="filterTextPlaceholder" placeholder="Name filtern…" class="w-40 rounded-full border-0 bg-stone-100 dark:bg-stone-800 px-2.5 py-1 text-xs text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:ring-2 focus:ring-green-400 focus:outline-none" />
+    <!-- Plan: arranges the list by one garden plan (options from the plans, see renderPlanFilterOptions) -->
+    <select id="filter-plan" data-i18n-aria-label="a11yFilterPlan" aria-label="Nach Waldgartenplan ordnen" class="hidden max-w-[14rem] rounded-full border-0 bg-stone-100 dark:bg-stone-800 px-2.5 py-1 font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-200 dark:ring-stone-700 focus:ring-2 focus:ring-green-400 focus:outline-none"></select>
     <span class="h-4 w-px bg-stone-300 dark:bg-stone-700"></span>
 
     <!-- Nutzung / Funktionen: multi-select dropdowns (OR within, AND across
@@ -238,6 +240,7 @@ import Layout from '../layouts/Layout.astro';
       <option value="baumscheibe" data-i18n="cardTypeBaumscheibe">Baumscheibe</option>
     </select>
     </div>
+    <button id="btn-print-from-plan" type="button" data-i18n="btnPrintFromPlan" data-i18n-title="btnPrintFromPlanTitle" title="Setzt die Druckanzahl jeder Pflanze auf die Zahl, wie oft sie im Plan steht" class="hidden rounded-lg bg-sky-50 dark:bg-sky-900/30 px-3 py-1.5 text-sm font-medium text-sky-800 dark:text-sky-200 ring-1 ring-sky-200 dark:ring-sky-800 hover:bg-sky-100 dark:hover:bg-sky-900/60">Druckanzahl aus Plan</button>
     <!-- Label and output buttons stay together: on a narrow screen the row breaks before them, not between them. -->
     <div class="flex flex-nowrap items-center gap-2">
     <span class="text-sm font-medium text-stone-500 dark:text-stone-400" data-i18n="cardOutputFormatLabel">Ausgabeformat</span>
@@ -458,7 +461,10 @@ import Layout from '../layouts/Layout.astro';
       <!-- Slots for expert modules (lib/expert-api.ts, PflanzenApi). -->
       <div id="editor-extra" class="mt-5 space-y-3 empty:hidden"></div>
       <div class="mt-5 flex justify-end gap-2">
-        <span id="editor-extra-buttons" class="mr-auto flex flex-wrap gap-2 empty:hidden"></span>
+        <span class="mr-auto flex flex-wrap items-center gap-2">
+          <button type="button" id="btn-anchor-polyculture" data-i18n="btnNewPolyculture" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-green-800 dark:text-green-300 ring-1 ring-green-300 dark:ring-green-800 transition hover:bg-green-50 dark:hover:bg-green-900/40">Polykultur mit dieser Pflanze als Anker</button>
+          <span id="editor-extra-buttons" class="flex flex-wrap gap-2 empty:hidden"></span>
+        </span>
         <button type="button" id="btn-cancel" data-i18n="btnCancel" class="rounded-lg px-4 py-2 text-sm font-medium text-stone-600 dark:text-stone-300 ring-1 ring-stone-300 dark:ring-stone-600 transition hover:bg-stone-100 dark:hover:bg-stone-700">Abbrechen</button>
         <button type="submit" data-i18n="btnSave" class="rounded-lg bg-green-700 px-5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">Speichern</button>
       </div>
@@ -479,6 +485,9 @@ import Layout from '../layouts/Layout.astro';
   import { importFromCSV, buildCSV, buildCSVTemplate } from '../lib/csv';
   import { parseBackup } from '../lib/sync';
   import { applyFilters, emptyFilters, sortPlants, allGroups, type ListFilters, type SortField } from '../lib/plant-list';
+  import { getAllGardenPlans } from '../lib/db';
+  import { planUsage, splitByPlan, habitGroup, HABIT_GROUPS, type PlanUse } from '../lib/plan-usage';
+  import type { GardenPlan } from '../lib/types';
   import { completenessPercent, badgeDefs, plantBadgesHtml, groupPillsHtml, dotHtml, type BadgeDef } from '../lib/plant-detail';
   import { BOOL_FIELD_KEYS, FORM_BOOL_FIELD_KEYS } from '../lib/plant-fields';
   import { initPlantSearchUi } from '../lib/plant-search-ui';
@@ -526,6 +535,15 @@ import Layout from '../layouts/Layout.astro';
   const leaveHolds: Promise<unknown>[] = [];
   const listChangeListeners: ((plants: PlantData[]) => void)[] = [];
   let cachedPlants: PlantData[] = [];
+  // Where each plant stands, read from the garden plans on every render (lib/plan-usage.ts).
+  let gardenPlans: GardenPlan[] = [];
+  let usage = new Map<string, PlanUse[]>();
+  /** "Plan" filter: id of the plan the list is arranged by, '' = all plants. */
+  let planFilter = '';
+  try { planFilter = localStorage.getItem('pdk-plan-filter') ?? ''; } catch {}
+  const shownPlan = () => gardenPlans.find(g => g.id === planFilter) ?? null;
+  /** Plants the card PDFs print: with a plan chosen only that plan's, else all (as before). */
+  const cardPlants = () => { const g = shownPlan(); return g ? splitByPlan(cachedPlants, g).inPlan : cachedPlants; };
   let lastCheckedId: string | null = null;
   let sortField: SortField = 'createdAt';
   let sortDir: 'asc' | 'desc' = 'asc';
@@ -857,6 +875,13 @@ import Layout from '../layouts/Layout.astro';
   }
 
   /** Colored left-border accent based on primary use */
+  /** One chip per plan the plant stands in; a click opens the plan with its placements selected. */
+  function planChipsHtml(p: PlantData, extraClass = ''): string {
+    const uses = usage.get(p.id);
+    if (!uses?.length) return '';
+    return `<div class="flex flex-wrap gap-1 ${extraClass}">${uses.map(u => `<a href="/gartenplan/?plan=${encodeURIComponent(u.planId)}&mark=${encodeURIComponent(p.id)}" title="${escapeHtml(t('planChipTitle'))}" class="rounded-full bg-sky-100 dark:bg-sky-900/40 px-2 py-0.5 text-[11px] font-medium text-sky-800 dark:text-sky-200 hover:bg-sky-200 dark:hover:bg-sky-900/70">${escapeHtml(u.planted ? t('planChipPlanted', { name: u.name || '–', n: u.count, planted: u.planted }) : t('planChip', { name: u.name || '–', n: u.count }))}</a>`).join('')}</div>`;
+  }
+
   function accentColor(p: PlantData): string {
     if (p.eatable || p.culinaric) return 'bg-amber-400';
     if (p.meds) return 'bg-rose-400';
@@ -899,6 +924,8 @@ import Layout from '../layouts/Layout.astro';
     const printCount = document.getElementById('bulk-print-count')!;
     const printCountHome = viewMode === 'cards' ? cardsToolbar : document.getElementById('filter-bar')!;
     if (printCount.parentElement !== printCountHome) printCountHome.appendChild(printCount);
+    // The print count only shows where it is used: cards and table, not the tiles.
+    printCount.classList.toggle('hidden', viewMode === 'grid');
     tableToolbar.style.display = viewMode === 'list' ? 'flex' : 'none';
     sortToolbar.style.display = 'flex'; // also in the table: the dropdown has "zuletzt hinzugefügt", which has no column
     (document.getElementById('sort-field-select') as HTMLSelectElement).value = sortField;
@@ -948,6 +975,9 @@ import Layout from '../layouts/Layout.astro';
 
   async function renderList() {
     cachedPlants = await getAllPlants();
+    gardenPlans = await getAllGardenPlans();
+    usage = planUsage(gardenPlans);
+    renderPlanFilterOptions();
     for (const cb of listChangeListeners) { try { cb(cachedPlants); } catch (err) { console.warn('expert list listener failed', err); } }
 
 
@@ -973,7 +1003,10 @@ import Layout from '../layouts/Layout.astro';
     // Sorting applies to all three views — list sorts via clickable table
     // headers, grid/cards via the sort-toolbar dropdown above — both drive
     // the same sortField/sortDir state.
-    const displayPlants = sortPlants(filtered, sortField, sortDir);
+    const plan = shownPlan();
+    document.getElementById('btn-print-from-plan')?.classList.toggle('hidden', !plan);
+    if (plan && viewMode !== 'cards') { renderPlanView(plan, sortPlants(filtered, sortField, sortDir)); syncFilterChips(filtered.length, cachedPlants.length); return; }
+    const displayPlants = sortPlants(plan ? filtered.filter(p => usage.get(p.id)?.some(u => u.planId === plan.id)) : filtered, sortField, sortDir);
     syncFilterChips(filtered.length, cachedPlants.length);
     const bulkPrintBtn = document.getElementById('btn-bulk-print-count');
     if (bulkPrintBtn) bulkPrintBtn.textContent = t('printCountAllBtn', { n: filtered.length });
@@ -1059,6 +1092,7 @@ import Layout from '../layouts/Layout.astro';
             </div>` : ''}
             ${(() => { const b = badges(p); return b ? `<div class="flex flex-wrap gap-1">${b}</div>` : ''; })()}
             ${groupPillsHtml(p, 'mt-1')}
+            ${planChipsHtml(p, 'mt-1')}
           </div>
           <!-- Footer: completeness bar + source chips -->
           <div class="flex items-center gap-2 border-t border-stone-100 px-4 py-2">
@@ -1067,7 +1101,6 @@ import Layout from '../layouts/Layout.astro';
             </div>
             <span class="text-[10px] tabular-nums text-stone-500 dark:text-stone-400">${pct}%</span>
             <span class="flex-1"></span>
-            ${printStepperHtml(p, t)}
             ${sourceChipsHtml(p)}
           </div>
         </div>`;
@@ -1116,6 +1149,7 @@ import Layout from '../layouts/Layout.astro';
                   <p class="truncate text-sm font-semibold text-stone-800 dark:text-stone-100">${escapeHtml(displayName(p))}</p>
                   <p class="truncate text-xs italic text-stone-500 dark:text-stone-400">${escapeHtml(p.latinName)}</p>
                   ${groupPillsHtml(p, 'mt-0.5')}
+                  ${planChipsHtml(p, 'mt-0.5')}
                 </div>
                 <div class="flex shrink-0 gap-1">${actionBtns(p)}</div>
               </div>
@@ -1137,7 +1171,6 @@ import Layout from '../layouts/Layout.astro';
                   <div class="h-full rounded-full ${barColor}" style="width:${pct}%"></div>
                 </div>
                 <span class="text-[10px] tabular-nums text-stone-500 dark:text-stone-400">${pct}%</span>
-                ${printHtml}
                 ${srcHtml ? `<span class="flex gap-1">${srcHtml}</span>` : ''}
               </div>
             </div>
@@ -1187,6 +1220,7 @@ import Layout from '../layouts/Layout.astro';
                     <div class="min-w-[7.5rem]">
                       <span class="font-medium text-stone-800 dark:text-stone-100">${escapeHtml(displayName(p))}</span>${p.varietyName ? ` <span class="text-stone-500 dark:text-stone-400">(${escapeHtml(p.varietyName)})</span>` : ''}
                       <div class="text-xs italic text-stone-500 dark:text-stone-400">${escapeHtml(p.latinName)}</div>
+                      ${planChipsHtml(p, 'mt-0.5')}
                     </div>
                   </div>
                 </td>
@@ -1399,6 +1433,7 @@ import Layout from '../layouts/Layout.astro';
     (document.getElementById('dialog-title') as HTMLElement).textContent = t('dialogTitleEdit');
     fillForm(plant);
     document.getElementById('btn-cancel')!.textContent = t('btnCloseEditor'); // changes are saved as you type
+    document.getElementById('btn-anchor-polyculture')!.classList.remove('hidden');
     dialog.showModal();
     notifyEditorOpen();
     return true;
@@ -1410,6 +1445,7 @@ import Layout from '../layouts/Layout.astro';
     (document.getElementById('dialog-title') as HTMLElement).textContent = t('dialogTitleNew');
     fillForm(createEmptyPlant());
     document.getElementById('btn-cancel')!.textContent = t('btnCancel');
+    document.getElementById('btn-anchor-polyculture')!.classList.add('hidden');
     dialog.showModal();
     notifyEditorOpen();
   });
@@ -1488,6 +1524,14 @@ import Layout from '../layouts/Layout.astro';
       } catch { autosaveNote.textContent = t('autosaveFailed'); }
     }, 900);
   };
+  // Issue 3: from the plant straight to a new polyculture with it as anchor (saved first, then on to the editor there).
+  document.getElementById('btn-anchor-polyculture')!.addEventListener('click', async () => {
+    if (!editingPlant) return;
+    clearTimeout(autosaveTimer);
+    const p = readForm();
+    if (p.latinName.trim()) await savePlant(p);
+    location.href = `/polykulturen/?anker=${encodeURIComponent(p.id)}`;
+  });
   form.addEventListener('input', queueAutosave);
   form.addEventListener('change', queueAutosave);
   dialog.addEventListener('close', () => { clearTimeout(autosaveTimer); autosaveNote.textContent = ''; });
@@ -1517,12 +1561,13 @@ import Layout from '../layouts/Layout.astro';
     renderList();
   });
   document.getElementById('btn-pdf-all')!.addEventListener('click', async () => {
-    if (cachedPlants.length === 0) return;
+    const list = cardPlants();
+    if (list.length === 0) return;
     const btn = document.getElementById('btn-pdf-all') as HTMLButtonElement;
     await withButtonSpinner(btn, async () => {
-      if (cardViewMode === 'baumscheibe') await exportBaumscheibesPDF(cachedPlants);
-      else if (cardViewMode === 'stripe') await exportStripeCardsPDF(cachedPlants);
-      else await exportPolyCardsPDF(cachedPlants);
+      if (cardViewMode === 'baumscheibe') await exportBaumscheibesPDF(list);
+      else if (cardViewMode === 'stripe') await exportStripeCardsPDF(list);
+      else await exportPolyCardsPDF(list);
     });
   });
   // Table as PDF — exports what the table currently shows (filters + sort).
@@ -1546,7 +1591,7 @@ import Layout from '../layouts/Layout.astro';
     const minSizeCm = parseFloat((document.getElementById('scaled-min-size') as HTMLInputElement).value) || 0;
     if (!(scale > 0)) return;
     const btn = document.getElementById('btn-pdf-scaled') as HTMLButtonElement;
-    const res = await withButtonSpinner(btn, () => exportBaumscheibeScaledPDF(cachedPlants, scale, paper, minSizeCm * 10, (document.getElementById('scaled-fixed') as HTMLInputElement).checked));
+    const res = await withButtonSpinner(btn, () => exportBaumscheibeScaledPDF(cardPlants(), scale, paper, minSizeCm * 10, (document.getElementById('scaled-fixed') as HTMLInputElement).checked));
     if (res && res.shrunk > 0) alert(t('pdfScaledShrunk', { n: res.shrunk }));
     if (res && res.discarded.length > 0) {
       const names = res.discarded.map(p => displayName(p)).join(', ');
@@ -1555,9 +1600,9 @@ import Layout from '../layouts/Layout.astro';
   });
 
   document.getElementById('btn-pdf-sheet')!.addEventListener('click', async () => {
-    if (cachedPlants.length === 0) return;
+    if (cardPlants().length === 0) return;
     const btn = document.getElementById('btn-pdf-sheet') as HTMLButtonElement;
-    await withButtonSpinner(btn, () => exportBaumscheibeSheetPDF(cachedPlants));
+    await withButtonSpinner(btn, () => exportBaumscheibeSheetPDF(cardPlants()));
   });
 
   document.getElementById('btn-select-all')!.addEventListener('click', () => {
@@ -1572,9 +1617,11 @@ import Layout from '../layouts/Layout.astro';
   function offerUndo(removed: PlantData[]) {
     if (!removed.length) return;
     const snapshot = structuredClone(removed);
-    const msg = snapshot.length === 1
+    let msg = snapshot.length === 1
       ? t('undoDeletedOne', { name: displayName(snapshot[0]) })
       : t('undoDeletedMany', { n: snapshot.length });
+    const uses = snapshot.flatMap(p => usage.get(p.id) ?? []);
+    if (uses.length) msg = t('undoInPlans', { msg, plans: new Set(uses.map(u => u.planId)).size, n: uses.reduce((a, u) => a + u.count, 0) });
     showUndoToast(msg, { undo: t('undoAction'), close: t('undoClose') }, async () => {
       await importPlants(snapshot);
       renderList();
@@ -1852,6 +1899,73 @@ import Layout from '../layouts/Layout.astro';
     document.getElementById('filter-groups-options')!.innerHTML =
       groups.map(g => opt(g, g)).join('') + opt('', t('filterGroupsNone'));
   }
+
+  // ── Filter "Plan": the list arranged by one garden plan ─────────────────
+  const filterPlanEl = document.getElementById('filter-plan') as HTMLSelectElement;
+  function renderPlanFilterOptions() {
+    filterPlanEl.classList.toggle('hidden', gardenPlans.length === 0);
+    if (planFilter && !shownPlan()) { planFilter = ''; try { localStorage.removeItem('pdk-plan-filter'); } catch {} }
+    filterPlanEl.innerHTML = `<option value="">${escapeHtml(t('filterPlanAll'))}</option>`
+      + gardenPlans.map(g => `<option value="${escapeHtml(g.id)}">${escapeHtml(t('filterPlanOption', { name: g.name || '–' }))}</option>`).join('');
+    filterPlanEl.value = planFilter;
+    filterPlanEl.classList.toggle('bg-green-700', !!planFilter);
+    filterPlanEl.classList.toggle('text-white', !!planFilter);
+  }
+  filterPlanEl.addEventListener('change', () => {
+    planFilter = filterPlanEl.value;
+    try { if (planFilter) localStorage.setItem('pdk-plan-filter', planFilter); else localStorage.removeItem('pdk-plan-filter'); } catch {}
+    renderList();
+  });
+
+  /** Which groups of the plan view are open (per device); everything starts closed. */
+  const PLAN_OPEN_KEY = 'pdk-plan-groups-open';
+  let planOpen = new Set<string>();
+  try { planOpen = new Set(JSON.parse(localStorage.getItem(PLAN_OPEN_KEY) ?? '[]')); } catch {}
+
+  /** Grid and list view with a plan chosen: "Im Plan" / "Nicht im Plan", each by growth form, all collapsible. */
+  function renderPlanView(plan: GardenPlan, shown: PlantData[]) {
+    const { inPlan, notInPlan } = splitByPlan(shown, plan);
+    const missingAll = splitByPlan(cachedPlants, plan).missing;
+    const use = (p: PlantData) => usage.get(p.id)?.find(u => u.planId === plan.id);
+    const placed = plan.placements.length;
+    const planted = plan.placements.filter(pl => pl.plantedYear).length;
+    const det = (key: string, summary: string, count: string, body: string, cls = '') =>
+      `<details data-plan-group="${key}"${planOpen.has(key) ? ' open' : ''} class="${cls}"><summary class="flex cursor-pointer select-none items-baseline justify-between gap-3 py-1.5 font-semibold text-stone-700 dark:text-stone-200"><span>${escapeHtml(summary)}</span><span class="text-xs font-normal tabular-nums text-stone-500 dark:text-stone-400">${escapeHtml(count)}</span></summary>${body}</details>`;
+    const row = (p: PlantData) => {
+      const u = use(p);
+      return `<div data-id="${escapeHtml(p.id)}" class="flex items-center justify-between gap-3 border-t border-dashed border-stone-200 dark:border-stone-700 py-1.5 pl-3">
+        <button type="button" class="btn-edit min-w-0 truncate text-left text-sm text-stone-800 dark:text-stone-100 hover:underline">${escapeHtml(displayName(p))}${p.varietyName ? ` <span class="text-stone-500 dark:text-stone-400">(${escapeHtml(p.varietyName)})</span>` : ''} <i class="text-xs text-stone-500 dark:text-stone-400">${escapeHtml(p.latinName)}</i></button>
+        ${u ? `<a href="/gartenplan/?plan=${encodeURIComponent(plan.id)}&mark=${encodeURIComponent(p.id)}" title="${escapeHtml(t('planChipTitle'))}" class="shrink-0 text-xs tabular-nums text-sky-800 dark:text-sky-300 hover:underline">${escapeHtml(t('planPlantedOf', { n: u.count, planted: u.planted }))}</a>` : ''}
+      </div>`;
+    };
+    const byHabit = (side: string, list: PlantData[]) => HABIT_GROUPS.map(h => {
+      const items = list.filter(p => habitGroup(p) === h);
+      if (!items.length) return '';
+      const n = items.reduce((a, p) => a + (use(p)?.count ?? 0), 0);
+      return det(`${side}-${h}`, t(`planHabit_${h}`), side === 'in' ? `${t('planSpecies', { n: items.length })} · ${t('planPlaced', { n })}` : t('planSpecies', { n: items.length }), items.map(row).join(''), 'ml-3 border-t border-stone-100 dark:border-stone-700');
+    }).join('');
+    const missingRow = missingAll.length
+      ? `<a href="/gartenplan/?plan=${encodeURIComponent(plan.id)}" class="ml-3 block border-t border-stone-100 dark:border-stone-700 py-1.5 text-xs text-amber-800 dark:text-amber-300 hover:underline">${escapeHtml(t('planMissing', { n: missingAll.reduce((a, m) => a + m.count, 0) }))}</a>` : '';
+    listEl.className = 'rounded-xl bg-white dark:bg-stone-800 px-4 py-2 text-sm shadow-sm ring-1 ring-stone-200 dark:ring-stone-700';
+    listEl.innerHTML = `
+      <p class="py-1 text-xs tabular-nums text-stone-500 dark:text-stone-400">${escapeHtml(t('planSummary', { in: inPlan.length, out: notInPlan.length, placed, planted }))}</p>
+      ${det('in', t('planInPlan'), t('planSpecies', { n: inPlan.length }), byHabit('in', inPlan) + missingRow, 'border-t border-stone-200 dark:border-stone-700')}
+      ${det('out', t('planNotInPlan'), t('planSpecies', { n: notInPlan.length }), byHabit('out', notInPlan), 'border-t border-stone-200 dark:border-stone-700')}`;
+    listEl.querySelectorAll<HTMLDetailsElement>('[data-plan-group]').forEach(d => d.addEventListener('toggle', () => {
+      if (d.open) planOpen.add(d.dataset.planGroup!); else planOpen.delete(d.dataset.planGroup!);
+      try { localStorage.setItem(PLAN_OPEN_KEY, JSON.stringify([...planOpen])); } catch {}
+    }));
+    listEl.querySelectorAll<HTMLElement>('.btn-edit').forEach(b => b.addEventListener('click', () => openEditor((b.closest('[data-id]') as HTMLElement).dataset.id!)));
+  }
+
+  document.getElementById('btn-print-from-plan')!.addEventListener('click', async () => {
+    const plan = shownPlan();
+    if (!plan) return;
+    const list = cardPlants();
+    for (const p of list) { p.printCount = usage.get(p.id)?.find(u => u.planId === plan.id)?.count ?? 1; await savePlant(p); }
+    announce(t('toastPrintFromPlan', { n: list.length }));
+    renderList();
+  });
 
   const filterHeightEl = document.getElementById('filter-height') as HTMLSelectElement;
   filterHeightEl.value = String(filters.heightMin);

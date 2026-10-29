@@ -347,7 +347,7 @@ import Layout from '../layouts/Layout.astro';
             <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="pickerHeading">Pflanzen</h2><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-stone-500 dark:text-stone-400 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
             <input id="picker-filter" type="search" data-i18n-placeholder="pickerFilterPlaceholder" placeholder="Pflanze filtern…" class="mb-2 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-xs shadow-inner focus:border-green-500 focus:outline-none" />
             <div id="plant-picker" class="max-h-56 space-y-0.5 overflow-y-auto"></div>
-            <div data-feature="polyculture" class="mt-2 flex gap-1.5 border-t border-stone-200 dark:border-stone-700 pt-2">
+            <div data-feature="polyculture-package" class="mt-2 flex gap-1.5 border-t border-stone-200 dark:border-stone-700 pt-2">
               <select id="pc-package" data-i18n-aria-label="pkgLabel" aria-label="Polykultur als Paket platzieren" class="rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs min-w-0 flex-1 py-1"></select>
               <button id="btn-pc-package" type="button" data-i18n="pkgPlace" class="rounded-md bg-green-700 px-2.5 py-1 text-xs font-medium text-white hover:bg-green-800 disabled:opacity-40">Platzieren</button>
             </div>
@@ -2159,6 +2159,21 @@ import Layout from '../layouts/Layout.astro';
 
   // Boxes modules add under the selected plant(s) (addSelectionExtra).
   const selectionExtras: { featureId: string; render: (box: HTMLElement, ids: string[]) => void }[] = [];
+  /** Selects these placements (one, several or none), as a click or the lasso would; none also clears a selected area. */
+  function selectPlacementIds(ids: string[]) {
+    if (!editing) return;
+    if (!ids.length && selectedAreaId) { selectedAreaId = null; markSelectedArea(); }
+    const known = ids.filter(id => editing!.placements.some(p => p.id === id));
+    multiSel.clear();
+    selectedPlacementId = null;
+    if (known.length > 1) known.forEach(id => multiSel.add(id));
+    else if (known.length === 1) selectedPlacementId = known[0];
+    if (known.length && selectedAreaId) { selectedAreaId = null; markSelectedArea(); }
+    view3d?.setSelectedPlacement(selectedPlacementId);
+    refreshMarkerHighlight();
+    renderSelectedPanel();
+  }
+
   function renderSelectedPanel() {
     renderSelectedPanelInner();
     if (!editing || selectedAreaId || editBoundary) return;
@@ -2213,6 +2228,7 @@ import Layout from '../layouts/Layout.astro';
       ${hintsHtml}
       ${p ? `<button type="button" id="btn-edit-plant" class="mb-2 rounded-md bg-stone-100 dark:bg-stone-700 px-2.5 py-1 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">✎ ${t('editPlant')}</button>` : ''}
       ${p ? plantDetailHtml(p, t) : `<p class="mb-2 text-sm font-medium text-stone-800 dark:text-stone-100">${plantLabel(p)}</p>`}
+      ${placement.packageId ? `<button type="button" id="btn-select-package" class="mb-2 rounded-md bg-green-50 dark:bg-green-900/30 px-2.5 py-1 text-xs font-medium text-green-800 dark:text-green-200 ring-1 ring-green-300 dark:ring-green-800 hover:bg-green-100 dark:hover:bg-green-900/50">${escapeHtml(t('pkgSelectAll', { name: polyculturesById.get(placement.polycultureId ?? '')?.name || t('planUnnamed') }))}</button>` : ''}
       <label data-feature="phases" class="mb-2 flex items-center gap-2 text-xs"><span class="font-medium text-stone-500 dark:text-stone-400">${t('phaseLabel')}</span>${phaseSelectHtml('placement-phase', phaseOf(placement))}</label>
       <label class="block">
         <span class="text-xs font-medium text-stone-500 dark:text-stone-400">${t('labelPlacementNotes')}</span>
@@ -2225,6 +2241,9 @@ import Layout from '../layouts/Layout.astro';
       const pic = selectedPanel.querySelector<HTMLElement>('[data-img-wrapper]');
       if (pic) { pic.style.cursor = 'pointer'; pic.title = t('editPlant'); pic.addEventListener('click', () => void openPlantEditor(p)); }
     }
+    document.getElementById('btn-select-package')?.addEventListener('click', () => {
+      selectPlacementIds(editing!.placements.filter(pl => pl.packageId === placement.packageId).map(pl => pl.id));
+    });
     document.getElementById('placement-phase')!.addEventListener('change', (e) => {
       setPhase([placement], Number((e.target as HTMLSelectElement).value));
     });
@@ -5100,18 +5119,17 @@ import Layout from '../layouts/Layout.astro';
     }),
     onSelectionChange: cb => { selectionListeners.push(cb); },
     onLasso: cb => { lassoListeners.push(cb); },
-    setSelection(ids) {
+    setSelection: ids => selectPlacementIds(ids),
+    updatePlacements(ids, patch) {
       if (!editing) return;
-      if (!ids.length && selectedAreaId) { selectedAreaId = null; markSelectedArea(); }
-      const known = ids.filter(id => editing!.placements.some(p => p.id === id));
-      multiSel.clear();
-      selectedPlacementId = null;
-      if (known.length > 1) known.forEach(id => multiSel.add(id));
-      else if (known.length === 1) selectedPlacementId = known[0];
-      if (known.length && selectedAreaId) { selectedAreaId = null; markSelectedArea(); }
-      view3d?.setSelectedPlacement(selectedPlacementId);
-      refreshMarkerHighlight();
+      const set = new Set(ids);
+      for (const pl of editing.placements) {
+        if (!set.has(pl.id)) continue;
+        if ('plantedYear' in patch) { if (patch.plantedYear == null) delete pl.plantedYear; else pl.plantedYear = patch.plantedYear; }
+      }
+      renderPlanSvg();
       renderSelectedPanel();
+      scheduleAutosave();
     },
     setViewInset(px) {
       for (const k of ['left', 'right', 'top', 'bottom'] as const) viewInset[k] = Math.max(0, px[k] ?? 0);
@@ -5427,10 +5445,11 @@ import Layout from '../layouts/Layout.astro';
     const at = clientToMeters(planSvg, e.clientX, e.clientY);
     const spots = layoutPolyculture(pc, plantsById, at, editing.yearsSincePlanting);
     const ids = new Set<string>();
+    const packageId = newId();
     for (const sp of spots) {
       const id = newId();
       ids.add(id);
-      editing.placements.push(newPlacement(sp.plantId, sp.xM, sp.yM, id));
+      editing.placements.push({ ...newPlacement(sp.plantId, sp.xM, sp.yM, id), polycultureId: pc.id, packageId });
     }
     // Mark the new group so it can be moved together right away.
     multiSel.clear();
@@ -5493,6 +5512,10 @@ import Layout from '../layouts/Layout.astro';
     const REOPEN_KEY = 'pdk-reopen-pending';
     let stuck = false;
     try { stuck = !!lastId && localStorage.getItem(REOPEN_KEY) === lastId; localStorage.removeItem(REOPEN_KEY); } catch {}
+    // Links from the plants and polycultures pages: ?plan= opens that plan, &mark= selects a plant's placements, &paket= arms a polyculture.
+    const q = new URLSearchParams(location.search);
+    const linkedPlan = q.get('plan');
+    if (linkedPlan && plans.some(p => p.id === linkedPlan)) { lastId = linkedPlan; stuck = false; }
     if (stuck) showToast(t('toastReopenSkipped'));
     else if (lastId && plans.some(p => p.id === lastId)) {
       try { localStorage.setItem(REOPEN_KEY, lastId); } catch {}
@@ -5501,6 +5524,16 @@ import Layout from '../layouts/Layout.astro';
       setTimeout(settled, 6000);
       // Leaving the page normally within those seconds is no sign of a freeze.
       addEventListener('pagehide', settled, { once: true });
+    }
+    if (editing && editing.id === linkedPlan) {
+      const mark = q.get('mark');
+      if (mark) selectPlacementIds(editing.placements.filter(pl => pl.plantId === mark).map(pl => pl.id));
+      const pkg = q.get('paket');
+      if (pkg && polyculturesById.has(pkg)) { fillPackageSelect(); pcPackage.value = pkg; setPackageArmed(pkg); }
+      // `plan` stays: the shared-plans module reads it too.
+      const url = new URL(location.href);
+      url.searchParams.delete('mark'); url.searchParams.delete('paket');
+      window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash);
     }
   }
 

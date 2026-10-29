@@ -308,6 +308,7 @@ export const gartenplanDict: Dict = {
   pkgPlaceholder: { de: 'Polykultur als Paket…', en: 'Polyculture as package…' },
   pkgNone: { de: 'Polykultur als Paket… (noch keine)', en: 'Polyculture as package… (none yet)' },
   pkgPlace: { de: 'Platzieren', en: 'Place' },
+  pkgSelectAll: { de: 'Ganzes Paket „{name}“ markieren', en: 'Select the whole “{name}” package' },
   pkgHint: { de: 'Auf die Fläche tippen: der Anker kommt dorthin, die übrigen Pflanzen drumherum.', en: 'Tap the area: the anchor goes there, the other plants around it.' },
   toastPkgPlaced: { de: 'Polykultur „{name}“ mit {n} Pflanzen platziert', en: 'Polyculture “{name}” placed with {n} plants' },
   terrainLoading: { de: 'Gelände wird geladen…', en: 'Loading terrain…' },

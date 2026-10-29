@@ -82,6 +82,11 @@ export interface GardenPlanPlacement {
   notes: string;
   /** Construction phase: planted this many years after the plan's start (lib/phases.ts); absent = 0. */
   phaseYear?: number;
+  /** Calendar year it was really planted outside; absent = only planned. */
+  plantedYear?: number;
+  /** Set when placed as a polyculture package: the polyculture and the id shared by that package's placements. */
+  polycultureId?: string;
+  packageId?: string;
 }
 
 /** Where the plan sits on Earth — only drives the map background, the plan

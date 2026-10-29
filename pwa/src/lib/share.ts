@@ -3,6 +3,7 @@ import { parseBackup, type ParsedBackup } from './sync';
 import { newId } from './id';
 import { sanitizePlanViews, type PlanView } from './plan-view';
 import { safeId, safeIdKeys } from './plant-normalize';
+import { tidyName } from './plant-match';
 
 // "Projekt als Link teilen": the whole project travels inside the link's
 // #fragment — deflate-compressed JSON, base64url-encoded. Nothing is stored
@@ -141,8 +142,8 @@ export function shareDataFromHash(hash: string): string | null {
 }
 
 function plantKey(p: PlantData): string | null {
-  const latin = p.latinName.trim().toLowerCase();
-  return latin ? `${latin}|${(p.varietyName ?? '').trim().toLowerCase()}` : null;
+  const latin = tidyName(p.latinName);
+  return latin ? `${latin}|${tidyName(p.varietyName ?? '')}` : null;
 }
 
 export interface MergedShare extends ShareContent {
@@ -205,7 +206,7 @@ export function mergeShared(incoming: ShareContent, existing: PlantData[], taken
       id: clash ? newId() : g.id,
       ...(clash ? { name: `${g.name}${copySuffix}` } : {}),
       polycultureId: g.polycultureId ? (pcIdMap.get(g.polycultureId) ?? g.polycultureId) : null,
-      placements: g.placements.map(pl => ({ ...pl, plantId: map(pl.plantId) })),
+      placements: g.placements.map(pl => ({ ...pl, plantId: map(pl.plantId), ...(pl.polycultureId ? { polycultureId: pcIdMap.get(pl.polycultureId) ?? pl.polycultureId } : {}) })),
       ...(g.plantPrices ? { plantPrices: Object.fromEntries(Object.entries(g.plantPrices).map(([id, v]) => [map(id), v])) } : {}),
     };
   });

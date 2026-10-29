@@ -124,7 +124,7 @@ test('admin overrides from the server apply; admin page edits them', async ({ pa
   await page.click('#features-save');
   await expect(page.locator('#features-status')).toContainText('Übernommen');
   // "Alle" off in simple also took the guide and the server's "areas" override out of simple mode
-  expect(saved).toEqual({ features: { 'simple-guide': [], water: ['simple', 'classic', 'expert', 'team'], zones: [] } });
+  expect(saved).toEqual({ features: { 'simple-guide': [], 'polyculture-package': ['classic', 'expert', 'team'], water: ['simple', 'classic', 'expert', 'team'], zones: [] } });
   void errors;
 });
 
