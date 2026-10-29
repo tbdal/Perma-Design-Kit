@@ -605,6 +605,7 @@ import Layout from '../layouts/Layout.astro';
   import { browserTimeZone, timeZoneAt, timeZoneLabel, wallClock, zonedDate } from '../lib/plan-time';
   import { COVER_FUNCS, coverageGrid, coverageSummary, findGaps, suggestPlants, hasFunc, funcCount, influenceRadius, type CoverFunc } from '../lib/function-coverage';
   import { layoutPolyculture } from '../lib/polyculture-layout';
+  import { findMatches, tidyName } from '../lib/plant-match';
   import { shoppingRows, shoppingTotal, shoppingCsv, exportShoppingPDF, downloadText, type ShoppingLabels } from '../lib/plan-shopping';
   import { crowdingWarnings, shadeWarnings, grownOccluders, WARN_YEARS } from '../lib/plan-warnings';
   import { fetchBuildings, BUILDINGS_ATTRIBUTION, type Building } from '../lib/osm-buildings';
@@ -2063,11 +2064,38 @@ import Layout from '../layouts/Layout.astro';
       plantPickerEl.innerHTML = `<p class="text-xs text-stone-500 dark:text-stone-400">${t('noPlantsInCollection')}</p>`;
       return;
     }
-    plantPickerEl.innerHTML = filtered.map(p => `<div class="flex items-center gap-1">
+    const mini = 'shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold';
+    plantPickerEl.innerHTML = filtered.map(p => {
+      // Not in the own list: one line more with what is there already (exact or similar name) and a button each.
+      const match = own.has(p.id) ? undefined : findMatches(p, plants)[0];
+      const extra = own.has(p.id) ? '' : `<div class="mb-1 ml-2 flex flex-wrap items-center gap-1 text-[10px] text-amber-900 dark:text-amber-200">
+        <span>${escapeHtml(match ? t(match.exact ? 'pickerMatchExact' : 'pickerMatchSimilar', { name: displayName(match.plant) || match.plant.latinName }) : t('pickerNotInList'))}</span>
+        ${match ? `<button type="button" data-picker-link="${escapeHtml(p.id)}" data-link-to="${escapeHtml(match.plant.id)}" class="${mini} ${match.exact ? 'bg-green-700 text-white hover:bg-green-800' : 'bg-white dark:bg-stone-800 text-green-800 dark:text-green-300 ring-1 ring-green-300 dark:ring-green-800'}">${escapeHtml(t('pickerLink'))}</button>` : ''}
+        <button type="button" data-picker-adopt="${escapeHtml(p.id)}" title="${escapeHtml(t('pickerNotInListTitle'))}" class="${mini} bg-amber-100 dark:bg-amber-900/40 hover:bg-amber-200">${escapeHtml(t(match ? 'pickerAdoptNew' : 'pickerAdopt'))}</button>
+      </div>`;
+      return `<div class="flex items-center gap-1">
       <button data-picker-plant="${escapeHtml(p.id)}" class="block min-w-0 flex-1 truncate rounded px-2 py-1 text-left text-xs ${p.id === armedPlantId ? 'bg-green-700 text-white' : 'text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800'}">${plantLabel(p)}</button>
       ${inPlan.has(p.id) ? `<span class="shrink-0 rounded-full bg-green-100 dark:bg-green-900/40 px-1.5 text-[10px] font-semibold tabular-nums text-green-800 dark:text-green-200" title="${escapeHtml(t('pickerInPlanTitle'))}">${inPlan.get(p.id)}×</span>` : ''}
-      ${own.has(p.id) ? '' : `<button type="button" data-picker-adopt="${escapeHtml(p.id)}" title="${escapeHtml(t('pickerNotInListTitle'))}" class="shrink-0 rounded bg-amber-100 dark:bg-amber-900/40 px-1.5 py-0.5 text-[10px] font-semibold text-amber-900 dark:text-amber-200 hover:bg-amber-200">${escapeHtml(t('pickerAdopt'))}</button>`}
-    </div>`).join('');
+    </div>${extra}`;
+    }).join('');
+    plantPickerEl.querySelectorAll<HTMLButtonElement>('[data-picker-link]').forEach(btn => btn.addEventListener('click', () => {
+      const p = plantsById.get(btn.dataset.pickerLink!), target = plantsById.get(btn.dataset.linkTo!);
+      if (!editing || readOnly || !p || !target) return;
+      // The plan's placements of it now point to the list entry (an undo step); a name that differs stays as the placement's note.
+      const own = displayName(p) || p.latinName;
+      const differs = tidyName(own) !== tidyName(displayName(target) || target.latinName);
+      for (const pl of editing.placements) {
+        if (pl.plantId !== p.id) continue;
+        pl.plantId = target.id;
+        if (differs && !pl.notes) pl.notes = t('linkedNote', { name: own });
+      }
+      renderPlanSvg();
+      view3d?.refreshPlacements();
+      renderSelectedPanel();
+      renderPlantPicker();
+      scheduleAutosave();
+      showToast(t('toastPickerLinked', { name: own, other: displayName(target) || target.latinName }));
+    }));
     plantPickerEl.querySelectorAll<HTMLButtonElement>('[data-picker-adopt]').forEach(btn => btn.addEventListener('click', async () => {
       const p = plantsById.get(btn.dataset.pickerAdopt!);
       if (!p) return;

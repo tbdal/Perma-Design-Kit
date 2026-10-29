@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { planUsage, polycultureUsage, splitByPlan, habitGroup } from '../src/lib/plan-usage';
-import { tidyName } from '../src/lib/plant-match';
+import { tidyName, findMatches } from '../src/lib/plant-match';
 import { autoFillRoles } from '../src/lib/polyculture-autofill';
 import { normalizeGardenPlan } from '../src/lib/plant-normalize';
 import { createEmptyGardenPlan, createEmptyPlant, type GardenPlanPlacement, type PlantData } from '../src/lib/types';
@@ -64,5 +64,20 @@ describe('tidyName', () => {
   it('ignores case, quotes, hyphens, umlauts and extra spaces', () => {
     expect(tidyName(' Apfel ’Topaz’ ')).toBe('apfel topaz');
     expect(tidyName('Süß-Kirsche')).toBe(tidyName('suess kirsche'));
+  });
+});
+
+describe('findMatches', () => {
+  const list = [plant('t', { latinName: 'Malus domestica', commonName: 'Apfel', varietyName: 'Topaz' }), plant('m', { latinName: 'Zea mays', commonName: 'Mais' }), plant('k', { latinName: 'Castanea sativa', commonName: 'Esskastanie' })];
+  it('finds exact and typo matches, closest first, never across varieties', () => {
+    expect(findMatches(plant('n', { latinName: 'Malus domestica', commonName: 'Apfel', varietyName: '„topaz“' }), list)[0]).toMatchObject({ exact: true });
+    const typo = findMatches(plant('n', { latinName: '', commonName: 'Esskastanine' }), list);
+    expect(typo[0]).toMatchObject({ exact: false, distance: 1 });
+    expect(typo[0].plant.id).toBe('k');
+    expect(findMatches(plant('n', { latinName: 'Malus domestica', commonName: 'Apfel', varietyName: 'Elstar' }), list)).toEqual([]);
+  });
+  it('allows only one letter off in short names', () => {
+    expect(findMatches(plant('n', { latinName: '', commonName: 'Mohn' }), list)).toEqual([]);
+    expect(findMatches(plant('n', { latinName: '', commonName: 'Mai' }), list).map(m => m.plant.id)).toEqual(['m']);
   });
 });

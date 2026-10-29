@@ -485,7 +485,8 @@ import Layout from '../layouts/Layout.astro';
   import { importFromCSV, buildCSV, buildCSVTemplate } from '../lib/csv';
   import { parseBackup } from '../lib/sync';
   import { applyFilters, emptyFilters, sortPlants, allGroups, type ListFilters, type SortField } from '../lib/plant-list';
-  import { getAllGardenPlans } from '../lib/db';
+  import { getAllGardenPlans, saveGardenPlan } from '../lib/db';
+  import { findMatches, tidyName } from '../lib/plant-match';
   import { planUsage, splitByPlan, habitGroup, HABIT_GROUPS, type PlanUse } from '../lib/plan-usage';
   import type { GardenPlan } from '../lib/types';
   import { completenessPercent, badgeDefs, plantBadgesHtml, groupPillsHtml, dotHtml, type BadgeDef } from '../lib/plant-detail';
@@ -538,6 +539,8 @@ import Layout from '../layouts/Layout.astro';
   // Where each plant stands, read from the garden plans on every render (lib/plan-usage.ts).
   let gardenPlans: GardenPlan[] = [];
   let usage = new Map<string, PlanUse[]>();
+  /** Plants that plans carry without them being in the list (set by modules, e.g. shared plans), by feature. */
+  const planPlants = new Map<string, PlantData[]>();
   /** "Plan" filter: id of the plan the list is arranged by, '' = all plants. */
   let planFilter = '';
   try { planFilter = localStorage.getItem('pdk-plan-filter') ?? ''; } catch {}
@@ -1490,6 +1493,7 @@ import Layout from '../layouts/Layout.astro';
       return b;
     },
     holdLeave: (p) => { leaveHolds.push(p); },
+    setPlanPlants: (featureId, list) => { planPlants.set(featureId, list); if (shownPlan()) void renderList(); },
     addDataMenuButton: (featureId, label, onClick) => {
       const b = slotButton('data-menu-extra', featureId, label, 'block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700');
       b.addEventListener('click', () => onClick());
@@ -1948,8 +1952,27 @@ import Layout from '../layouts/Layout.astro';
       const n = items.reduce((a, p) => a + (use(p)?.count ?? 0), 0);
       return det(`${side}-${h}`, t(`planHabit_${h}`), side === 'in' ? `${t('planSpecies', { n: items.length })} · ${t('planPlaced', { n })}` : t('planSpecies', { n: items.length }), items.map(row).join(''), 'ml-3 border-t border-stone-100 dark:border-stone-700');
     }).join('');
+    // Placed plants without an entry in the own list: by name when a module knows them (shared plans), each with its own buttons.
+    const carried = new Map([...planPlants.values()].flat().map(p => [p.id, p]));
+    const missingKnown = missingAll.filter(m => carried.has(m.plantId));
+    const missingGone = missingAll.filter(m => !carried.has(m.plantId)).reduce((a, m) => a + m.count, 0);
+    const btnCls = 'shrink-0 rounded-md px-2 py-0.5 text-xs font-medium ring-1';
+    const missingRows = missingKnown.map(m => {
+      const p = carried.get(m.plantId)!;
+      const match = findMatches(p, cachedPlants)[0];
+      return `<div data-missing="${escapeHtml(p.id)}" class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-dashed border-stone-200 dark:border-stone-700 py-1.5 pl-3">
+        <span class="min-w-0 text-sm text-stone-800 dark:text-stone-100">${escapeHtml(displayName(p) || p.latinName)}${p.varietyName ? ` <span class="text-stone-500 dark:text-stone-400">(${escapeHtml(p.varietyName)})</span>` : ''} <span class="rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-[11px] text-amber-900 dark:text-amber-200">${escapeHtml(t('planNotInList'))}</span> <span class="text-xs tabular-nums text-stone-500 dark:text-stone-400">${escapeHtml(t('planPlaced', { n: m.count }))}</span>
+        ${match ? `<span class="block text-xs text-stone-500 dark:text-stone-400">${escapeHtml(t(match.exact ? 'planMatchExact' : 'planMatchSimilar', { name: displayName(match.plant) || match.plant.latinName }))}</span>` : ''}</span>
+        <span class="flex flex-wrap gap-1.5">
+          ${match ? `<button type="button" data-link-to="${escapeHtml(match.plant.id)}" class="${btnCls} ${match.exact ? 'bg-green-700 text-white ring-green-700 hover:bg-green-800' : 'bg-white dark:bg-stone-900 text-green-800 dark:text-green-300 ring-green-300 dark:ring-green-800 hover:bg-green-50'}">${escapeHtml(t('planLink'))}</button>` : ''}
+          <button type="button" data-adopt class="${btnCls} ${match ? 'bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-200 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100' : 'bg-green-700 text-white ring-green-700 hover:bg-green-800'}">${escapeHtml(t(match ? 'planAdoptNew' : 'planAdopt'))}</button>
+        </span>
+      </div>`;
+    }).join('');
+    const goneRow = missingGone
+      ? `<a href="/gartenplan/?plan=${encodeURIComponent(plan.id)}" class="block border-t border-dashed border-stone-200 dark:border-stone-700 py-1.5 pl-3 text-xs text-amber-800 dark:text-amber-300 hover:underline">${escapeHtml(t('planMissingGone', { n: missingGone }))}</a>` : '';
     const missingRow = missingAll.length
-      ? `<a href="/gartenplan/?plan=${encodeURIComponent(plan.id)}" class="ml-3 block border-t border-stone-100 dark:border-stone-700 py-1.5 text-xs text-amber-800 dark:text-amber-300 hover:underline">${escapeHtml(t('planMissing', { n: missingAll.reduce((a, m) => a + m.count, 0) }))}</a>` : '';
+      ? det('in-missing', t('planMissingHeading'), t('planSpecies', { n: missingKnown.length + (missingGone ? 1 : 0) }), missingRows + goneRow, 'ml-3 border-t border-stone-100 dark:border-stone-700') : '';
     listEl.className = 'rounded-xl bg-white dark:bg-stone-800 px-4 py-2 text-sm shadow-sm ring-1 ring-stone-200 dark:ring-stone-700';
     listEl.innerHTML = `
       <p class="py-1 text-xs tabular-nums text-stone-500 dark:text-stone-400">${escapeHtml(t('planSummary', { in: inPlan.length, out: notInPlan.length, placed, planted }))}</p>
@@ -1960,6 +1983,30 @@ import Layout from '../layouts/Layout.astro';
       try { localStorage.setItem(PLAN_OPEN_KEY, JSON.stringify([...planOpen])); } catch {}
     }));
     listEl.querySelectorAll<HTMLElement>('.btn-edit').forEach(b => b.addEventListener('click', () => openEditor((b.closest('[data-id]') as HTMLElement).dataset.id!)));
+    listEl.querySelectorAll<HTMLElement>('[data-missing]').forEach(rowEl => {
+      const p = carried.get(rowEl.dataset.missing!)!;
+      rowEl.querySelector('[data-adopt]')?.addEventListener('click', async () => {
+        await importPlants([p]);
+        announce(t('toastAdopted', { name: displayName(p) || p.latinName }));
+        renderList();
+      });
+      rowEl.querySelector<HTMLElement>('[data-link-to]')?.addEventListener('click', async e => {
+        const target = cachedPlants.find(q => q.id === (e.currentTarget as HTMLElement).dataset.linkTo);
+        if (!target) return;
+        // This plan's placements of it now point to the list entry; a name that differs stays as the placement's note.
+        const own = displayName(p) || p.latinName;
+        const differs = tidyName(own) !== tidyName(displayName(target) || target.latinName);
+        for (const pl of plan.placements) {
+          if (pl.plantId !== p.id) continue;
+          pl.plantId = target.id;
+          if (differs && !pl.notes) pl.notes = t('linkedNote', { name: own });
+        }
+        plan.updatedAt = new Date().toISOString();
+        await saveGardenPlan(plan);
+        announce(t('toastLinked', { name: own, other: displayName(target) || target.latinName }));
+        renderList();
+      });
+    });
   }
 
   document.getElementById('btn-print-from-plan')!.addEventListener('click', async () => {

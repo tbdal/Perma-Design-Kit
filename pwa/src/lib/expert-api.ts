@@ -153,6 +153,8 @@ export interface PflanzenApi {
   addDataMenuButton(featureId: string, label: string, onClick: () => void): HTMLButtonElement;
   /** When the editor was opened with ?return=<path>, leaving waits for this (e.g. data saved along with the plant). */
   holdLeave(p: Promise<unknown>): void;
+  /** Plants that plans carry without them being in the list (e.g. shared plans): the "Plan" filter names them and offers to add or link them. Replaces the feature's earlier set. */
+  setPlanPlants(featureId: string, plants: PlantData[]): void;
 }
 
 /** What every page (Layout.astro) offers plugins. */
