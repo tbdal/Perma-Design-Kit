@@ -347,12 +347,16 @@ import Layout from '../layouts/Layout.astro';
             <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="pickerHeading">Pflanzen</h2><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-stone-500 dark:text-stone-400 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
             <input id="picker-filter" type="search" data-i18n-placeholder="pickerFilterPlaceholder" placeholder="Pflanze filtern…" class="mb-2 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-1.5 text-xs shadow-inner focus:border-green-500 focus:outline-none" />
             <div id="plant-picker" class="max-h-56 space-y-0.5 overflow-y-auto"></div>
-            <div data-feature="polyculture-package" class="mt-2 flex gap-1.5 border-t border-stone-200 dark:border-stone-700 pt-2">
+            <p id="armed-hint" class="mt-2 hidden text-xs font-medium text-green-700 dark:text-green-400" data-i18n="hintArmed">Auf die Fläche tippen zum Platzieren.</p>
+          </details>
+          <!-- Polykulturen: a whole polyculture as a package (own box, collapsible like "Pflanzen") -->
+          <details data-feature="polyculture-package" data-panel="polycultures" class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="pcPanelHeading">Polykulturen</h2><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-stone-500 dark:text-stone-400 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
+            <div class="flex gap-1.5">
               <select id="pc-package" data-i18n-aria-label="pkgLabel" aria-label="Polykultur als Paket platzieren" class="rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs min-w-0 flex-1 py-1"></select>
               <button id="btn-pc-package" type="button" data-i18n="pkgPlace" class="rounded-md bg-green-700 px-2.5 py-1 text-xs font-medium text-white hover:bg-green-800 disabled:opacity-40">Platzieren</button>
             </div>
             <p id="pkg-hint" class="mt-2 hidden text-xs font-medium text-green-700 dark:text-green-400" data-i18n="pkgHint">Auf die Fläche tippen: der Anker kommt dorthin, die übrigen Pflanzen drumherum.</p>
-            <p id="armed-hint" class="mt-2 hidden text-xs font-medium text-green-700 dark:text-green-400" data-i18n="hintArmed">Auf die Fläche tippen zum Platzieren.</p>
           </details>
 
           <details data-feature="areas" data-panel="areas" open class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
@@ -782,6 +786,7 @@ import Layout from '../layouts/Layout.astro';
       plan.updatedAt = new Date().toISOString();
       await saveGardenPlan(plan);
       notifyPlanSaved(plan);
+      if (plan === editing) renderPlantPicker(); // the "3×" per plant follows the plan
     }, 500);
     if (!restoringHistory) scheduleHistory();
     scheduleWarnings();
@@ -2048,16 +2053,30 @@ import Layout from '../layouts/Layout.astro';
 
   function renderPlantPicker() {
     const q = pickerFilter.value.trim().toLowerCase();
-    const filtered = q
-      ? plants.filter(p => p.latinName.toLowerCase().includes(q) || [p.commonName, p.commonNameEn].some(n => n && n.toLowerCase().includes(q)))
-      : plants;
+    // How often each plant stands in the open plan; plants the plan carries (shared plans) that are not in the own list come first.
+    const inPlan = new Map<string, number>();
+    for (const pl of editing?.placements ?? []) inPlan.set(pl.plantId, (inPlan.get(pl.plantId) ?? 0) + 1);
+    const own = new Set(plants.map(p => p.id));
+    const carried = [...inPlan.keys()].filter(id => !own.has(id)).map(id => plantsById.get(id)).filter((p): p is PlantData => !!p);
+    const filtered = [...carried, ...plants].filter(p => !q || p.latinName.toLowerCase().includes(q) || [p.commonName, p.commonNameEn].some(n => n && n.toLowerCase().includes(q)));
     if (filtered.length === 0) {
       plantPickerEl.innerHTML = `<p class="text-xs text-stone-500 dark:text-stone-400">${t('noPlantsInCollection')}</p>`;
       return;
     }
-    plantPickerEl.innerHTML = filtered.map(p => `
-      <button data-picker-plant="${escapeHtml(p.id)}" class="block w-full truncate rounded px-2 py-1 text-left text-xs ${p.id === armedPlantId ? 'bg-green-700 text-white' : 'text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800'}">${plantLabel(p)}</button>
-    `).join('');
+    plantPickerEl.innerHTML = filtered.map(p => `<div class="flex items-center gap-1">
+      <button data-picker-plant="${escapeHtml(p.id)}" class="block min-w-0 flex-1 truncate rounded px-2 py-1 text-left text-xs ${p.id === armedPlantId ? 'bg-green-700 text-white' : 'text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800'}">${plantLabel(p)}</button>
+      ${inPlan.has(p.id) ? `<span class="shrink-0 rounded-full bg-green-100 dark:bg-green-900/40 px-1.5 text-[10px] font-semibold tabular-nums text-green-800 dark:text-green-200" title="${escapeHtml(t('pickerInPlanTitle'))}">${inPlan.get(p.id)}×</span>` : ''}
+      ${own.has(p.id) ? '' : `<button type="button" data-picker-adopt="${escapeHtml(p.id)}" title="${escapeHtml(t('pickerNotInListTitle'))}" class="shrink-0 rounded bg-amber-100 dark:bg-amber-900/40 px-1.5 py-0.5 text-[10px] font-semibold text-amber-900 dark:text-amber-200 hover:bg-amber-200">${escapeHtml(t('pickerAdopt'))}</button>`}
+    </div>`).join('');
+    plantPickerEl.querySelectorAll<HTMLButtonElement>('[data-picker-adopt]').forEach(btn => btn.addEventListener('click', async () => {
+      const p = plantsById.get(btn.dataset.pickerAdopt!);
+      if (!p) return;
+      await importPlants([p]);
+      plants = await getAllPlants();
+      rebuildPlantsById();
+      renderPlantPicker();
+      showToast(t('toastPickerAdopted', { name: displayName(p) || p.latinName }));
+    }));
     plantPickerEl.querySelectorAll<HTMLButtonElement>('[data-picker-plant]').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = btn.dataset.pickerPlant!;
@@ -2271,7 +2290,7 @@ import Layout from '../layouts/Layout.astro';
     const counts = new Map<string, number>();
     for (const pl of sel) counts.set(pl.plantId, (counts.get(pl.plantId) ?? 0) + 1);
     const rows = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10)
-      .map(([id, n]) => `<li class="flex justify-between gap-2"><span class="truncate">${plantLabel(plantsById.get(id))}</span><span class="font-mono">${n}×</span></li>`).join('');
+      .map(([id, n]) => `<li data-only-plant="${escapeHtml(id)}" role="button" tabindex="0" title="${escapeHtml(t('multiOnlyTitle'))}" class="flex cursor-pointer justify-between gap-2 rounded hover:bg-stone-100 dark:hover:bg-stone-800"><span class="truncate">${plantLabel(plantsById.get(id))}</span><span class="font-mono">${n}×</span></li>`).join('');
     selectedPanel.innerHTML = `
       <p class="mb-2 text-sm font-medium text-stone-800 dark:text-stone-100">${t('multiSelected', { n: sel.length })}</p>
       <ul class="space-y-0.5 text-xs text-stone-700 dark:text-stone-200">${rows}</ul>
@@ -2291,6 +2310,12 @@ import Layout from '../layouts/Layout.astro';
       scheduleAutosave();
     });
     document.getElementById('btn-multi-clear')!.addEventListener('click', () => { multiSel.clear(); refreshMarkerHighlight(); renderSelectedPanel(); });
+    // A click on one plant keeps only its placements selected.
+    selectedPanel.querySelectorAll<HTMLElement>('[data-only-plant]').forEach(li => {
+      const only = () => selectPlacementIds(sel.filter(pl => pl.plantId === li.dataset.onlyPlant).map(pl => pl.id));
+      li.addEventListener('click', only);
+      li.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); only(); } });
+    });
     document.getElementById('multi-phase')!.addEventListener('change', (e) => {
       const raw = (e.target as HTMLSelectElement).value;
       if (raw !== '') setPhase(sel, Number(raw));
@@ -5427,7 +5452,11 @@ import Layout from '../layouts/Layout.astro';
     packageArmed = id;
     pkgHint.classList.toggle('hidden', !id);
     planSvg.classList.toggle('area-drawing', !!id);
-    if (id) { armedPlantId = null; armedHint.classList.add('hidden'); renderPlantPicker(); }
+    if (id) {
+      armedPlantId = null; armedHint.classList.add('hidden'); renderPlantPicker();
+      const box = pkgHint.closest('details');
+      if (box) box.open = true; // the hint sits in the "Polykulturen" box: it must be readable
+    }
   }
 
   document.getElementById('btn-pc-package')!.addEventListener('click', () => {

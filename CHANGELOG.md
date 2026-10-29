@@ -4,6 +4,11 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Waldgartenplan: Pflanzenliste und Auswahl 2026-10-29
+- [x] **Pflanzen-Liste im Plan:** zeigt bei jeder Pflanze, wie oft sie im Plan steht („3×“); Pflanzen, die der Plan mitbringt, aber nicht in deiner Pflanzenliste stehen, stehen oben mit „+ Liste“ zum Übernehmen #minor #prüfen
+- [x] **„Polykulturen“ als eigener, aufklappbarer Kasten** wie „Pflanzen“; beim Setzen eines Pakets klappt er auf, damit der Hinweis lesbar ist #minor #prüfen
+- [x] **Mehrfachauswahl:** Klick auf eine Pflanze in der Liste unter „Ausgewählt“ lässt nur deren Exemplare markiert #minor #prüfen
+
 ## Feedback-Knopf 2026-10-29
 - [x] **Feedback unten rechts auf jeder Seite:** führt zu „Fehler melden“ oder neu „Idee einreichen“ (dieselbe Seite ohne Debug-Datei; auf GitHub als Issue mit Label „enhancement“, sonst per E-Mail), jeweils mit der Seite, von der man kam. Im Waldgartenplan am Handy ausgeblendet #minor #prüfen
 - [x] **Filter „Plan“:** der gewählte Plan war im grünen Auswahlfeld kaum lesbar #bugs #prüfen

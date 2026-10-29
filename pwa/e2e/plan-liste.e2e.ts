@@ -77,3 +77,18 @@ test('plant → polyculture with it as anchor → fill roles → place in the pl
   await expect(page.locator('#polyculture-list')).toContainText('In Plänen: Garten Süd 1×');
   void errors;
 });
+
+test('planner: the plant list counts each plant in the plan; a plant in a multi-selection keeps only its placements', async ({ page, errors }) => {
+  await stubNetwork(page);
+  const ids = await seed(page);
+  await page.goto('/gartenplan/?plan=gs');
+  await expect(page.locator(`#plant-picker [data-picker-plant="${ids.apple}"] + span`)).toHaveText('2×');
+  // Shift-click adds to the selection: both maples and the comfrey
+  for (const id of ['a1', 'a2', 'w1']) await page.locator(`[data-placement-id="${id}"] .marker-blob`).click({ force: true, modifiers: ['Shift'] });
+  const panel = page.locator('#selected-panel');
+  await expect(panel.locator('[data-only-plant]')).toHaveCount(2);
+  await panel.locator(`[data-only-plant="${ids.apple}"]`).click();
+  await expect(panel.locator('[data-only-plant]')).toHaveCount(1);
+  await expect(panel).toContainText('2 Pflanzen markiert');
+  void errors;
+});
