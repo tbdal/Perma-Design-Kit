@@ -1,3 +1,4 @@
+import { getLang } from './i18n/core';
 import { PDFDocument, PDFPage, PDFRef, PDFName, PDFString, StandardFonts, degrees, rgb, drawImage as pdfDrawImage, pushGraphicsState, popGraphicsState, moveTo, appendBezierCurve, closePath, clip, endPath } from 'pdf-lib';
 import { renderPolyCardToCanvas, renderStripeCardToCanvas } from './card-canvas';
 import { renderBaumscheibeSvg } from './baumscheibe-render';
@@ -603,7 +604,7 @@ export async function exportBaumscheibeScaledPDF(plants: PlantData[], scale: num
           `${svgs[c.index].replace('<svg', '<svg style="width:100%;height:100%;display:block;"')}</div></div>` +
           (fixedDisc && ring > disc ? `<div style="position:absolute;left:${c.cx - ring / 2}mm;top:${c.cy - ring / 2}mm;width:${ring}mm;height:${ring}mm;box-sizing:border-box;border:0.3mm solid #555;border-radius:50%;"></div>` : '');
       }).join('');
-      const caption = `<div style="position:absolute;left:${SCALED_PAGE_MARGIN_MM}mm;bottom:1.2mm;font:6pt Helvetica,Arial,sans-serif;color:#999;">Maßstab 1:${scale}</div>`;
+      const caption = `<div style="position:absolute;left:${SCALED_PAGE_MARGIN_MM}mm;bottom:1.2mm;font:6pt Helvetica,Arial,sans-serif;color:#999;">${getLang() === 'de' ? 'Maßstab' : 'Scale'} 1:${scale}</div>`;
       return `<div style="position:relative;width:${pw}mm;height:${ph}mm;overflow:hidden;${pg < pageCount - 1 ? 'page-break-after:always;' : ''}">${cells}${caption}</div>`;
     }).join('');
     const w = window.open('', '_blank');
@@ -620,7 +621,7 @@ export async function exportBaumscheibeScaledPDF(plants: PlantData[], scale: num
   const pages = Array.from({ length: pageCount }, () => pdfDoc.addPage([pt(pw), pt(ph)]));
   // Small, unobtrusive scale note in the bottom page margin.
   const capFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
-  for (const pg of pages) pg.drawText(`Maßstab 1:${scale}`, { x: pt(SCALED_PAGE_MARGIN_MM), y: pt(1.2), size: 6, font: capFont, color: rgb(0.6, 0.6, 0.6) });
+  for (const pg of pages) pg.drawText(`${getLang() === 'de' ? 'Maßstab' : 'Scale'} 1:${scale}`, { x: pt(SCALED_PAGE_MARGIN_MM), y: pt(1.2), size: 6, font: capFont, color: rgb(0.6, 0.6, 0.6) });
   for (const c of packed) {
     const page = pages[c.page];
     const { disc, ring } = sizes(c);

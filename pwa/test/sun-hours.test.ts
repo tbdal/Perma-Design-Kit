@@ -44,6 +44,18 @@ describe('sun hours', () => {
     expect(sunHoursAt(0, -21, ridge, samples)).toBeLessThan(sunHoursAt(0, 21, ridge, samples) - 4);
   });
 
+  it('shadow length of a wall follows height / tan(altitude)', () => {
+    // Sun due south at 10° (the lowest counted): the ray towards it runs to +y, the shadow falls to -y.
+    const a = 10 * Math.PI / 180, sun = [{ dx: 0, dy: Math.cos(a), dz: Math.sin(a), hours: 1 }];
+    const prism = (h: number): Occluder => ({ kind: 'prism', pts: [{ xM: -5, yM: 0 }, { xM: 5, yM: 0 }, { xM: 5, yM: 1 }, { xM: -5, yM: 1 }], z1: h, minX: -5, minY: 0, maxX: 5, maxY: 1 });
+    const len = 10 / Math.tan(a); // 56.7 m
+    const scene: SunScene = { groundZ: () => 0, occluders: [prism(10)] };
+    expect(sunHoursAt(0, -(len - 3), scene, sun)).toBe(0);
+    expect(sunHoursAt(0, -(len + 3), scene, sun)).toBe(1);
+    // a 2 m plant never throws a long tail
+    expect(sunHoursAt(0, -(2 / Math.tan(a) + 3), { groundZ: () => 0, occluders: [prism(2)] }, sun)).toBe(1);
+  });
+
   it('classifies hours', () => {
     expect(sunClass(7)).toBe('full');
     expect(sunClass(4)).toBe('mid');

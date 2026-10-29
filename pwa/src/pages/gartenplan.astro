@@ -1686,7 +1686,18 @@ import Layout from '../layouts/Layout.astro';
     renderPlanSvg();
   });
 
+  let rebuild3dTimer = 0, rebuild3dNow = false;
   btnView3d.addEventListener('click', async (e) => {
+    // Terrain, buildings, map tiles and forests arrive one after the other and each asks for a rebuild:
+    // an open 3D view waits for them to settle, otherwise it flickers once per arrival.
+    if (!e.isTrusted && !rebuild3dNow && view3d && !plan3dContainer.hidden) {
+      clearTimeout(rebuild3dTimer);
+      rebuild3dTimer = window.setTimeout(() => {
+        if (plan3dContainer.hidden) return; // switched to 2D meanwhile
+        rebuild3dNow = true; btnView3d.click(); rebuild3dNow = false;
+      }, 300);
+      return;
+    }
     // Rebuilds call .click() and keep the current kind; only a real click on "3D" means the full view.
     if (e.isTrusted) setSimple3d(false);
     if (!editing) return;
