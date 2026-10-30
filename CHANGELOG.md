@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Luftbild in 3D lückenhaft (Werkstatt #462) 2026-10-30
+- [x] **Luftbild vollständig:** das neue Anfrage-Limit für Luftbild-Kacheln war zu knapp (auch Cache-Treffer zählten), jede 4.–5. Kachel kam als Fehler zurück und wurde durch die Karte ersetzt – in 2D und 3D. Eigenes, großzügiges Limit #bugs #prüfen
+
 ## Bedienung am Handy, Jahres-Slider in 3D 2026-10-30
 - [x] **Zwei-Finger-Zoom (2D):** zoomt jetzt auch, wenn ein Finger auf einer Pflanze aufsetzt; ging nach dem letzten Update manchmal gar nicht (ein Finger wurde verloren) #bugs #prüfen
 - [x] **Zwei-Finger-Zoom (3D):** beginnt ein Finger auf einer Pflanze, wird aus dem Ziehen der Pflanze ein Zoomen, die Pflanze bleibt stehen #bugs #prüfen
