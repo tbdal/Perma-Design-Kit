@@ -1,6 +1,6 @@
 import type { GardenPlanGeo, GardenPlanPoint } from './types';
 import { latLonToPlan, planToLatLon, type PlanRect } from './gartenplan-geo';
-import { cachedFetch, hashKey, DAY_MS, geoRefreshing } from './geo-cache';
+import { cachedFetch, buildingsCacheKey, DAY_MS, geoRefreshing } from './geo-cache';
 import { orientedBox, nearlyRectangular, roofHeightFromPitch, type Roof, type RoofShape } from './building-roof';
 
 // Buildings around the garden from OpenStreetMap (Overpass API): footprints
@@ -228,9 +228,9 @@ export async function fetchBuildings(geo: GardenPlanGeo, rect: PlanRect): Promis
   // Per grid cell, not per plan: another plan next door finds its buildings already kept.
   const seen = new Set<string>();
   const elements: unknown[] = [];
+  // Same key as the map surroundings (gartenplan-leaflet.ts): both keep the raw /geo/overpass answer of a cell.
   const parts = await Promise.all(bboxCells(bb).map(async cell => {
-    const cq = buildingsQueryForBbox(cell);
-    const res = await cachedFetch(`overpass:${hashKey(cq)}`, 30 * DAY_MS, () => overpass(cell, cq));
+    const res = await cachedFetch(buildingsCacheKey(cell), 30 * DAY_MS, () => overpass(cell, buildingsQueryForBbox(cell)));
     return ((await res.json()) as { elements?: { type: string; id: number }[] }).elements ?? [];
   }));
   for (const els of parts) for (const el of els) {
@@ -276,6 +276,15 @@ async function overpass(bb: string, q: string): Promise<Response> {
       if (!(e instanceof OverpassRemark)) break;
     }
   }
+  // The public instances get one cell at a time: all cells of a plan at once would trip their rate limits.
+  const turn = publicQueue.then(() => overpassPublic(q, lastErr));
+  publicQueue = turn.catch(() => {});
+  return turn;
+}
+
+let publicQueue: Promise<unknown> = Promise.resolve();
+
+async function overpassPublic(q: string, lastErr: unknown): Promise<Response> {
   for (let round = 0; round < 2; round++) {
     for (const url of OVERPASS_ENDPOINTS) {
       try {

@@ -124,6 +124,20 @@ function rayHitsTerrain(tr: NonNullable<SunScene['terrain']>, x: number, y: numb
   return false;
 }
 
+/** Tan of the terrain horizon from (x, y, z) towards azimuth `ang` (plan radians): the same march as
+ *  rayHitsTerrain, but for the highest angle; stops once a ray at that angle (≥ tanLow) clears maxZ.
+ *  Never below 0, so interpolating towards an open side stays sensible. */
+function horizonTan(tr: NonNullable<SunScene['terrain']>, x: number, y: number, z: number, ang: number, tanLow: number): number {
+  const hx = Math.cos(ang), hy = Math.sin(ang);
+  let best = 0;
+  for (let d = tr.stepM; d <= (tr.maxZ - z) / Math.max(best, tanLow); d += tr.stepM) {
+    const px = x + hx * d, py = y + hy * d;
+    if (px < tr.minX || px > tr.maxX || py < tr.minY || py > tr.maxY) break;
+    best = Math.max(best, (tr.z(px, py) - z) / d);
+  }
+  return best;
+}
+
 // ── Spatial index ──
 // Big plans bring hundreds of crowns and (with the 150-m margin) thousands of
 // OSM buildings; testing every ray against all of them made a 500-m sun map
@@ -138,8 +152,9 @@ interface OccluderIndex {
   seen: Uint32Array; gen: number;
 }
 
-/** Below `minOccluders` the plain loop is as fast (tests lower/raise it). */
-export const sunIndexConfig = { minOccluders: 24 };
+/** Below `minOccluders` the plain loop is as fast (tests lower/raise it). `horizonBuckets`: terrain horizon
+ *  directions per point (0 = march every sun ray, the old way; tests compare both). */
+export const sunIndexConfig = { minOccluders: 24, horizonBuckets: 36 };
 const indexCache = new WeakMap<Occluder[], OccluderIndex>();
 
 function footprint(o: Occluder): [number, number, number, number] {
@@ -236,9 +251,22 @@ function rayTransmission(occ: Occluder[], x: number, y: number, z: number, s: Su
  *  crown (a plant's own, when judging its spot). */
 export function sunHoursAt(x: number, y: number, scene: SunScene, samples: SunSample[], exclude?: string): number {
   const z = scene.groundZ(x, y) + 0.3;
+  const tr = scene.terrain, nb = sunIndexConfig.horizonBuckets;
+  // Terrain: the horizon in nb directions, each marched once on first use (instead of one march per sun
+  // sample); a sun ray is then blocked when it stands lower than the horizon between its two neighbours.
+  const hor = tr && nb > 0 && z < tr.maxZ ? new Float64Array(nb).fill(NaN) : null;
+  let tanLow = Infinity;
+  if (hor) for (const s of samples) { const hl = Math.hypot(s.dx, s.dy); if (hl > 1e-6) tanLow = Math.min(tanLow, s.dz / hl); }
+  const horizon = (k: number) => (Number.isNaN(hor![k]) ? (hor![k] = horizonTan(tr!, x, y, z, (k / nb) * 2 * Math.PI, tanLow)) : hor![k]);
   let sum = 0;
   for (const s of samples) {
-    if (scene.terrain && rayHitsTerrain(scene.terrain, x, y, z, s)) continue;
+    if (hor) {
+      const hl = Math.hypot(s.dx, s.dy);
+      if (hl > 1e-6) {
+        const a = (Math.atan2(s.dy, s.dx) / (2 * Math.PI) + 1) % 1 * nb, k = Math.floor(a) % nb, f = a - Math.floor(a);
+        if (s.dz / hl < horizon(k) * (1 - f) + horizon((k + 1) % nb) * f) continue;
+      }
+    } else if (tr && rayHitsTerrain(tr, x, y, z, s)) continue;
     sum += s.hours * rayTransmission(scene.occluders, x, y, z, s, exclude);
   }
   return sum;

@@ -70,6 +70,9 @@ export async function cachedFetch(key: string, ttlMs: number, fetcher: () => Pro
   }
 }
 
+/** Cache key of the raw /geo/overpass answer for a bbox "s,w,n,e": one entry serves the map surroundings and the plan's 3D buildings. */
+export const buildingsCacheKey = (bbox: string) => `overpass:${bbox}`;
+
 /** Short stable hash for long keys (Overpass queries). */
 export function hashKey(s: string): string {
   let h1 = 0xdeadbeef, h2 = 0x41c6ce57;

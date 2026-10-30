@@ -4,6 +4,17 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Code-Review: Fehler und Geschwindigkeit 2026-10-30
+- [x] **2D schneller:** Verschieben zeichnet nur noch Pflanzen nach, Höhenlinien und Wasserwege werden beim Zoomen nicht mehr neu berechnet, eine gesetzte Pflanze baut den Plan nicht mehr ganz neu, Eckpunkte ziehen und Hinweis-Hover ruckeln nicht mehr #minor #prüfen
+- [x] **Karte schneller:** Kacheln bleiben beim Bearbeiten stehen, beim Zoomwechsel bleibt das alte Bild bis die neuen Kacheln da sind, auf Handys mit sehr hoher Pixeldichte etwa 4× weniger Kacheln, Umgebung lädt höchstens 4 Boxen gleichzeitig, Gebäude nur noch einmal pro Zelle #minor #prüfen
+- [x] **3D schneller:** Pflanzen in wenigen gemeinsamen Meshes statt einzeln, Gelände und Gebäude kommen ohne Neuaufbau der Ansicht dazu, Pflanzen werden beim Öffnen nur einmal gebaut, kleinere Schattenkarte auf Touch-Geräten, schnellere Sonnenstunden-Karte, Jahre-Regler höchstens einmal pro Bild #minor #prüfen
+- [x] **3D-Fehler:** geschlossene Ansicht lädt nicht weiter, WebGL-Kontexte stauen sich nicht mehr, gezogene Pflanze verschwindet im einfachen 3D nicht mehr, abgebrochene Gesten sperren die Kamera nicht, Kompass springt nicht zurück #bugs #prüfen
+- [x] **Plan-Fehler:** Öffnen speichert nicht mehr (Sortierung „zuletzt geändert“ bleibt), gelöschter Plan kommt nicht zurück, Gelände lädt nach Wiederöffnen, Zonenringe wandern beim Vergrößern mit, Sonnensektoren auf der Südhalbkugel richtig, Wasseranalyse folgt dem Umriss #bugs #prüfen
+- [x] **Karten-Fehler:** keine Anfrage-Schleife bei fehlgeschlagener Umgebung, Gebäude nach Verschieben des Standorts nicht mehr versetzt, Umgebungs-Boxen außerhalb der Sicht werden ausgeblendet #bugs #prüfen
+- [x] **Sync:** Abholen von WebDAV/Gist behält lokal neuere Einträge (Hinweis „N neuere lokale Einträge behalten“), Wiederherstellen aus Datei überschreibt wie bisher #bugs #prüfen
+- [x] **Pflanzenliste:** Filtern ohne erneutes Lesen der Datenbank, erst 200 Zeilen mit „Weitere anzeigen“, Baumscheiben-Karten erst beim Hinscrollen, „Alle auswählen“ nur gefilterte, „Alle fehlenden Daten laden“ überschreibt keine Änderungen mehr, CSV-Import erneut mit derselben Datei #minor #bugs #prüfen
+- [x] **Sicherheit:** Weiterleitung nach dem Anmelden nur auf eigene Seiten, Anmelde-Limit je IPv6-Netz, CSV-Export ohne ausführbare Formeln, Passwortprüfung blockiert den Server nicht mehr, PFAF-Anfragen zählen einzeln gegen das Limit #bugs #prüfen
+
 ## Waldgartenplan: Pflanzenliste und Auswahl 2026-10-29
 - [x] **Pflanzen-Liste im Plan:** zeigt bei jeder Pflanze, wie oft sie im Plan steht („3×“); Pflanzen, die der Plan mitbringt, aber nicht in deiner Pflanzenliste stehen, stehen oben mit „+ Liste“ zum Übernehmen #minor #prüfen
 - [x] **„Polykulturen“ als eigener, aufklappbarer Kasten** wie „Pflanzen“; beim Setzen eines Pakets klappt er auf, damit der Hinweis lesbar ist #minor #prüfen

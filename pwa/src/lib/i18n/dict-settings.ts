@@ -177,6 +177,7 @@ export const settingsDict: Dict = {
   restoreSettingsPart: { de: ' + Einstellungen', en: ' + settings' },
   restoreConfirm: { de: '{plants} Pflanzen{guildPart}{gardenPlanPart}{varietyPart}{settingsPart} aus dem Backup einlesen? Einträge mit gleicher ID werden überschrieben, alles andere auf diesem Gerät bleibt erhalten.', en: 'Read {plants} plants{guildPart}{gardenPlanPart}{varietyPart}{settingsPart} from the backup? Entries with the same ID are overwritten, everything else on this device is kept.' },
   restoreToast: { de: '{plants} Pflanzen{guildPart}{gardenPlanPart}{varietyPart} eingelesen', en: '{plants} plants{guildPart}{gardenPlanPart}{varietyPart} read in' },
+  restoreKeptLocal: { de: '({n} neuere lokale Einträge behalten)', en: '({n} newer local entries kept)' },
   restoreFailed: { de: 'Backup-Import fehlgeschlagen: {msg}', en: 'Backup import failed: {msg}' },
 
   reloadMasterConfirm: { de: 'Die Standard-Artenliste (≈190 vor allem Obst-, Nuss- und Beerengehölze, nur Namen) importieren? Arten, die schon in deiner Liste sind, werden übersprungen. Details lädst du danach mit „Lade alle fehlenden Daten“.', en: 'Import the default species list (≈190, mostly fruit, nut and berry woody plants, names only)? Species already in your list are skipped. Load their details afterwards with “Load all missing data”.' },

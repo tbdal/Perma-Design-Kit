@@ -158,10 +158,13 @@ async function fetchPfafExact(name) {
 }
 
 /** Tries the name, then PFAF's synonyms / spelling variants for it (see
- *  pfafNameCandidates). `matched` says under which name PFAF had the plant. */
-async function fetchPfaf(name) {
+ *  pfafNameCandidates). `matched` says under which name PFAF had the plant.
+ *  Every further candidate counts against `ip`'s rate limit (the first was
+ *  counted with the request); over the limit it stops as an upstream failure (not cached). */
+async function fetchPfaf(name, ip) {
   let failed = false;
-  for (const candidate of pfafNameCandidates(name)) {
+  for (const [i, candidate] of pfafNameCandidates(name).entries()) {
+    if (i > 0 && isRateLimited(ip)) return null;
     const r = await fetchPfafExact(candidate);
     if (r === null) { failed = true; continue; }
     if (Object.keys(r).length > 1) return Object.assign(r, candidate.toLowerCase() === name.toLowerCase() ? {} : { matchedName: candidate });
@@ -248,9 +251,9 @@ async function fetchNaturaDb(name) {
 /** Copies a source's fields, minus its 'source' tag. */
 const fieldsOf = (r) => Object.fromEntries(Object.entries(r).filter(([k]) => k !== 'source'));
 
-async function lookup(name) {
+async function lookup(name, ip) {
   const result = emptyResult(name);
-  const [pfaf, naturaDb] = await Promise.all([fetchPfaf(name), fetchNaturaDb(name)]);
+  const [pfaf, naturaDb] = await Promise.all([fetchPfaf(name, ip), fetchNaturaDb(name)]);
   const efg = lookupEfg(name);
 
   // Per-source results, so the client can merge them in the order the user
@@ -340,12 +343,13 @@ async function handleRequest(req, res) {
     return res.end(cached);
   }
 
-  if (isRateLimited(clientIp(req))) {
+  const ip = clientIp(req);
+  if (isRateLimited(ip)) {
     res.writeHead(429, headers);
     return res.end(JSON.stringify({ error: 'Rate limit exceeded' }));
   }
 
-  const { body, found, upstreamFailed } = await lookup(name);
+  const { body, found, upstreamFailed } = await lookup(name, ip);
   if (found) cacheSet(cacheKey, body, CACHE_TTL_HIT_MS);
   else if (!upstreamFailed) cacheSet(cacheKey, body, CACHE_TTL_MISS_MS);
 

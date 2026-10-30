@@ -168,8 +168,9 @@ export interface EinstellungenApi {
   /** A collapsible block in the Sync section, above WebDAV (hidden whenever the feature is off); returns its body. */
   addSyncSection(featureId: string, title: string): HTMLElement;
   /** Checks a backup text, asks once with what it contains and merges it in, like a file restore;
-   *  returns the summary, or null if the user cancelled. Throws on an unusable backup. */
-  restoreFromText(text: string): Promise<string | null>;
+   *  returns the summary, or null if the user cancelled. Throws on an unusable backup.
+   *  `keepNewer`: a pull from a sync target keeps local records with a newer updatedAt. */
+  restoreFromText(text: string, keepNewer?: boolean): Promise<string | null>;
   /** Redraws "last backup" / "last sync" and the sync problem line. */
   refreshSyncInfo(): void;
 }

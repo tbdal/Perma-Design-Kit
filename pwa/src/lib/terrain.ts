@@ -207,8 +207,18 @@ export class TerrainTileCache {
 
 export const terrainTiles = new TerrainTileCache();
 
-export async function fetchElevationGrid(geo: GardenPlanGeo, rect: PlanRect, cellM: number): Promise<ElevationGrid> {
+/** Samples per axis for a rect at `cellM`: one step for both axes (ElevationGrid has one cellM), so the
+ *  last row/column may lie up to a cell beyond the rect. */
+export function gridLayout(rect: PlanRect, cellM: number): { nx: number; ny: number; maxX: number; maxY: number } {
+  const nx = Math.max(2, Math.ceil((rect.maxX - rect.minX) / cellM) + 1);
+  const ny = Math.max(2, Math.ceil((rect.maxY - rect.minY) / cellM) + 1);
+  return { nx, ny, maxX: rect.minX + (nx - 1) * cellM, maxY: rect.minY + (ny - 1) * cellM };
+}
+
+export async function fetchElevationGrid(geo: GardenPlanGeo, plotRect: PlanRect, cellM: number): Promise<ElevationGrid> {
   const z = TERRAIN_MAX_ZOOM;
+  const { nx, ny, maxX, maxY } = gridLayout(plotRect, cellM);
+  const rect = { ...plotRect, maxX, maxY }; // tiles for the overshooting last row/column too
   const corners = [
     planToLatLon({ xM: rect.minX, yM: rect.minY }, geo), planToLatLon({ xM: rect.maxX, yM: rect.minY }, geo),
     planToLatLon({ xM: rect.maxX, yM: rect.maxY }, geo), planToLatLon({ xM: rect.minX, yM: rect.maxY }, geo),
@@ -235,12 +245,9 @@ export async function fetchElevationGrid(geo: GardenPlanGeo, rect: PlanRect, cel
     return terrariumElevation(img.data[i], img.data[i + 1], img.data[i + 2]);
   };
 
-  const nx = Math.max(2, Math.ceil((rect.maxX - rect.minX) / cellM) + 1);
-  const ny = Math.max(2, Math.ceil((rect.maxY - rect.minY) / cellM) + 1);
-  const stepX = (rect.maxX - rect.minX) / (nx - 1), stepY = (rect.maxY - rect.minY) / (ny - 1);
   const heights = new Float32Array(nx * ny);
   for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
-    const ll = planToLatLon({ xM: rect.minX + i * stepX, yM: rect.minY + j * stepY }, geo);
+    const ll = planToLatLon({ xM: rect.minX + i * cellM, yM: rect.minY + j * cellM }, geo);
     heights[j * nx + i] = elevAt(ll.lat, ll.lon);
   }
   // Light smoothing: the 8-bit terrarium steps and nearest-pixel sampling
@@ -251,5 +258,5 @@ export async function fetchElevationGrid(geo: GardenPlanGeo, rect: PlanRect, cel
     for (let dj = -1; dj <= 1; dj++) for (let di = -1; di <= 1; di++) s += heights[(j + dj) * nx + i + di];
     sm[j * nx + i] = s / 9;
   }
-  return { minX: rect.minX, minY: rect.minY, cellM: stepX, nx, ny, heights: sm, sources: [...sources] };
+  return { minX: rect.minX, minY: rect.minY, cellM, nx, ny, heights: sm, sources: [...sources] };
 }

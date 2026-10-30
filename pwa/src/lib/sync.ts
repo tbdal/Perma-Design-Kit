@@ -188,16 +188,36 @@ export function backupIsEmpty(b: ParsedBackup): boolean {
   return !b.plants.length && !b.polycultures.length && !b.gardenPlans.length && !b.varietyLists.length;
 }
 
+/** Incoming records minus those whose local copy (same id) has a newer `updatedAt`. */
+function dropOlder<T extends { id: string; updatedAt: string }>(incoming: T[], local: T[]): { keep: T[]; kept: number } {
+  const localAt = new Map(local.map(r => [r.id, r.updatedAt || '']));
+  const keep = incoming.filter(r => !((localAt.get(r.id) ?? '') > (r.updatedAt || '')));
+  return { keep, kept: incoming.length - keep.length };
+}
+
 /** Writes a parsed backup into the app. This merges: records with the same id
  *  are replaced, everything else on the device stays. Settings are replaced
- *  if the backup carries any. */
-export async function applyBackup(b: ParsedBackup): Promise<void> {
-  if (b.plants.length) await importPlants(b.plants);
-  if (b.polycultures.length) await importPolycultures(b.polycultures);
-  if (b.gardenPlans.length) await importGardenPlans(b.gardenPlans);
+ *  if the backup carries any. With `keepNewer` (WebDAV/Gist pulls) a plant,
+ *  polyculture or plan edited here after the backup was made is left alone;
+ *  returns how many local records were kept that way. */
+export async function applyBackup(b: ParsedBackup, opts: { keepNewer?: boolean } = {}): Promise<{ keptLocal: number }> {
+  let keptLocal = 0;
+  const pick = async <T extends { id: string; updatedAt: string }>(incoming: T[], local: () => Promise<T[]>) => {
+    if (!opts.keepNewer || !incoming.length) return incoming;
+    const r = dropOlder(incoming, await local());
+    keptLocal += r.kept;
+    return r.keep;
+  };
+  const plants = await pick(b.plants, getAllPlants);
+  const polycultures = await pick(b.polycultures, getAllPolycultures);
+  const gardenPlans = await pick(b.gardenPlans, getAllGardenPlans);
+  if (plants.length) await importPlants(plants);
+  if (polycultures.length) await importPolycultures(polycultures);
+  if (gardenPlans.length) await importGardenPlans(gardenPlans);
   for (const list of b.varietyLists) await saveVarietyList(list);
   for (const [planId, view] of Object.entries(b.views ?? {})) writePlanView(planId, view);
   if (b.settings) saveSettings(b.settings as AppSettings);
+  return { keptLocal };
 }
 
 function exportedAtOf(text: string): string {

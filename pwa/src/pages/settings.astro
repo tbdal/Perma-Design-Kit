@@ -648,8 +648,9 @@ import Layout from '../layouts/Layout.astro';
 
   /** Shared by every way a backup comes in (file, file access, WebDAV, Gist):
    *  checks it, asks once with what it contains, then merges it in. Returns
-   *  the summary text, or null if the user cancelled. Throws on an unusable backup. */
-  async function restoreFromText(text: string): Promise<string | null> {
+   *  the summary text, or null if the user cancelled. Throws on an unusable backup.
+   *  `keepNewer` (WebDAV/Gist pulls): records edited here after the backup stay. */
+  async function restoreFromText(text: string, keepNewer = false): Promise<string | null> {
     let backup;
     try { backup = parseBackup(text); } catch { throw new Error(t('restoreInvalid')); }
     if (backupIsEmpty(backup)) throw new Error(t('restoreEmpty'));
@@ -660,14 +661,14 @@ import Layout from '../layouts/Layout.astro';
       varietyPart: backup.varietyLists.length ? t('restoreVarietyPart', { n: backup.varietyLists.length }) : '',
     };
     if (!confirm(t('restoreConfirm', { ...parts, settingsPart: backup.settings ? t('restoreSettingsPart') : '' }))) return null;
-    await applyBackup(backup);
+    const { keptLocal } = await applyBackup(backup, { keepNewer });
     if (backup.settings) {
       settings = loadSettings();
       renderSources(); renderPrefs();
     }
     await renderStats();
     if (backup.varietyLists.length) await renderVarietyLists();
-    return t('restoreToast', parts);
+    return t('restoreToast', parts) + (keptLocal ? ' ' + t('restoreKeptLocal', { n: keptLocal }) : '');
   }
 
   function downloadBackupBlob(blob: Blob, filename: string) {
@@ -843,7 +844,7 @@ import Layout from '../layouts/Layout.astro';
     setWebdavStatus(t('webdavDownloading'));
     try {
       const text = await webdavPull(webdavCreds());
-      const summary = await restoreFromText(text);
+      const summary = await restoreFromText(text, true);
       if (summary === null) { setWebdavStatus(''); return; }
       rememberPulled('webdav', text);
       renderLastSyncInfo();
@@ -968,7 +969,7 @@ import Layout from '../layouts/Layout.astro';
     try {
       const text = await gistPull({ token, id });
       if (text === null) throw new Error(t('gistFileNotFound', { filename: GIST_FILENAME }));
-      const summary = await restoreFromText(text);
+      const summary = await restoreFromText(text, true);
       if (summary === null) { setGistStatus(''); return; }
       rememberPulled('gist', text);
       renderLastSyncInfo();

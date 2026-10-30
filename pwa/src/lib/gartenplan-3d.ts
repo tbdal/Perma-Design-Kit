@@ -139,6 +139,11 @@ export interface GardenPlan3DView {
   getViewRect(): { minX: number; minY: number; maxX: number; maxY: number };
   /** Loading state of the ground tiles on display. */
   tileStatus(): GroundTileStatus;
+  /** New elevation grid (null = flat) in place: camera, renderer and sun stay, ground, buildings, plants,
+   *  areas and overlays follow. false = not possible (plugin layers drew on the old ground): rebuild the view. */
+  setTerrain(terrain: ElevationGrid | null): boolean;
+  /** New building footprints in place (empty = none). */
+  setBuildings(buildings: NonNullable<View3DOptions['buildings']>): void;
   dispose(): void;
 }
 
@@ -171,6 +176,9 @@ export interface View3DOptions {
   hidden?: (id: string) => boolean;
   /** Simple 3D for weak devices: low-poly plants, no shadows, no antialiasing, pixel ratio 1. */
   simple?: boolean;
+  /** Start values of setTreeOpacity / refreshAreas, so opening doesn't build plants and areas twice. */
+  treeOpacity?: number;
+  selectedAreaId?: string | null;
 }
 
 /** What a plugin layer gets: the scene in plan metres (x = xM, z = yM, y up). */
@@ -350,15 +358,31 @@ export function createGardenPlan3DView(
   const { x: cx, z: cz } = boundaryCentroid(plan);
   camera.position.set(cx + maxDim * 0.6, maxDim * 0.8, cz + maxDim * 0.6);
   // Terrain: heights relative to the plan centre, so the camera, sun path
-  // and everything else keep working around y = 0.
-  const terrain = opts.terrain ?? null;
-  const baseH = terrain ? sampleGrid(terrain, cx, cz) : 0;
-  const ground: GroundFn = terrain ? (x, z) => sampleGrid(terrain, x, z) - baseH : FLAT;
-  const groundMin = terrain ? gridRange(terrain).min - baseH : 0;
+  // and everything else keep working around y = 0. setTerrain() swaps it in place.
+  let terrain = null as ElevationGrid | null, baseH = 0, ground: GroundFn = FLAT, groundMin = 0;
+  // `fine` = extent of the fine grid; blendM = band over which it blends into the coarser tiles around it.
+  let fine = null as { minX: number; minY: number; maxX: number; maxY: number } | null, blendM = 1;
+  // drapeCell/drapeLift: how finely and how high sheets lie on the ground. On terrain the ground tiles
+  // interpolate between their own vertices, which can lie a little above the heights sampled here (in hollows):
+  // sheets on the ground float a bit higher there, or the ground shows through in patches.
+  let drapeCell = 1e9, drapeLift = 0;
+  function useTerrain(t: ElevationGrid | null) {
+    terrain = t;
+    baseH = t ? sampleGrid(t, cx, cz) : 0;
+    ground = t ? (x, z) => sampleGrid(t, x, z) - baseH : FLAT;
+    groundMin = t ? gridRange(t).min - baseH : 0;
+    fine = t ? { minX: t.minX, minY: t.minY, maxX: t.minX + (t.nx - 1) * t.cellM, maxY: t.minY + (t.ny - 1) * t.cellM } : null;
+    blendM = fine ? Math.max(10, Math.min(40, (fine.maxX - fine.minX) * 0.15)) : 1;
+    drapeCell = t ? Math.max(0.5, t.cellM / 2) : 1e9;
+    drapeLift = t ? Math.max(0.2, t.cellM * 0.12) : 0;
+  }
+  useTerrain(opts.terrain ?? null);
 
   // Logarithmic depth: ground, map, outline and areas lie millimetres apart
   // while the view reaches hundreds of metres — a linear depth buffer can't
-  // separate them there and they z-fight into stripes.
+  // separate them there and they z-fight into stripes. Not reversedDepthBuffer (three r186): it only gains
+  // precision with a float depth buffer, but the canvas' own depth buffer is 24-bit integer, where reversed-Z
+  // spaces depth like the standard mapping — the stripes would come back (would need a float-depth render target).
   const simple = !!opts.simple;
   const renderer = new THREE.WebGLRenderer({ antialias: !simple, alpha: false, logarithmicDepthBuffer: true, powerPreference: simple ? 'low-power' : 'default' });
   renderer.setPixelRatio(simple ? 1 : Math.min(window.devicePixelRatio, 2));
@@ -382,12 +406,14 @@ export function createGardenPlan3DView(
   const SHADOW_MARGIN = 120, SHADOW_MAX = 2200;
   let shadowR = 0, sunDist = 0, sunUp = true;
   const sunDir = new THREE.Vector3(0.3, 1, 0.3).normalize();
+  // Phones/tablets: a 4096² shadow map (64 MB, 4× the fill) costs more frame time than its sharpness is worth.
+  const shadowCap = window.matchMedia?.('(pointer: coarse)').matches ? 2048 : 4096;
   function placeShadow() {
     const t = controls.target;
     const r = Math.max(40, camera.position.distanceTo(t) * 1.5 + SHADOW_MARGIN);
     sun.castShadow = sunUp && !simple && r <= SHADOW_MAX;
     shadowR = Math.min(r, SHADOW_MAX);
-    const mapSize = shadowR > 60 ? Math.min(4096, renderer.capabilities.maxTextureSize) : 2048;
+    const mapSize = shadowR > 60 ? Math.min(shadowCap, renderer.capabilities.maxTextureSize) : 2048;
     if (sun.shadow.mapSize.x !== mapSize) {
       sun.shadow.mapSize.set(mapSize, mapSize);
       sun.shadow.map?.dispose();
@@ -417,7 +443,7 @@ export function createGardenPlan3DView(
   meadow.receiveShadow = true;
   scene.add(meadow);
 
-  const lawn = buildGroundMesh(plan.areaWidthM, plan.areaHeightM, ground, terrain?.cellM);
+  let lawn = buildGroundMesh(plan.areaWidthM, plan.areaHeightM, ground, terrain?.cellM);
   scene.add(lawn);
 
   // ── Map background on the ground (OSM / coarse satellite). Reloaded for
@@ -430,7 +456,7 @@ export function createGardenPlan3DView(
   const tileSrc = sourceForGeo(geo);
   // With terrain the surroundings get relief too, even without a map: the
   // tiles are then plain meadow-coloured.
-  const layoutSrc = tileSrc ?? (terrain ? OSM_TILES : null);
+  let layoutSrc = tileSrc ?? (terrain ? OSM_TILES : null);
   const tileLoader = new THREE.TextureLoader();
   tileLoader.setCrossOrigin('anonymous');
   let tileGroup: THREE.Group | null = null;
@@ -438,14 +464,12 @@ export function createGardenPlan3DView(
   let flyId = 0; // a newer flight (or none) wins
   let disposed = false; // late tile loads, timers and flights of a closed view must not render
   let oldTileGroup: THREE.Group | null = null;
-  let tileKey = '';
+  let tileKey = '', tileGen = 0; // tileGen: bumped by setTerrain, so no tile with the old heights is taken over
   if (layoutSrc) lawn.visible = false; // the map/terrain tiles are the ground inside the plan too
 
   // Ground outside the fine grid: coarser terrain tiles at the map's zoom,
   // blended into the fine grid over its outer margin so the plan area keeps
-  // exactly the heights the plants stand on.
-  const fine = terrain ? { minX: terrain.minX, minY: terrain.minY, maxX: terrain.minX + (terrain.nx - 1) * terrain.cellM, maxY: terrain.minY + (terrain.ny - 1) * terrain.cellM } : null;
-  const blendM = fine ? Math.max(10, Math.min(40, (fine.maxX - fine.minX) * 0.15)) : 1;
+  // exactly the heights the plants stand on (fine, blendM: see useTerrain).
   // The coarse tiles and the fine grid (often an official 1 m model with its
   // own height datum) differ by an offset of up to several metres; without
   // removing it the blend band showed as a step in a square around the plan.
@@ -469,11 +493,11 @@ export function createGardenPlan3DView(
     coarseOffset.set(tz, off);
     return off;
   }
-  function groundWide(x: number, z: number, tz: number): number {
+  function groundWide(x: number, z: number, tz: number, latLon?: { lat: number; lon: number }): number {
     if (!geo || !fine) return ground(x, z);
     const inside = Math.min(x - fine.minX, fine.maxX - x, z - fine.minY, fine.maxY - z);
     if (inside >= blendM) return ground(x, z);
-    const ll = planToLatLon({ xM: x, yM: z }, geo);
+    const ll = latLon ?? planToLatLon({ xM: x, yM: z }, geo);
     const e = terrainTiles.elevation(ll.lat, ll.lon, tz);
     if (e === null) return ground(x, z);
     const coarse = e - baseH + offsetFor(tz);
@@ -557,7 +581,7 @@ export function createGardenPlan3DView(
       };
       // 256 px tiles: 256 of them ≈ 90 MB of video memory, a weak device gets a quarter.
       tiles = lodTilesForRect(rect, geo, layoutSrc.maxZoom, simple ? 64 : 256, wantZoom);
-      belowWanted = tiles.filter(q => q.z < Math.min(layoutSrc.maxZoom, Math.ceil(wantZoom(q) - 1e-9))).length;
+      belowWanted = tiles.filter(q => q.z < Math.min(layoutSrc!.maxZoom, Math.ceil(wantZoom(q) - 1e-9))).length;
       // Nearest first: they are requested first.
       tiles.sort((a, b) => wantZoom(b) - wantZoom(a) || b.z - a.z);
     }
@@ -581,6 +605,7 @@ export function createGardenPlan3DView(
     const next = new THREE.Group();
     next.rotation.y = geo.rotationDeg * Math.PI / 180;
     tileGroup = next;
+    const topZ = tiles.reduce((m, q) => Math.max(m, q.z), 0);
     let pending = tiles.length;
     const settled = () => {
       if (--pending > 0 || tileGroup !== next) return;
@@ -590,14 +615,15 @@ export function createGardenPlan3DView(
       requestRender();
     };
     for (const q of tiles) {
-      const tileKeyQ = `${q.z}/${q.x}/${q.y}@${tz}`;
+      const tileKeyQ = `${q.z}/${q.x}/${q.y}@${tz}#${tileGen}`;
       const have = groundTiles.get(tileKeyQ);
       if (have?.alive) {
         next.add(have.mesh); // taken over: already loaded (or on its way)
         if (have.state === 'loading') have.settle = settled; else settled();
         continue;
       }
-      const seg = terrain ? Math.max(1, Math.min(48, Math.round(q.sizeM / terrain.cellM))) : 1;
+      // Coarser (= farther) tiles of a sharp-as-needed set get fewer segments: halved per zoom level from two below the finest.
+      const seg = terrain ? Math.max(1, Math.min(48 >> Math.min(3, Math.max(0, topZ - q.z - 1)), Math.round(q.sizeM / terrain.cellM))) : 1;
       // On terrain a ring of extra vertices hangs from the edge as a skirt: where a fine tile meets a coarser one
       // their edges follow the ground differently, and the gap would show the sky.
       const ring = terrain ? 1 : 0, n = seg + 2 * ring;
@@ -615,10 +641,18 @@ export function createGardenPlan3DView(
         }
         // Vertex → plan coords through the group's rotation about y.
         const th = geo.rotationDeg * Math.PI / 180, ct = Math.cos(th), st = Math.sin(th);
+        // Lat/lon at the tile's corners, bilinear in between (Mercator is near-linear across a tile; ~15 m off
+        // on a 25 km one) instead of planToLatLon per vertex.
+        const ll = [0, 1].flatMap(fz => [0, 1].map(fx => {
+          const lx = mx + (fx - 0.5) * side, lz = mz + (fz - 0.5) * side;
+          return planToLatLon({ xM: lx * ct + lz * st, yM: -lx * st + lz * ct }, geo);
+        }));
+        const lerp = (k: 'lat' | 'lon', fx: number, fz: number) => (ll[0][k] * (1 - fx) + ll[1][k] * fx) * (1 - fz) + (ll[2][k] * (1 - fx) + ll[3][k] * fx) * fz;
         for (let i = 0; i < pos.count; i++) {
           const lx = pos.getX(i) + mx, lz = pos.getZ(i) + mz;
           const px = lx * ct + lz * st, pz = -lx * st + lz * ct;
-          const y = tz >= 0 ? groundWide(px, pz, tz) : ground(px, pz);
+          const fx = pos.getX(i) / side + 0.5, fz = pos.getZ(i) / side + 0.5;
+          const y = tz >= 0 ? groundWide(px, pz, tz, { lat: lerp('lat', fx, fz), lon: lerp('lon', fx, fz) }) : ground(px, pz);
           pos.setY(i, y);
           if (y < lowestY) lowestY = y;
         }
@@ -687,18 +721,23 @@ export function createGardenPlan3DView(
     reportTiles();
     requestRender();
   }
-  const drapeCell = terrain ? Math.max(0.5, terrain.cellM / 2) : 1e9;
-  // On terrain the ground tiles interpolate between their own vertices, which
-  // can lie a little above the heights sampled here (in hollows): sheets on the
-  // ground float a bit higher there, or the ground shows through in patches.
-  const drapeLift = terrain ? Math.max(0.2, terrain.cellM * 0.12) : 0;
-  scene.add(buildBoundaryMesh(plan, ground, drapeCell, drapeLift));
+  let boundaryMesh = buildBoundaryMesh(plan, ground, drapeCell, drapeLift);
+  scene.add(boundaryMesh);
 
   // Buildings: walls from the lowest ground point of the footprint (so slopes
   // don't leave them floating) up to the roof edge, roofs from OSM roof:shape
   // or a guessed gable (building-roof.ts). All buildings share one geometry —
   // a big plan brings thousands, one mesh each meant thousands of draw calls.
-  if (opts.buildings?.length) {
+  let buildingList = opts.buildings ?? [];
+  let buildingsMesh: THREE.Mesh | null = null;
+  function buildBuildings() {
+    if (buildingsMesh) {
+      scene.remove(buildingsMesh);
+      buildingsMesh.geometry.dispose();
+      (buildingsMesh.material as THREE.Material[]).forEach(m => m.dispose());
+      buildingsMesh = null;
+    }
+    if (!buildingList.length) return;
     const walls: number[] = [], pitched: number[] = [], flat: number[] = [];
     const push = (arr: number[], ...v: [number, number, number][]) => { for (const q of v) arr.push(q[0], q[1], q[2]); };
     type P3 = [number, number, number];
@@ -710,7 +749,7 @@ export function createGardenPlan3DView(
     const signedArea = (r: { xM: number; yM: number }[]) => r.reduce((acc, p, i) => { const q = r[(i + 1) % r.length]; return acc + p.xM * q.yM - q.xM * p.yM; }, 0);
     /** Walls face outwards for this winding; holes the other way round. */
     const wound = (r: { xM: number; yM: number }[], hole: boolean) => ((signedArea(r) > 0) !== hole ? [...r].reverse() : r);
-    for (const b of opts.buildings) {
+    for (const b of buildingList) {
       const zs = b.pts.map(p => ground(p.xM, p.yM));
       const base = Math.min(...zs);
       const roof = b.roof && b.roof.shape !== 'flat' && !b.holes?.length ? b.roof : null;
@@ -755,22 +794,25 @@ export function createGardenPlan3DView(
     mesh.castShadow = true;
     mesh.receiveShadow = true;
     scene.add(mesh);
+    buildingsMesh = mesh;
   }
+  buildBuildings();
 
   const plantsGroup = new THREE.Group();
   scene.add(plantsGroup);
-  // Simple 3D draws the plants as instances: one draw call per shape and colour
-  // instead of one per plant part (hundreds of plants stay fluid on phones).
+  // Plants are drawn batched: one draw call per material instead of 2–3 per plant (hundreds of plants stay
+  // fluid). Simple 3D shares its geometry → InstancedMesh per shape and colour; full 3D has its own geometry per
+  // plant part → BatchedMesh per material (foliage kinds, bark, stake, see-through copies; vertex colours,
+  // alphaTest and the leaf-shaped shadow depth material all work batched).
   // The per-plant groups stay in plantsGroup, hidden, for picking and dragging.
   const instGroup = new THREE.Group();
   scene.add(instGroup);
-  const instancesOf = new Map<string, { mesh: THREE.InstancedMesh; index: number; part: THREE.Object3D }[]>();
+  const instancesOf = new Map<string, { mesh: THREE.InstancedMesh | THREE.BatchedMesh; index: number; part: THREE.Object3D }[]>();
   const tmpM = new THREE.Matrix4();
   function buildInstances() {
-    for (const c of instGroup.children) (c as THREE.InstancedMesh).dispose();
+    for (const c of instGroup.children) (c as THREE.InstancedMesh | THREE.BatchedMesh).dispose();
     instGroup.clear();
     instancesOf.clear();
-    if (!simple) return;
     plantsGroup.updateMatrixWorld(true);
     const parts = new Map<string, { geo: THREE.BufferGeometry; mat: THREE.Material; list: { part: THREE.Mesh; id: string }[] }>();
     for (const g of plantsGroup.children) {
@@ -778,20 +820,47 @@ export function createGardenPlan3DView(
       g.traverse(o => {
         const m = o as THREE.Mesh;
         if (!m.isMesh || m.name === 'selection-ring' || Array.isArray(m.material)) return;
-        const k = `${m.geometry.uuid}|${(m.material as THREE.Material).uuid}`;
+        const k = simple ? `${m.geometry.uuid}|${(m.material as THREE.Material).uuid}` : `${m.material.uuid}|${m.customDepthMaterial?.uuid}`;
         let e = parts.get(k);
         if (!e) parts.set(k, e = { geo: m.geometry, mat: m.material as THREE.Material, list: [] });
         e.list.push({ part: m, id });
         m.visible = false;
       });
     }
+    const track = (mesh: THREE.InstancedMesh | THREE.BatchedMesh, index: number, part: THREE.Object3D, id: string) => {
+      const arr = instancesOf.get(id) ?? [];
+      arr.push({ mesh, index, part });
+      instancesOf.set(id, arr);
+    };
+    if (!simple) {
+      for (const { mat, list } of parts.values()) {
+        let verts = 0, idx = 0;
+        for (const { part } of list) { verts += part.geometry.attributes.position.count; idx += part.geometry.index?.count ?? 0; }
+        try {
+          const batch = new THREE.BatchedMesh(list.length, verts, idx, mat);
+          batch.customDepthMaterial = list[0].part.customDepthMaterial;
+          batch.castShadow = batch.receiveShadow = true;
+          const ids = list.map(({ part }) => {
+            const i = batch.addInstance(batch.addGeometry(part.geometry));
+            batch.setMatrixAt(i, part.matrixWorld);
+            return i;
+          });
+          list.forEach(({ part, id }, k) => track(batch, ids[k], part, id));
+          batch.computeBoundingSphere();
+          instGroup.add(batch);
+        } catch (err) {
+          // Parts that don't fit one batch (inconsistent attributes) are simply drawn on their own.
+          console.warn('3D batching failed', err);
+          for (const { part } of list) part.visible = true;
+        }
+      }
+      return;
+    }
     for (const { geo, mat, list } of parts.values()) {
       const inst = new THREE.InstancedMesh(geo, mat, list.length);
       list.forEach(({ part, id }, i) => {
         inst.setMatrixAt(i, part.matrixWorld);
-        const arr = instancesOf.get(id) ?? [];
-        arr.push({ mesh: inst, index: i, part });
-        instancesOf.set(id, arr);
+        track(inst, i, part, id);
       });
       inst.instanceMatrix.needsUpdate = true;
       inst.computeBoundingSphere();
@@ -805,7 +874,7 @@ export function createGardenPlan3DView(
     for (const { mesh, index, part } of list) {
       part.updateWorldMatrix(true, false);
       mesh.setMatrixAt(index, tmpM.copy(part.matrixWorld));
-      mesh.instanceMatrix.needsUpdate = true;
+      if ('isInstancedMesh' in mesh) mesh.instanceMatrix.needsUpdate = true;
       mesh.boundingSphere = null; // recomputed lazily, else the moved plant is culled with the old sphere
     }
   }
@@ -815,7 +884,7 @@ export function createGardenPlan3DView(
   scene.add(handlesGroup);
   const labelH = Math.max(0.28, maxDim * 0.032);
   const handleR = Math.max(0.12, maxDim * 0.018);
-  let selectedAreaId: string | null = null;
+  let selectedAreaId: string | null = opts.selectedAreaId ?? null;
 
   function rebuildAreas() {
     for (const obj of [...areasGroup.children, ...handlesGroup.children]) {
@@ -850,7 +919,7 @@ export function createGardenPlan3DView(
 
   let years = plan.yearsSincePlanting;
   /** Trees see-through: one shared see-through copy per original material (instancing keeps working). */
-  let treeOpacity = 1;
+  let treeOpacity = Math.min(1, Math.max(0, opts.treeOpacity ?? 1));
   const treeMats = new Map<THREE.Material, THREE.Material>();
   function seeThroughTrees(group: THREE.Object3D) {
     group.traverse(o => {
@@ -886,6 +955,8 @@ export function createGardenPlan3DView(
     requestRender();
   }
 
+  rebuildPlacements(); // once, before the camera fit (which measures the tallest plant)
+
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.target.set(cx, 0, cz);
   controls.minDistance = 1;
@@ -906,7 +977,6 @@ export function createGardenPlan3DView(
     const fx = (f.minX + f.maxX) / 2, fz = (f.minY + f.maxY) / 2;
     const vf = (VFOV / 2) * Math.PI / 180;
     const hf = Math.atan(Math.tan(vf) * camera.aspect);
-    rebuildPlacements();
     const tallest = plantsGroup.children.length ? new THREE.Box3().setFromObject(plantsGroup).max.y : 0;
     const dist = Math.max((f.maxX - f.minX) / 2 / Math.tan(hf), (f.maxY - f.minY) / 2 / Math.tan(vf), tallest * 2.5, 3);
     controls.target.set(fx, 0, fz);
@@ -1276,7 +1346,6 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
   const resizeObserver = new ResizeObserver(onResize);
   resizeObserver.observe(container);
 
-  rebuildPlacements();
   rebuildAreas();
   refreshTiles();
   requestRender();
@@ -1284,7 +1353,11 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
   // ── Function coverage: translucent coloured cells draped on the ground
   // (corner heights from the terrain) plus dashed rings at the gaps. ──
   let coverageGroup: THREE.Group | null = null;
+  // Last overlays as given, so setTerrain can drape them again on the new ground.
+  let lastCoverage: CoverageOverlay3D | null = null, lastWater: Water3D | null = null, lastPreview: SuggestionPreview3D | null = null;
+  let lastPos: { xM: number; yM: number; accM: number } | null = null;
   function setCoverage(o: CoverageOverlay3D | null) {
+    lastCoverage = o;
     if (coverageGroup) {
       coverageGroup.traverse(obj => {
         const m = obj as THREE.Mesh;
@@ -1343,6 +1416,7 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
   // swales orange like the 2D plan. ──
   let waterGroup: THREE.Group | null = null;
   function setWater(w: Water3D | null) {
+    lastWater = w;
     if (waterGroup) {
       waterGroup.traverse(obj => {
         const m = obj as THREE.Mesh;
@@ -1402,6 +1476,7 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
   // function's reach as a draped green disc, and the name above it. ──
   let previewGroup: THREE.Group | null = null;
   function setPreview(pv: SuggestionPreview3D | null) {
+    lastPreview = pv;
     if (previewGroup) {
       previewGroup.traverse(obj => {
         const m = obj as THREE.Mesh;
@@ -1460,7 +1535,7 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
     return c;
   }
 
-  return {
+  const view: GardenPlan3DView = {
     snapshot,
     setPreview,
     setCoverage,
@@ -1547,6 +1622,7 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
       rebuildAreas();
     },
     setPositionMarker(pos) {
+      lastPos = pos;
       if (posMarker) {
         scene.remove(posMarker);
         posMarker.traverse(o => {
@@ -1605,6 +1681,42 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
       requestRender();
     },
     tileStatus,
+    setTerrain(t) {
+      if (opts.layers?.length) return false;
+      useTerrain(t);
+      layoutSrc = tileSrc ?? (terrain ? OSM_TILES : null);
+      scene.remove(lawn);
+      lawn.geometry.dispose();
+      (lawn.material as THREE.Material).dispose();
+      lawn = buildGroundMesh(plan.areaWidthM, plan.areaHeightM, ground, terrain?.cellM);
+      lawn.visible = !layoutSrc;
+      scene.add(lawn);
+      meadow.position.y = groundMin - 0.3;
+      lowestY = groundMin;
+      coarseOffset.clear();
+      // The current tiles stay as backdrop until the new set (new heights) has loaded, as after a camera move.
+      tileGen++;
+      tileKey = '';
+      refreshTiles();
+      scene.remove(boundaryMesh);
+      boundaryMesh.geometry.dispose();
+      (boundaryMesh.material as THREE.Material).dispose();
+      boundaryMesh = buildBoundaryMesh(plan, ground, drapeCell, drapeLift);
+      scene.add(boundaryMesh);
+      buildBuildings();
+      rebuildPlacements();
+      rebuildAreas();
+      setCoverage(lastCoverage);
+      setWater(lastWater);
+      setPreview(lastPreview);
+      view.setPositionMarker(lastPos);
+      return true;
+    },
+    setBuildings(list) {
+      buildingList = list;
+      buildBuildings();
+      requestRender();
+    },
     dispose() {
       disposed = true;
       flyId++;
@@ -1632,4 +1744,5 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
       if (renderer.domElement.parentNode === container) container.removeChild(renderer.domElement);
     },
   };
+  return view;
 }

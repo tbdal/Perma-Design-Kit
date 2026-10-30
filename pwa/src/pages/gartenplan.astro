@@ -955,19 +955,21 @@ import Layout from '../layouts/Layout.astro';
   // broken spacing (0 or tiny, e.g. from a plan saved before imports were
   // checked) from turning these loops into an endless one.
   const MAX_TICK_LABELS = 2000;
-  function gridTickLabels(widthM: number, heightM: number, spacingM: number, k = 1): string {
+  function gridTickLabels(widthM: number, heightM: number, spacingM: number, k = 1, range?: PlanRect): string {
     if (!(spacingM > 0)) return '';
     const round2 = (n: number) => Math.round(n * 100) / 100;
-    const xSteps = Math.floor(widthM / spacingM);
-    const ySteps = Math.floor(heightM / spacingM);
-    if (!(xSteps <= MAX_TICK_LABELS && ySteps <= MAX_TICK_LABELS)) return '';
+    // With a range only the numbers inside it: a plan of some km would otherwise exceed the cap and lose them all.
+    const x0 = range ? Math.max(1, Math.ceil(range.minX / spacingM)) : 1, y0 = range ? Math.max(1, Math.ceil(range.minY / spacingM)) : 1;
+    const xSteps = Math.min(Math.floor(widthM / spacingM), range ? Math.floor(range.maxX / spacingM) : Infinity);
+    const ySteps = Math.min(Math.floor(heightM / spacingM), range ? Math.floor(range.maxY / spacingM) : Infinity);
+    if (!(xSteps - x0 < MAX_TICK_LABELS && ySteps - y0 < MAX_TICK_LABELS)) return '';
     const labels: string[] = [];
-    for (let i = 1; i <= xSteps; i++) {
+    for (let i = x0; i <= xSteps; i++) {
       const m = round2(i * spacingM);
       const x = m * SVG_UNITS_PER_METER;
       labels.push(`<text x="${x}" y="${11 * k}" font-size="${9 * k}" fill="#a8a29e" text-anchor="middle">${m}</text>`);
     }
-    for (let i = 1; i <= ySteps; i++) {
+    for (let i = y0; i <= ySteps; i++) {
       const m = round2(i * spacingM);
       const y = m * SVG_UNITS_PER_METER;
       labels.push(`<text x="${3 * k}" y="${y + 9 * k}" font-size="${9 * k}" fill="#a8a29e" text-anchor="start">${m}</text>`);
@@ -1002,7 +1004,7 @@ import Layout from '../layouts/Layout.astro';
     if (editing) setGridRotation(gridAngleAlongOutline(editing.boundary));
   });
 
-  function gridDefsAndBackground(widthM: number, heightM: number, spacingM: number, patternId: string, k = 1, pxPerM = 0, rotationDeg = 0, outline: GardenPlanPoint[] = []): string {
+  function gridDefsAndBackground(widthM: number, heightM: number, spacingM: number, patternId: string, k = 1, pxPerM = 0, rotationDeg = 0, outline: GardenPlanPoint[] = [], labelRange?: PlanRect): string {
     // Zoomed out, the grid would turn into a carpet of lines and the meter
     // numbers into solid bars: thin both out to ≥ 12 px / ≥ 40 px apart.
     const labelStepM = pxPerM ? niceStep(spacingM, 40 / pxPerM) : spacingM;
@@ -1021,7 +1023,7 @@ import Layout from '../layouts/Layout.astro';
         ? `<rect width="${widthM * SVG_UNITS_PER_METER}" height="${heightM * SVG_UNITS_PER_METER}" fill="transparent"/>
            ${gridInput.checked ? `<rect width="${widthM * SVG_UNITS_PER_METER}" height="${heightM * SVG_UNITS_PER_METER}" fill="url(#${patternId})" clip-path="url(#${patternId}-clip)"/>` : ''}`
         : `<rect width="${widthM * SVG_UNITS_PER_METER}" height="${heightM * SVG_UNITS_PER_METER}" fill="${gridInput.checked ? `url(#${patternId})` : 'transparent'}" stroke="#a8a29e" stroke-width="${2 * k}"/>`}
-      ${rotationDeg ? '' : gridTickLabels(widthM, heightM, labelStepM, k)}`;
+      ${rotationDeg ? '' : gridTickLabels(widthM, heightM, labelStepM, k, labelRange)}`;
   }
 
   // ── Listenansicht ──────────────────────────────────────────────────────
@@ -1245,6 +1247,9 @@ import Layout from '../layouts/Layout.astro';
     layer.querySelectorAll('image[data-k]').forEach(i => old.set(i.getAttribute('data-k')!, i));
     const holder = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     holder.innerHTML = html;
+    // The tile size differs per zoom level, so a changed size means a new zoom level.
+    const tileSize = (root: Element | null) => root?.querySelector('image[data-k]')?.getAttribute('width');
+    const zoomChanged = tileSize(layer.querySelector(':scope > :not(.basemap-back)')) !== tileSize(holder);
     holder.querySelectorAll('image[data-k]').forEach(n => {
       const o = old.get(n.getAttribute('data-k')!);
       if (!o) return;
@@ -1252,7 +1257,26 @@ import Layout from '../layouts/Layout.astro';
       for (const a of ['x', 'y', 'width', 'height']) o.setAttribute(a, n.getAttribute(a)!);
       n.replaceWith(o);
     });
-    layer.replaceChildren(...holder.childNodes);
+    // Tiles not reused: after a zoom step the loaded ones of the old level stay underneath (class
+    // basemap-back) until the new ones are in, so the picture never goes blank; the rest is dropped,
+    // unfinished downloads aborted by taking their href away.
+    if (zoomChanged) layer.querySelectorAll(':scope > :not(.basemap-back)').forEach(c => c.classList.add('basemap-back'));
+    layer.querySelectorAll<SVGImageElement>('image').forEach(i => {
+      if (i.closest('.basemap-back') && i.dataset.tile === 'ok') return;
+      if (!i.dataset.tile) i.removeAttribute('href');
+      i.remove();
+    });
+    const back = [...layer.querySelectorAll(':scope > .basemap-back')].filter(c => c.querySelector('image'));
+    layer.replaceChildren(...back, ...holder.childNodes);
+    if (back.length && zoomChanged) {
+      const since = Date.now();
+      const drop = () => {
+        const pending = [...layer.querySelectorAll<SVGImageElement>(':scope > :not(.basemap-back) image')].some(i => !i.dataset.tile);
+        if (pending && Date.now() - since < 3000) setTimeout(drop, 200);
+        else back.forEach(c => c.remove());
+      };
+      setTimeout(drop, 200);
+    }
     updateAttribution(svg);
     if (svg === planSvg) showTileProgress();
   }
@@ -1271,7 +1295,7 @@ import Layout from '../layouts/Layout.astro';
       tileProgressFrame = 0;
       let st = tileStatus3d;
       if (!view3d) {
-        const imgs = [...planSvg.querySelectorAll<SVGImageElement>('.basemap-layer image')];
+        const imgs = [...planSvg.querySelectorAll<SVGImageElement>('.basemap-layer image:not(.basemap-back image)')] // old-zoom tiles kept behind do not count;
         const n = (s: string) => imgs.filter(i => i.dataset.tile === s).length;
         st = { total: imgs.length, loading: imgs.length - n('ok') - n('failed'), sharp: 0, coarse: 0, failed: n('failed'), belowWanted: 0 };
       }
@@ -1452,22 +1476,31 @@ import Layout from '../layouts/Layout.astro';
   function wireCursorReadout(svg: SVGSVGElement) {
     const wrap = svg.parentElement!;
     const label = wrap.querySelector<HTMLElement>('.cursor-readout')!;
-    const hide = () => label.classList.add('hidden');
-    svg.addEventListener('pointermove', (e: PointerEvent) => {
-      if (!svg.getScreenCTM()) return;
+    // Once per frame, reads before writes; the label is measured only when its (monospace) text length changes.
+    let frame = 0, last: PointerEvent | null = null, size = { len: -1, w: 0, h: 0 };
+    const hide = () => { if (frame) cancelAnimationFrame(frame); frame = 0; label.classList.add('hidden'); };
+    const draw = () => {
+      frame = 0;
+      const e = last;
+      if (!e || !svg.getScreenCTM()) return;
       const p = clientToMeters(svg, e.clientX, e.clientY);
+      const r = wrap.getBoundingClientRect();
       // On the plan: meters from the north-western corner of the outline, plus the ground height there.
       const ref = svg === planSvg ? nwCorner() : null;
       let text = `x ${formatMeters(p.xM - (ref?.xM ?? 0), lang)} · y ${formatMeters(p.yM - (ref?.yM ?? 0), lang)}`;
       if (svg === planSvg && terrain) text += ` · ${lang === 'de' ? 'Höhe' : 'elev.'} ${formatMeters(sampleGrid(terrain, p.xM, p.yM), lang)}`;
       label.textContent = text;
       label.classList.remove('hidden');
-      const r = wrap.getBoundingClientRect();
+      if (size.len !== text.length || !size.w) size = { len: text.length, w: label.offsetWidth, h: label.offsetHeight };
       let left = e.clientX - r.left + 14, top = e.clientY - r.top + 14;
-      if (left + label.offsetWidth > r.width - 4) left = e.clientX - r.left - label.offsetWidth - 14;
-      if (top + label.offsetHeight > r.height - 4) top = e.clientY - r.top - label.offsetHeight - 14;
+      if (left + size.w > r.width - 4) left = e.clientX - r.left - size.w - 14;
+      if (top + size.h > r.height - 4) top = e.clientY - r.top - size.h - 14;
       label.style.left = `${left}px`;
       label.style.top = `${top}px`;
+    };
+    svg.addEventListener('pointermove', (e: PointerEvent) => {
+      last = e;
+      if (!frame) frame = requestAnimationFrame(draw);
     });
     svg.addEventListener('pointerleave', hide);
     svg.addEventListener('pointercancel', hide);
@@ -1796,11 +1829,11 @@ import Layout from '../layouts/Layout.astro';
       onTileFallback: noteOrthoFallback,
       onTileStatus(st) { tileStatus3d = st; showTileProgress(); },
       simple: simple3d || phoneBigPlan(),
+      treeOpacity,
+      selectedAreaId,
     });
     if (from2d) camera3dAtEnter = view3d.getCameraState();
-    view3d.setTreeOpacity(treeOpacity);
     view3d.setArmedPlant(armedPlantId);
-    view3d.refreshAreas(selectedAreaId);
     view3d.setCoverage(coverage3d);
     view3d.setWater(water3d);
     view3d.setPositionMarker(gpsPos);
@@ -2354,10 +2387,10 @@ import Layout from '../layouts/Layout.astro';
     selectedPanel.innerHTML = `
       <p class="mb-2 flex items-center gap-2 text-sm font-medium text-stone-800 dark:text-stone-100">${title}</p>
       <dl class="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
-        <dt class="text-stone-500 dark:text-stone-400">${t(area ? 'selArea' : 'selPlanSize')}</dt><dd class="font-mono text-stone-800 dark:text-stone-100">${fmt(polygonAreaM2(pts))} m²</dd>
+        <dt class="text-stone-500 dark:text-stone-400">${t(area ? 'selArea' : 'selPlanSize')}</dt><dd data-sel="area" class="font-mono text-stone-800 dark:text-stone-100">${fmt(polygonAreaM2(pts))} m²</dd>
         ${area ? '' : `<dt class="text-stone-500 dark:text-stone-400">${t('selPlanFrame')}</dt><dd class="font-mono text-stone-800 dark:text-stone-100">${fmt(editing.areaWidthM)} m × ${fmt(editing.areaHeightM)} m</dd>`}
-        <dt class="text-stone-500 dark:text-stone-400">${t('selPerimeter')}</dt><dd class="font-mono text-stone-800 dark:text-stone-100">${fmt(polygonPerimeterM(pts))} m</dd>
-        <dt class="text-stone-500 dark:text-stone-400">${t('selCorners')}</dt><dd class="font-mono text-stone-800 dark:text-stone-100">${pts.length}</dd>
+        <dt class="text-stone-500 dark:text-stone-400">${t('selPerimeter')}</dt><dd data-sel="perimeter" class="font-mono text-stone-800 dark:text-stone-100">${fmt(polygonPerimeterM(pts))} m</dd>
+        <dt class="text-stone-500 dark:text-stone-400">${t('selCorners')}</dt><dd data-sel="corners" class="font-mono text-stone-800 dark:text-stone-100">${pts.length}</dd>
       </dl>
       <p class="mt-2 text-[11px] text-stone-500 dark:text-stone-400">${t(area ? 'areaEditHint' : 'boundaryEditHint')}</p>
       ${area ? `<button id="btn-remove-area" class="mt-2 rounded-md bg-red-100 dark:bg-red-900/40 px-2.5 py-1 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/60">${t('areaDelete')}</button>` : ''}`;
@@ -2427,11 +2460,13 @@ import Layout from '../layouts/Layout.astro';
     label.textContent = p ? nameWithVariety(p) : '?';
   }
 
+  // Plan rect the grid's meter numbers were drawn for (the view plus half of it on every side, see planGridHtml).
+  let gridLabelsFor: PlanRect | null = null;
   function renderPlanSvg() {
     if (!editing) return;
     scheduleAutosave();
     if (!planView.w) resetPlanViewState();
-    const w = editing.areaWidthM, h = editing.areaHeightM, k = viewK();
+    const k = viewK();
     const pointsAttr = editing.boundary.map(p => `${p.xM * SVG_UNITS_PER_METER},${p.yM * SVG_UNITS_PER_METER}`).join(' ');
     if (!planView.w) resetPlanViewState();
     planSvg.setAttribute('viewBox', `${planView.x} ${planView.y} ${planView.w} ${planView.h}`);
@@ -2444,7 +2479,7 @@ import Layout from '../layouts/Layout.astro';
       <g id="buildings-layer" pointer-events="none"></g>
       <g id="water-layer" pointer-events="none"></g>
       <g id="coverage-layer" pointer-events="none"></g>
-      <g id="plan-grid-layer">${gridDefsAndBackground(w, h, editing.gridSpacingM, 'plan-grid', k, pxPerUnit() * U, editing.gridRotationDeg ?? 0, editing.boundary)}</g>
+      <g id="plan-grid-layer">${planGridHtml()}</g>
       <g id="zones-layer" pointer-events="none"></g>
       <polygon id="plan-boundary" points="${pointsAttr}" fill="#15803d" fill-opacity="0.08" stroke="#15803d" stroke-width="${2 * k}"/>
       <g id="plan-areas-layer">${areasSvg(editing.areas, selectedAreaId, k, true)}</g>
@@ -2472,37 +2507,53 @@ import Layout from '../layouts/Layout.astro';
     renderGps();
     markerMap = new Map();
     const markersGroup = planSvg.querySelector('#plan-markers')!;
-    for (const placement of editing.placements) {
-      const p = plantsById.get(placement.plantId);
-      const group = document.createElementNS(SVG_NS, 'g') as SVGGElement;
-      group.setAttribute('transform', `translate(${placement.xM * SVG_UNITS_PER_METER},${placement.yM * SVG_UNITS_PER_METER})`);
-      group.setAttribute('data-placement-id', placement.id);
-      group.style.cursor = 'grab';
-      const blob = document.createElementNS(SVG_NS, 'path');
-      blob.setAttribute('class', 'marker-blob');
-      blob.setAttribute('fill-opacity', '0.6');
-      group.appendChild(blob);
-      const dot = document.createElementNS(SVG_NS, 'circle');
-      dot.setAttribute('class', 'marker-dot');
-      dot.setAttribute('r', String(3 * k));
-      dot.setAttribute('fill', '#1c1917');
-      dot.style.pointerEvents = 'none';
-      group.appendChild(dot);
-      const label = document.createElementNS(SVG_NS, 'text');
-      label.setAttribute('class', 'marker-label');
-      label.setAttribute('text-anchor', 'middle');
-      label.setAttribute('font-size', String(13 * k));
-      label.setAttribute('fill', '#1c1917');
-      label.setAttribute('stroke', '#ffffff');
-      label.setAttribute('stroke-width', String(3 * k));
-      label.setAttribute('paint-order', 'stroke');
-      label.style.pointerEvents = 'none';
-      group.appendChild(label);
-      updateMarkerShape(group, placement, p);
-      wirePlacementDrag(group, placement);
-      markersGroup.appendChild(group);
-      markerMap.set(placement.id, group);
-    }
+    for (const placement of editing.placements) appendMarker(markersGroup, placement, k);
+    renderPluginOverlays();
+    renderSimpleGuide();
+    notifyPlanChange();
+  }
+
+  function appendMarker(markersGroup: Element, placement: GardenPlanPlacement, k: number) {
+    const p = plantsById.get(placement.plantId);
+    const group = document.createElementNS(SVG_NS, 'g') as SVGGElement;
+    group.setAttribute('transform', `translate(${placement.xM * SVG_UNITS_PER_METER},${placement.yM * SVG_UNITS_PER_METER})`);
+    group.setAttribute('data-placement-id', placement.id);
+    group.style.cursor = 'grab';
+    const blob = document.createElementNS(SVG_NS, 'path');
+    blob.setAttribute('class', 'marker-blob');
+    blob.setAttribute('fill-opacity', '0.6');
+    group.appendChild(blob);
+    const dot = document.createElementNS(SVG_NS, 'circle');
+    dot.setAttribute('class', 'marker-dot');
+    dot.setAttribute('r', String(3 * k));
+    dot.setAttribute('fill', '#1c1917');
+    dot.style.pointerEvents = 'none';
+    group.appendChild(dot);
+    const label = document.createElementNS(SVG_NS, 'text');
+    label.setAttribute('class', 'marker-label');
+    label.setAttribute('text-anchor', 'middle');
+    label.setAttribute('font-size', String(13 * k));
+    label.setAttribute('fill', '#1c1917');
+    label.setAttribute('stroke', '#ffffff');
+    label.setAttribute('stroke-width', String(3 * k));
+    label.setAttribute('paint-order', 'stroke');
+    label.style.pointerEvents = 'none';
+    group.appendChild(label);
+    updateMarkerShape(group, placement, p);
+    wirePlacementDrag(group, placement);
+    markersGroup.appendChild(group);
+    markerMap.set(placement.id, group);
+  }
+
+  /** New placements only: append their markers and update what depends on the
+   *  placements, instead of a full renderPlanSvg() that rebuilt every marker per plant placed. */
+  function addPlacementMarkers(pls: GardenPlanPlacement[]) {
+    const markersGroup = planSvg.querySelector('#plan-markers');
+    if (!editing || !markersGroup) { renderPlanSvg(); return; }
+    const k = viewK();
+    for (const pl of pls) appendMarker(markersGroup, pl, k);
+    scheduleAutosave(); // also schedules the hints
+    scheduleCoverage();
     renderPluginOverlays();
     renderSimpleGuide();
     notifyPlanChange();
@@ -2595,7 +2646,7 @@ import Layout from '../layouts/Layout.astro';
     unplacedPlantIds = unplacedPlantIds.filter(id => id !== armedPlantId);
     renderUnplacedList();
     renderSuggestions();
-    renderPlanSvg();
+    addPlacementMarkers([placement]);
   }
 
   yearsInput.addEventListener('input', () => {
@@ -2659,7 +2710,7 @@ import Layout from '../layouts/Layout.astro';
     g.innerHTML = mids + verts;
   }
 
-  let vertexDrag: { area: { points: GardenPlanPoint[] }; index: number; pointerId: number } | null = null;
+  let vertexDrag: { area: { id: string; points: GardenPlanPoint[] }; index: number; pointerId: number; moved: boolean } | null = null;
   let lastVertexTap: { areaId: string; index: number; t: number } | null = null;
   const DOUBLE_TAP_MS = 400;
 
@@ -2692,22 +2743,53 @@ import Layout from '../layouts/Layout.astro';
       index += 1;
       renderAreasLayer();
     }
-    vertexDrag = { area, index, pointerId: e.pointerId };
+    vertexDrag = { area, index, pointerId: e.pointerId, moved: false };
     planSvg.setPointerCapture(e.pointerId);
   }, { capture: true });
 
+  // Pointer position of the drag not drawn yet: applied once per frame, not per pointermove.
+  let vertexPending: { x: number; y: number } | null = null;
+  let vertexFrame = 0;
   planSvg.addEventListener('pointermove', (e: PointerEvent) => {
     if (!vertexDrag || !editing || e.pointerId !== vertexDrag.pointerId) return;
     lastVertexTap = null; // a drag is not half of a double tap
-    // Not clamped: dragging past the edge grows the plan on release.
-    vertexDrag.area.points[vertexDrag.index] = snapIfClose(planSvg, clientToMeters(planSvg, e.clientX, e.clientY), editing.gridSpacingM);
-    renderAreasLayer();
-    renderSelectedPanel();
+    vertexDrag.moved = true;
+    vertexPending = { x: e.clientX, y: e.clientY };
+    if (!vertexFrame) vertexFrame = requestAnimationFrame(applyVertexDrag);
   });
+  /** Moves the dragged corner and redraws only its shape, label, handles and the panel's numbers. */
+  function applyVertexDrag() {
+    vertexFrame = 0;
+    const d = vertexDrag, at = vertexPending;
+    vertexPending = null;
+    if (!d || !at || !editing) return;
+    // Not clamped: dragging past the edge grows the plan on release.
+    d.area.points[d.index] = snapIfClose(planSvg, clientToMeters(planSvg, at.x, at.y), editing.gridSpacingM);
+    const pts = d.area.points;
+    const attr = pts.map(p => `${p.xM * U},${p.yM * U}`).join(' ');
+    if (d.area.id === '__boundary') planSvg.querySelector('#plan-boundary')?.setAttribute('points', attr);
+    else {
+      const g = planSvg.querySelector(`#plan-areas-layer [data-area="${CSS.escape(d.area.id)}"]`);
+      g?.querySelector('polygon')?.setAttribute('points', attr);
+      const label = g?.querySelector('text'), c = polygonCentroid(pts);
+      label?.setAttribute('x', String(c.xM * U));
+      label?.setAttribute('y', String(c.yM * U));
+    }
+    renderAreaHandles();
+    const fmt = (v: number) => new Intl.NumberFormat(lang, { maximumFractionDigits: 1 }).format(v);
+    const num = (k: string, text: string) => { const el = selectedPanel.querySelector(`[data-sel="${k}"]`); if (el) el.textContent = text; };
+    num('area', `${fmt(polygonAreaM2(pts))} m²`);
+    num('perimeter', `${fmt(polygonPerimeterM(pts))} m`);
+    num('corners', String(pts.length));
+  }
 
   function endVertexDrag(e: PointerEvent) {
     if (!vertexDrag || e.pointerId !== vertexDrag.pointerId) return;
+    if (vertexFrame) { cancelAnimationFrame(vertexFrame); applyVertexDrag(); }
+    const moved = vertexDrag.moved;
     vertexDrag = null;
+    // The full redraw once at the end (3D areas, panel), as every move used to.
+    if (moved) { renderAreasLayer(); renderSelectedPanel(); }
     afterGeometryEdit();
   }
   planSvg.addEventListener('pointerup', endVertexDrag);
@@ -2945,6 +3027,11 @@ import Layout from '../layouts/Layout.astro';
   new MutationObserver(updateScaleBar).observe(plan3dContainer, { attributes: true, attributeFilter: ['hidden'] });
   // What the last full rescale drew for: a pan keeps zoom and layers, so the zoom-scaled layers stay as they are.
   let rescaledFor: { k: number; ppu: number; grid: Element | null } | null = null;
+  function planGridHtml(): string {
+    const v = viewRectM(), mx = (v.maxX - v.minX) / 2, my = (v.maxY - v.minY) / 2;
+    gridLabelsFor = { minX: v.minX - mx, minY: v.minY - my, maxX: v.maxX + mx, maxY: v.maxY + my };
+    return gridDefsAndBackground(editing!.areaWidthM, editing!.areaHeightM, editing!.gridSpacingM, 'plan-grid', viewK(), pxPerUnit() * U, editing!.gridRotationDeg ?? 0, editing!.boundary, gridLabelsFor);
+  }
   const rescaleOnFrame = () => rescaleUi(true);
   function rescaleUi(panOnly = false) {
     rescaleQueued = false;
@@ -2957,10 +3044,13 @@ import Layout from '../layouts/Layout.astro';
       // Only panned: plugins may follow the view, and markers that scrolled into view catch up below.
       renderPluginOverlays();
       catchUpMarkers(ppuNow);
+      // The meter numbers cover the view with a margin: redrawn only once the view leaves that.
+      const v = viewRectM(), f = gridLabelsFor;
+      if (grid && (!f || v.minX < f.minX || v.minY < f.minY || v.maxX > f.maxX || v.maxY > f.maxY)) grid.innerHTML = planGridHtml();
       return;
     }
     rescaledFor = { k, ppu: ppuNow, grid };
-    if (grid) grid.innerHTML = gridDefsAndBackground(editing.areaWidthM, editing.areaHeightM, editing.gridSpacingM, 'plan-grid', k, pxPerUnit() * U, editing.gridRotationDeg ?? 0, editing.boundary);
+    if (grid) grid.innerHTML = planGridHtml();
     planSvg.querySelector('#plan-boundary')?.setAttribute('stroke-width', String(2 * k));
     renderMeasure();
     renderPluginOverlays();
@@ -2968,10 +3058,10 @@ import Layout from '../layouts/Layout.astro';
     renderAreasLayer();
     renderAreaDraft();
     renderRowDraft();
-    renderContours();
+    // Contours and flow paths draw in non-scaling px strokes: the zoom does not touch them.
     renderZones();
     renderWarnHover();
-    renderWater();
+    renderWaterLayer();
     renderGps();
   }
   function catchUpMarkers(ppu: number) {
@@ -3387,13 +3477,14 @@ import Layout from '../layouts/Layout.astro';
     if (!editing || !rowDraft || rowDraft.length < 2 || !rowPlantId) return;
     const spots = rowPositions();
     const plantId = rowPlantId;
-    for (const q of spots) editing.placements.push(newPlacement(plantId, q.xM, q.yM));
+    const added = spots.map(q => newPlacement(plantId, q.xM, q.yM));
+    editing.placements.push(...added);
     unplacedPlantIds = unplacedPlantIds.filter(id => id !== plantId);
     const p = plantsById.get(plantId);
     endRowDraw();
     renderUnplacedList();
     renderSuggestions();
-    renderPlanSvg();
+    addPlacementMarkers(added);
     afterGeometryEdit();
     showToast(t('toastRowPlanted', { n: spots.length, name: p ? displayName(p) : '?' }));
   });
@@ -3486,8 +3577,12 @@ import Layout from '../layouts/Layout.astro';
   }
   document.querySelectorAll<HTMLElement>('[data-tool]').forEach(b => b.addEventListener('click', () => setTool(b.dataset.tool as Tool)));
 
-  function refreshMarkerHighlight() {
+  /** Recolours the markers; with `ids` only those (a warning hover touches a few, not hundreds). */
+  function refreshMarkerHighlight(ids?: Iterable<string>) {
+    const only = ids && new Set(ids);
+    if (only && !only.size) return;
     for (const pl of editing?.placements ?? []) {
+      if (only && !only.has(pl.id)) continue;
       const g = markerMap.get(pl.id);
       if (g) updateMarkerShape(g, pl, plantsById.get(pl.plantId));
     }
@@ -3706,7 +3801,8 @@ import Layout from '../layouts/Layout.astro';
     updateTerrainInfo();
     renderContours();
     renderBasemap(planSvg);
-    if (!plan3dContainer.hidden) btnView3d.click(); // rebuild 3D on the terrain, camera kept
+    // Open 3D view: swap the ground in place (camera, plants stay); a full rebuild only when it can't (plugin layers).
+    if (!plan3dContainer.hidden && !view3d?.setTerrain(editing?.geo ? terrain : null)) btnView3d.click();
   }
 
   function updateTerrainInfo() {
@@ -3728,27 +3824,31 @@ import Layout from '../layouts/Layout.astro';
       + (terrain.dgm ? ` · ${t('terrainDgmLabel', { region: terrain.dgm.region[lang], res: fmt(terrain.dgm.resolutionM) })}` : '');
   }
 
+  let contourCache: { grid: ElevationGrid; chosen: number; html: string } | null = null;
   function renderContours() {
     const layer = planSvg.querySelector('#contour-layer');
     document.getElementById('contour-step-label')!.hidden = !terrain || !editing?.geo;
     if (!layer) return;
     if (!terrain || !contoursInput.checked || !editing?.geo || !featureOn('terrain')) { layer.innerHTML = ''; return; }
-    let lo = Infinity, hi = -Infinity;
-    for (const h of terrain.heights) { lo = Math.min(lo, h); hi = Math.max(hi, h); }
     // Chosen spacing (m); never so fine that the plan fills with hundreds of lines.
     const chosen = Number(contourStepSel.value) || 0;
-    const interval = chosen ? Math.max(chosen, (hi - lo) / 150) : contourInterval(hi - lo);
-    const byLevel = new Map<number, string[]>();
-    for (const { level, seg } of contourSegments(terrain, interval)) {
-      const arr = byLevel.get(level) ?? [];
-      arr.push(`M${seg[0] * U} ${seg[1] * U}L${seg[2] * U} ${seg[3] * U}`);
-      byLevel.set(level, arr);
+    if (contourCache?.grid !== terrain || contourCache.chosen !== chosen) {
+      let lo = Infinity, hi = -Infinity;
+      for (const h of terrain.heights) { lo = Math.min(lo, h); hi = Math.max(hi, h); }
+      const interval = chosen ? Math.max(chosen, (hi - lo) / 150) : contourInterval(hi - lo);
+      const byLevel = new Map<number, string[]>();
+      for (const { level, seg } of contourSegments(terrain, interval)) {
+        const arr = byLevel.get(level) ?? [];
+        arr.push(`M${seg[0] * U} ${seg[1] * U}L${seg[2] * U} ${seg[3] * U}`);
+        byLevel.set(level, arr);
+      }
+      // px strokes that ignore the zoom: the lines never need redrawing for it.
+      contourCache = { grid: terrain, chosen, html: [...byLevel.entries()].map(([level, d]) => {
+        const index = Math.abs(level / (interval * 5) - Math.round(level / (interval * 5))) < 1e-6;
+        return `<path d="${d.join('')}" fill="none" stroke="#92400e" stroke-opacity="${index ? 0.7 : 0.45}" stroke-width="${index ? 1.8 : 1}" vector-effect="non-scaling-stroke"/>`;
+      }).join('') };
     }
-    const ppu = pxPerUnit();
-    layer.innerHTML = [...byLevel.entries()].map(([level, d]) => {
-      const index = Math.abs(level / (interval * 5) - Math.round(level / (interval * 5))) < 1e-6;
-      return `<path d="${d.join('')}" fill="none" stroke="#92400e" stroke-opacity="${index ? 0.7 : 0.45}" stroke-width="${(index ? 1.8 : 1) / ppu}"/>`;
-    }).join('');
+    layer.innerHTML = contourCache.html;
   }
 
   // ── Funktions-Abdeckung ────────────────────────────────────────────────
@@ -3842,11 +3942,11 @@ import Layout from '../layouts/Layout.astro';
         const g = gaps[Number(b.dataset.gap)];
         const p = plantsById.get(b.dataset.plant!);
         if (!g || !p || !editing) return;
-        editing.placements.push(newPlacement(p.id, g.xM, g.yM));
-        renderPlanSvg();
+        const pl = newPlacement(p.id, g.xM, g.yM);
+        editing.placements.push(pl);
+        addPlacementMarkers([pl]);
         view3d?.refreshPlacements();
         renderSuggestions();
-        scheduleAutosave();
         showToast(t('toastPlantedAtGap', { name: displayName(p) }));
       }));
     }
@@ -3953,13 +4053,13 @@ import Layout from '../layouts/Layout.astro';
   document.getElementById('gps-center')!.addEventListener('click', centerOnGps);
   gpsPlace.addEventListener('click', () => {
     if (!editing || !gpsPos || !armedPlantId) return;
-    editing.placements.push(newPlacement(armedPlantId, gpsPos.xM, gpsPos.yM));
+    const pl = newPlacement(armedPlantId, gpsPos.xM, gpsPos.yM);
+    editing.placements.push(pl);
     unplacedPlantIds = unplacedPlantIds.filter(id => id !== armedPlantId);
     renderUnplacedList();
     renderSuggestions();
-    renderPlanSvg();
+    addPlacementMarkers([pl]);
     view3d?.refreshPlacements();
-    scheduleAutosave();
     showToast(t('gpsPlaced'));
   });
   gpsMove.addEventListener('click', () => {
@@ -4129,6 +4229,46 @@ import Layout from '../layouts/Layout.astro';
       + `<p><span class="font-medium">${escapeHtml(t('waterLimits'))}</span> ${escapeHtml(t('waterLimitsText'))}</p>`
       + `<p class="font-medium">${escapeHtml(t('waterPapers'))}</p><ul class="list-disc space-y-1 pl-4">${papers}</ul>`;
   }
+  // Flow paths per analysis, in px strokes that ignore the zoom: zooming only redraws the few scaled sinks/swales/labels.
+  const waterFlowSvg = new WeakMap<WaterAnalysis, string>();
+  /** The 2D water layer alone (zoom calls this; renderWater also does the panel and 3D). */
+  function renderWaterLayer() {
+    const layer = planSvg.querySelector('#water-layer');
+    if (!layer) return;
+    const w = editing?.geo && waterInput.checked && featureOn('water') ? waterAnalysis() : null;
+    if (!w || !terrain) { layer.innerHTML = ''; return; }
+    let flow = waterFlowSvg.get(w);
+    if (flow === undefined) {
+      // Flow: width by catchment (log), one path per width class.
+      const byWidth = new Map<number, string[]>();
+      for (const f of w.flow) {
+        const cls = Math.min(5, Math.max(1, Math.round(Math.log10(f.catchmentM2 / 150) * 2) + 1));
+        const arr = byWidth.get(cls) ?? [];
+        arr.push(`M${f.x1 * U} ${f.y1 * U}L${f.x2 * U} ${f.y2 * U}`);
+        byWidth.set(cls, arr);
+      }
+      flow = [...byWidth.entries()].map(([cls, d]) =>
+        `<path d="${d.join('')}" fill="none" stroke="#0284c7" stroke-opacity="${0.35 + cls * 0.1}" stroke-width="${0.6 + cls * 0.7}" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`).join('');
+      waterFlowSvg.set(w, flow);
+    }
+    const k = viewK();
+    const nf = (v: number, d = 0) => new Intl.NumberFormat(lang, { maximumFractionDigits: d }).format(v);
+    const parts = [flow];
+    const label = (x: number, y: number, text: string, color: string) =>
+      `<text x="${x * U}" y="${y * U}" text-anchor="middle" dominant-baseline="central" font-size="${10 * k}" font-weight="600" fill="${color}" stroke="#fff" stroke-width="${3 * k}" paint-order="stroke">${escapeHtml(text)}</text>`;
+    if (terrain.dgm) {
+      for (const s of w.sinks) {
+        const r = Math.sqrt(s.areaM2 / Math.PI);
+        parts.push(`<circle cx="${s.xM * U}" cy="${s.yM * U}" r="${r * U}" fill="#0ea5e9" fill-opacity="0.25" stroke="#0369a1" stroke-width="${1.2 * k}"/>`);
+        parts.push(label(s.xM, s.yM, t('waterSinkLabel', { n: w.sinks.indexOf(s) + 1, d: nf(s.depthM, 1) }), '#075985'));
+      }
+      for (const s of w.swales) {
+        parts.push(`<line x1="${s.x1 * U}" y1="${s.y1 * U}" x2="${s.x2 * U}" y2="${s.y2 * U}" stroke="#d97706" stroke-width="${4 * k}" stroke-dasharray="${6 * k} ${3 * k}" stroke-linecap="round"/>`);
+        parts.push(label((s.x1 + s.x2) / 2, (s.y1 + s.y2) / 2 - 1.2, t('waterSwaleLabel'), '#b45309'));
+      }
+    }
+    layer.innerHTML = parts.join('');
+  }
   function renderWater() {
     const layer = planSvg.querySelector('#water-layer');
     geoGate(waterToggle, !!editing?.geo);
@@ -4144,32 +4284,8 @@ import Layout from '../layouts/Layout.astro';
     if (!terrain) { layer.innerHTML = ''; water3d = null; view3d?.setWater(null); waterBody.textContent = t('waterNoTerrain'); return; }
     const fine = !!terrain.dgm;
     const w = waterAnalysis()!;
-    const k = viewK();
     const nf = (v: number, d = 0) => new Intl.NumberFormat(lang, { maximumFractionDigits: d }).format(v);
-    // Flow: width by catchment (log), one path per width class.
-    const byWidth = new Map<number, string[]>();
-    for (const f of w.flow) {
-      const cls = Math.min(5, Math.max(1, Math.round(Math.log10(f.catchmentM2 / 150) * 2) + 1));
-      const arr = byWidth.get(cls) ?? [];
-      arr.push(`M${f.x1 * U} ${f.y1 * U}L${f.x2 * U} ${f.y2 * U}`);
-      byWidth.set(cls, arr);
-    }
-    const parts = [...byWidth.entries()].map(([cls, d]) =>
-      `<path d="${d.join('')}" fill="none" stroke="#0284c7" stroke-opacity="${0.35 + cls * 0.1}" stroke-width="${(0.6 + cls * 0.7) * k}" stroke-linecap="round"/>`);
-    const label = (x: number, y: number, text: string, color: string) =>
-      `<text x="${x * U}" y="${y * U}" text-anchor="middle" dominant-baseline="central" font-size="${10 * k}" font-weight="600" fill="${color}" stroke="#fff" stroke-width="${3 * k}" paint-order="stroke">${escapeHtml(text)}</text>`;
-    if (fine) {
-      for (const s of w.sinks) {
-        const r = Math.sqrt(s.areaM2 / Math.PI);
-        parts.push(`<circle cx="${s.xM * U}" cy="${s.yM * U}" r="${r * U}" fill="#0ea5e9" fill-opacity="0.25" stroke="#0369a1" stroke-width="${1.2 * k}"/>`);
-        parts.push(label(s.xM, s.yM, t('waterSinkLabel', { n: w.sinks.indexOf(s) + 1, d: nf(s.depthM, 1) }), '#075985'));
-      }
-      for (const s of w.swales) {
-        parts.push(`<line x1="${s.x1 * U}" y1="${s.y1 * U}" x2="${s.x2 * U}" y2="${s.y2 * U}" stroke="#d97706" stroke-width="${4 * k}" stroke-dasharray="${6 * k} ${3 * k}" stroke-linecap="round"/>`);
-        parts.push(label((s.x1 + s.x2) / 2, (s.y1 + s.y2) / 2 - 1.2, t('waterSwaleLabel'), '#b45309'));
-      }
-    }
-    layer.innerHTML = parts.join('');
+    renderWaterLayer();
     // the same in 3D: widths in metres, scaled a little with the plan size
     const wScale = Math.max(1, Math.max(editing.areaWidthM, editing.areaHeightM) / 100);
     water3d = {
@@ -4544,7 +4660,7 @@ import Layout from '../layouts/Layout.astro';
     updateAttribution(planSvg);
     scheduleWarnings();
     if (coverageSelect.value.startsWith('sun')) scheduleCoverage();
-    if (!plan3dContainer.hidden) btnView3d.click(); // rebuild 3D with/without buildings
+    if (!plan3dContainer.hidden) { if (view3d) view3d.setBuildings(showBuildings() ? buildings : []); else btnView3d.click(); } // in place, camera and plants stay
   }
   /** Building footprints as sun occluders (prisms), heights on the terrain. */
   function buildingOccluders(groundZ: (x: number, y: number) => number): Occluder[] {
@@ -4672,9 +4788,9 @@ import Layout from '../layouts/Layout.astro';
   let shownWarnIds: string[] = [];
   function applyWarnVisibility() {
     const next = new Set(warnShow ? shownWarnIds : []);
-    const same = next.size === warnedIds.size && [...next].every(id => warnedIds.has(id));
+    const changed = [...next, ...warnedIds].filter(id => next.has(id) !== warnedIds.has(id));
     warnedIds = next;
-    if (!same) refreshMarkerHighlight();
+    refreshMarkerHighlight(changed);
   }
   warnShowEl.addEventListener('change', () => {
     warnShow = warnShowEl.checked;
@@ -4694,18 +4810,19 @@ import Layout from '../layouts/Layout.astro';
   let pinnedWarn: WarnItem | null = null;
   let hoverWarnIds: string[] = [];
   const warnItemsByKey = new Map<string, WarnItem>();
-  function syncHotIds() { hoverWarnIds = (hoverWarn ?? pinnedWarn)?.ids ?? []; }
+  /** The ids that were or are now hot: only their markers need a redraw. */
+  function syncHotIds(): string[] { const old = hoverWarnIds; hoverWarnIds = (hoverWarn ?? pinnedWarn)?.ids ?? []; return [...old, ...hoverWarnIds]; }
   function setWarnHover(item: WarnItem | null) {
     hoverWarn = item;
-    syncHotIds();
+    const ids = syncHotIds();
     renderWarnHover();
-    refreshMarkerHighlight();
+    refreshMarkerHighlight(ids);
   }
   function setWarnPin(item: WarnItem | null) {
     pinnedWarn = item;
-    syncHotIds();
+    const ids = syncHotIds();
     renderWarnHover();
-    refreshMarkerHighlight();
+    refreshMarkerHighlight(ids);
     warningsSection.querySelectorAll<HTMLButtonElement>('[data-key]').forEach(b => {
       const on = !!item && b.dataset.key === item.key;
       b.setAttribute('aria-pressed', String(on));
@@ -4888,7 +5005,7 @@ import Layout from '../layouts/Layout.astro';
       refreshMarkerHighlight();
       renderSelectedPanel();
     }));
-    if (before.size !== warnedIds.size || [...warnedIds].some(id => !before.has(id))) refreshMarkerHighlight();
+    refreshMarkerHighlight([...before, ...warnedIds].filter(id => before.has(id) !== warnedIds.has(id)));
     guideWarnings = items;
     renderSimpleGuide();
     // The hints arrive after the selection: show what the mark on the selected plant means.
@@ -5138,9 +5255,8 @@ import Layout from '../layouts/Layout.astro';
       unplacedPlantIds = unplacedPlantIds.filter(id => id !== plantId);
       renderUnplacedList();
       renderSuggestions();
-      renderPlanSvg();
+      addPlacementMarkers([placement]);
       view3d?.refreshPlacements();
-      scheduleAutosave();
       return placement.id;
     },
     sunHoursAt(xM, yM) {
@@ -5525,16 +5641,19 @@ import Layout from '../layouts/Layout.astro';
     const spots = layoutPolyculture(pc, plantsById, at, editing.yearsSincePlanting);
     const ids = new Set<string>();
     const packageId = newId();
-    for (const sp of spots) {
+    const added = spots.map(sp => {
       const id = newId();
       ids.add(id);
-      editing.placements.push({ ...newPlacement(sp.plantId, sp.xM, sp.yM, id), polycultureId: pc.id, packageId });
-    }
+      return { ...newPlacement(sp.plantId, sp.xM, sp.yM, id), polycultureId: pc.id, packageId };
+    });
+    editing.placements.push(...added);
     // Mark the new group so it can be moved together right away.
+    const unselected = [...multiSel, ...(selectedPlacementId ? [selectedPlacementId] : [])];
     multiSel.clear();
     ids.forEach(id => multiSel.add(id));
     selectedPlacementId = null;
-    renderPlanSvg();
+    refreshMarkerHighlight(unselected);
+    addPlacementMarkers(added);
     renderSelectedPanel();
     renderSuggestions();
     afterGeometryEdit();

@@ -56,20 +56,20 @@ try {
       if (!name) usage();
       if (findUser(users, name)) throw new Error('Diesen Zugang gibt es schon (passwd/role zum Ändern).');
       const password = await askPassword(`Passwort für ${name}: `);
-      store.saveUsers(upsertUser(users, { name, role: rest.includes('--admin') ? 'admin' : rest.includes('--team') ? 'team' : 'expert', password }));
+      store.saveUsers(await upsertUser(users, { name, role: rest.includes('--admin') ? 'admin' : rest.includes('--team') ? 'team' : 'expert', password }));
       console.log(`Angelegt: ${name}`);
       break;
     }
     case 'passwd': {
       if (!name || !findUser(users, name)) throw new Error('not-found');
       const password = await askPassword(`Neues Passwort für ${name}: `);
-      store.saveUsers(upsertUser(users, { name, password }));
+      store.saveUsers(await upsertUser(users, { name, password }));
       console.log('Passwort geändert, offene Sitzungen beendet.');
       break;
     }
     case 'role':
       if (!name || !findUser(users, name)) throw new Error('not-found');
-      store.saveUsers(upsertUser(users, { name, role: rest[0] }));
+      store.saveUsers(await upsertUser(users, { name, role: rest[0] }));
       console.log(`Rolle von ${name}: ${rest[0]}`);
       break;
     case 'remove':

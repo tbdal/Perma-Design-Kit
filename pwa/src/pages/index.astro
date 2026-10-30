@@ -476,7 +476,8 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <script>
-  import { getAllPlants, getPlant, savePlant, deletePlant, importPlants } from '../lib/db';
+  import { getAllPlants, getPlant, savePlant, deletePlant, importPlants, dbWrites } from '../lib/db';
+  import { onForeignChange } from '../lib/data-channel';
   import { showUndoToast } from '../lib/undo-toast';
   import { displayName } from '../lib/plant-name';
   import { createEmptyPlant, type PlantData, type DataSource, sourceLabel, SOURCE_COLOR } from '../lib/types';
@@ -494,7 +495,7 @@ import Layout from '../layouts/Layout.astro';
   import { initVarietyPicker } from '../lib/variety-picker';
   import { newId } from '../lib/id';
   import { enrichPlant, needsEnrichment, trackSources, createPlantFromSearch } from '../lib/enrich';
-  import { announce, escapeHtml, withButtonSpinner, loadingPlaceholderHtml, imageCreditOverlayHtml } from '../lib/html';
+  import { announce, escapeHtml, withButtonSpinner, imageCreditOverlayHtml } from '../lib/html';
   import { isSourceEnabled, loadSettings } from '../lib/settings';
   import { deriveLayer, LAYER_STYLE, LAYER_I18N, LAYER_CODE, PLANT_LAYERS } from '../lib/plant-layer';
   import { exportPolyCardsPDF, exportStripeCardsPDF, exportSingleCardPDF, exportSingleStripeCardPDF, exportBaumscheibePDF, exportBaumscheibesPDF, exportBaumscheibeSheetPDF, exportBaumscheibeScaledPDF, type ScaledPaper } from '../lib/pdf-export';
@@ -974,14 +975,30 @@ import Layout from '../layouts/Layout.astro';
   // ── renderList ────────────────────────────────────────────────────────────────
 
   let renderGen = 0; // a slower, older render (Baumscheibe cards) must not land over a newer one
+  // IndexedDB is read again only after a write (this tab: db.ts counts them; other tabs: data channel), not per keystroke.
+  let foreignWrites = 0, loadedVersion = -1;
+  onForeignChange(() => { foreignWrites++; });
+  /** Rows/cards rendered at first; "Weitere anzeigen" adds as many again. Reset when filter, sort or view change. */
+  const PAGE_SIZE = 200;
+  let showLimit = PAGE_SIZE, listKey = '';
+  /** What the list shows now (filtered + sorted, all pages) — "select all" takes these. */
+  let displayPlants: PlantData[] = [];
+  let bsObserver: IntersectionObserver | null = null;
+  const moreBtnHtml = (rest: number) => rest > 0
+    ? `<div class="col-span-full flex w-full justify-center py-3"><button type="button" data-show-more class="rounded-lg bg-white dark:bg-stone-800 px-4 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-50 dark:hover:bg-stone-700">${escapeHtml(t('listShowMore', { n: rest }))}</button></div>` : '';
   async function renderList() {
     const gen = ++renderGen;
-    const plantsNow = await getAllPlants();
-    const plansNow = await getAllGardenPlans();
-    if (gen !== renderGen) return;
-    cachedPlants = plantsNow;
-    gardenPlans = plansNow;
-    usage = planUsage(gardenPlans);
+    const version = dbWrites() + foreignWrites;
+    if (version !== loadedVersion) {
+      const plantsNow = await getAllPlants();
+      const plansNow = await getAllGardenPlans();
+      if (gen !== renderGen) return;
+      cachedPlants = plantsNow;
+      gardenPlans = plansNow;
+      usage = planUsage(gardenPlans);
+      loadedVersion = version;
+    }
+    bsObserver?.disconnect(); bsObserver = null;
     renderPlanFilterOptions();
     for (const cb of listChangeListeners) { try { cb(cachedPlants); } catch (err) { console.warn('expert list listener failed', err); } }
 
@@ -999,7 +1016,7 @@ import Layout from '../layouts/Layout.astro';
           <p class="mb-4 text-sm text-stone-500 dark:text-stone-400">${escapeHtml(t('emptyStateSubtitle'))}</p>
           <button type="button" data-focus-search class="rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">${escapeHtml(t('emptyStateBtn'))}</button>
         </div>`;
-      listEl.querySelector('[data-focus-search]')!.addEventListener('click', () => document.getElementById('plant-search')!.focus());
+      displayPlants = [];
       return;
     }
 
@@ -1010,8 +1027,12 @@ import Layout from '../layouts/Layout.astro';
     // the same sortField/sortDir state.
     const plan = shownPlan();
     document.getElementById('btn-print-from-plan')?.classList.toggle('hidden', !plan);
-    if (plan && viewMode !== 'cards') { renderPlanView(plan, sortPlants(filtered, sortField, sortDir)); syncFilterChips(filtered.length, cachedPlants.length); return; }
-    const displayPlants = sortPlants(plan ? filtered.filter(p => usage.get(p.id)?.some(u => u.planId === plan.id)) : filtered, sortField, sortDir);
+    if (plan && viewMode !== 'cards') { displayPlants = sortPlants(filtered, sortField, sortDir); renderPlanView(plan, displayPlants); syncFilterChips(filtered.length, cachedPlants.length); return; }
+    displayPlants = sortPlants(plan ? filtered.filter(p => usage.get(p.id)?.some(u => u.planId === plan.id)) : filtered, sortField, sortDir);
+    const key = JSON.stringify([filters, sortField, sortDir, viewMode, cardViewMode, planFilter], (_, v) => v instanceof Set ? [...v] : v);
+    if (key !== listKey) { listKey = key; showLimit = PAGE_SIZE; }
+    const shown = displayPlants.slice(0, showLimit);
+    const more = moreBtnHtml(displayPlants.length - shown.length);
     syncFilterChips(filtered.length, cachedPlants.length);
     const bulkPrintBtn = document.getElementById('btn-bulk-print-count');
     if (bulkPrintBtn) bulkPrintBtn.textContent = t('printCountAllBtn', { n: filtered.length });
@@ -1022,16 +1043,12 @@ import Layout from '../layouts/Layout.astro';
       document.getElementById('btn-pdf-sheet')!.classList.toggle('hidden', !isBaumscheibe);
       document.getElementById('scaled-menu')!.classList.toggle('hidden', !isBaumscheibe);
       listEl.className = isStripe ? 'flex flex-col items-stretch gap-2' : 'flex flex-wrap justify-center gap-6';
-      // Baumscheibe rendering awaits an SVG fetch + per-plant DOM work and can
-      // take a visible moment for more than a couple of cards — poly/stripe
-      // cards are near-instant, so skip the placeholder there to avoid flicker.
-      if (isBaumscheibe) listEl.innerHTML = loadingPlaceholderHtml(t('loadingCards'));
-      const cardHtmls = await Promise.all(displayPlants.map(async (p) => {
-        if (isBaumscheibe) return renderBaumscheibeCardHtml(p);
-        return isStripe ? renderStripeCardHtml(p) : renderPolyCardHtml(p);
-      }));
-      if (gen !== renderGen) return;
-      listEl.innerHTML = displayPlants.map((p, i) => {
+      // Baumscheibe cards are heavy (SVG clone + DOM work each): a sized placeholder
+      // first, the card itself once it scrolls into view (observer below).
+      const cardHtmls = shown.map(p => isBaumscheibe
+        ? `<div data-bs-slot class="flex items-center justify-center bg-white text-sm text-stone-400" style="width:480px;max-width:100%;aspect-ratio:2286/2482">${escapeHtml(t('loadingCards'))}</div>`
+        : isStripe ? renderStripeCardHtml(p) : renderPolyCardHtml(p));
+      listEl.innerHTML = shown.map((p, i) => {
         const cardHtml = cardHtmls[i];
         return `
         <div class="group relative overflow-hidden rounded-xl shadow-md ring-1 ring-stone-200 dark:ring-stone-700 transition hover:shadow-lg hover:ring-green-300${(p.printCount ?? 1) === 0 ? ' opacity-60' : ''}" data-id="${escapeHtml(p.id)}" data-idx="${i}">
@@ -1045,28 +1062,24 @@ import Layout from '../layouts/Layout.astro';
             </div>
           </div>
         </div>`;
-      }).join('');
+      }).join('') + more;
 
-      listEl.querySelectorAll('.btn-pdf-single').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const b = btn as HTMLButtonElement;
-          const id = (b.closest('[data-id]') as HTMLElement).dataset.id!;
-          const plant = cachedPlants.find(p => p.id === id);
-          if (!plant) return;
-          await withButtonSpinner(b, async () => {
-            try {
-              if (cardViewMode === 'baumscheibe') await exportBaumscheibePDF(plant);
-              else if (cardViewMode === 'stripe') await exportSingleStripeCardPDF(plant);
-              else await exportSingleCardPDF(plant);
-            }
-            catch (err) { alert(t('alertPdfError', { error: err instanceof Error ? err.message : String(err) })); }
-          });
-        });
-      });
+      if (isBaumscheibe) {
+        const obs = bsObserver = new IntersectionObserver(entries => {
+          for (const en of entries) {
+            if (!en.isIntersecting) continue;
+            const slot = en.target as HTMLElement;
+            obs.unobserve(slot);
+            const plant = cachedPlants.find(p => p.id === slot.closest<HTMLElement>('[data-id]')?.dataset.id);
+            if (plant) void renderBaumscheibeCardHtml(plant).then(html => { if (gen === renderGen && slot.isConnected) slot.outerHTML = html; }).catch(err => console.warn('baumscheibe card failed', err));
+          }
+        }, { rootMargin: '600px 0px' });
+        listEl.querySelectorAll('[data-bs-slot]').forEach(s => obs.observe(s));
+      }
 
     } else if (viewMode === 'grid') {
       listEl.className = 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3';
-      listEl.innerHTML = displayPlants.map(p => {
+      listEl.innerHTML = shown.map(p => {
         const pct = completenessPercent(p);
         const barColor = pct >= 80 ? 'bg-green-400' : pct >= 50 ? 'bg-amber-400' : 'bg-red-300';
         return `
@@ -1110,15 +1123,15 @@ import Layout from '../layouts/Layout.astro';
             ${sourceChipsHtml(p)}
           </div>
         </div>`;
-      }).join('');
+      }).join('') + more;
 
     } else {
       // List / table view with checkboxes
       listEl.className = 'rounded-xl bg-white dark:bg-stone-800 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700';
-      const allSelected = cachedPlants.length > 0 && cachedPlants.every(p => selectedIds.has(p.id));
+      const allSelected = displayPlants.length > 0 && displayPlants.every(p => selectedIds.has(p.id));
 
       // Shared row data builder
-      const rowData = displayPlants.map(p => {
+      const rowData = shown.map(p => {
         const srcHtml = sourceChipsHtml(p);
         const sel = selectedIds.has(p.id);
         const pct = completenessPercent(p);
@@ -1255,178 +1268,147 @@ import Layout from '../layouts/Layout.astro';
               </tr>`).join('')}
             </tbody>
           </table>
-        </div>`;
+        </div>${more}`;
 
-      // Click into the groups cell: edit the names in place (comma separated); Enter or leaving the field stores.
-      listEl.querySelectorAll<HTMLElement>('[data-group-cell]').forEach(td => td.addEventListener('click', () => {
-        if (td.querySelector('input')) return;
-        const id = td.closest<HTMLElement>('tr')?.dataset.id;
-        const plant = cachedPlants.find(x => x.id === id);
-        if (!plant) return;
-        const input = Object.assign(document.createElement('input'), { value: (plant.groups ?? []).join(', '), className: 'w-full min-w-[8rem] rounded border border-green-400 bg-white dark:bg-stone-900 px-1.5 py-0.5 text-xs' });
-        input.setAttribute('list', 'group-names');
-        input.setAttribute('aria-label', t('groupEditHint'));
-        td.replaceChildren(input);
-        input.focus();
-        let done = false;
-        const finish = async (save: boolean) => {
-          if (done) return;
-          done = true;
-          const groups = [...new Set(input.value.split(',').map(g => g.trim()).filter(Boolean))];
-          if (save && groups.join('\u0000') !== (plant.groups ?? []).join('\u0000')) await savePlant({ ...plant, groups });
-          await renderList();
-        };
-        input.addEventListener('keydown', e => { if (e.key === 'Enter') void finish(true); else if (e.key === 'Escape') void finish(false); });
-        input.addEventListener('blur', () => void finish(true));
-      }));
       if (!document.getElementById('group-names')) document.body.appendChild(Object.assign(document.createElement('datalist'), { id: 'group-names' }));
       document.getElementById('group-names')!.innerHTML = groupsInUse().map(g => `<option value="${escapeHtml(g)}"></option>`).join('');
+    }
+  }
 
-      // Sort column headers (desktop table only)
-      listEl.querySelectorAll<HTMLElement>('[data-sort]').forEach(th => {
-        th.addEventListener('click', () => {
-          const f = th.dataset.sort as typeof sortField;
-          if (sortField === f) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
-          else { sortField = f; sortDir = 'asc'; }
-          // Re-rendering replaces the header — keep keyboard focus on it.
-          const refocus = th.contains(document.activeElement);
-          renderList().then(() => { if (refocus) listEl.querySelector<HTMLElement>(`[data-sort="${f}"] button`)?.focus(); });
-        });
-      });
+  // One delegated handler for all rows and cards (renderList replaces them often; per-row listeners piled up work on every keystroke).
+  listEl.addEventListener('change', (e) => {
+    const cb = e.target as HTMLInputElement;
+    if (cb.id !== 'select-all-check') return;
+    for (const p of displayPlants) { if (cb.checked) selectedIds.add(p.id); else selectedIds.delete(p.id); }
+    updateBulkBar();
+    renderList();
+  });
+  listEl.addEventListener('click', async (e) => {
+    const target = e.target as HTMLElement;
+    const hit = (sel: string) => target.closest<HTMLElement>(sel);
+    const id = hit('[data-id]')?.dataset.id ?? '';
+    const plant = cachedPlants.find(p => p.id === id);
+    let el: HTMLElement | null;
 
-      document.getElementById('select-all-check')?.addEventListener('change', (e) => {
-        if ((e.target as HTMLInputElement).checked) {
-          cachedPlants.forEach(p => selectedIds.add(p.id));
-        } else {
-          selectedIds.clear();
-        }
-        updateBulkBar();
-        renderList();
-      });
+    if (hit('[data-focus-search]')) { document.getElementById('plant-search')!.focus(); return; }
+    if (hit('[data-show-more]')) { showLimit += PAGE_SIZE; void renderList(); return; }
 
-      // row-check: use data-id from closest ancestor instead of array index
-      // (needed because mobile + desktop both render checkboxes)
-      // Shift-click on a row checkbox selects every row between the previous
-      // click and the current one — standard list-selection ergonomics.
-      const rowChecks = Array.from(listEl.querySelectorAll<HTMLInputElement>('.row-check'));
-      rowChecks.forEach(cb => {
-        cb.addEventListener('click', (e) => {
-          const ev = e as MouseEvent;
-          const row = cb.closest('[data-id]') as HTMLElement | null;
-          if (!row) return;
-          const id = row.dataset.id!;
-          const willCheck = cb.checked; // post-click state
-
-          if (ev.shiftKey && lastCheckedId && lastCheckedId !== id) {
-            const ids = rowChecks
-              .map(c => (c.closest('[data-id]') as HTMLElement | null)?.dataset.id)
-              .filter((v): v is string => !!v);
-            const a = ids.indexOf(lastCheckedId);
-            const b = ids.indexOf(id);
-            if (a !== -1 && b !== -1) {
-              const [from, to] = a < b ? [a, b] : [b, a];
-              for (let i = from; i <= to; i++) {
-                if (willCheck) selectedIds.add(ids[i]); else selectedIds.delete(ids[i]);
-              }
-            }
-          } else {
-            if (willCheck) selectedIds.add(id); else selectedIds.delete(id);
-          }
-          lastCheckedId = id;
-          updateBulkBar();
-          // Sync all rows + sibling checkboxes
-          listEl.querySelectorAll<HTMLElement>('[data-id]').forEach(el => {
-            const rid = el.dataset.id!;
-            const sel = selectedIds.has(rid);
-            el.classList.toggle('bg-green-50', sel);
-            el.classList.toggle('dark:bg-green-900/30', sel);
-            const checkbox = el.querySelector<HTMLInputElement>('.row-check');
-            if (checkbox) checkbox.checked = sel;
-          });
-        });
-      });
+    // Sort column headers (desktop table only)
+    if ((el = hit('[data-sort]'))) {
+      const f = el.dataset.sort as typeof sortField;
+      if (sortField === f) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+      else { sortField = f; sortDir = 'asc'; }
+      // Re-rendering replaces the header — keep keyboard focus on it.
+      const refocus = el.contains(document.activeElement);
+      renderList().then(() => { if (refocus) listEl.querySelector<HTMLElement>(`[data-sort="${f}"] button`)?.focus(); });
+      return;
     }
 
-    // Enrich button handler (shared for grid + list)
-    listEl.querySelectorAll('.btn-enrich').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const card = btn.closest('[data-id]') as HTMLElement;
-        const id = card.dataset.id!;
-        const plant = cachedPlants.find(p => p.id === id);
-        if (!plant || !plant.latinName) { alert(t('alertMissingLatinName')); return; }
-        const b = btn as HTMLButtonElement;
-        const origText = b.textContent;
-        b.disabled = true; b.textContent = '…';
+    // row-check: data-id from the closest row (mobile + desktop both render checkboxes).
+    // Shift-click selects every row between the previous click and this one.
+    if ((el = hit('.row-check'))) {
+      const cb = el as HTMLInputElement;
+      const willCheck = cb.checked; // post-click state
+      if (!id) return;
+      if ((e as MouseEvent).shiftKey && lastCheckedId && lastCheckedId !== id) {
+        const ids = Array.from(listEl.querySelectorAll<HTMLInputElement>('.row-check'))
+          .map(c => c.closest<HTMLElement>('[data-id]')?.dataset.id)
+          .filter((v): v is string => !!v);
+        const a = ids.indexOf(lastCheckedId);
+        const b = ids.indexOf(id);
+        if (a !== -1 && b !== -1) {
+          const [from, to] = a < b ? [a, b] : [b, a];
+          for (let i = from; i <= to; i++) { if (willCheck) selectedIds.add(ids[i]); else selectedIds.delete(ids[i]); }
+        }
+      } else if (willCheck) selectedIds.add(id); else selectedIds.delete(id);
+      lastCheckedId = id;
+      updateBulkBar();
+      // Sync all rows + sibling checkboxes
+      listEl.querySelectorAll<HTMLElement>('[data-id]').forEach(row => {
+        const sel = selectedIds.has(row.dataset.id!);
+        row.classList.toggle('bg-green-50', sel);
+        row.classList.toggle('dark:bg-green-900/30', sel);
+        const checkbox = row.querySelector<HTMLInputElement>('.row-check');
+        if (checkbox) checkbox.checked = sel;
+      });
+      return;
+    }
+
+    // Click into the groups cell: edit the names in place (comma separated); Enter or leaving the field stores.
+    if ((el = hit('[data-group-cell]'))) {
+      const td = el;
+      if (td.querySelector('input') || !plant) return;
+      const input = Object.assign(document.createElement('input'), { value: (plant.groups ?? []).join(', '), className: 'w-full min-w-[8rem] rounded border border-green-400 bg-white dark:bg-stone-900 px-1.5 py-0.5 text-xs' });
+      input.setAttribute('list', 'group-names');
+      input.setAttribute('aria-label', t('groupEditHint'));
+      td.replaceChildren(input);
+      input.focus();
+      let done = false;
+      const finish = async (save: boolean) => {
+        if (done) return;
+        done = true;
+        const groups = [...new Set(input.value.split(',').map(g => g.trim()).filter(Boolean))];
+        if (save && groups.join('\u0000') !== (plant.groups ?? []).join('\u0000')) await savePlant({ ...plant, groups });
+        await renderList();
+      };
+      input.addEventListener('keydown', e => { if (e.key === 'Enter') void finish(true); else if (e.key === 'Escape') void finish(false); });
+      input.addEventListener('blur', () => void finish(true));
+      return;
+    }
+
+    if ((el = hit('.btn-pdf-single'))) {
+      if (!plant) return;
+      await withButtonSpinner(el as HTMLButtonElement, async () => {
         try {
-          const enriched = await enrichPlant(plant);
-          await savePlant(plant);
-          b.textContent = enriched > 0 ? `+${enriched}` : origText;
-          setTimeout(() => renderList(), 1200);
-        } catch { b.textContent = '!'; b.disabled = false; }
+          if (cardViewMode === 'baumscheibe') await exportBaumscheibePDF(plant);
+          else if (cardViewMode === 'stripe') await exportSingleStripeCardPDF(plant);
+          else await exportSingleCardPDF(plant);
+        }
+        catch (err) { alert(t('alertPdfError', { error: err instanceof Error ? err.message : String(err) })); }
       });
-    });
+      return;
+    }
 
-    // Grid tiles: the picture and the text below it open the editor too (buttons, links and inputs keep their own job).
-    listEl.querySelectorAll<HTMLElement>('[data-tile-open]').forEach(el => {
-      el.addEventListener('click', e => {
-        if ((e.target as HTMLElement).closest('button, a, input, select, label')) return;
-        if (window.getSelection()?.toString()) return; // selecting text is not a click
-        openEditor((el.closest('[data-id]') as HTMLElement).dataset.id!);
-      });
-    });
+    // Enrich button (grid + list)
+    if ((el = hit('.btn-enrich'))) {
+      if (!plant || !plant.latinName) { alert(t('alertMissingLatinName')); return; }
+      const b = el as HTMLButtonElement;
+      const origText = b.textContent;
+      b.disabled = true; b.textContent = '…';
+      try {
+        const enriched = await enrichPlant(plant);
+        await savePlant(plant);
+        b.textContent = enriched > 0 ? `+${enriched}` : origText;
+        setTimeout(() => renderList(), 1200);
+      } catch { b.textContent = '!'; b.disabled = false; }
+      return;
+    }
 
-    listEl.querySelectorAll('.btn-edit').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = (btn.closest('[data-id]') as HTMLElement).dataset.id!;
-        openEditor(id);
-      });
-    });
+    if (hit('.btn-edit')) { openEditor(id); return; }
 
-    listEl.querySelectorAll('.btn-del').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id = (btn.closest('[data-id]') as HTMLElement).dataset.id!;
-        // No confirm dialog: the undo bar right after covers mistakes.
-        const removed = cachedPlants.find(p => p.id === id);
-        selectedIds.delete(id);
-        await deletePlant(id);
-        updateBulkBar();
-        renderList();
-        if (removed) offerUndo([removed]);
-      });
-    });
+    if (hit('.btn-del')) {
+      // No confirm dialog: the undo bar right after covers mistakes.
+      selectedIds.delete(id);
+      await deletePlant(id);
+      updateBulkBar();
+      renderList();
+      if (plant) offerUndo([plant]);
+      return;
+    }
 
     // Print-count stepper (grid + list): 0 = deaktiviert (von Exporten ausgeschlossen)
-    listEl.querySelectorAll('.btn-print-inc').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id = (btn.closest('[data-id]') as HTMLElement).dataset.id!;
-        const plant = cachedPlants.find(p => p.id === id);
-        if (!plant) return;
-        plant.printCount = (plant.printCount ?? 1) + 1;
-        await savePlant(plant);
-        renderList();
-      });
-    });
-    listEl.querySelectorAll('.btn-print-dec').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id = (btn.closest('[data-id]') as HTMLElement).dataset.id!;
-        const plant = cachedPlants.find(p => p.id === id);
-        if (!plant) return;
-        plant.printCount = Math.max(0, (plant.printCount ?? 1) - 1);
-        await savePlant(plant);
-        renderList();
-      });
-    });
-    listEl.querySelectorAll('.print-count-toggle').forEach(el => {
-      el.addEventListener('click', async () => {
-        const id = (el.closest('[data-id]') as HTMLElement).dataset.id!;
-        const plant = cachedPlants.find(p => p.id === id);
-        if (!plant) return;
-        plant.printCount = (plant.printCount ?? 1) === 0 ? 1 : 0;
-        await savePlant(plant);
-        renderList();
-      });
-    });
-  }
+    if (hit('.btn-print-inc, .btn-print-dec, .print-count-toggle')) {
+      if (!plant) return;
+      const n = plant.printCount ?? 1;
+      plant.printCount = hit('.btn-print-inc') ? n + 1 : hit('.btn-print-dec') ? Math.max(0, n - 1) : n === 0 ? 1 : 0;
+      await savePlant(plant);
+      renderList();
+      return;
+    }
+
+    // Grid tiles: the picture and the text below it open the editor too (buttons, links and inputs keep their own job).
+    if (hit('[data-tile-open]') && !hit('button, a, input, select, label') && !window.getSelection()?.toString()) openEditor(id);
+  });
 
   // ── Dialog ────────────────────────────────────────────────────────────────────
 
@@ -1612,7 +1594,7 @@ import Layout from '../layouts/Layout.astro';
   });
 
   document.getElementById('btn-select-all')!.addEventListener('click', () => {
-    cachedPlants.forEach(p => selectedIds.add(p.id));
+    displayPlants.forEach(p => selectedIds.add(p.id)); // what the filters show, not every plant
     updateBulkBar(); renderList();
   });
   document.getElementById('btn-deselect')!.addEventListener('click', () => {
@@ -1977,7 +1959,7 @@ import Layout from '../layouts/Layout.astro';
       if (d.open) planOpen.add(d.dataset.planGroup!); else planOpen.delete(d.dataset.planGroup!);
       try { localStorage.setItem(PLAN_OPEN_KEY, JSON.stringify([...planOpen])); } catch {}
     }));
-    listEl.querySelectorAll<HTMLElement>('.btn-edit').forEach(b => b.addEventListener('click', () => openEditor((b.closest('[data-id]') as HTMLElement).dataset.id!)));
+    // .btn-edit: the delegated click handler on listEl.
   }
 
   document.getElementById('btn-print-from-plan')!.addEventListener('click', async () => {

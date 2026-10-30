@@ -130,16 +130,60 @@ function tintGeometry(g: THREE.BufferGeometry, color: THREE.Color) {
   return g;
 }
 
+/** Leaf cards of one crown, written straight into growing typed arrays instead of 2 PlaneGeometry +
+ *  mergeGeometries per card. Same output to the bit: each transform runs the same Vector3/Matrix3 steps
+ *  BufferGeometry.applyMatrix4 runs, rounded to float32 after each one. */
+class CardBuffer {
+  n = 0;
+  pos = new Float32Array(8 * 3 * 32); nrm = new Float32Array(8 * 3 * 32); uv = new Float32Array(8 * 2 * 32); col = new Float32Array(8 * 3 * 32);
+  /** Room for one more card; returns its first vertex. */
+  next(): number {
+    if ((this.n + 1) * 24 > this.pos.length) {
+      const grow = (a: Float32Array) => { const b = new Float32Array(a.length * 2); b.set(a); return b; };
+      this.pos = grow(this.pos); this.nrm = grow(this.nrm); this.uv = grow(this.uv); this.col = grow(this.col);
+    }
+    return this.n++ * 8;
+  }
+  geometry(): THREE.BufferGeometry | null {
+    if (!this.n) return null;
+    const v = this.n * 8, g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(this.pos.slice(0, v * 3), 3));
+    g.setAttribute('normal', new THREE.BufferAttribute(this.nrm.slice(0, v * 3), 3));
+    g.setAttribute('uv', new THREE.BufferAttribute(this.uv.slice(0, v * 2), 2));
+    g.setAttribute('color', new THREE.BufferAttribute(this.col.slice(0, v * 3), 3));
+    const index = new (v - 1 >= 65535 ? Uint32Array : Uint16Array)(this.n * 12); // as setIndex(array) picks it
+    for (let c = 0; c < this.n; c++) CARD_INDEX.forEach((k, i) => { index[c * 12 + i] = c * 8 + k; });
+    g.setIndex(new THREE.BufferAttribute(index, 1));
+    return g;
+  }
+}
+const CARD_INDEX = [0, 2, 1, 2, 3, 1, 4, 6, 5, 6, 7, 5];
+const _v = new THREE.Vector3(), _m = new THREE.Matrix4(), _nm = new THREE.Matrix3();
+const ROT_Y_90 = new THREE.Matrix4().makeRotationY(Math.PI / 2);
+/** BufferGeometry.applyMatrix4 on `count` vertices from `first`. */
+function transform(b: CardBuffer, first: number, count: number, m: THREE.Matrix4) {
+  _nm.getNormalMatrix(m);
+  for (let i = first * 3; i < (first + count) * 3; i += 3) {
+    _v.fromArray(b.pos, i).applyMatrix4(m).toArray(b.pos, i);
+    _v.fromArray(b.nrm, i).applyNormalMatrix(_nm).toArray(b.nrm, i);
+  }
+}
+
 /** Two crossed quads (reads as a volume from every side). */
-function leafCard(size: number, pos: THREE.Vector3, rand: () => number, color: THREE.Color, upright = false): THREE.BufferGeometry {
-  const a = new THREE.PlaneGeometry(size, size);
-  const b = new THREE.PlaneGeometry(size, size).rotateY(Math.PI / 2);
-  const g = mergeGeometries([a, b])!;
-  if (!upright) g.rotateX((rand() - 0.5) * Math.PI);
-  g.rotateY(rand() * Math.PI * 2);
-  if (!upright) g.rotateZ((rand() - 0.5) * 0.8);
-  g.translate(pos.x, pos.y, pos.z);
-  return tintGeometry(g, color);
+function leafCard(b: CardBuffer, size: number, pos: THREE.Vector3, rand: () => number, color: THREE.Color, upright = false) {
+  const o = b.next(), half = size / 2;
+  for (let q = 0; q < 2; q++) for (let iy = 0; iy < 2; iy++) for (let ix = 0; ix < 2; ix++) {
+    const i = o + q * 4 + iy * 2 + ix; // PlaneGeometry(size, size) vertex order
+    b.pos[i * 3] = ix * size - half; b.pos[i * 3 + 1] = -(iy * size - half); b.pos[i * 3 + 2] = 0;
+    b.nrm[i * 3] = 0; b.nrm[i * 3 + 1] = 0; b.nrm[i * 3 + 2] = 1;
+    b.uv[i * 2] = ix; b.uv[i * 2 + 1] = 1 - iy;
+    b.col[i * 3] = color.r; b.col[i * 3 + 1] = color.g; b.col[i * 3 + 2] = color.b;
+  }
+  transform(b, o + 4, 4, ROT_Y_90);
+  if (!upright) transform(b, o, 8, _m.makeRotationX((rand() - 0.5) * Math.PI));
+  transform(b, o, 8, _m.makeRotationY(rand() * Math.PI * 2));
+  if (!upright) transform(b, o, 8, _m.makeRotationZ((rand() - 0.5) * 0.8));
+  transform(b, o, 8, _m.makeTranslation(pos.x, pos.y, pos.z));
 }
 
 function vary(base: THREE.Color, rand: () => number, amount = 0.12): THREE.Color {
@@ -165,10 +209,10 @@ function branch(from: THREE.Vector3, to: THREE.Vector3, r0: number, r1: number):
   return g;
 }
 
-function addMesh(group: THREE.Group, geos: THREE.BufferGeometry[], kind: 'leaf' | 'needle' | 'grass') {
-  if (!geos.length) return;
+function addMesh(group: THREE.Group, geo: THREE.BufferGeometry | null, kind: 'leaf' | 'needle' | 'grass') {
+  if (!geo) return;
   const m = foliageMaterial(kind);
-  const mesh = new THREE.Mesh(mergeGeometries(geos)!, m.mat);
+  const mesh = new THREE.Mesh(geo, m.mat);
   mesh.customDepthMaterial = m.depth;
   group.add(mesh);
 }
@@ -188,7 +232,7 @@ export function buildPlantModel(seed: string, shape: CrownShape, radiusM: number
   const base = new THREE.Color(shape === 'mat' ? '#4d7c0f' : baseColor);
   const r = Math.max(0.05, radiusM), h = Math.max(0.08, heightM);
   const wood: THREE.BufferGeometry[] = [];
-  const cards: THREE.BufferGeometry[] = [];
+  const cards = new CardBuffer();
 
   if (shape === 'round' || shape === 'pine') {
     const crownBottom = shape === 'pine' ? h * 0.6 : h * 0.35;
@@ -212,9 +256,9 @@ export function buildPlantModel(seed: string, shape: CrownShape, radiusM: number
       if (shape === 'pine') p.y = Math.min(p.y, ry * 0.45); // flat-ish umbrella top
       p.y += cy;
       const shade = 0.8 + 0.4 * ((p.y - crownBottom) / crownH); // lighter at the top
-      cards.push(leafCard(card * (0.7 + rand() * 0.6), p, rand, vary(base, rand).multiplyScalar(shade)));
+      leafCard(cards, card * (0.7 + rand() * 0.6), p, rand, vary(base, rand).multiplyScalar(shade));
     }
-    addMesh(group, cards, kind);
+    addMesh(group, cards.geometry(), kind);
   } else if (shape === 'cone') {
     const trunkR = trunkM ?? Math.max(0.03, r * 0.08);
     wood.push(branch(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, h * 0.78, 0), trunkR, trunkR * 0.3));
@@ -228,10 +272,10 @@ export function buildPlantModel(seed: string, shape: CrownShape, radiusM: number
         const a = (i / per) * Math.PI * 2 + rand();
         const d = tr * (0.4 + rand() * 0.6);
         const p = new THREE.Vector3(Math.cos(a) * d, y - d * 0.25, Math.sin(a) * d);
-        cards.push(leafCard(Math.max(0.3, tr * 0.8 + 0.25), p, rand, vary(base, rand, 0.08).multiplyScalar(0.8 + 0.35 * f)));
+        leafCard(cards, Math.max(0.3, tr * 0.8 + 0.25), p, rand, vary(base, rand, 0.08).multiplyScalar(0.8 + 0.35 * f));
       }
     }
-    addMesh(group, cards, 'needle');
+    addMesh(group, cards.geometry(), 'needle');
   } else if (shape === 'shrub') {
     const stems = 3 + Math.floor(rand() * 4);
     for (let i = 0; i < stems; i++) {
@@ -244,37 +288,37 @@ export function buildPlantModel(seed: string, shape: CrownShape, radiusM: number
     for (let i = 0; i < n; i++) {
       const p = shellPoint(rand, r, ry, r);
       p.y = Math.max(p.y + ry, h * 0.08);
-      cards.push(leafCard(Math.max(0.2, r * 0.6) * (0.7 + rand() * 0.6), p, rand, vary(base, rand).multiplyScalar(0.8 + 0.35 * (p.y / h))));
+      leafCard(cards, Math.max(0.2, r * 0.6) * (0.7 + rand() * 0.6), p, rand, vary(base, rand).multiplyScalar(0.8 + 0.35 * (p.y / h)));
     }
-    addMesh(group, cards, 'leaf');
+    addMesh(group, cards.geometry(), 'leaf');
   } else if (shape === 'climber') {
     wood.push(branch(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, h * 1.05, 0), 0.03, 0.025));
     const n = Math.round(20 + h * 12);
     for (let i = 0; i < n; i++) {
       const y = rand() * h, a = rand() * Math.PI * 2, d = r * (0.3 + rand() * 0.5);
-      cards.push(leafCard(Math.max(0.2, r * 0.6), new THREE.Vector3(Math.cos(a) * d, y, Math.sin(a) * d), rand, vary(base, rand)));
+      leafCard(cards, Math.max(0.2, r * 0.6), new THREE.Vector3(Math.cos(a) * d, y, Math.sin(a) * d), rand, vary(base, rand));
     }
-    addMesh(group, cards, 'leaf');
+    addMesh(group, cards.geometry(), 'leaf');
     addWood(group, wood, stakeMat);
     return group;
   } else if (shape === 'mat') {
-    const n = Math.round(Math.min(90, 14 + r * r * 40));
+    const n = Math.round(Math.min(90, 14 + r * r * 40)), flat: THREE.BufferGeometry[] = [];
     for (let i = 0; i < n; i++) {
       const a = rand() * Math.PI * 2, d = Math.sqrt(rand()) * r;
       const g = new THREE.PlaneGeometry(Math.max(0.22, r * 0.7), Math.max(0.22, r * 0.7)).rotateX(-Math.PI / 2 + (rand() - 0.5) * 0.5).rotateY(rand() * Math.PI);
       g.translate(Math.cos(a) * d, 0.03 + rand() * Math.min(0.15, h * 0.5), Math.sin(a) * d);
-      cards.push(tintGeometry(g, vary(base, rand)));
+      flat.push(tintGeometry(g, vary(base, rand)));
     }
-    addMesh(group, cards, 'leaf');
+    addMesh(group, mergeGeometries(flat), 'leaf');
   } else {
     // herb: upright grassy/leafy clump
     const n = Math.round(Math.min(40, 6 + r * 20));
     for (let i = 0; i < n; i++) {
       const a = rand() * Math.PI * 2, d = Math.sqrt(rand()) * r * 0.7;
       const size = Math.max(0.15, h * (0.7 + rand() * 0.5));
-      cards.push(leafCard(size, new THREE.Vector3(Math.cos(a) * d, size / 2, Math.sin(a) * d), rand, vary(base, rand), true));
+      leafCard(cards, size, new THREE.Vector3(Math.cos(a) * d, size / 2, Math.sin(a) * d), rand, vary(base, rand), true);
     }
-    addMesh(group, cards, 'grass');
+    addMesh(group, cards.geometry(), 'grass');
   }
   addWood(group, wood);
   return group;

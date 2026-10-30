@@ -3,6 +3,7 @@ import type { Dict } from './core';
 export const indexDict: Dict = {
   // ── Search hero ──────────────────────────────────────────────────────
   loadingCards: { de: 'Karten werden erstellt…', en: 'Generating cards…' },
+  listShowMore: { de: 'Weitere anzeigen ({n} übrig)', en: 'Show more ({n} left)' },
   a11yEdit: { de: '{name} bearbeiten', en: 'Edit {name}' },
   a11yDelete: { de: '{name} löschen', en: 'Delete {name}' },
   a11yEnrich: { de: '{name}: Daten ergänzen', en: '{name}: enrich data' },

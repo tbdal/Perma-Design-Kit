@@ -50,6 +50,7 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
     import { applyStaticI18n, createT } from '../lib/i18n/core';
     import { accessDict } from '../lib/i18n/dict-access';
     import { getAuth, login, logout, refreshAuth, setMode, adoptAccountMode } from '../lib/ui-mode';
+    import { safeNext } from '../lib/safe-next';
 
     applyStaticI18n(accessDict);
     const t = createT(accessDict);
@@ -60,14 +61,7 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
     const error = document.getElementById('login-error')!;
     const done = document.getElementById('login-done')!;
     const params = new URLSearchParams(location.search);
-    // Only paths on this site: resolved like the browser does, so "/\\evil.com" or "/<tab>/evil.com" cannot leave it.
-    const nextRaw = params.get('next') || '';
-    const next = (() => {
-      try {
-        const u = new URL(nextRaw, location.origin);
-        return nextRaw.startsWith('/') && u.origin === location.origin ? u.pathname + u.search + u.hash : '/';
-      } catch { return '/'; }
-    })();
+    const next = safeNext(params.get('next') || '', location.origin);
 
     const inviteToken = params.get('einladung') || '';
     const inviteForm = document.getElementById('invite-form') as HTMLFormElement;

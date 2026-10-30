@@ -4,7 +4,7 @@ import { OSM_TILES, S2_TILES, orthoTiles, tileUrl, fallbackTileUrl, FALLBACK_ATT
 import { orthoFor } from './ortho-sources';
 import type { Lang } from './i18n/core';
 import { boxesFor, endpoint, isUsable, parseRings, MIN_ZOOM, type SurrKind } from './map-surroundings';
-import { cachedFetch, DAY_MS, geoRefreshing } from './geo-cache';
+import { buildingsCacheKey, cachedFetch, DAY_MS, geoRefreshing } from './geo-cache';
 
 // Shared Leaflet plumbing for the garden plan: base map with the OSM / coarse
 // satellite layers, Nominatim address search and "my location". Used by the
@@ -172,7 +172,9 @@ export function attachSurroundings(map: L.Map, els: SurroundingsEls, t: (k: stri
   for (const [name, z] of [['surrForest', 410], ['surrBuildings', 415]] as const) { if (!map.getPane(name)) map.createPane(name); map.getPane(name)!.style.zIndex = String(z); map.getPane(name)!.style.pointerEvents = 'none'; }
   const renderers: Record<SurrKind, L.Canvas> = { forest: L.canvas({ pane: 'surrForest', padding: 0.3 }), buildings: L.canvas({ pane: 'surrBuildings', padding: 0.3 }) };
   const groups = new Map<string, L.LayerGroup>();   // "kind|box" → drawn polygons (kept while in the cache)
-  const pending = new Set<string>();
+  const pending = new Set<string>();                  // loading now (at most MAX_LOADS)
+  let queue: string[] = [];                           // waiting, nearest to the map centre first
+  const MAX_LOADS = 4;
   let failed = 0;
   let credited = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -183,7 +185,7 @@ export function attachSurroundings(map: L.Map, els: SurroundingsEls, t: (k: stri
     if (!wanted().buildings && !wanted().forest) { els.hint.textContent = ''; return; }
     if (map.getZoom() < MIN_ZOOM) els.hint.textContent = t('surrZoomIn');
     else if (!boxesFor(toBounds())) els.hint.textContent = t('surrZoomIn');
-    else if (pending.size) els.hint.textContent = t('surrLoading');
+    else if (pending.size || queue.length) els.hint.textContent = t('surrLoading');
     else if (failed) els.hint.textContent = t('surrFailed');
     else els.hint.textContent = '';
   }
@@ -196,7 +198,8 @@ export function attachSurroundings(map: L.Map, els: SurroundingsEls, t: (k: stri
     setHint();
     try {
       // In the browser for 30 days (the server keeps it as long); a cached Overpass "remark" (overload) is refreshed once.
-      const res = await cachedFetch(`surr:${key}`, 30 * DAY_MS, async () => {
+      // Buildings share the key with the plan's 3D buildings (osm-buildings.ts): same raw /geo/overpass answer.
+      const res = await cachedFetch(kind === 'buildings' ? buildingsCacheKey(box) : `surr:${key}`, 30 * DAY_MS, async () => {
         for (const refresh of geoRefreshing() ? [true] : [false, true]) {
           const r = await fetch(`${endpoint(kind)}?bbox=${box}${refresh ? '&refresh=1' : ''}`);
           if (!r.ok) throw new Error(String(r.status));
@@ -209,23 +212,33 @@ export function attachSurroundings(map: L.Map, els: SurroundingsEls, t: (k: stri
       const g = L.layerGroup();
       for (const rings of parseRings(json)) L.polygon(rings.map(r => r.map(p => [p.lat, p.lon] as L.LatLngTuple)), { ...SURR_STYLE[kind], renderer: renderers[kind] }).addTo(g);
       groups.set(key, g);
+      if (!gone && visible.has(key)) g.addTo(map);
       failed = 0;
       if (groups.size > 80) { const old = groups.keys().next().value!; map.removeLayer(groups.get(old)!); groups.delete(old); }
-    } catch { failed++; pending.delete(key); setHint(); return; } // no refresh(): it would retry the failed box at once, in a loop
+    } catch { failed++; } // not queued again: a failed box is retried on the next move, not at once in a loop
     pending.delete(key);
-    if (!gone) refresh();
+    pump();
+  }
+  function pump() {
+    while (!gone && pending.size < MAX_LOADS && queue.length) { const key = queue.shift()!; const [kind, box] = key.split('|'); void load(kind as SurrKind, box); }
+    setHint();
   }
 
+  let visible = new Set<string>();
   function refresh() {
     if (gone) return;
     const want = wanted();
     const boxes = map.getZoom() >= MIN_ZOOM ? boxesFor(toBounds()) : null;
-    const visible = new Set<string>();
+    visible = new Set<string>();
     if (boxes) for (const kind of ['forest', 'buildings'] as const) if (want[kind]) for (const b of boxes) visible.add(`${kind}|${b}`);
     for (const [key, g] of [...groups]) { // a copy: re-inserting a key while iterating the Map itself never ends
-      if (visible.has(key)) { if (!map.hasLayer(g)) g.addTo(map); groups.delete(key); groups.set(key, g); } // in view = newest, evicted last else if (map.hasLayer(g)) map.removeLayer(g);
+      if (visible.has(key)) { if (!map.hasLayer(g)) g.addTo(map); groups.delete(key); groups.set(key, g); } // in view = newest, evicted last
+      else if (map.hasLayer(g)) map.removeLayer(g);
     }
-    for (const key of visible) { const [kind, box] = key.split('|'); void load(kind as SurrKind, box); }
+    const c = map.getCenter();
+    const dist = (key: string) => { const [s, w, n, e] = key.split('|')[1].split(',').map(Number); return ((s + n) / 2 - c.lat) ** 2 + ((w + e) / 2 - c.lng) ** 2; };
+    queue = [...visible].filter(k => !groups.has(k) && !pending.has(k)).sort((a, b) => dist(a) - dist(b));
+    pump();
     if (boxes && visible.size && !credited) { credited = true; map.attributionControl?.addAttribution('Gebäude, Wald: © OpenStreetMap-Mitwirkende'); }
     setHint();
   }

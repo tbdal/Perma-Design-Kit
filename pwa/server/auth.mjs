@@ -7,7 +7,8 @@
 // private chunks under /x/ (auth_request). The private dir is outside git
 // (server/data/private/, or PDK_PRIVATE_DIR); scripts/user-admin.mjs manages
 // accounts from the shell.
-import { createHash, createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, randomBytes, scrypt as scryptCb, timingSafeEqual } from 'node:crypto';
+import { promisify } from 'node:util';
 import { chmodSync, existsSync, mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -27,20 +28,23 @@ export const DEFAULT_PRIVATE_DIR = process.env.PDK_PRIVATE_DIR
 // ── Passwords ────────────────────────────────────────────────────────────
 const SCRYPT = { N: 16384, r: 8, p: 1 };
 
-export function hashPassword(password) {
+// Async: scrypt takes ~50 ms, the sync variant would block every other request meanwhile.
+const scrypt = promisify(scryptCb);
+
+export async function hashPassword(password) {
   const salt = randomBytes(16);
-  const hash = scryptSync(password, salt, 32, SCRYPT);
+  const hash = await scrypt(password, salt, 32, SCRYPT);
   return `scrypt$${salt.toString('base64')}$${hash.toString('base64')}`;
 }
 
 /** Checked against for unknown names, so the response time doesn't reveal which names exist. */
-const DUMMY_HASH = hashPassword(randomBytes(12).toString('base64'));
+const DUMMY_HASH = `scrypt$${randomBytes(16).toString('base64')}$${randomBytes(32).toString('base64')}`;
 
-export function verifyPassword(password, stored) {
+export async function verifyPassword(password, stored) {
   const [kind, saltB64, hashB64] = String(stored || '').split('$');
   if (kind !== 'scrypt' || !saltB64 || !hashB64) return false;
   const expected = Buffer.from(hashB64, 'base64');
-  const actual = scryptSync(String(password), Buffer.from(saltB64, 'base64'), expected.length, SCRYPT);
+  const actual = await scrypt(String(password), Buffer.from(saltB64, 'base64'), expected.length, SCRYPT);
   return actual.length === expected.length && timingSafeEqual(actual, expected);
 }
 
@@ -154,25 +158,29 @@ export function findUser(users, name) {
 }
 
 /**
- * Creates or updates an account; returns the new list. Throws Error(code) on bad input.
- * @param {any[]} users
+ * Creates or updates an account; resolves to the new list. Rejects with Error(code) on bad input.
+ * `users` may be a getter: it is read only after hashing, so a caller that saves
+ * right after the await doesn't overwrite changes made meanwhile.
+ * @param {any[] | (() => any[])} users
  * @param {{ name: string, role?: string, password?: string }} input
  * @param {Date} [now]
  */
-export function upsertUser(users, { name, role, password, comment }, now = new Date()) {
+export async function upsertUser(users, { name, role, password, comment }, now = new Date()) {
   name = String(name || '').trim();
   if (!NAME_RE.test(name)) throw new Error('bad-name');
   if (role !== undefined && !ROLES.includes(role)) throw new Error('bad-role');
   if (password !== undefined && String(password).length < MIN_PASSWORD) throw new Error('short-password');
+  const hash = password !== undefined ? await hashPassword(String(password)) : undefined;
+  if (typeof users === 'function') users = users();
   const note = comment === undefined ? undefined : String(comment).trim().slice(0, 300);
   const existing = findUser(users, name);
   if (!existing) {
     if (password === undefined) throw new Error('short-password');
-    return [...users, { name, role: role || 'expert', hash: hashPassword(String(password)), v: 1, created: now.toISOString(), ...(note ? { comment: note } : {}) }];
+    return [...users, { name, role: role || 'expert', hash, v: 1, created: now.toISOString(), ...(note ? { comment: note } : {}) }];
   }
   const next = { ...existing };
   if (role !== undefined) next.role = role;
-  if (password !== undefined) next.hash = hashPassword(String(password));
+  if (password !== undefined) next.hash = hash;
   if (note !== undefined) { if (note) next.comment = note; else delete next.comment; }
   // A new password or a lost admin right ends that account's open sessions.
   if (password !== undefined || (existing.role === 'admin' && next.role !== 'admin')) next.v = (existing.v || 1) + 1;
@@ -358,7 +366,12 @@ export function createAuthHandler({ store, isAllowedOrigin = () => true, now = (
         if (!inv) { limiter.fail(ip, now()); send(res, 404, { error: 'invalid' }); return true; }
         const name = String(body?.name || '').trim();
         if (findUser(store.users(), name)) { send(res, 409, { error: 'name-taken' }); return true; }
-        const users = upsertUser(store.users(), { name, role: inv.role, password: String(body?.password ?? ''), comment: `Eingeladen von ${inv.by || '?'}${inv.label ? ` (${inv.label})` : ''}` }, clock);
+        // Checked again after hashing: a parallel request may have used the invite or taken the name meanwhile.
+        const users = await upsertUser(() => {
+          if (!findInvite(store.invites(), body?.token, clock)) throw new Error('invalid');
+          if (findUser(store.users(), name)) throw new Error('name-taken');
+          return store.users();
+        }, { name, role: inv.role, password: String(body?.password ?? ''), comment: `Eingeladen von ${inv.by || '?'}${inv.label ? ` (${inv.label})` : ''}` }, clock);
         store.saveUsers(users);
         store.saveInvites(store.invites().map(i => (i === inv || i.id === inv.id ? { ...i, used: clock.toISOString(), usedBy: name } : i)));
         const user = findUser(users, name);
@@ -368,7 +381,7 @@ export function createAuthHandler({ store, isAllowedOrigin = () => true, now = (
         send(res, 200, { name: user.name, role: user.role }, { 'Set-Cookie': cookieHeader(token, SESSION_DAYS * 86_400, secure) });
       } catch (err) {
         const code = err instanceof Error ? err.message : 'error';
-        send(res, 400, { error: code });
+        send(res, code === 'name-taken' ? 409 : code === 'invalid' ? 404 : 400, { error: code });
       }
       return true;
     }
@@ -396,7 +409,7 @@ export function createAuthHandler({ store, isAllowedOrigin = () => true, now = (
       let body;
       try { body = await readJsonBody(req); } catch { send(res, 400, { error: 'body' }); return true; }
       const user = findUser(store.users(), body?.name);
-      const ok = verifyPassword(String(body?.password ?? ''), user?.hash || DUMMY_HASH);
+      const ok = await verifyPassword(String(body?.password ?? ''), user?.hash || DUMMY_HASH);
       if (!user || !ok) { limiter.fail(ip, now()); send(res, 401, { error: 'credentials' }); return true; }
       limiter.reset(ip);
       const token = signSession({ n: user.name, r: user.role, e: now() + SESSION_DAYS * 86_400_000, v: user.v || 1 }, store.secret());
@@ -423,7 +436,7 @@ export function createAuthHandler({ store, isAllowedOrigin = () => true, now = (
         if (path === '/api/admin/users' && method === 'POST') {
           const body = await readJsonBody(req);
           const password = body?.password ? String(body.password) : undefined;
-          const users = upsertUser(store.users(), { name: body?.name, role: body?.role, password, comment: body?.comment });
+          const users = await upsertUser(store.users, { name: body?.name, role: body?.role, password, comment: body?.comment });
           store.saveUsers(users);
           send(res, 200, { ok: true });
           return true;

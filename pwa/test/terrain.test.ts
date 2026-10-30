@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { terrariumElevation, sampleGrid, slopeInfo, contourSegments, contourInterval, type ElevationGrid, gridRange } from '../src/lib/terrain';
+import { terrariumElevation, sampleGrid, slopeInfo, contourSegments, contourInterval, type ElevationGrid, gridRange, gridLayout } from '../src/lib/terrain';
 
 /** 21 × 21 grid, 1 m cells, a plane rising 0.1 m per metre towards +x (east). */
 function plane(ax: number, by: number, base = 500): ElevationGrid {
@@ -57,5 +57,14 @@ describe('gridRange', () => {
     const heights = new Float32Array(2_000_000).fill(50);
     heights[123_456] = -3; heights[1_999_999] = 812;
     expect(gridRange({ heights })).toEqual({ min: -3, max: 812 });
+  });
+});
+
+describe('gridLayout', () => {
+  it('uses one step on both axes of a non-square plan, covering the whole rect', () => {
+    const rect = { minX: -10, minY: -10, maxX: 110, maxY: 27 };   // 120 × 37 m
+    const g = gridLayout(rect, 4);
+    expect(g).toEqual({ nx: 31, ny: 11, maxX: 110, maxY: 30 });   // y overshoots by 3 m instead of stretching the cells
+    expect((g.maxX - rect.minX) / (g.nx - 1)).toBe((g.maxY - rect.minY) / (g.ny - 1));
   });
 });

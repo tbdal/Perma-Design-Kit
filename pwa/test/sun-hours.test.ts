@@ -92,3 +92,21 @@ describe('sun hours: spatial index', () => {
     } finally { sunIndexConfig.minOccluders = saved; }
   });
 });
+
+describe('sun hours: terrain horizon', () => {
+  it('agrees with marching every sun ray on a simple slope', () => {
+    // ground rising steeply to the south (plan +y), then a plateau: the midday sun hides behind it
+    const z = (_x: number, y: number) => Math.min(120, Math.max(0, 1.5 * (y + 50)));
+    const scene: SunScene = { groundZ: z, occluders: [], terrain: { z, minX: -300, minY: -300, maxX: 300, maxY: 300, maxZ: 120, stepM: 1 } };
+    const samples = sunSamples(SEASON_DATES(2026), LAT, LON, 20, 20);
+    const probes = [[0, -120], [30, -80], [-40, -60], [0, -45], [10, 0], [0, 100]];
+    const fast = probes.map(([x, y]) => sunHoursAt(x, y, scene, samples));
+    const saved = sunIndexConfig.horizonBuckets;
+    sunIndexConfig.horizonBuckets = 0;
+    try {
+      const marched = probes.map(([x, y]) => sunHoursAt(x, y, scene, samples));
+      fast.forEach((h, i) => expect(Math.abs(h - marched[i])).toBeLessThan(0.15));
+      expect(marched[3]).toBeLessThan(marched[5] - 3); // the slope really shades its foot
+    } finally { sunIndexConfig.horizonBuckets = saved; }
+  });
+});

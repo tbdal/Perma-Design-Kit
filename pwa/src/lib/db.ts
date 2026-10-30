@@ -3,6 +3,11 @@ import type { PlantData, Polyculture, GardenPlan } from './types';
 import type { VarietyList } from './varieties';
 import { announceChange } from './data-channel';
 
+let writes = 0;
+/** Counts this tab's writes, so a page can keep its records in memory until one happens. */
+export const dbWrites = () => writes;
+function changed() { writes++; announceChange(); }
+
 interface PlantDB extends DBSchema {
   plants: {
     key: string;
@@ -100,13 +105,13 @@ export async function savePlant(plant: PlantData): Promise<void> {
   const db = await getDB();
   plant.updatedAt = new Date().toISOString();
   await db.put('plants', plant);
-  announceChange();
+  changed();
 }
 
 export async function deletePlant(id: string): Promise<void> {
   const db = await getDB();
   await db.delete('plants', id);
-  announceChange();
+  changed();
 }
 
 export async function importPlants(plants: PlantData[]): Promise<void> {
@@ -116,7 +121,7 @@ export async function importPlants(plants: PlantData[]): Promise<void> {
     await tx.store.put(plant);
   }
   await tx.done;
-  announceChange();
+  changed();
 }
 
 export async function exportPlants(): Promise<PlantData[]> {
@@ -126,7 +131,7 @@ export async function exportPlants(): Promise<PlantData[]> {
 export async function clearAllPlants(): Promise<void> {
   const db = await getDB();
   await db.clear('plants');
-  announceChange();
+  changed();
 }
 
 // ── Polycultures ──────────────────────────────────────────────────────────
@@ -145,13 +150,13 @@ export async function savePolyculture(polyculture: Polyculture): Promise<void> {
   polyculture.updatedAt = new Date().toISOString();
   const db = await getDB();
   await db.put('polycultures', polyculture);
-  announceChange();
+  changed();
 }
 
 export async function deletePolyculture(id: string): Promise<void> {
   const db = await getDB();
   await db.delete('polycultures', id);
-  announceChange();
+  changed();
 }
 
 export async function importPolycultures(polycultures: Polyculture[]): Promise<void> {
@@ -161,7 +166,7 @@ export async function importPolycultures(polycultures: Polyculture[]): Promise<v
     await tx.store.put(polyculture);
   }
   await tx.done;
-  announceChange();
+  changed();
 }
 
 // ── Garden plans ──────────────────────────────────────────────────────────
@@ -180,13 +185,13 @@ export async function saveGardenPlan(plan: GardenPlan): Promise<void> {
   plan.updatedAt = new Date().toISOString();
   const db = await getDB();
   await db.put('gardenPlans', plan);
-  announceChange();
+  changed();
 }
 
 export async function deleteGardenPlan(id: string): Promise<void> {
   const db = await getDB();
   await db.delete('gardenPlans', id);
-  announceChange();
+  changed();
 }
 
 export async function importGardenPlans(plans: GardenPlan[]): Promise<void> {
@@ -196,7 +201,7 @@ export async function importGardenPlans(plans: GardenPlan[]): Promise<void> {
     await tx.store.put(plan);
   }
   await tx.done;
-  announceChange();
+  changed();
 }
 
 // ── Variety lists (Sortenlisten) ────────────────────────────────────────────
@@ -209,13 +214,13 @@ export async function getVarietyLists(): Promise<VarietyList[]> {
 export async function saveVarietyList(list: VarietyList): Promise<void> {
   const db = await getDB();
   await db.put('varietyLists', list);
-  announceChange();
+  changed();
 }
 
 export async function deleteVarietyList(id: string): Promise<void> {
   const db = await getDB();
   await db.delete('varietyLists', id);
-  announceChange();
+  changed();
 }
 
 // ── Everything ──────────────────────────────────────────────────────────────
@@ -231,5 +236,5 @@ export async function clearAllData(): Promise<void> {
     tx.objectStore('varietyLists').clear(),
     tx.done,
   ]);
-  announceChange();
+  changed();
 }

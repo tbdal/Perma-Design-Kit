@@ -98,6 +98,23 @@ describe('backup round trip', () => {
     expect(db.plants.find(p => p.id === 'p2')).toEqual(local);
   });
 
+  it('a pull keeps records edited here after the backup; a file restore overwrites them', async () => {
+    const old = '2026-01-01T00:00:00.000Z', newer = '2026-02-01T00:00:00.000Z';
+    db.plants = [{ ...plant, updatedAt: old }]; db.polycultures = [{ ...pc, updatedAt: old }]; db.gardenPlans = [{ ...plan, updatedAt: old }];
+    const parsed = parseBackup((await buildBackup()).json);
+    const edited = () => {
+      db.plants = [{ ...plant, commonName: 'lokal', updatedAt: newer }];
+      db.polycultures = [{ ...pc, name: 'lokal', updatedAt: newer }];
+      db.gardenPlans = [{ ...plan, name: 'lokal', updatedAt: newer }];
+    };
+    edited();
+    expect(await applyBackup(parsed, { keepNewer: true })).toEqual({ keptLocal: 3 });
+    expect([db.plants[0].commonName, db.polycultures[0].name, db.gardenPlans[0].name]).toEqual(['lokal', 'lokal', 'lokal']);
+    edited();
+    expect(await applyBackup(parsed)).toEqual({ keptLocal: 0 });
+    expect([db.plants[0].commonName, db.polycultures[0].name, db.gardenPlans[0].name]).toEqual(['Apfel', 'Apfelgilde', 'Waldgarten']);
+  });
+
   it('accepts a backup without plants', async () => {
     db.plants = [];
     const parsed = parseBackup((await buildBackup()).json);

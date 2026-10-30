@@ -9,12 +9,12 @@ import {
 } from '../server/auth.mjs';
 
 describe('passwords and sessions', () => {
-  it('hashes and verifies', () => {
-    const h = hashPassword('richtig-lang-1');
+  it('hashes and verifies', async () => {
+    const h = await hashPassword('richtig-lang-1');
     expect(h).toMatch(/^scrypt\$/);
-    expect(verifyPassword('richtig-lang-1', h)).toBe(true);
-    expect(verifyPassword('falsch', h)).toBe(false);
-    expect(verifyPassword('x', 'garbage')).toBe(false);
+    expect(await verifyPassword('richtig-lang-1', h)).toBe(true);
+    expect(await verifyPassword('falsch', h)).toBe(false);
+    expect(await verifyPassword('x', 'garbage')).toBe(false);
   });
 
   it('signs sessions and rejects tampered or expired ones', () => {
@@ -34,20 +34,20 @@ describe('passwords and sessions', () => {
 });
 
 describe('accounts', () => {
-  it('creates, updates and removes; keeps the last admin', () => {
-    let users = upsertUser([], { name: 'Admin', role: 'admin', password: 'zehn-zeichen' });
-    users = upsertUser(users, { name: 'Gast', password: 'zehn-zeichen' });
+  it('creates, updates and removes; keeps the last admin', async () => {
+    let users = await upsertUser([], { name: 'Admin', role: 'admin', password: 'zehn-zeichen' });
+    users = await upsertUser(users, { name: 'Gast', password: 'zehn-zeichen' });
     expect(users.map((u: { role: string }) => u.role)).toEqual(['admin', 'expert']);
-    expect(() => upsertUser(users, { name: 'admin', role: 'expert' })).toThrow('last-admin');
+    await expect(upsertUser(users, { name: 'admin', role: 'expert' })).rejects.toThrow('last-admin');
     expect(() => removeUser(users, 'Admin')).toThrow('last-admin');
-    expect(() => upsertUser(users, { name: 'Neu', password: 'kurz' })).toThrow('short-password');
-    expect(() => upsertUser(users, { name: '<script>', password: 'zehn-zeichen' })).toThrow('bad-name');
+    await expect(upsertUser(users, { name: 'Neu', password: 'kurz' })).rejects.toThrow('short-password');
+    await expect(upsertUser(users, { name: '<script>', password: 'zehn-zeichen' })).rejects.toThrow('bad-name');
     const v1 = users[1].v;
-    users = upsertUser(users, { name: 'gast', password: 'anderes-passwort' });
+    users = await upsertUser(() => users, { name: 'gast', password: 'anderes-passwort' });
     expect(users[1].v).toBe(v1 + 1);
     expect(removeUser(users, 'GAST')).toHaveLength(1);
-    expect(upsertUser(users, { name: 'Team', role: 'team', password: 'zehn-zeichen' }).at(-1).role).toBe('team');
-    expect(() => upsertUser(users, { name: 'X', role: 'root', password: 'zehn-zeichen' })).toThrow('bad-role');
+    expect((await upsertUser(users, { name: 'Team', role: 'team', password: 'zehn-zeichen' })).at(-1).role).toBe('team');
+    await expect(upsertUser(users, { name: 'X', role: 'root', password: 'zehn-zeichen' })).rejects.toThrow('bad-role');
   });
 
   it('feature table keeps only known modes and valid ids', () => {
@@ -77,7 +77,7 @@ describe('HTTP endpoints', () => {
   beforeAll(async () => {
     dir = mkdtempSync(join(tmpdir(), 'pdk-auth-'));
     const store = createStore(dir);
-    store.saveUsers(upsertUser(upsertUser([], { name: 'Admin', role: 'admin', password: 'admin-passwort' }), { name: 'Gast', password: 'gast-passwort' }));
+    store.saveUsers(await upsertUser(await upsertUser([], { name: 'Admin', role: 'admin', password: 'admin-passwort' }), { name: 'Gast', password: 'gast-passwort' }));
     const handle = createAuthHandler({ store, isAllowedOrigin: (o: string | null) => !o || o === 'http://ok.example' });
     server = createServer((req, res) => {
       const url = new URL(req.url!, 'http://x');

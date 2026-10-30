@@ -102,7 +102,7 @@ export function setMode(mode: UiMode): void {
 export async function refreshAuth(): Promise<AuthInfo | null> {
   try {
     const res = await fetch('/api/auth/me', { credentials: 'same-origin', cache: 'no-store' });
-    if (res.status === 401) setAuth(null);
+    if (res.status === 401) { setAuth(null); void dropPrivateCache(); } // session ended: private code must not stay offline
     else if (res.ok) setAuth(parseAuth(await res.json()));
   } catch { /* offline */ }
   return auth;
