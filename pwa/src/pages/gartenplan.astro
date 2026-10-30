@@ -878,7 +878,7 @@ import Layout from '../layouts/Layout.astro';
   function applyPlanData(data: GardenPlan) {
     if (!editing) return;
     const prev = editing;
-    const before = { geo: JSON.stringify(prev.geo), w: prev.areaWidthM, h: prev.areaHeightM };
+    const before = { geo: JSON.stringify(prev.geo), w: prev.areaWidthM, h: prev.areaHeightM, outline: JSON.stringify(prev.boundary) };
     for (const k of Object.keys(prev) as (keyof GardenPlan)[]) if (k !== 'updatedAt' && !(k in data)) delete (prev as any)[k];
     Object.assign(prev, data);
     // Drop selections / tools that point at things which no longer exist.
@@ -900,7 +900,11 @@ import Layout from '../layouts/Layout.astro';
     renderSuggestions();
     renderSelectedPanel();
     renderPlanSvg();
-    if (!plan3dContainer.hidden) btnView3d.click(); // rebuild 3D, camera kept
+    // 3D: plants and areas in place; the whole view only when the ground changed (location, size, outline).
+    if (view3d && !plan3dContainer.hidden) {
+      if (before.geo !== JSON.stringify(prev.geo) || before.w !== prev.areaWidthM || before.h !== prev.areaHeightM || before.outline !== JSON.stringify(prev.boundary)) btnView3d.click();
+      else { view3d.updateYears(prev.yearsSincePlanting); view3d.refreshAreas(selectedAreaId); view3d.setSelectedPlacement(selectedPlacementId); }
+    }
     if (before.geo !== JSON.stringify(prev.geo) || before.w !== prev.areaWidthM || before.h !== prev.areaHeightM) { void loadTerrain(); void loadBuildings(); }
   }
   btnUndo.addEventListener('click', () => stepHistory(-1));
@@ -2580,7 +2584,11 @@ import Layout from '../layouts/Layout.astro';
     // Dragging a marked plant moves the whole multi-selection along.
     let carried: { pl: GardenPlanPlacement; g: SVGGElement; x0: number; y0: number }[] = [];
     group.addEventListener('pointerdown', (e: PointerEvent) => {
+      // A second finger on a plant belongs to a pinch, not to a drag: through to the plan's handler.
+      if (e.pointerType === 'touch' && !e.isPrimary) return;
       e.stopPropagation();
+      // A first finger on a plant still counts for a pinch: the second finger then takes over (see pointercancel below).
+      if (e.pointerType === 'touch') { activePointers.clear(); activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY }); }
       dragging = true;
       moved = false;
       startClientX = e.clientX;
@@ -2628,7 +2636,13 @@ import Layout from '../layouts/Layout.astro';
         renderSelectedPanel();
       }
     });
-    // Cancelled by the system (gesture, call): the markers go back, nothing is moved.
+    // Cancelled by the system (gesture, call) or taken over by a pinch (the plan captured the finger):
+    // the markers go back, nothing is moved.
+    group.addEventListener('lostpointercapture', () => {
+      if (!dragging || activePointers.size < 2) return;
+      dragging = false;
+      if (moved) for (const c of carried) c.g.setAttribute('transform', `translate(${c.x0 * SVG_UNITS_PER_METER},${c.y0 * SVG_UNITS_PER_METER})`);
+    });
     group.addEventListener('pointercancel', () => {
       if (!dragging) return;
       dragging = false;
@@ -2662,24 +2676,27 @@ import Layout from '../layouts/Layout.astro';
     addPlacementMarkers([placement]);
   }
 
-  // While the slider moves: 2D markers and the 3D stand-in once per frame; the exact 3D plants once it rests
-  // (rebuilding every plant per step made the slider lag several seconds on phones).
-  let yearsFrame = 0, years3dTimer = 0;
+  // While the slider moves: 2D markers and the 3D stand-in at most every 120 ms (each marker change repaints the
+  // whole SVG with its aerial photo; per frame that blocked the slider on phones), the exact 3D plants once it rests.
+  let yearsFrame = 0, yearsAt = 0, years3dTimer = 0;
   yearsInput.addEventListener('input', () => {
     if (!editing) return;
     editing.yearsSincePlanting = Number(yearsInput.value);
     yearsLabel.textContent = yearsText(editing);
-    if (!yearsFrame) yearsFrame = requestAnimationFrame(() => {
+    if (!yearsFrame) yearsFrame = window.setTimeout(() => requestAnimationFrame(() => {
       yearsFrame = 0;
+      yearsAt = performance.now();
       if (!editing) return;
       if (view3d && !plan3dContainer.hidden) view3d.previewYears(editing.yearsSincePlanting);
       else for (const placement of editing.placements) {   // 3D → 2D redraws all markers anyway
         const group = markerMap.get(placement.id);
         if (group) updateMarkerShape(group, placement, plantsById.get(placement.plantId));
       }
-    });
+    }), Math.max(0, yearsAt + 120 - performance.now()));
+    // Exact 3D plants when the finger lets go (change) — a short pause while dragging slowly must not rebuild
+    // every plant (on a phone that froze the slider each time); 1.5 s rest covers keys and the time-lapse.
     clearTimeout(years3dTimer);
-    years3dTimer = window.setTimeout(() => { if (editing) view3d?.updateYears(editing.yearsSincePlanting); }, 350);
+    years3dTimer = window.setTimeout(() => { if (editing) view3d?.updateYears(editing.yearsSincePlanting); }, 1500);
     scheduleCoverage();
     scheduleAutosave();
   });
@@ -3186,7 +3203,6 @@ import Layout from '../layouts/Layout.astro';
   planSvg.addEventListener('dragstart', e => { if (lasso) e.preventDefault(); });
   planSvg.addEventListener('pointerup', endCanvasPointer);
   planSvg.addEventListener('pointercancel', endCanvasPointer);
-  planSvg.addEventListener('lostpointercapture', (e: PointerEvent) => { if (!pan || e.pointerId !== pan.id) activePointers.delete(e.pointerId); });
 
   /** A tap (no pan) on the canvas: add an area corner while drawing, place
    *  the armed plant, otherwise select the tapped area / clear selection. */
@@ -4370,6 +4386,7 @@ import Layout from '../layouts/Layout.astro';
     }).join('');
   }
   yearsInput.addEventListener('input', () => { renderYield(); renderPhases(); });
+  yearsInput.addEventListener('change', () => { clearTimeout(years3dTimer); if (editing) view3d?.updateYears(editing.yearsSincePlanting); });
 
   document.getElementById('btn-care-ics')!.addEventListener('click', () => {
     if (!editing) return;

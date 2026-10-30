@@ -4,6 +4,12 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Bedienung am Handy, Jahres-Slider in 3D 2026-10-30
+- [x] **Zwei-Finger-Zoom (2D):** zoomt jetzt auch, wenn ein Finger auf einer Pflanze aufsetzt; ging nach dem letzten Update manchmal gar nicht (ein Finger wurde verloren) #bugs #prüfen
+- [x] **Zwei-Finger-Zoom (3D):** beginnt ein Finger auf einer Pflanze, wird aus dem Ziehen der Pflanze ein Zoomen, die Pflanze bleibt stehen #bugs #prüfen
+- [x] **Jahres-Slider in 3D:** baut 3D erst beim Loslassen exakt neu (nicht bei jeder kurzen Pause), Pflanzen späterer Bauabschnitte erscheinen beim Ziehen und im Zeitraffer sofort; 2D-Pflanzen höchstens alle 120 ms neu gemalt #bugs #prüfen
+- [x] **Rückgängig in 3D:** baut die Ansicht nicht mehr neu auf, nur Pflanzen und Flächen; nur bei geändertem Standort, Größe oder Umriss alles #bugs #prüfen
+
 ## 3D auf dem Handy, Zwei-Finger-Zoom 2026-10-30
 - [x] **Jahres-Slider flüssig:** beim Ziehen werden die Pflanzen in 3D nur skaliert (Schatten stehen kurz still), exakt neu gebaut erst 0,35 s nach dem Loslassen; Blattkarten in einem Rechenschritt statt fünf; in 3D keine unsichtbaren 2D-Marker mehr nachgerechnet #bugs #prüfen
 - [x] **3D öffnen:** Warte-Animation „3D wird aufgebaut …“ bis zum ersten Bild, Shader werden im Hintergrund übersetzt (Seite bleibt bedienbar), auf Handys höchstens 128 Bodenkacheln und Pixel-Ratio 1,5 #minor #prüfen

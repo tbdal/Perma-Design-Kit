@@ -957,9 +957,12 @@ export function createGardenPlan3DView(
     plantsGroup.traverse(o => { if (!simple || o.name === 'selection-ring') (o as THREE.Mesh).geometry?.dispose(); });
     plantsGroup.clear();
     for (const placement of plan.placements) {
-      if (!isPlanted(placement, years)) continue;   // later construction phase
       if (opts.hidden?.(placement.id)) continue;
-      const mesh = buildPlantMesh(placement, plantsById.get(placement.plantId), ageAt(placement, years), simple);
+      // A later construction phase is built too, shrunk away: the years slider (previewYears) can then show it
+      // without a rebuild.
+      const planted = isPlanted(placement, years);
+      const mesh = buildPlantMesh(placement, plantsById.get(placement.plantId), Math.max(planted ? 0 : 1, ageAt(placement, years)), simple);
+      if (!planted) mesh.scale.setScalar(1e-4);
       if (!simple) mesh.traverse(o => { if (o.name !== 'selection-ring' && (o as THREE.Mesh).isMesh) { o.castShadow = true; o.receiveShadow = true; } });
       if (treeOpacity < 1 && mesh.userData.layer === 'tree') seeThroughTrees(mesh);
       mesh.position.y = ground(placement.xM, placement.yM);
@@ -1208,7 +1211,8 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
     return null;
   }
 
-  let dragState: { placementId: string; moved: boolean; startClientX: number; startClientY: number } | null = null;
+  let dragState: { placementId: string; moved: boolean; startClientX: number; startClientY: number; pointerId: number; lastX: number; lastY: number } | null = null;
+  let handingOver = false;
 
   // ── Area vertex handles: drag over the ground plane; the area's sheet is
   // re-triangulated live from a working copy, committed via callback. ──
@@ -1261,7 +1265,8 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
   }
 
   function onPlantPointerMove(e: PointerEvent) {
-    if (!dragState) return;
+    if (!dragState || e.pointerId !== dragState.pointerId) return;
+    dragState.lastX = e.clientX; dragState.lastY = e.clientY;
     if (!dragState.moved && Math.hypot(e.clientX - dragState.startClientX, e.clientY - dragState.startClientY) > DRAG_THRESHOLD_PX) {
       dragState.moved = true;
     }
@@ -1298,6 +1303,26 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
   }
 
   function onContainerPointerDown(e: PointerEvent) {
+    if (handingOver) return;
+    // A second finger while the first one drags a plant: it was a pinch. The plant goes back and the first
+    // finger is handed to the camera controls (they never saw it), so both fingers zoom and turn.
+    if (e.pointerType === 'touch' && !e.isPrimary && dragState) {
+      const d = dragState;
+      dragState = null;
+      renderer.domElement.removeEventListener('pointermove', onPlantPointerMove);
+      renderer.domElement.removeEventListener('pointerup', onPlantPointerUp);
+      renderer.domElement.removeEventListener('pointercancel', onPlantPointerUp);
+      const pl = plan.placements.find(p => p.id === d.placementId);
+      const mesh = plantsGroup.children.find(c => c.userData.placementId === d.placementId);
+      if (pl && mesh) { mesh.position.set(pl.xM, ground(pl.xM, pl.yM), pl.yM); syncInstances(pl.id); }
+      controls.enabled = true;
+      handingOver = true;
+      renderer.domElement.dispatchEvent(new PointerEvent('pointerdown', { pointerId: d.pointerId, clientX: d.lastX, clientY: d.lastY, pointerType: 'touch', isPrimary: true, button: 0, buttons: 1, bubbles: true }));
+      handingOver = false;
+      requestRender();
+      return;
+    }
+    if (e.pointerType === 'touch' && !e.isPrimary) return; // a pinch: the camera's
     setNdcFromEvent(e);
     raycaster.setFromCamera(ndc, camera);
 
@@ -1321,7 +1346,7 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
 
     if (hitId) {
       controls.enabled = false;
-      dragState = { placementId: hitId, moved: false, startClientX: e.clientX, startClientY: e.clientY };
+      dragState = { placementId: hitId, moved: false, startClientX: e.clientX, startClientY: e.clientY, pointerId: e.pointerId, lastX: e.clientX, lastY: e.clientY };
       renderer.domElement.setPointerCapture(e.pointerId);
       renderer.domElement.addEventListener('pointermove', onPlantPointerMove);
       renderer.domElement.addEventListener('pointerup', onPlantPointerUp, { once: true });
