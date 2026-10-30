@@ -61,6 +61,13 @@ describe('accounts', () => {
     expect(l.blocked('5.6.7.8', 20)).toBe(false);
     expect(l.blocked('1.2.3.4', 1500)).toBe(false);
   });
+
+  it('counts an IPv6 /64 as one client', () => {
+    const l = createLoginLimiter({ max: 2, windowMs: 1000 });
+    l.fail('2001:db8:1:2::a', 0); l.fail('2001:db8:1:2::b', 10);
+    expect(l.blocked('2001:db8:1:2::c', 20)).toBe(true);
+    expect(l.blocked('2001:db8:1:3::a', 20)).toBe(false);
+  });
 });
 
 describe('HTTP endpoints', () => {

@@ -70,7 +70,10 @@ const COLUMNS: Column[] = [
   { header: 'Druckanzahl', example: '1', get: p => String(p.printCount ?? 1), set: (p, v) => { const n = num(v); if (n != null) p.printCount = n; } },
 ];
 
-const quote = (v: string) => `"${v.replace(/"/g, '""')}"`;
+// A cell starting with = + - @ runs as a formula in Excel/LibreOffice: a leading ' keeps it text (stripped again on import).
+const FORMULA = /^[=+\-@\t\r]/;
+const quote = (v: string) => `"${(FORMULA.test(v) && isNaN(Number(v)) ? "'" + v : v).replace(/"/g, '""')}"`;
+const unquoteFormula = (v: string) => v.startsWith("'") && FORMULA.test(v.slice(1)) ? v.slice(1) : v;
 
 export function buildCSV(plants: PlantData[]): string {
   const rows = plants.map(p => COLUMNS.map(c => quote(c.get(p))).join(','));
@@ -126,7 +129,7 @@ export function parseCSV(input: string): Record<string, string>[] {
 function importAppFormat(row: Record<string, string>): PlantData {
   const plant = createEmptyPlant();
   for (const col of COLUMNS) {
-    if (row[col.header] !== undefined && row[col.header] !== '') col.set(plant, row[col.header]);
+    if (row[col.header] !== undefined && row[col.header] !== '') col.set(plant, unquoteFormula(row[col.header]));
   }
   return plant;
 }

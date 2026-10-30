@@ -23,6 +23,16 @@ describe('CSV export/import', () => {
     }
   });
 
+  it('keeps formula-like cells as text and reads them back unchanged', () => {
+    const p = Object.assign(createEmptyPlant(), { latinName: 'Malus', commonName: '=HYPERLINK("http://x","y")', notes: '- Punkt' });
+    const csv = buildCSV([p]);
+    expect(csv).toContain(`"'=HYPERLINK(""http://x"",""y"")"`);
+    expect(csv).toContain(`"'- Punkt"`);
+    const [back] = importFromCSV(csv);
+    expect(back.commonName).toBe(p.commonName);
+    expect(back.notes).toBe('- Punkt');
+  });
+
   it('keeps a quoted multi-line field in one record', () => {
     const rows = parseCSV('Lateinisch,Notizen\r\n"A","x\r\ny"\r\n"B",z\r\n');
     expect(rows).toEqual([{ Lateinisch: 'A', Notizen: 'x\ny' }, { Lateinisch: 'B', Notizen: 'z' }]);

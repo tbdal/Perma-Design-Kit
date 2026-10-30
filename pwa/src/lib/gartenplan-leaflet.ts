@@ -169,7 +169,7 @@ export function attachSurroundings(map: L.Map, els: SurroundingsEls, t: (k: stri
   els.buildings.checked = !!pref.buildings;
   els.forest.checked = !!pref.forest;
   // forest below buildings, both above the base map
-  for (const [name, z] of [['surrForest', 410], ['surrBuildings', 415]] as const) { map.createPane(name); map.getPane(name)!.style.zIndex = String(z); map.getPane(name)!.style.pointerEvents = 'none'; }
+  for (const [name, z] of [['surrForest', 410], ['surrBuildings', 415]] as const) { if (!map.getPane(name)) map.createPane(name); map.getPane(name)!.style.zIndex = String(z); map.getPane(name)!.style.pointerEvents = 'none'; }
   const renderers: Record<SurrKind, L.Canvas> = { forest: L.canvas({ pane: 'surrForest', padding: 0.3 }), buildings: L.canvas({ pane: 'surrBuildings', padding: 0.3 }) };
   const groups = new Map<string, L.LayerGroup>();   // "kind|box" → drawn polygons (kept while in the cache)
   const pending = new Set<string>();
@@ -211,7 +211,7 @@ export function attachSurroundings(map: L.Map, els: SurroundingsEls, t: (k: stri
       groups.set(key, g);
       failed = 0;
       if (groups.size > 80) { const old = groups.keys().next().value!; map.removeLayer(groups.get(old)!); groups.delete(old); }
-    } catch { failed++; }
+    } catch { failed++; pending.delete(key); setHint(); return; } // no refresh(): it would retry the failed box at once, in a loop
     pending.delete(key);
     if (!gone) refresh();
   }
@@ -222,8 +222,8 @@ export function attachSurroundings(map: L.Map, els: SurroundingsEls, t: (k: stri
     const boxes = map.getZoom() >= MIN_ZOOM ? boxesFor(toBounds()) : null;
     const visible = new Set<string>();
     if (boxes) for (const kind of ['forest', 'buildings'] as const) if (want[kind]) for (const b of boxes) visible.add(`${kind}|${b}`);
-    for (const [key, g] of groups) {
-      if (visible.has(key)) { if (!map.hasLayer(g)) g.addTo(map); } else if (map.hasLayer(g)) map.removeLayer(g);
+    for (const [key, g] of [...groups]) { // a copy: re-inserting a key while iterating the Map itself never ends
+      if (visible.has(key)) { if (!map.hasLayer(g)) g.addTo(map); groups.delete(key); groups.set(key, g); } // in view = newest, evicted last else if (map.hasLayer(g)) map.removeLayer(g);
     }
     for (const key of visible) { const [kind, box] = key.split('|'); void load(kind as SurrKind, box); }
     if (boxes && visible.size && !credited) { credited = true; map.attributionControl?.addAttribution('Gebäude, Wald: © OpenStreetMap-Mitwirkende'); }
@@ -245,6 +245,7 @@ export function attachSurroundings(map: L.Map, els: SurroundingsEls, t: (k: stri
     els.buildings.removeEventListener('change', onToggle);
     els.forest.removeEventListener('change', onToggle);
     for (const g of groups.values()) map.removeLayer(g);
+    for (const r of Object.values(renderers)) map.removeLayer(r); // the map is reused: each open would add two more canvases
     els.hint.textContent = '';
   };
 }

@@ -205,6 +205,9 @@ function plantDims(plant: PlantData | undefined, years: number) {
   return { radiusM, heightM, layer, trunkM };
 }
 
+// Shared by all selection rings: a rebuild disposes only plant geometry, a material per ring leaked.
+const RING_MAT = new THREE.MeshBasicMaterial({ color: 0xfacc15, side: THREE.DoubleSide });
+
 function buildPlantMesh(placement: GardenPlanPlacement, plant: PlantData | undefined, years: number, simple = false): THREE.Group {
   const { radiusM, heightM, layer, trunkM } = plantDims(plant, years);
   const style = LAYER_STYLE[layer];
@@ -214,7 +217,7 @@ function buildPlantMesh(placement: GardenPlanPlacement, plant: PlantData | undef
 
   const ring = new THREE.Mesh(
     new THREE.RingGeometry(radiusM * 1.05, radiusM * 1.2, 24),
-    new THREE.MeshBasicMaterial({ color: 0xfacc15, side: THREE.DoubleSide }),
+    RING_MAT,
   );
   ring.rotation.x = -Math.PI / 2;
   ring.position.y = 0.02;
@@ -433,6 +436,7 @@ export function createGardenPlan3DView(
   let tileGroup: THREE.Group | null = null;
   let posMarker: THREE.Group | null = null;
   let flyId = 0; // a newer flight (or none) wins
+  let disposed = false; // late tile loads, timers and flights of a closed view must not render
   let oldTileGroup: THREE.Group | null = null;
   let tileKey = '';
   if (layoutSrc) lawn.visible = false; // the map/terrain tiles are the ground inside the plan too
@@ -495,7 +499,7 @@ export function createGardenPlan3DView(
       tileQueue.shift()?.();
     };
     const run = () => {
-      if (!entry.alive) { tileLoads++; done(); return; }
+      if (!entry.alive || disposed) { tileLoads++; done(); return; }
       tileLoads++;
       tileLoader.load(url, tex => { done(); onLoad(tex); }, undefined, () => { done(); onError(); });
     };
@@ -802,6 +806,7 @@ export function createGardenPlan3DView(
       part.updateWorldMatrix(true, false);
       mesh.setMatrixAt(index, tmpM.copy(part.matrixWorld));
       mesh.instanceMatrix.needsUpdate = true;
+      mesh.boundingSphere = null; // recomputed lazily, else the moved plant is culled with the old sphere
     }
   }
   const areasGroup = new THREE.Group();
@@ -953,6 +958,7 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
   controls.addEventListener('change', updateCompass);
   updateCompass();
   let northAnim = 0;
+  let northTimer: ReturnType<typeof setTimeout> | undefined;
   compass.addEventListener('click', () => {
     // The camera moves round the target on its circle (same height, same distance) to the south of it, looking north.
     const t = controls.target, c0 = camera.position.clone();
@@ -966,6 +972,7 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
     da = Math.atan2(Math.sin(da), Math.cos(da));                    // the short way round
     const t0 = performance.now(), D = 420;
     cancelAnimationFrame(northAnim);
+    clearTimeout(northTimer);
     let finished = false;
     const step = (now: number) => {
       if (finished) return;
@@ -979,7 +986,7 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
     };
     northAnim = requestAnimationFrame(step);
     // frames can stall (hidden tab, busy page): the end position is reached anyway
-    setTimeout(() => step(t0 + D), D + 120);
+    northTimer = setTimeout(() => step(t0 + D), D + 120);
   });
 
   // ── Sun: position from date/time at the garden's location ──
@@ -1060,7 +1067,7 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
   }
 
   function requestRender() {
-    if (renderQueued) return;
+    if (renderQueued || disposed) return;
     renderQueued = true;
     requestAnimationFrame(() => {
       renderQueued = false;
@@ -1216,6 +1223,7 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
         renderer.domElement.setPointerCapture(e.pointerId);
         renderer.domElement.addEventListener('pointermove', onVertexPointerMove);
         renderer.domElement.addEventListener('pointerup', onVertexPointerUp, { once: true });
+        renderer.domElement.addEventListener('pointercancel', onVertexPointerUp, { once: true });
         return;
       }
     }
@@ -1229,6 +1237,7 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
       renderer.domElement.setPointerCapture(e.pointerId);
       renderer.domElement.addEventListener('pointermove', onPlantPointerMove);
       renderer.domElement.addEventListener('pointerup', onPlantPointerUp, { once: true });
+      renderer.domElement.addEventListener('pointercancel', onPlantPointerUp, { once: true });
       return;
     }
 
@@ -1597,6 +1606,11 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
     },
     tileStatus,
     dispose() {
+      disposed = true;
+      flyId++;
+      for (const e of groundTiles.values()) e.alive = false;
+      tileQueue.length = 0;
+      clearTimeout(northTimer);
       for (const done of layerCleanups) { try { done(); } catch { /* plugin */ } }
       resizeObserver.disconnect();
       cancelAnimationFrame(northAnim);
@@ -1614,6 +1628,7 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
         else if (mat) { mat.map?.dispose(); mat.dispose(); }
       });
       renderer.dispose();
+      renderer.forceContextLoss(); // dispose() alone keeps the WebGL context until GC: ~16 rebuilds hit the browser limit
       if (renderer.domElement.parentNode === container) container.removeChild(renderer.domElement);
     },
   };

@@ -39,6 +39,7 @@ export function growPlanToFit(plan: GardenPlan, marginM = 1): { dx: number; dy: 
   plan.boundary.forEach(shift);
   (plan.areas ?? []).forEach(a => a.points.forEach(shift));
   plan.placements.forEach(shift);
+  if (plan.zones) { plan.zones.centerXM += dx; plan.zones.centerYM += dy; }
   plan.areaWidthM = newMaxX - newMinX;
   plan.areaHeightM = newMaxY - newMinY;
   return { dx, dy };

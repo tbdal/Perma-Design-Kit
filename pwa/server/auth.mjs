@@ -247,7 +247,7 @@ export function createDeviceCodes(now = () => Date.now()) {
   return {
     issue(name) {
       purge();
-      if (codes.size > 1000) codes.clear(); // memory cap under abuse
+      if (codes.size > 1000) codes.delete(codes.keys().next().value); // memory cap: drop the oldest, not everyone's codes
       const token = randomBytes(24).toString('base64url');
       const exp = now() + DEVICE_MINUTES * 60_000;
       codes.set(tokenHash(token), { n: name, exp });
@@ -269,14 +269,18 @@ export function createDeviceCodes(now = () => Date.now()) {
 // ── Login rate limit ─────────────────────────────────────────────────────
 export function createLoginLimiter({ max = 5, windowMs = 15 * 60_000 } = {}) {
   const fails = new Map();
-  const recent = (ip, now) => (fails.get(ip) || []).filter(t => now - t < windowMs);
+  // IPv6 per /64: one connection owns billions of addresses, counting each alone made the limit void.
+  const keyOf = ip => String(ip).includes(':') ? String(ip).split(':').slice(0, 4).join(':') : String(ip);
+  const recent = (ip, now) => (fails.get(keyOf(ip)) || []).filter(t => now - t < windowMs);
   return {
     blocked(ip, now = Date.now()) { return recent(ip, now).length >= max; },
     fail(ip, now = Date.now()) {
-      fails.set(ip, [...recent(ip, now), now]);
-      if (fails.size > 10_000) fails.clear(); // memory cap under abuse
+      const k = keyOf(ip), list = [...recent(ip, now), now];
+      fails.delete(k); // re-inserted as newest
+      fails.set(k, list);
+      if (fails.size > 10_000) fails.delete(fails.keys().next().value); // memory cap: drop the oldest, clearing all reset every counter
     },
-    reset(ip) { fails.delete(ip); },
+    reset(ip) { fails.delete(keyOf(ip)); },
   };
 }
 

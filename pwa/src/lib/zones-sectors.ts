@@ -61,12 +61,20 @@ export function sunriseSunsetBearing(date: { y: number; m: number; d: number }, 
 
 export interface SunSectors { summer: { rise: number; set: number } | null; winter: { rise: number; set: number } | null; }
 
+const sectorMemo = new Map<string, SunSectors>();
+/** Memoised: ~1400 sun positions, and the zones layer redraws on every zoom frame. */
 export function solsticeSectors(lat: number, lon: number): SunSectors {
   const y = new Date().getFullYear();
-  return {
+  const key = `${lat}|${lon}|${y}`;
+  const hit = sectorMemo.get(key);
+  if (hit) return hit;
+  if (sectorMemo.size > 50) sectorMemo.clear();
+  const r: SunSectors = {
     summer: sunriseSunsetBearing(lat >= 0 ? { y, m: 6, d: 21 } : { y, m: 12, d: 21 }, lat, lon),
     winter: sunriseSunsetBearing(lat >= 0 ? { y, m: 12, d: 21 } : { y, m: 6, d: 21 }, lat, lon),
   };
+  sectorMemo.set(key, r);
+  return r;
 }
 
 /** Index of the zone a point lies in (0…4), 5 beyond the last ring. */

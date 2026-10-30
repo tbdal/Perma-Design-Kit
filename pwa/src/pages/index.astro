@@ -476,7 +476,7 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <script>
-  import { getAllPlants, savePlant, deletePlant, importPlants } from '../lib/db';
+  import { getAllPlants, getPlant, savePlant, deletePlant, importPlants } from '../lib/db';
   import { showUndoToast } from '../lib/undo-toast';
   import { displayName } from '../lib/plant-name';
   import { createEmptyPlant, type PlantData, type DataSource, sourceLabel, SOURCE_COLOR } from '../lib/types';
@@ -973,9 +973,14 @@ import Layout from '../layouts/Layout.astro';
 
   // ── renderList ────────────────────────────────────────────────────────────────
 
+  let renderGen = 0; // a slower, older render (Baumscheibe cards) must not land over a newer one
   async function renderList() {
-    cachedPlants = await getAllPlants();
-    gardenPlans = await getAllGardenPlans();
+    const gen = ++renderGen;
+    const plantsNow = await getAllPlants();
+    const plansNow = await getAllGardenPlans();
+    if (gen !== renderGen) return;
+    cachedPlants = plantsNow;
+    gardenPlans = plansNow;
     usage = planUsage(gardenPlans);
     renderPlanFilterOptions();
     for (const cb of listChangeListeners) { try { cb(cachedPlants); } catch (err) { console.warn('expert list listener failed', err); } }
@@ -1025,6 +1030,7 @@ import Layout from '../layouts/Layout.astro';
         if (isBaumscheibe) return renderBaumscheibeCardHtml(p);
         return isStripe ? renderStripeCardHtml(p) : renderPolyCardHtml(p);
       }));
+      if (gen !== renderGen) return;
       listEl.innerHTML = displayPlants.map((p, i) => {
         const cardHtml = cardHtmls[i];
         return `
@@ -1741,9 +1747,15 @@ import Layout from '../layouts/Layout.astro';
     for (let i = 0; i < plants.length; i++) {
       b.textContent = `${i + 1}/${plants.length}…`;
       try {
-        const enriched = await enrichPlant(plants[i]);
+        // Read fresh and check again before writing: the run takes minutes, the person may edit or delete meanwhile.
+        const cur = await getPlant(plants[i].id);
+        if (!cur) continue;
+        const before = JSON.stringify(cur);
+        const enriched = await enrichPlant(cur);
+        const now = await getPlant(cur.id);
+        if (!now || JSON.stringify(now) !== before) continue;
         if (enriched > 0) {
-          await savePlant(plants[i]);
+          await savePlant(cur);
           plantsUpdated++;
           fieldsFilled += enriched;
         }
@@ -1783,10 +1795,16 @@ import Layout from '../layouts/Layout.astro';
   document.getElementById('btn-import-csv')!.addEventListener('click', () => csvInput.click());
   csvInput.addEventListener('change', async () => {
     const f = csvInput.files?.[0]; if (!f) return;
-    const plants = importFromCSV(await f.text());
-    if (plants.length === 0) { alert(t('alertNoCsvPlants')); return; }
-    for (const plant of plants) trackSources(plant, plant as Partial<PlantData>, 'csv');
-    await importPlants(plants); renderList(); csvInput.value = '';
+    try {
+      const plants = importFromCSV(await f.text());
+      if (plants.length === 0) { alert(t('alertNoCsvPlants')); return; }
+      for (const plant of plants) trackSources(plant, plant as Partial<PlantData>, 'csv');
+      await importPlants(plants); renderList();
+    } catch (err) {
+      alert(String(err));
+    } finally {
+      csvInput.value = ''; // the same file again must fire "change"
+    }
   });
 
   // ── Live search (lib/plant-search-ui.ts, shared with the garden plan page) ──

@@ -3,6 +3,9 @@
 // from the browser cache (transferSize 0) and how many were loaded online through our server.
 import { ORTHO_SOURCES } from './ortho-sources';
 
+// The default buffer (250 entries) is full after a few zoom steps; later tiles would not be counted.
+try { performance.setResourceTimingBufferSize(5000); } catch { /* old browser */ }
+
 export interface AerialUsage { id: string; tiles: number; cached: number; online: number; bytes: number }
 
 export function aerialUsage(entries: PerformanceResourceTiming[] = performance.getEntriesByType('resource') as PerformanceResourceTiming[]): AerialUsage[] {

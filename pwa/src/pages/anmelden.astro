@@ -60,9 +60,14 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
     const error = document.getElementById('login-error')!;
     const done = document.getElementById('login-done')!;
     const params = new URLSearchParams(location.search);
-    // Only paths on this site (no "//host" or "https:" redirects).
+    // Only paths on this site: resolved like the browser does, so "/\\evil.com" or "/<tab>/evil.com" cannot leave it.
     const nextRaw = params.get('next') || '';
-    const next = /^\/(?!\/)/.test(nextRaw) ? nextRaw : '/';
+    const next = (() => {
+      try {
+        const u = new URL(nextRaw, location.origin);
+        return nextRaw.startsWith('/') && u.origin === location.origin ? u.pathname + u.search + u.hash : '/';
+      } catch { return '/'; }
+    })();
 
     const inviteToken = params.get('einladung') || '';
     const inviteForm = document.getElementById('invite-form') as HTMLFormElement;

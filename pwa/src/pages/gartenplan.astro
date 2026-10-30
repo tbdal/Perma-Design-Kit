@@ -777,12 +777,25 @@ import Layout from '../layouts/Layout.astro';
   // plant, moving the years slider) don't hammer IndexedDB on every event.
   // LAST_PLAN_KEY: from lib/plan-view (also set by the share import).
   let autosaveTimer: ReturnType<typeof setTimeout> | null = null;
+  let autosavePlanId = '';
+  // Every render schedules a save: only a changed plan is written, so opening or looking at one keeps its updatedAt.
+  const savedJson = new WeakMap<GardenPlan, string>();
+  const contentJson = (p: GardenPlan) => { const { updatedAt: _u, ...rest } = p; return JSON.stringify(rest); };
+  /** A plan about to be deleted must not be written back by a save still pending. */
+  function cancelAutosave(planId: string) {
+    if (autosaveTimer && autosavePlanId === planId) { clearTimeout(autosaveTimer); autosaveTimer = null; }
+  }
   function scheduleAutosave() {
     if (!editing) return;
     if (autosaveTimer) clearTimeout(autosaveTimer);
-    const plan = editing;
+    const plan = editing, ro = readOnly; // captured: after closing, editing is null and the read-only check would pass
+    autosavePlanId = plan.id;
     autosaveTimer = setTimeout(async () => {
-      if (readOnly && plan === editing) return;
+      autosaveTimer = null;
+      if (ro) return;
+      const json = contentJson(plan);
+      if (savedJson.get(plan) === json) return;
+      savedJson.set(plan, json);
       plan.updatedAt = new Date().toISOString();
       await saveGardenPlan(plan);
       notifyPlanSaved(plan);
@@ -888,10 +901,12 @@ import Layout from '../layouts/Layout.astro';
   btnUndo.addEventListener('click', () => stepHistory(-1));
   btnRedo.addEventListener('click', () => stepHistory(1));
 
+  let toastTimer: ReturnType<typeof setTimeout> | undefined;
   function showToast(msg: string) {
     toast.textContent = msg;
     toast.classList.remove('hidden');
-    setTimeout(() => toast.classList.add('hidden'), 2000);
+    clearTimeout(toastTimer); // a second toast gets its full 2 s
+    toastTimer = setTimeout(() => toast.classList.add('hidden'), 2000);
   }
 
   function plantLabel(p: PlantData | undefined): string {
@@ -1114,6 +1129,7 @@ import Layout from '../layouts/Layout.astro';
       showToast(t('toastPlanDuplicated', { name: copy.name }));
     } else if (action === 'delete') {
       if (!confirm(t('confirmDeletePlan', { name }))) return;
+      cancelAutosave(id);
       await deleteGardenPlan(id);
       try { localStorage.removeItem(planViewKey(id)); } catch { /* ignore */ }
       notifyPlanDeleted(id);
@@ -1178,6 +1194,7 @@ import Layout from '../layouts/Layout.astro';
     editorView.hidden = false;
     requestAnimationFrame(fitPlanHeight);
     if (editing.boundary.length > 0) {
+      savedJson.set(editing, contentJson(editing)); // already stored: opening alone is no change
       enterPhaseB();
     } else {
       phaseA.classList.remove('hidden');
@@ -1217,7 +1234,8 @@ import Layout from '../layouts/Layout.astro';
     const isPlan = svg === planSvg;
     const plan = isPlan ? editing : { ...editing, areaWidthM: areaWidthM(), areaHeightM: areaHeightM() };
     const view = isPlan ? viewRectM() : { minX: 0, minY: 0, maxX: plan.areaWidthM, maxY: plan.areaHeightM };
-    const box = svg.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+    // Capped at 2 like the 3D view: a dpr-3 phone would fetch ~4× the tiles for little visible gain.
+    const box = svg.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
     const px = box.width;
     const mPerPx = px > 0 ? (view.maxX - view.minX) / px / dpr : 0.02;
     // Tiles already on screen keep their element (no flicker, no reload while zooming):
@@ -1413,7 +1431,7 @@ import Layout from '../layouts/Layout.astro';
       if (Math.abs(h - planView.h) > 1e-6) {
         planView = { ...planView, y: planView.y + planView.h / 2 - h / 2, h };
         planSvg.setAttribute('viewBox', `${planView.x} ${planView.y} ${planView.w} ${planView.h}`);
-        if (!rescaleQueued) { rescaleQueued = true; requestAnimationFrame(rescaleUi); }
+        if (!rescaleQueued) { rescaleQueued = true; requestAnimationFrame(() => rescaleUi()); }
       }
     }
     if (basemapResizeTimer) clearTimeout(basemapResizeTimer);
@@ -1715,6 +1733,7 @@ import Layout from '../layouts/Layout.astro';
     endAreaDraw();
     setBoundaryEdit(false);
     const { createGardenPlan3DView } = await import('../lib/gartenplan-3d');
+    if (!editing || plan3dContainer.hidden) return; // left the plan or back to 2D while the chunk loaded
     // Perspective carries over: rebuilds keep the live camera; coming from 2D
     // we restore the last 3D camera if 2D wasn't moved, else look straight
     // down onto the section 2D showed.
@@ -2416,6 +2435,8 @@ import Layout from '../layouts/Layout.astro';
     const pointsAttr = editing.boundary.map(p => `${p.xM * SVG_UNITS_PER_METER},${p.yM * SVG_UNITS_PER_METER}`).join(' ');
     if (!planView.w) resetPlanViewState();
     planSvg.setAttribute('viewBox', `${planView.x} ${planView.y} ${planView.w} ${planView.h}`);
+    // The map tiles survive the rewrite: renderBasemap reuses them instead of reloading (and flickering) per edit.
+    const oldBasemap = planSvg.querySelector('.basemap-layer');
     planSvg.innerHTML = `
       <g class="basemap-layer"></g>
       <g id="contour-layer" pointer-events="none"></g>
@@ -2437,6 +2458,7 @@ import Layout from '../layouts/Layout.astro';
       <g id="measure-layer" pointer-events="none"></g>
       <g id="gps-layer" pointer-events="none"></g>
       <g id="plugin-layer" pointer-events="none"></g>`;
+    if (oldBasemap) planSvg.querySelector('.basemap-layer')!.replaceWith(oldBasemap);
     renderBasemap(planSvg);
     renderContours();
     renderBuildings2d();
@@ -2542,6 +2564,12 @@ import Layout from '../layouts/Layout.astro';
         renderSelectedPanel();
       }
     });
+    // Cancelled by the system (gesture, call): the markers go back, nothing is moved.
+    group.addEventListener('pointercancel', () => {
+      if (!dragging) return;
+      dragging = false;
+      if (moved) for (const c of carried) c.g.setAttribute('transform', `translate(${c.x0 * SVG_UNITS_PER_METER},${c.y0 * SVG_UNITS_PER_METER})`);
+    });
   }
 
   /** Years slider label with the calendar year ("2017 · 37 Jahre"); without a
@@ -2579,10 +2607,12 @@ import Layout from '../layouts/Layout.astro';
       if (!group) continue;
       updateMarkerShape(group, placement, plantsById.get(placement.plantId));
     }
-    view3d?.updateYears(editing.yearsSincePlanting);
+    // The 3D rebuild of every plant is the heavy part: at most once per frame while the slider moves.
+    if (!years3dFrame) years3dFrame = requestAnimationFrame(() => { years3dFrame = 0; if (editing) view3d?.updateYears(editing.yearsSincePlanting); });
     scheduleCoverage();
     scheduleAutosave();
   });
+  let years3dFrame = 0;
 
   // ── Flächen (benannte, farbige Polygone) ───────────────────────────────
   // Drawn in phase B on the plan itself (plan meters, snapped to the grid like
@@ -2760,7 +2790,7 @@ import Layout from '../layouts/Layout.astro';
     saveViewSoon();
     if (basemapViewTimer) clearTimeout(basemapViewTimer);
     basemapViewTimer = setTimeout(() => renderBasemap(planSvg), 120);
-    if (!rescaleQueued) { rescaleQueued = true; requestAnimationFrame(rescaleUi); }
+    if (!rescaleQueued) { rescaleQueued = true; requestAnimationFrame(rescaleOnFrame); }
   }
 
   // ── Status "loading …" at the bottom right of the plan ──
@@ -2913,28 +2943,28 @@ import Layout from '../layouts/Layout.astro';
     scaleLabelEl.textContent = scaleLabel(sc.meters, lang);
   }
   new MutationObserver(updateScaleBar).observe(plan3dContainer, { attributes: true, attributeFilter: ['hidden'] });
-  function rescaleUi() {
+  // What the last full rescale drew for: a pan keeps zoom and layers, so the zoom-scaled layers stay as they are.
+  let rescaledFor: { k: number; ppu: number; grid: Element | null } | null = null;
+  const rescaleOnFrame = () => rescaleUi(true);
+  function rescaleUi(panOnly = false) {
     rescaleQueued = false;
     if (!editing) return;
     updateScaleBar();
     const k = viewK();
     const grid = planSvg.querySelector('#plan-grid-layer');
+    const ppuNow = pxPerUnit();
+    if (panOnly && rescaledFor && rescaledFor.k === k && rescaledFor.ppu === ppuNow && rescaledFor.grid === grid) {
+      // Only panned: plugins may follow the view, and markers that scrolled into view catch up below.
+      renderPluginOverlays();
+      catchUpMarkers(ppuNow);
+      return;
+    }
+    rescaledFor = { k, ppu: ppuNow, grid };
     if (grid) grid.innerHTML = gridDefsAndBackground(editing.areaWidthM, editing.areaHeightM, editing.gridSpacingM, 'plan-grid', k, pxPerUnit() * U, editing.gridRotationDeg ?? 0, editing.boundary);
     planSvg.querySelector('#plan-boundary')?.setAttribute('stroke-width', String(2 * k));
     renderMeasure();
     renderPluginOverlays();
-    // Markers only depend on the zoom here: skip the ones drawn at this zoom
-    // already (plain panning touches none) and the off-screen ones (they catch up
-    // when they scroll into view). With hundreds of plants this was the lag on phones.
-    const ppu = pxPerUnit();
-    const vr = viewRectM();
-    const mx = (vr.maxX - vr.minX) * 0.1 + 15, my = (vr.maxY - vr.minY) * 0.1 + 15;
-    for (const pl of editing.placements) {
-      const g = markerMap.get(pl.id);
-      if (!g || markerPpu.get(g) === ppu) continue;
-      if (pl.xM < vr.minX - mx || pl.xM > vr.maxX + mx || pl.yM < vr.minY - my || pl.yM > vr.maxY + my) continue;
-      updateMarkerShape(g, pl, plantsById.get(pl.plantId));
-    }
+    catchUpMarkers(ppuNow);
     renderAreasLayer();
     renderAreaDraft();
     renderRowDraft();
@@ -2943,6 +2973,20 @@ import Layout from '../layouts/Layout.astro';
     renderWarnHover();
     renderWater();
     renderGps();
+  }
+  function catchUpMarkers(ppu: number) {
+    if (!editing) return;
+    // Markers only depend on the zoom here: skip the ones drawn at this zoom
+    // already (plain panning touches none) and the off-screen ones (they catch up
+    // when they scroll into view). With hundreds of plants this was the lag on phones.
+    const vr = viewRectM();
+    const mx = (vr.maxX - vr.minX) * 0.1 + 15, my = (vr.maxY - vr.minY) * 0.1 + 15;
+    for (const pl of editing.placements) {
+      const g = markerMap.get(pl.id);
+      if (!g || markerPpu.get(g) === ppu) continue;
+      if (pl.xM < vr.minX - mx || pl.xM > vr.maxX + mx || pl.yM < vr.minY - my || pl.yM > vr.maxY + my) continue;
+      updateMarkerShape(g, pl, plantsById.get(pl.plantId));
+    }
   }
   /** `base` zoomed by `factor` (>1 = in) around the SVG point cx/cy. */
   function zoomedView(base: typeof planView, factor: number, cx: number, cy: number): typeof planView {
@@ -3642,7 +3686,10 @@ import Layout from '../layouts/Layout.astro';
         terrainInfo.dataset.dgmMissing = refined ? '' : `${dgm.region[lang]} (${dgm.resolutionM} m)`;
         terrainInfo.dataset.dgmMissingHref = refined ? '' : /href="([^"]+)"/.exec(dgm.attributionHtml)?.[1] ?? '';
       }
-      if (terrainKey !== key || editing !== plan) return; // plan changed meanwhile
+      if (terrainKey !== key || editing !== plan) { // plan changed meanwhile: reopening it must load again
+        if (terrainKey === key) { terrainKey = ''; doneLoading(); }
+        return;
+      }
       terrain = grid;
     } catch {
       if (terrainKey !== key) return;
@@ -4052,7 +4099,7 @@ import Layout from '../layouts/Layout.astro';
   });
   function waterAnalysis(): WaterAnalysis | null {
     if (!editing || !terrain) return null;
-    const cfg = `${waterCfg.minCatchmentM2}`;
+    const cfg = `${waterCfg.minCatchmentM2}|${editing.areaWidthM}|${editing.areaHeightM}|${JSON.stringify(editing.boundary)}`; // outline edits change "inside"
     if (waterCache?.grid !== terrain || waterCache.cfg !== cfg) {
       const plan = editing;
       const b = plan.boundary;
@@ -4294,19 +4341,22 @@ import Layout from '../layouts/Layout.astro';
 
     // Sectors first (under the rings)
     const sun = solsticeSectors(lat, lon);
+    // The sun passes south of a northern garden and north of a southern one: the wedge runs clockwise over that side.
+    const arc = (r: { rise: number; set: number }) => lat < 0 ? [r.set, r.rise] as const : [r.rise, r.set] as const;
+    const midBearing = ([a, b]: readonly [number, number]) => (a + ((b - a + 360) % 360) / 2) % 360;
     const lng = lang === 'en' ? 'en' : 'de';
     if (sun.summer) {
-      parts.push(`<path d="${wedgePath(cx, cy, R, sun.summer.rise, sun.summer.set, rot)}" fill="#facc15" fill-opacity="0.10" stroke="#ca8a04" stroke-width="${1.2 * k}" stroke-dasharray="${6 * k} ${4 * k}"/>`);
+      parts.push(`<path d="${wedgePath(cx, cy, R, ...arc(sun.summer), rot)}" fill="#facc15" fill-opacity="0.10" stroke="#ca8a04" stroke-width="${1.2 * k}" stroke-dasharray="${6 * k} ${4 * k}"/>`);
       legend.push(`${dot('#facc15')}${escapeHtml(t('sectorSummerSun', { rise: compassLabel(sun.summer.rise, lng), set: compassLabel(sun.summer.set, lng) }))}`);
     }
     if (sun.winter) {
-      parts.push(`<path d="${wedgePath(cx, cy, R * 0.92, sun.winter.rise, sun.winter.set, rot)}" fill="#f97316" fill-opacity="0.14" stroke="#ea580c" stroke-width="${1.2 * k}"/>`);
-      const mid = bearingVector((sun.winter.rise + sun.winter.set) / 2, rot);
+      parts.push(`<path d="${wedgePath(cx, cy, R * 0.92, ...arc(sun.winter), rot)}" fill="#f97316" fill-opacity="0.14" stroke="#ea580c" stroke-width="${1.2 * k}"/>`);
+      const mid = bearingVector(midBearing(arc(sun.winter)), rot);
       parts.push(label(cx + mid.x * R * 0.8, cy + mid.y * R * 0.8, t('sectorWinterLabel'), '#c2410c'));
       legend.push(`${dot('#f97316')}${escapeHtml(t('sectorWinterSun', { rise: compassLabel(sun.winter.rise, lng), set: compassLabel(sun.winter.set, lng) }))}`);
     }
     if (sun.summer) {
-      const mid = bearingVector(((sun.summer.rise + ((sun.summer.set - sun.summer.rise + 360) % 360) / 2) % 360), rot);
+      const mid = bearingVector(midBearing(arc(sun.summer)), rot);
       parts.push(label(cx + mid.x * R * 0.97, cy + mid.y * R * 0.97, t('sectorSummerLabel'), '#a16207'));
     }
     const climate = currentClimate();
@@ -5625,6 +5675,7 @@ import Layout from '../layouts/Layout.astro';
     if (!editing) return;
     if (!confirm(t('confirmDeletePlan', { name: editing.name || t('planUnnamed') }))) return;
     const deletedId = editing.id;
+    cancelAutosave(deletedId);
     await deleteGardenPlan(deletedId);
     plans = await getAllGardenPlans();
     renderList();

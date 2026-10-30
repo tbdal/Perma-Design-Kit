@@ -219,7 +219,9 @@ export function bboxCells(bb: string, g = 0.01, maxCells = 12): string[] {
 export async function fetchBuildings(geo: GardenPlanGeo, rect: PlanRect): Promise<Building[]> {
   const bb = buildingsBbox(geo, rect);
   const q = buildingsQueryForBbox(bb);
-  const hit = cache.get(q);
+  // The list is in plan meters: the same bbox with a moved or turned anchor needs its own entry.
+  const ck = `${q}|${geo.lat}|${geo.lon}|${geo.rotationDeg}`;
+  const hit = cache.get(ck);
   if (hit) return hit;
   // Persisted in the browser (30 days) — an unchanged plan never asks
   // Overpass again, and an expired copy still serves if every mirror is down.
@@ -236,7 +238,7 @@ export async function fetchBuildings(geo: GardenPlanGeo, rect: PlanRect): Promis
     if (!seen.has(k)) { seen.add(k); elements.push(el); }
   }
   const list = parseBuildings({ elements } as never, geo);
-  cache.set(q, list);
+  cache.set(ck, list);
   return list;
 }
 
