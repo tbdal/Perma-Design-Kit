@@ -158,14 +158,22 @@ class CardBuffer {
   }
 }
 const CARD_INDEX = [0, 2, 1, 2, 3, 1, 4, 6, 5, 6, 7, 5];
-const _v = new THREE.Vector3(), _m = new THREE.Matrix4(), _nm = new THREE.Matrix3();
+const _m = new THREE.Matrix4(), _r = new THREE.Matrix4(), _m2 = new THREE.Matrix4(), _nm = new THREE.Matrix3();
 const ROT_Y_90 = new THREE.Matrix4().makeRotationY(Math.PI / 2);
-/** BufferGeometry.applyMatrix4 on `count` vertices from `first`. */
+/** Positions and normals of `count` vertices from `first` through `m`, in place (one pass, plain arithmetic:
+ *  Vector3.fromArray/applyMatrix4/toArray per vertex was most of the time when all plants are rebuilt). */
 function transform(b: CardBuffer, first: number, count: number, m: THREE.Matrix4) {
-  _nm.getNormalMatrix(m);
+  const e = m.elements, n = _nm.getNormalMatrix(m).elements, p = b.pos, q = b.nrm;
   for (let i = first * 3; i < (first + count) * 3; i += 3) {
-    _v.fromArray(b.pos, i).applyMatrix4(m).toArray(b.pos, i);
-    _v.fromArray(b.nrm, i).applyNormalMatrix(_nm).toArray(b.nrm, i);
+    const x = p[i], y = p[i + 1], z = p[i + 2];
+    const w = 1 / (e[3] * x + e[7] * y + e[11] * z + e[15]);
+    p[i] = (e[0] * x + e[4] * y + e[8] * z + e[12]) * w;
+    p[i + 1] = (e[1] * x + e[5] * y + e[9] * z + e[13]) * w;
+    p[i + 2] = (e[2] * x + e[6] * y + e[10] * z + e[14]) * w;
+    const nx = q[i], ny = q[i + 1], nz = q[i + 2];
+    const ox = n[0] * nx + n[3] * ny + n[6] * nz, oy = n[1] * nx + n[4] * ny + n[7] * nz, oz = n[2] * nx + n[5] * ny + n[8] * nz;
+    const l = Math.hypot(ox, oy, oz) || 1;
+    q[i] = ox / l; q[i + 1] = oy / l; q[i + 2] = oz / l;
   }
 }
 
@@ -179,11 +187,17 @@ function leafCard(b: CardBuffer, size: number, pos: THREE.Vector3, rand: () => n
     b.uv[i * 2] = ix; b.uv[i * 2 + 1] = 1 - iy;
     b.col[i * 3] = color.r; b.col[i * 3 + 1] = color.g; b.col[i * 3 + 2] = color.b;
   }
-  transform(b, o + 4, 4, ROT_Y_90);
-  if (!upright) transform(b, o, 8, _m.makeRotationX((rand() - 0.5) * Math.PI));
-  transform(b, o, 8, _m.makeRotationY(rand() * Math.PI * 2));
-  if (!upright) transform(b, o, 8, _m.makeRotationZ((rand() - 0.5) * 0.8));
-  transform(b, o, 8, _m.makeTranslation(pos.x, pos.y, pos.z));
+  // One matrix for the whole card: translate · rotZ · rotY · rotX (same order and random draws as before),
+  // the second quad turned 90° about Y first.
+  _m.makeTranslation(pos.x, pos.y, pos.z);
+  const rx = upright ? 0 : (rand() - 0.5) * Math.PI;
+  const ry = rand() * Math.PI * 2;
+  const rz = upright ? 0 : (rand() - 0.5) * 0.8;
+  if (rz) _m.multiply(_r.makeRotationZ(rz));
+  _m.multiply(_r.makeRotationY(ry));
+  if (rx) _m.multiply(_r.makeRotationX(rx));
+  transform(b, o, 4, _m);
+  transform(b, o + 4, 4, _m2.multiplyMatrices(_m, ROT_Y_90));
 }
 
 function vary(base: THREE.Color, rand: () => number, amount = 0.12): THREE.Color {

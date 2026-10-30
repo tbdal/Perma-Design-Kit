@@ -114,6 +114,11 @@ export interface GardenPlan3DView {
   /** Own position (GPS) as a pole with an accuracy ring on the ground; null hides it. */
   setPositionMarker(pos: { xM: number; yM: number; accM: number } | null): void;
   updateYears(years: number): void;
+  /** Resolves after the first picture is on screen (the page shows a wait animation until then). */
+  firstFrame: Promise<void>;
+  /** Cheap stand-in while the years slider moves: the built plants are only scaled (and the ones not planted yet
+   *  in that year shrunk away); call updateYears once the slider rests for the exact shapes. */
+  previewYears(years: number): void;
   /** See-through trees: 1 = solid (default), 0 = invisible. Only plants of the tree layer. */
   setTreeOpacity(opacity: number): void;
   refreshPlacements(): void;
@@ -130,8 +135,10 @@ export interface GardenPlan3DView {
   projectToScreen(xM: number, yM: number): { x: number; y: number } | null;
   /** Moves the view over the ground (arrow keys): `right` and `forward` as fractions of the distance to the target, relative to where the camera looks. */
   panView(right: number, forward: number): void;
-  /** Flies the view to a plan point (same angle); `maxDistM` = no farther away than this when it arrives. */
-  flyTo(xM: number, yM: number, maxDistM?: number): void;
+  /** Flies the view to a plan point (same angle); `maxDistM` = no farther away than this when it arrives, `exactDistM` = exactly this far. */
+  flyTo(xM: number, yM: number, maxDistM?: number, exactDistM?: number): void;
+  /** Flies to the whole plan (same viewing angle), like "Ganzen Plan zeigen" in 2D. */
+  fitPlan(): void;
   /** Jump to a straight top view or an oblique view from the south. */
   setViewPreset(preset: 'top' | 'oblique'): void;
   /** Ground rectangle (plan meters) roughly visible around the camera target
@@ -236,6 +243,7 @@ function buildPlantMesh(placement: GardenPlanPlacement, plant: PlantData | undef
   group.position.set(placement.xM, 0, placement.yM);
   group.userData.placementId = placement.id;
   group.userData.layer = layer;
+  group.userData.dims = { radiusM, heightM }; // what the geometry was built for: previewYears scales from here
   return group;
 }
 
@@ -385,7 +393,8 @@ export function createGardenPlan3DView(
   // spaces depth like the standard mapping — the stripes would come back (would need a float-depth render target).
   const simple = !!opts.simple;
   const renderer = new THREE.WebGLRenderer({ antialias: !simple, alpha: false, logarithmicDepthBuffer: true, powerPreference: simple ? 'low-power' : 'default' });
-  renderer.setPixelRatio(simple ? 1 : Math.min(window.devicePixelRatio, 2));
+  // Phones: 1.5 instead of 2 — half again fewer pixels for the alpha-tested leaf cards, hardly visible at that density.
+  renderer.setPixelRatio(simple ? 1 : Math.min(window.devicePixelRatio, window.matchMedia?.('(pointer: coarse)').matches ? 1.5 : 2));
   renderer.setSize(Math.max(1, container.clientWidth), Math.max(1, container.clientHeight));
   renderer.shadowMap.enabled = !simple;
   renderer.shadowMap.type = THREE.PCFShadowMap;
@@ -579,8 +588,10 @@ export function createGardenPlan3DView(
         const need = Math.max(1e-3, Math.hypot(dx, dz, h) * mPerPxAt);
         return Math.max(0, Math.log2(mpp0 / need));
       };
-      // 256 px tiles: 256 of them ≈ 90 MB of video memory, a weak device gets a quarter.
-      tiles = lodTilesForRect(rect, geo, layoutSrc.maxZoom, simple ? 64 : 256, wantZoom);
+      // 256 px tiles: 256 of them ≈ 90 MB of video memory, a weak device gets a quarter, a phone half
+      // (each tile is a download, a decode and a texture upload: the bulk of opening 3D there).
+      const budget = simple ? 64 : window.matchMedia?.('(pointer: coarse)').matches ? 128 : 256;
+      tiles = lodTilesForRect(rect, geo, layoutSrc.maxZoom, budget, wantZoom);
       belowWanted = tiles.filter(q => q.z < Math.min(layoutSrc!.maxZoom, Math.ceil(wantZoom(q) - 1e-9))).length;
       // Nearest first: they are requested first.
       tiles.sort((a, b) => wantZoom(b) - wantZoom(a) || b.z - a.z);
@@ -936,6 +947,11 @@ export function createGardenPlan3DView(
   let selectedPlacementId: string | null = null;
 
   let renderQueued = false; // declared before first use: the camera fit renders early
+  // The first picture waits for the shaders, compiled in parallel where the browser can (KHR_parallel_shader_compile):
+  // the page stays responsive (its wait animation runs) instead of freezing on the first frame.
+  let compiled = false;
+  let firstFrameDone = () => {};
+  const firstFrame = new Promise<void>(r => { firstFrameDone = r; });
   function rebuildPlacements() {
     // Free the old per-plant geometry (materials/textures are shared).
     plantsGroup.traverse(o => { if (!simple || o.name === 'selection-ring') (o as THREE.Mesh).geometry?.dispose(); });
@@ -1141,7 +1157,9 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
     renderQueued = true;
     requestAnimationFrame(() => {
       renderQueued = false;
+      if (!compiled || disposed) return;
       renderer.render(scene, camera);
+      firstFrameDone();
     });
   }
   controls.addEventListener('change', requestRender);
@@ -1535,7 +1553,10 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
     return c;
   }
 
+  renderer.compileAsync(scene, camera).catch(() => { /* compiles on the first render instead */ }).finally(() => { compiled = true; requestRender(); });
+
   const view: GardenPlan3DView = {
+    firstFrame,
     snapshot,
     setPreview,
     setCoverage,
@@ -1551,7 +1572,25 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
     },
     updateYears(newYears: number) {
       years = newYears;
+      renderer.shadowMap.autoUpdate = true;
       rebuildPlacements();
+    },
+    previewYears(newYears: number) {
+      const byId = new Map(plan.placements.map(p => [p.id, p]));
+      for (const g of plantsGroup.children) {
+        const pl = byId.get(g.userData.placementId as string);
+        const base = g.userData.dims as { radiusM: number; heightM: number } | undefined;
+        if (!pl || !base) continue;
+        const d = plantDims(plantsById.get(pl.plantId), ageAt(pl, newYears));
+        const on = isPlanted(pl, newYears);
+        const sxz = on ? d.radiusM / Math.max(1e-3, base.radiusM) : 1e-4;
+        g.scale.set(sxz, on ? d.heightM / Math.max(1e-3, base.heightM) : 1e-4, sxz);
+        syncInstances(pl.id);
+      }
+      // Shadows stay as they are while the slider moves (the shadow pass is about half of a frame); updateYears
+      // turns them back on.
+      renderer.shadowMap.autoUpdate = false;
+      requestRender();
     },
     refreshPlacements() {
       rebuildPlacements();
@@ -1571,12 +1610,12 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
       controls.update();
       requestRender();
     },
-    flyTo(xM: number, yM: number, maxDistM?: number) {
+    flyTo(xM: number, yM: number, maxDistM?: number, exactDistM?: number) {
       const t = controls.target;
       const from = { tx: t.x, ty: t.y, tz: t.z, off: camera.position.clone().sub(t) };
       const toY = ground(xM, yM);
       const d0 = from.off.length();
-      const d1 = maxDistM ? Math.min(d0, maxDistM) : d0;
+      const d1 = exactDistM ?? (maxDistM ? Math.min(d0, maxDistM) : d0);
       const id = ++flyId;
       const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
       const D = reduce ? 0 : 900, t0 = performance.now();
@@ -1591,6 +1630,12 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
         if (k < 1) requestAnimationFrame(step);
       };
       step();
+    },
+    fitPlan() {
+      // Distance at which the plan (with a margin) fills the view vertically and horizontally.
+      const tanH = Math.tan((VFOV / 2) * Math.PI / 180);
+      const d = Math.max(plan.areaHeightM / 2 / tanH, plan.areaWidthM / 2 / (tanH * camera.aspect)) * 1.15;
+      this.flyTo(plan.areaWidthM / 2, plan.areaHeightM / 2, undefined, Math.max(d, controls.minDistance));
     },
     setViewPreset(preset: 'top' | 'oblique') {
       const t = controls.target;

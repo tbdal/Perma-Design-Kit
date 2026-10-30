@@ -4,6 +4,13 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## 3D auf dem Handy, Zwei-Finger-Zoom 2026-10-30
+- [x] **Jahres-Slider flüssig:** beim Ziehen werden die Pflanzen in 3D nur skaliert (Schatten stehen kurz still), exakt neu gebaut erst 0,35 s nach dem Loslassen; Blattkarten in einem Rechenschritt statt fünf; in 3D keine unsichtbaren 2D-Marker mehr nachgerechnet #bugs #prüfen
+- [x] **3D öffnen:** Warte-Animation „3D wird aufgebaut …“ bis zum ersten Bild, Shader werden im Hintergrund übersetzt (Seite bleibt bedienbar), auf Handys höchstens 128 Bodenkacheln und Pixel-Ratio 1,5 #minor #prüfen
+- [x] **Kacheln aus 2D in 3D:** 2D lädt Karten-/Luftbildkacheln jetzt wie 3D (CORS), so bedient der Browser-Cache beide; 3D lädt in Kameranähe trotzdem schärfere Kacheln nach #minor #prüfen
+- [x] **Zwei-Finger-Zoom (Handy, 2D):** hob ein Finger außerhalb der Karte ab, zoomte danach jedes Wischen mit einem Finger mit; jetzt bleibt Verschieben Verschieben #bugs #prüfen
+- [x] **„Plan“ in 3D (Feldansicht):** zeigt jetzt auch in 3D den ganzen Plan #bugs #prüfen
+
 ## Code-Review: Fehler und Geschwindigkeit 2026-10-30
 - [x] **2D schneller:** Verschieben zeichnet nur noch Pflanzen nach, Höhenlinien und Wasserwege werden beim Zoomen nicht mehr neu berechnet, eine gesetzte Pflanze baut den Plan nicht mehr ganz neu, Eckpunkte ziehen und Hinweis-Hover ruckeln nicht mehr #minor #prüfen
 - [x] **Karte schneller:** Kacheln bleiben beim Bearbeiten stehen, beim Zoomwechsel bleibt das alte Bild bis die neuen Kacheln da sind, auf Handys mit sehr hoher Pixeldichte etwa 4× weniger Kacheln, Umgebung lädt höchstens 4 Boxen gleichzeitig, Gebäude nur noch einmal pro Zelle #minor #prüfen

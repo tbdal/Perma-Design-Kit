@@ -23,7 +23,7 @@ export async function stubNetwork(page: Page, o: Overrides = {}) {
       return json(route, {});
     }
     if (/overpass/.test(url.hostname)) return o.overpass ? o.overpass(route) : json(route, { elements: [] });
-    if (/tile|maps\.eox|basemap|wms|wmts/.test(url.hostname + url.pathname)) return route.fulfill({ contentType: 'image/png', body: PNG_1PX });
+    if (/tile|maps\.eox|basemap|wms|wmts/.test(url.hostname + url.pathname)) return route.fulfill({ contentType: 'image/png', headers: { 'Access-Control-Allow-Origin': '*' }, body: PNG_1PX }); // like the real tile servers (CORS: 2D and 3D load tiles anonymously)
     return route.fulfill({ status: 404, body: '' });
   });
   // Same-origin services that only exist behind nginx / the proxy process.

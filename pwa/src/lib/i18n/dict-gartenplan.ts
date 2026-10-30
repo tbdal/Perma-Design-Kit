@@ -237,6 +237,7 @@ export const gartenplanDict: Dict = {
   mapBuildingsTitle: { de: 'Gebäude aus OpenStreetMap: in 3D und als Schattenwerfer für Besonnung und Hinweise', en: 'Buildings from OpenStreetMap: in 3D and casting shade for the sunlight map and hints' },
   buildingsUnavailable: { de: 'Gebäude (OpenStreetMap) gerade nicht abrufbar', en: 'Buildings (OpenStreetMap) currently unavailable' },
   snapshotBtn: { de: '📷 Bild', en: '📷 Image' },
+  wait3d: { de: '3D wird aufgebaut …', en: 'Building the 3D view …' },
   snapshotTitle: { de: 'Aktuelle 3D-Ansicht als Bild speichern (P)', en: 'Save the current 3D view as an image (P)' },
   growthPlay: { de: '▶ Wachstum', en: '▶ Growth' },
   growthStop: { de: '■ Stopp', en: '■ Stop' },

@@ -634,3 +634,42 @@ test('plant in the selection panel: the edit button and a click on its picture o
   await Promise.all([page.waitForURL(/\/\?edit=.+&return=%2Fgartenplan%2F%3Fplan%3Dnp/), page.click('#btn-edit-plant')]);
   void errors;
 });
+
+test('phone: a finger lifted outside the plan after a pinch does not turn the next one-finger drag into a zoom', async ({ page, errors }) => {
+  await stubNetwork(page);
+  await seedNeighbourPlan(page, {});
+  await openPlan(page, 'np');
+  const vb = async () => (await page.locator('#plan-svg').getAttribute('viewBox'))!.split(' ').map(Number);
+  const box = (await page.locator('#plan-svg').boundingBox())!;
+  const cx = box.x + box.width / 2, cy = box.y + box.height / 2;
+  const fire = (type: string, id: number, x: number, y: number, primary: boolean, target = '#plan-svg') => page.evaluate(([t, i, px, py, pr, sel]) => {
+    document.querySelector(sel as string)!.dispatchEvent(new PointerEvent(t as string, { pointerId: i as number, clientX: px as number, clientY: py as number, isPrimary: pr as boolean, pointerType: 'touch', bubbles: true }));
+  }, [type, id, x, y, primary, target] as const);
+  // pinch with fingers 1 and 2; finger 2 lifts somewhere else (its pointerup never reaches the plan)
+  await fire('pointerdown', 1, cx - 40, cy, true);
+  await fire('pointerdown', 2, cx + 40, cy, false);
+  await fire('pointermove', 2, cx + 80, cy, false);
+  await fire('pointerup', 1, cx - 40, cy, true);
+  await fire('pointerup', 2, cx + 80, cy, false, 'body');
+  const w0 = (await vb())[2];
+  // a new single finger drags: the map moves, the zoom stays
+  await fire('pointerdown', 3, cx, cy, true);
+  for (let i = 1; i <= 5; i++) await fire('pointermove', 3, cx + i * 12, cy + i * 6, true);
+  await fire('pointerup', 3, cx + 60, cy + 30, true);
+  expect((await vb())[2]).toBeCloseTo(w0, 6);
+  void errors;
+});
+
+test('3D shows a wait animation until its first picture, and "whole plan" works in 3D', async ({ page, errors }) => {
+  await stubNetwork(page);
+  await seedNeighbourPlan(page, {});
+  await openPlan(page, 'np');
+  await page.click('#btn-view-3d');
+  await expect(page.locator('#plan-3d-container canvas')).toBeVisible({ timeout: 20000 });
+  await expect(page.locator('#plan-3d-wait')).toBeHidden({ timeout: 20000 });
+  // the field view's "Plan" button clicks #zoom-fit; in 3D it must not throw and the view stays 3D
+  await page.evaluate(() => (document.getElementById('zoom-fit') as HTMLButtonElement).click());
+  await page.waitForTimeout(1200);
+  await expect(page.locator('#plan-3d-container')).toBeVisible();
+  void errors;
+});

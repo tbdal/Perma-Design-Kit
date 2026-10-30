@@ -283,6 +283,11 @@ import Layout from '../layouts/Layout.astro';
           <div id="plan-wrap" class="relative overflow-hidden rounded-xl bg-white dark:bg-stone-800 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <svg id="plan-svg" class="block w-full touch-none" style="touch-action:none"></svg>
             <div id="plan-3d-container" hidden class="h-[70vh] w-full touch-none" style="touch-action:none"></div>
+            <!-- While the 3D view is built (can take seconds on a phone): over the plan, until its first picture -->
+            <div id="plan-3d-wait" hidden role="status" aria-live="polite" class="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-white/60 text-sm font-medium text-stone-700 backdrop-blur-[1px] dark:bg-stone-900/60 dark:text-stone-200">
+              <svg class="h-10 w-10 animate-spin text-green-700" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3" opacity=".25"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+              <span data-i18n="wait3d">3D wird aufgebaut …</span>
+            </div>
             <!-- What is still loading (buildings, forest, water, terrain …): bottom right -->
             <div id="plan-loading" hidden role="status" aria-live="polite" class="pointer-events-none absolute bottom-3 right-3 z-10 max-w-[70%] items-center gap-1.5 rounded-full bg-white/90 px-3 py-1 text-[11px] font-medium text-stone-700 shadow ring-1 ring-stone-200 dark:bg-stone-900/90 dark:text-stone-200 dark:ring-stone-700">
               <svg class="h-3 w-3 shrink-0 animate-spin text-green-700" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3" opacity=".25"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
@@ -1216,6 +1221,7 @@ import Layout from '../layouts/Layout.astro';
     setBoundaryEdit(false);
     view3d?.dispose();
     view3d = null;
+    document.getElementById('plan-3d-wait')!.hidden = true;
     editing = null;
     listView.hidden = false;
     editorView.hidden = true;
@@ -1710,6 +1716,7 @@ import Layout from '../layouts/Layout.astro';
   btnView3dSimple.addEventListener('click', () => { setSimple3d(true); btnView3d.click(); });
 
   btnView2d.addEventListener('click', () => {
+    document.getElementById('plan-3d-wait')!.hidden = true;
     if (!editing) return;
     const rect3d = view3d?.getViewRect() ?? null;
     if (view3d) last3dCamera = view3d.getCameraState();
@@ -1743,6 +1750,7 @@ import Layout from '../layouts/Layout.astro';
   });
 
   let rebuild3dTimer = 0, rebuild3dNow = false;
+  const wait3d = document.getElementById('plan-3d-wait')!;
   btnView3d.addEventListener('click', async (e) => {
     // Terrain, buildings, map tiles and forests arrive one after the other and each asks for a rebuild:
     // an open 3D view waits for them to settle, otherwise it flickers once per arrival.
@@ -1765,8 +1773,11 @@ import Layout from '../layouts/Layout.astro';
     zoomControls.hidden = true;
     endAreaDraw();
     setBoundaryEdit(false);
+    wait3d.hidden = false;
     const { createGardenPlan3DView } = await import('../lib/gartenplan-3d');
-    if (!editing || plan3dContainer.hidden) return; // left the plan or back to 2D while the chunk loaded
+    // Let the wait animation paint before the (on phones several seconds long) build of the scene.
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    if (!editing || plan3dContainer.hidden) { wait3d.hidden = true; return; } // left the plan or back to 2D meanwhile
     // Perspective carries over: rebuilds keep the live camera; coming from 2D
     // we restore the last 3D camera if 2D wasn't moved, else look straight
     // down onto the section 2D showed.
@@ -1832,6 +1843,8 @@ import Layout from '../layouts/Layout.astro';
       treeOpacity,
       selectedAreaId,
     });
+    const built = view3d;
+    void built.firstFrame.then(() => { if (view3d === built) wait3d.hidden = true; });
     if (from2d) camera3dAtEnter = view3d.getCameraState();
     view3d.setArmedPlant(armedPlantId);
     view3d.setCoverage(coverage3d);
@@ -2649,21 +2662,27 @@ import Layout from '../layouts/Layout.astro';
     addPlacementMarkers([placement]);
   }
 
+  // While the slider moves: 2D markers and the 3D stand-in once per frame; the exact 3D plants once it rests
+  // (rebuilding every plant per step made the slider lag several seconds on phones).
+  let yearsFrame = 0, years3dTimer = 0;
   yearsInput.addEventListener('input', () => {
     if (!editing) return;
     editing.yearsSincePlanting = Number(yearsInput.value);
     yearsLabel.textContent = yearsText(editing);
-    for (const placement of editing.placements) {
-      const group = markerMap.get(placement.id);
-      if (!group) continue;
-      updateMarkerShape(group, placement, plantsById.get(placement.plantId));
-    }
-    // The 3D rebuild of every plant is the heavy part: at most once per frame while the slider moves.
-    if (!years3dFrame) years3dFrame = requestAnimationFrame(() => { years3dFrame = 0; if (editing) view3d?.updateYears(editing.yearsSincePlanting); });
+    if (!yearsFrame) yearsFrame = requestAnimationFrame(() => {
+      yearsFrame = 0;
+      if (!editing) return;
+      if (view3d && !plan3dContainer.hidden) view3d.previewYears(editing.yearsSincePlanting);
+      else for (const placement of editing.placements) {   // 3D → 2D redraws all markers anyway
+        const group = markerMap.get(placement.id);
+        if (group) updateMarkerShape(group, placement, plantsById.get(placement.plantId));
+      }
+    });
+    clearTimeout(years3dTimer);
+    years3dTimer = window.setTimeout(() => { if (editing) view3d?.updateYears(editing.yearsSincePlanting); }, 350);
     scheduleCoverage();
     scheduleAutosave();
   });
-  let years3dFrame = 0;
 
   // ── Flächen (benannte, farbige Polygone) ───────────────────────────────
   // Drawn in phase B on the plan itself (plan meters, snapped to the grid like
@@ -3094,7 +3113,10 @@ import Layout from '../layouts/Layout.astro';
   }
   document.getElementById('zoom-in')!.addEventListener('click', () => zoomAtCenter(1.5));
   document.getElementById('zoom-out')!.addEventListener('click', () => zoomAtCenter(1 / 1.5));
-  document.getElementById('zoom-fit')!.addEventListener('click', () => { resetPlanViewState(); applyPlanView(); });
+  document.getElementById('zoom-fit')!.addEventListener('click', () => {
+    if (view3d && !plan3dContainer.hidden) { view3d.fitPlan(); return; } // the field view's "Plan" clicks this in 3D too
+    resetPlanViewState(); applyPlanView();
+  });
   planSvg.addEventListener('wheel', (e: WheelEvent) => {
     if (!(e.ctrlKey || e.metaKey) || !editing) return;
     flightId++;
@@ -3110,9 +3132,14 @@ import Layout from '../layouts/Layout.astro';
 
   // Marker and corner-handle presses never get here: they stop propagation.
   planSvg.addEventListener('pointerdown', (e: PointerEvent) => {
+    // The first finger of a new touch: no other finger can be down. A finger lifted outside the plan never sent
+    // its pointerup to us; left in the map it turned the next one-finger drag into a pinch (zoom + move).
+    if (e.pointerType === 'touch' && e.isPrimary) activePointers.clear();
     activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (tool === 'lasso' && activePointers.size === 1 && !areaDraft && !rowDraft && !armedPlantId) { startLasso(e); return; }
     if (activePointers.size === 2) {
+      // Both fingers stay ours until they lift, wherever that is.
+      for (const id of activePointers.keys()) { try { planSvg.setPointerCapture(id); } catch { /* already gone */ } }
       const [a, b] = [...activePointers.values()];
       const mid = clientToMeters(planSvg, (a.x + b.x) / 2, (a.y + b.y) / 2);
       pinch = { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, view: { ...planView }, cx: mid.xM * U, cy: mid.yM * U, mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2 };
@@ -3139,7 +3166,7 @@ import Layout from '../layouts/Layout.astro';
     if (!pan || e.pointerId !== pan.id || vertexDrag) return;
     if (!pan.moved && Math.hypot(e.clientX - pan.sx, e.clientY - pan.sy) > 4) {
       pan.moved = true;
-      planSvg.setPointerCapture(e.pointerId);
+      try { planSvg.setPointerCapture(e.pointerId); } catch { /* pointer already gone */ }
     }
     if (!pan.moved) return;
     const unitsPerPx = 1 / pxPerUnit();
@@ -3159,6 +3186,7 @@ import Layout from '../layouts/Layout.astro';
   planSvg.addEventListener('dragstart', e => { if (lasso) e.preventDefault(); });
   planSvg.addEventListener('pointerup', endCanvasPointer);
   planSvg.addEventListener('pointercancel', endCanvasPointer);
+  planSvg.addEventListener('lostpointercapture', (e: PointerEvent) => { if (!pan || e.pointerId !== pan.id) activePointers.delete(e.pointerId); });
 
   /** A tap (no pan) on the canvas: add an area corner while drawing, place
    *  the armed plant, otherwise select the tapped area / clear selection. */

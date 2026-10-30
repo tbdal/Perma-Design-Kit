@@ -112,7 +112,8 @@ export function basemapSvg(plan: GardenPlan, view: PlanRect, screenMPerPx: numbe
     const fb = fallbackTileUrl(src, t.z, t.x, t.y);
     const url = tileUrl(src, t.z, t.x, t.y);
     // data-k: identifies the tile (source, z/x/y), so a redraw can keep the element that already has the picture.
-    return `<image href="${url}"${fb ? ` data-fallback="${fb}"` : ''} x="${t.eM * u}" y="${t.sM * u}" width="${size}" height="${size}" preserveAspectRatio="none" data-k="${url}"/>`;
+    // crossorigin like the 3D ground's texture loader: one browser-cache entry serves both (Firefox keeps them apart otherwise).
+    return `<image href="${url}"${fb ? ` data-fallback="${fb}"` : ''} x="${t.eM * u}" y="${t.sM * u}" width="${size}" height="${size}" preserveAspectRatio="none" data-k="${url}" crossorigin="anonymous"/>`;
   }).join('');
   return `<g opacity="${geo.opacity}" pointer-events="none"><g transform="rotate(${-geo.rotationDeg})">${images}</g></g>`;
 }
