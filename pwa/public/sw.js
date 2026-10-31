@@ -14,6 +14,11 @@ const LARGE = [];
 // whenever it is reachable.
 const RUNTIME_CACHE = 'pgd-runtime';
 
+// Plant pictures (/geo/commons/, Wikimedia through our server): cache-first,
+// kept across deploys, at most IMAGE_MAX of them (oldest stored go first).
+const IMAGE_CACHE = 'pgd-images';
+const IMAGE_MAX = 400;
+
 /** Stores this build. Hashed files (/_astro/) never change under the same
  *  name, so they are taken over from the previous shell instead of downloaded
  *  again. Fails as a whole if one file is missing — a half shell is worse than the old one. */
@@ -57,7 +62,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
       .then((keys) => Promise.all(
-        keys.filter((k) => k.startsWith('pgd-') && k !== CACHE_NAME && k !== RUNTIME_CACHE).map((k) => caches.delete(k))
+        keys.filter((k) => k.startsWith('pgd-') && k !== CACHE_NAME && k !== RUNTIME_CACHE && k !== IMAGE_CACHE).map((k) => caches.delete(k))
       ))
       .then(() => self.clients.claim())
   );
@@ -91,11 +96,26 @@ async function respond(request) {
   }
 }
 
+async function plantImage(request) {
+  const cache = await caches.open(IMAGE_CACHE);
+  const cached = await cache.match(request);
+  if (cached) return cached;
+  const response = await fetch(request);
+  // Pictures only — an error page must not stick.
+  if (response.ok && (response.headers.get('Content-Type') || '').startsWith('image/')) {
+    await cache.put(request, response.clone());
+    const keys = await cache.keys(); // in insertion order
+    await Promise.all(keys.slice(0, Math.max(0, keys.length - IMAGE_MAX)).map((k) => cache.delete(k)));
+  }
+  return response;
+}
+
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
+  if (url.pathname.startsWith('/geo/commons/')) return event.respondWith(plantImage(event.request));
   // Live data, and geodata that lib/geo-cache.ts keeps in its own cache.
   if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/geo/')) return;
 

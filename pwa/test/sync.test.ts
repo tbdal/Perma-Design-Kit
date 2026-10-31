@@ -20,6 +20,7 @@ vi.mock('../src/lib/db', () => ({
   importPolycultures: async (x: Polyculture[]) => put(db.polycultures, x),
   importGardenPlans: async (x: GardenPlan[]) => put(db.gardenPlans, x),
   saveVarietyList: async (x: VarietyList) => put(db.varietyLists, [x]),
+  reopenDB: () => {},
 }));
 
 const store: Record<string, string> = {};

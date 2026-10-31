@@ -1,6 +1,7 @@
 import type { PlantData } from './types';
 import { dataCredits } from './types';
 import { escapeHtml, imageCreditOverlayHtml } from './html';
+import { imageSrc } from './commons-image';
 import { displayCommonName, displayName } from './plant-name';
 
 // Source credits (PFAF's CC BY 4.0 requires attribution wherever its data is
@@ -107,7 +108,7 @@ export function printStepperHtml(plant: PlantData, t: Translate): string {
  * Pass `imgSrc` as a pre-fetched data-URL for offline/PDF use.
  */
 export function renderPolyCardHtml(plant: PlantData, imgSrc?: string): string {
-  const img = imgSrc ?? plant.imageUrl;
+  const img = imgSrc ?? imageSrc(plant.imageUrl);
 
   const row1 =
     badge('Eat',  plant.eatable,       C.eatable,        plant.eatableScore) +
@@ -234,7 +235,7 @@ export function renderPolyCardHtml(plant: PlantData, imgSrc?: string): string {
  * Width: 870px, Height: 50px — maps to ~290×17mm in the PDF (landscape).
  */
 export function renderStripeCardHtml(plant: PlantData, imgSrc?: string): string {
-  const img = imgSrc ?? plant.imageUrl;
+  const img = imgSrc ?? imageSrc(plant.imageUrl);
 
   const dots = ([
     [plant.eatable,            C.eatable,          'E'],

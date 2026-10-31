@@ -29,11 +29,8 @@ export const indexDict: Dict = {
   btnAddPlant: { de: '+ Neue Pflanze', en: '+ New plant' },
   dataMenuTitle: { de: 'Daten importieren / exportieren', en: 'Import / export data' },
   dataMenuLabel: { de: 'Daten ⋮', en: 'Data ⋮' },
-  menuImportJson: { de: 'Import JSON', en: 'Import JSON' },
   menuImportCsv: { de: 'Import CSV', en: 'Import CSV' },
   menuCsvTemplate: { de: 'CSV-Vorlage ↓', en: 'CSV template ↓' },
-  menuExportAll: { de: 'Alle exportieren (JSON)', en: 'Export all (JSON)' },
-  menuShareLink: { de: '🔗 Projekt als Link teilen…', en: '🔗 Share project as link…' },
   menuLoadSamples: { de: 'Beispieldaten laden', en: 'Load sample data' },
   menuLoadMaster: { de: 'Standard-Artenliste laden (≈190 Arten)', en: 'Load default species list (≈190 species)' },
   confirmLoadMaster: { de: 'Die Standard-Artenliste (≈190 vor allem Obst-, Nuss- und Beerengehölze, nur Namen) importieren? Arten, die schon in deiner Liste sind, werden übersprungen. Details lädst du danach mit „Lade alle fehlenden Daten“.', en: 'Import the default species list (≈190, mostly fruit, nut and berry woody plants, names only)? Species already in your list are skipped. Load their details afterwards with “Load all missing data”.' },
@@ -147,6 +144,7 @@ export const indexDict: Dict = {
   emptyStateTitle: { de: 'Noch keine Pflanzen', en: 'No plants yet' },
   emptyStateSubtitle: { de: 'Suche nach einer Pflanze oder lade Beispieldaten.', en: 'Search for a plant or load sample data.' },
   emptyStateBtn: { de: 'Erste Pflanze suchen', en: 'Search for your first plant' },
+  emptyStartWith: { de: 'Oder womit starten?', en: 'Or start with:' },
 
   // ── Grid/list card chrome ────────────────────────────────────────────
   btnEnrichTitle: { de: 'Daten ergänzen', en: 'Fetch data' },
@@ -287,7 +285,5 @@ export const indexDict: Dict = {
   alertEnrichAllNoneNeeded: { de: 'Alle {skipped} Pflanzen sind bereits vollständig — nichts zu laden.', en: 'All {skipped} plants are already complete — nothing to load.' },
   alertEnrichAllFailed: { de: ' {failed} fehlgeschlagen (siehe Konsole).', en: ' {failed} failed (see console).' },
   alertNoCsvPlants: { de: 'Keine Pflanzen in der CSV gefunden.', en: 'No plants found in the CSV.' },
-  alertNoJsonPlants: { de: 'Keine gültigen Pflanzen in der JSON-Datei gefunden.', en: 'No valid plants found in the JSON file.' },
-  alertJsonImportFailed: { de: 'JSON-Import fehlgeschlagen: {msg}', en: 'JSON import failed: {msg}' },
   enrichSourcesStatus: { de: 'Lade Daten…', en: 'Loading data…' },
 };

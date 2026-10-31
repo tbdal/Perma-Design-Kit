@@ -1,5 +1,5 @@
 // Example polycultures ("Beispiele laden" on /polykulturen): the list lives in server/data/private/polykultur-beispiele.json
-// (admins change it on /admin/); until then the six defaults from server/data/polykultur-beispiele.default.json are served.
+// (admins change it on /admin/); until then the defaults from server/data/polykultur-beispiele.default.json are served.
 //   GET /api/polykultur-beispiele        – visible examples, for everyone
 //   GET /api/admin/big/beispiele         – all examples (admin)
 //   PUT /api/admin/big/beispiele         – replace the list (admin), body { items }

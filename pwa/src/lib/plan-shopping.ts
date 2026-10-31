@@ -3,6 +3,7 @@ import type { GardenPlan, PlantData } from './types';
 import { deriveLayer, PLANT_LAYERS, type PlantLayer } from './plant-layer';
 import { downloadPdf, finishPdf } from './pdf-export';
 import { phaseLabel, phaseOf } from './phases';
+import { saveFile } from './save-file';
 
 // "Pflanzliste / Einkaufszettel": what to buy for a garden plan — one row per
 // plant with the number placed, planting distance (full-grown width) and
@@ -75,11 +76,7 @@ export function shoppingCsv(rows: ShoppingRow[], prices: Record<string, number> 
 }
 
 export function downloadText(text: string, filename: string, type: string) {
-  const url = URL.createObjectURL(new Blob([text], { type }));
-  const a = document.createElement('a');
-  a.href = url; a.download = filename;
-  document.body.appendChild(a); a.click(); a.remove();
-  URL.revokeObjectURL(url);
+  void saveFile(new Blob([text], { type }), filename);
 }
 
 /** A4 portrait table. Helvetica (WinAnsi) covers German umlauts; other

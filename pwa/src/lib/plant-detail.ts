@@ -1,5 +1,6 @@
 import type { PlantData } from './types';
 import { escapeHtml, imageCreditOverlayHtml } from './html';
+import { imageSrc } from './commons-image';
 import { displayCommonName, displayName, nameWithVariety } from './plant-name';
 import { badgedFieldsOf, fieldsOf, fieldLabelKey, type FieldGroup } from './plant-fields';
 
@@ -103,7 +104,7 @@ export function plantDetailHtml(p: PlantData, t: Translate): string {
 
   return `
     ${p.imageUrl ? `<div data-img-wrapper class="relative mb-2 h-24 overflow-hidden rounded-lg bg-stone-100 dark:bg-stone-800">
-      <img src="${escapeHtml(p.imageUrl)}" alt="${escapeHtml(displayName(p))}" class="h-full w-full object-cover" loading="lazy" />
+      <img src="${escapeHtml(imageSrc(p.imageUrl))}" alt="${escapeHtml(displayName(p))}" class="h-full w-full object-cover" loading="lazy" />
       ${imageCreditOverlayHtml(p.imageCredit)}
     </div>` : ''}
     <p class="text-sm font-bold text-stone-800 dark:text-stone-100">${escapeHtml(nameWithVariety(p))}</p>

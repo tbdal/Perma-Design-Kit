@@ -16,6 +16,10 @@ import Layout from '../layouts/Layout.astro';
       <p class="mt-1 text-xs text-stone-500 dark:text-stone-400" data-i18n="priorityHelp">Haben mehrere Quellen Daten zu einem Feld, gewinnt die obere.</p>
       <ol id="source-priority" class="mt-3 space-y-2"></ol>
     </div>
+    <div class="mt-4 flex flex-wrap items-center gap-3">
+      <button id="btn-reload-master" data-i18n="btnReloadMaster" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Standard-Artenliste laden (≈190 Arten)</button>
+      <span class="text-xs text-stone-500 dark:text-stone-400" data-i18n="reloadMasterHint">Fügt die Standard-Artenliste deinen Pflanzen hinzu.</span>
+    </div>
   </section>
 
   <!-- Ansicht -->
@@ -158,20 +162,123 @@ import Layout from '../layouts/Layout.astro';
     <p id="last-backup-info" class="mt-3 text-xs text-stone-500 dark:text-stone-400"></p>
 
     <div class="mt-4 flex flex-wrap gap-2">
-      <button id="btn-backup" data-i18n="btnBackupDownload" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Backup herunterladen (JSON)</button>
-      <button id="btn-share-link" type="button" data-i18n="btnShareLink" class="rounded-lg bg-green-700 px-3 py-1.5 text-sm font-medium text-white shadow hover:bg-green-800">🔗 Projekt als Link teilen…</button>
+      <button id="btn-backup" data-i18n="btnBackupDownload" class="rounded-lg bg-green-700 px-3 py-1.5 text-sm font-medium text-white shadow hover:bg-green-800">Backup herunterladen (JSON)</button>
       <button id="btn-share-backup" hidden data-i18n="btnShareBackup" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Backup teilen…</button>
       <label class="cursor-pointer rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">
         <span data-i18n="btnRestoreLabel">Backup einlesen…</span>
         <input type="file" id="restore-input" accept=".json,application/json" class="hidden" />
       </label>
-      <button id="btn-reload-master" data-i18n="btnReloadMaster" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Golden Master neu laden</button>
     </div>
 
-    <div class="mt-6 rounded-lg border border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4">
-      <h3 class="text-sm font-semibold text-red-800 dark:text-red-200" data-i18n="dangerZoneTitle">Danger Zone</h3>
-      <p class="mt-1 text-xs text-red-700 dark:text-red-300" data-i18n="dangerZoneDesc">Löscht alle Pflanzendatensätze und deine Einstellungen unwiderruflich.</p>
-      <button id="btn-clear-all" data-i18n="btnClearAll" class="mt-3 rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white ring-1 ring-red-700 hover:bg-red-700">Alle Daten löschen</button>
+    <!-- Sync: part of "Sichern" (one place to keep the data safe, #4) -->
+    <div id="sync-section" class="mt-6 border-t border-stone-200 dark:border-stone-700 pt-5">
+      <h3 class="text-base font-semibold text-stone-800 dark:text-stone-100" data-i18n="sectionSync">Sync</h3>
+      <p class="mt-1 text-xs text-stone-500 dark:text-stone-400" data-i18n="syncSubtitle">Pflanzen, Polykulturen, Waldgartenpläne und eigene Sortenlisten in einen externen Speicher sichern — manuell oder automatisch beim Verlassen der App.</p>
+
+      <!-- Auto-Sync Toggle -->
+      <div class="mt-5 flex items-start justify-between gap-4">
+        <div class="min-w-0">
+          <p id="auto-sync-label" class="text-sm font-medium text-stone-700 dark:text-stone-200" data-i18n="autoSyncLabel">Automatisch synchronisieren</p>
+          <p class="mt-0.5 text-xs text-stone-500 dark:text-stone-400" data-i18n="autoSyncDesc">
+            Beim Tab-Wechsel oder Schließen automatisch zum ersten konfigurierten Anbieter hochladen, wenn sich etwas
+            geändert hat (Priorität: WebDAV → GitHub Gist). Liegt dort ein Backup von einem anderen Gerät, wird
+            nichts überschrieben — du bekommst einen Hinweis.
+          </p>
+          <p id="last-sync-info" class="mt-1 text-xs text-stone-500 dark:text-stone-400"></p>
+          <p id="sync-problem-info" hidden role="status" class="mt-1 text-xs font-medium text-red-700 dark:text-red-400"></p>
+        </div>
+        <label class="relative inline-flex shrink-0 cursor-pointer items-center">
+          <input type="checkbox" id="auto-sync-toggle" aria-labelledby="auto-sync-label" class="peer sr-only" />
+          <div class="h-6 w-11 rounded-full bg-stone-300 dark:bg-stone-600 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-all peer-checked:bg-green-600 peer-checked:after:translate-x-full"></div>
+        </label>
+      </div>
+
+      <!-- Sync targets added by modules (lib/expert-api.ts, EinstellungenApi.addSyncSection) -->
+      <div id="sync-extra"></div>
+
+      <label class="mt-5 flex flex-wrap items-center gap-2 text-sm">
+        <span class="font-medium text-stone-700 dark:text-stone-200" data-i18n="syncTargetLabel">Online-Speicher</span>
+        <select id="sync-target" class="rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2 py-1 text-sm">
+          <option value="" data-i18n="syncTargetNone">keiner</option>
+          <option value="webdav" data-i18n="syncTargetWebdav">WebDAV (z. B. Nextcloud)</option>
+          <option value="gist" data-i18n="syncTargetGist">GitHub Gist</option>
+        </select>
+      </label>
+
+      <!-- WebDAV -->
+      <details id="sync-webdav" data-sync-target="webdav" open hidden class="mt-4 rounded-lg border border-stone-200 dark:border-stone-700 p-4">
+        <summary class="cursor-pointer text-sm font-semibold text-stone-700 dark:text-stone-200" data-i18n="webdavSummary">WebDAV (z.B. Nextcloud)</summary>
+        <p class="mt-2 text-xs text-stone-500 dark:text-stone-400">
+          <span data-i18n="webdavDescPre">Pusht/zieht das JSON-Backup direkt in deinen WebDAV-Speicher. Zugangsdaten bleiben
+          im Browser (</span><code>localStorage</code><span data-i18n="webdavDescMid">), werden nicht übertragen außer ans angegebene Ziel.
+          Dein Server muss</span> <strong data-i18n="webdavDescCors">CORS</strong> <span data-i18n="webdavDescPost">für die Domain dieser App erlauben — bei Nextcloud
+          z.B. via</span> <code>occ config:system:set cors.allowed-domains</code>.
+        </p>
+        <div class="mt-3 grid gap-3 sm:grid-cols-2">
+          <label class="block text-xs sm:col-span-2">
+            <span class="font-medium text-stone-500 dark:text-stone-400" data-i18n="webdavUrlLabel">Ziel-URL (vollständige Datei-URL)</span>
+            <input id="webdav-url" type="url" placeholder="https://cloud.example.com/remote.php/dav/files/USER/perma-design-kit-backup.json" class="mt-1 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 font-mono text-xs shadow-inner focus:border-green-500 focus:outline-none" />
+          </label>
+          <label class="block text-xs">
+            <span class="font-medium text-stone-500 dark:text-stone-400" data-i18n="webdavUserLabel">Benutzername</span>
+            <input id="webdav-user" type="text" autocomplete="off" class="mt-1 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none" />
+          </label>
+          <label class="block text-xs">
+            <span class="font-medium text-stone-500 dark:text-stone-400" data-i18n="webdavPassLabel">Passwort / App-Token</span>
+            <input id="webdav-pass" type="password" autocomplete="off" class="mt-1 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none" />
+          </label>
+        </div>
+        <div class="mt-3 flex flex-wrap items-center gap-2">
+          <button id="btn-webdav-save-creds" data-i18n="btnWebdavSaveCreds" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Zugang merken</button>
+          <button id="btn-webdav-clear-creds" data-i18n="btnWebdavClearCreds" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Zugang vergessen</button>
+          <span class="h-4 w-px bg-stone-300 dark:bg-stone-700"></span>
+          <button id="btn-webdav-push" data-i18n="btnWebdavPush" class="rounded-lg bg-green-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-green-800">Backup hochladen ↑</button>
+          <button id="btn-webdav-pull" data-i18n="btnWebdavPull" class="rounded-lg bg-blue-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-blue-800">Backup abrufen ↓</button>
+          <span id="webdav-status" class="text-xs text-stone-500 dark:text-stone-400"></span>
+        </div>
+      </details>
+
+      <!-- Lokale Datei (File System Access API, nur Chromium) -->
+      <details id="details-fsa" class="mt-4 rounded-lg border border-stone-200 dark:border-stone-700 p-4" hidden>
+        <summary class="cursor-pointer text-sm font-semibold text-stone-700 dark:text-stone-200" data-i18n="fsaSummary">Lokale Datei (Chrome / Edge)</summary>
+        <p class="mt-2 text-xs text-stone-500 dark:text-stone-400" data-i18n="fsaDesc">
+          Schreibt das Backup direkt in eine Datei auf deinem Gerät oder liest es von dort.
+          Die Datei kannst du z.&nbsp;B. in einem Cloud-Ordner ablegen (iCloud Drive, Dropbox,
+          Google Drive Offline-Ordner). Nur in Chromium-basierten Browsern verfügbar.
+        </p>
+        <div class="mt-3 flex flex-wrap items-center gap-2">
+          <button id="btn-fsa-write" data-i18n="btnFsaWrite" class="rounded-lg bg-green-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-green-800">In Datei speichern ↑</button>
+          <button id="btn-fsa-read" data-i18n="btnFsaRead" class="rounded-lg bg-blue-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-blue-800">Aus Datei laden ↓</button>
+          <span id="fsa-status" class="text-xs text-stone-500 dark:text-stone-400"></span>
+        </div>
+      </details>
+
+      <!-- GitHub Gist -->
+      <details id="sync-gist" data-sync-target="gist" open hidden class="mt-4 rounded-lg border border-stone-200 dark:border-stone-700 p-4">
+        <summary class="cursor-pointer text-sm font-semibold text-stone-700 dark:text-stone-200" data-i18n="gistSummary">GitHub Gist (geräteübergreifend)</summary>
+        <p class="mt-2 text-xs text-stone-500 dark:text-stone-400">
+          <span data-i18n="gistDescPre">Speichert das Backup als privates GitHub Gist. Du brauchst einen GitHub-Account und ein</span> <a href="https://github.com/settings/tokens/new?scopes=gist&description=Perma+Design+Kit" target="_blank" rel="noopener" data-i18n="gistDescLink" class="text-green-700 dark:text-green-400 underline underline-offset-2 hover:no-underline">Personal Access Token</a> <span data-i18n="gistDescPost">mit dem Scope</span> <code>gist</code><span data-i18n="gistDescPost2">. Beim ersten Hochladen wird ein neues Gist angelegt
+          und die ID automatisch gespeichert — danach einfach wieder drücken.</span>
+        </p>
+        <div class="mt-3 grid gap-3 sm:grid-cols-2">
+          <label class="block text-xs">
+            <span class="font-medium text-stone-500 dark:text-stone-400" data-i18n="gistTokenLabel">GitHub Token (PAT)</span>
+            <input id="gist-token" type="password" autocomplete="off" placeholder="ghp_…" class="mt-1 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 font-mono text-xs shadow-inner focus:border-green-500 focus:outline-none" />
+          </label>
+          <label class="block text-xs">
+            <span class="font-medium text-stone-500 dark:text-stone-400" data-i18n="gistIdLabel">Gist-ID (leer = wird beim ersten Upload gesetzt)</span>
+            <input id="gist-id" type="text" autocomplete="off" data-i18n-placeholder="gistIdPlaceholder" placeholder="automatisch gesetzt" class="mt-1 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 font-mono text-xs shadow-inner focus:border-green-500 focus:outline-none" />
+          </label>
+        </div>
+        <div class="mt-3 flex flex-wrap items-center gap-2">
+          <button id="btn-gist-save-creds" data-i18n="btnGistSaveCreds" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Token merken</button>
+          <button id="btn-gist-clear-creds" data-i18n="btnGistClearCreds" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Token vergessen</button>
+          <span class="h-4 w-px bg-stone-300 dark:bg-stone-700"></span>
+          <button id="btn-gist-push" data-i18n="btnGistPush" class="rounded-lg bg-green-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-green-800">Zu Gist hochladen ↑</button>
+          <button id="btn-gist-pull" data-i18n="btnGistPull" class="rounded-lg bg-blue-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-blue-800">Von Gist abrufen ↓</button>
+          <span id="gist-status" class="text-xs text-stone-500 dark:text-stone-400"></span>
+        </div>
+      </details>
     </div>
   </section>
 
@@ -191,139 +298,15 @@ import Layout from '../layouts/Layout.astro';
     <ul id="variety-lists" class="mt-3 space-y-3"></ul>
   </section>
 
-  <!-- Sync -->
-  <section id="sync-section" class="mb-8 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
-    <h2 class="text-lg font-semibold text-stone-800 dark:text-stone-100" data-i18n="sectionSync">Sync</h2>
-    <p class="mt-1 text-xs text-stone-500 dark:text-stone-400" data-i18n="syncSubtitle">Pflanzen, Polykulturen, Waldgartenpläne und eigene Sortenlisten in einen externen Speicher sichern — manuell oder automatisch beim Verlassen der App.</p>
-
-    <!-- Auto-Sync Toggle -->
-    <div class="mt-5 flex items-start justify-between gap-4">
-      <div class="min-w-0">
-        <p id="auto-sync-label" class="text-sm font-medium text-stone-700 dark:text-stone-200" data-i18n="autoSyncLabel">Automatisch synchronisieren</p>
-        <p class="mt-0.5 text-xs text-stone-500 dark:text-stone-400" data-i18n="autoSyncDesc">
-          Beim Tab-Wechsel oder Schließen automatisch zum ersten konfigurierten Anbieter hochladen, wenn sich etwas
-          geändert hat (Priorität: WebDAV → GitHub Gist). Liegt dort ein Backup von einem anderen Gerät, wird
-          nichts überschrieben — du bekommst einen Hinweis.
-        </p>
-        <p id="last-sync-info" class="mt-1 text-xs text-stone-500 dark:text-stone-400"></p>
-        <p id="sync-problem-info" hidden role="status" class="mt-1 text-xs font-medium text-red-700 dark:text-red-400"></p>
-      </div>
-      <label class="relative inline-flex shrink-0 cursor-pointer items-center">
-        <input type="checkbox" id="auto-sync-toggle" aria-labelledby="auto-sync-label" class="peer sr-only" />
-        <div class="h-6 w-11 rounded-full bg-stone-300 dark:bg-stone-600 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-all peer-checked:bg-green-600 peer-checked:after:translate-x-full"></div>
-      </label>
-    </div>
-
-    <!-- Sync targets added by modules (lib/expert-api.ts, EinstellungenApi.addSyncSection) -->
-    <div id="sync-extra"></div>
-
-    <!-- WebDAV -->
-    <details class="mt-5 rounded-lg border border-stone-200 dark:border-stone-700 p-4">
-      <summary class="cursor-pointer text-sm font-semibold text-stone-700 dark:text-stone-200" data-i18n="webdavSummary">WebDAV (z.B. Nextcloud)</summary>
-      <p class="mt-2 text-xs text-stone-500 dark:text-stone-400">
-        <span data-i18n="webdavDescPre">Pusht/zieht das JSON-Backup direkt in deinen WebDAV-Speicher. Zugangsdaten bleiben
-        im Browser (</span><code>localStorage</code><span data-i18n="webdavDescMid">), werden nicht übertragen außer ans angegebene Ziel.
-        Dein Server muss</span> <strong data-i18n="webdavDescCors">CORS</strong> <span data-i18n="webdavDescPost">für die Domain dieser App erlauben — bei Nextcloud
-        z.B. via</span> <code>occ config:system:set cors.allowed-domains</code>.
-      </p>
-      <div class="mt-3 grid gap-3 sm:grid-cols-2">
-        <label class="block text-xs sm:col-span-2">
-          <span class="font-medium text-stone-500 dark:text-stone-400" data-i18n="webdavUrlLabel">Ziel-URL (vollständige Datei-URL)</span>
-          <input id="webdav-url" type="url" placeholder="https://cloud.example.com/remote.php/dav/files/USER/perma-design-kit-backup.json" class="mt-1 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 font-mono text-xs shadow-inner focus:border-green-500 focus:outline-none" />
-        </label>
-        <label class="block text-xs">
-          <span class="font-medium text-stone-500 dark:text-stone-400" data-i18n="webdavUserLabel">Benutzername</span>
-          <input id="webdav-user" type="text" autocomplete="off" class="mt-1 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none" />
-        </label>
-        <label class="block text-xs">
-          <span class="font-medium text-stone-500 dark:text-stone-400" data-i18n="webdavPassLabel">Passwort / App-Token</span>
-          <input id="webdav-pass" type="password" autocomplete="off" class="mt-1 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none" />
-        </label>
-      </div>
-      <div class="mt-3 flex flex-wrap items-center gap-2">
-        <button id="btn-webdav-save-creds" data-i18n="btnWebdavSaveCreds" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Zugang merken</button>
-        <button id="btn-webdav-clear-creds" data-i18n="btnWebdavClearCreds" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Zugang vergessen</button>
-        <span class="h-4 w-px bg-stone-300 dark:bg-stone-700"></span>
-        <button id="btn-webdav-push" data-i18n="btnWebdavPush" class="rounded-lg bg-green-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-green-800">Backup hochladen ↑</button>
-        <button id="btn-webdav-pull" data-i18n="btnWebdavPull" class="rounded-lg bg-blue-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-blue-800">Backup abrufen ↓</button>
-        <span id="webdav-status" class="text-xs text-stone-500 dark:text-stone-400"></span>
-      </div>
-    </details>
-
-    <!-- Lokale Datei (File System Access API, nur Chromium) -->
-    <details id="details-fsa" class="mt-4 rounded-lg border border-stone-200 dark:border-stone-700 p-4" hidden>
-      <summary class="cursor-pointer text-sm font-semibold text-stone-700 dark:text-stone-200" data-i18n="fsaSummary">Lokale Datei (Chrome / Edge)</summary>
-      <p class="mt-2 text-xs text-stone-500 dark:text-stone-400" data-i18n="fsaDesc">
-        Schreibt das Backup direkt in eine Datei auf deinem Gerät oder liest es von dort.
-        Die Datei kannst du z.&nbsp;B. in einem Cloud-Ordner ablegen (iCloud Drive, Dropbox,
-        Google Drive Offline-Ordner). Nur in Chromium-basierten Browsern verfügbar.
-      </p>
-      <div class="mt-3 flex flex-wrap items-center gap-2">
-        <button id="btn-fsa-write" data-i18n="btnFsaWrite" class="rounded-lg bg-green-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-green-800">In Datei speichern ↑</button>
-        <button id="btn-fsa-read" data-i18n="btnFsaRead" class="rounded-lg bg-blue-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-blue-800">Aus Datei laden ↓</button>
-        <span id="fsa-status" class="text-xs text-stone-500 dark:text-stone-400"></span>
-      </div>
-    </details>
-
-    <!-- GitHub Gist -->
-    <details class="mt-4 rounded-lg border border-stone-200 dark:border-stone-700 p-4">
-      <summary class="cursor-pointer text-sm font-semibold text-stone-700 dark:text-stone-200" data-i18n="gistSummary">GitHub Gist (geräteübergreifend)</summary>
-      <p class="mt-2 text-xs text-stone-500 dark:text-stone-400">
-        <span data-i18n="gistDescPre">Speichert das Backup als privates GitHub Gist. Du brauchst einen GitHub-Account und ein</span> <a href="https://github.com/settings/tokens/new?scopes=gist&description=Perma+Design+Kit" target="_blank" rel="noopener" data-i18n="gistDescLink" class="text-green-700 dark:text-green-400 underline underline-offset-2 hover:no-underline">Personal Access Token</a> <span data-i18n="gistDescPost">mit dem Scope</span> <code>gist</code><span data-i18n="gistDescPost2">. Beim ersten Hochladen wird ein neues Gist angelegt
-        und die ID automatisch gespeichert — danach einfach wieder drücken.</span>
-      </p>
-      <div class="mt-3 grid gap-3 sm:grid-cols-2">
-        <label class="block text-xs">
-          <span class="font-medium text-stone-500 dark:text-stone-400" data-i18n="gistTokenLabel">GitHub Token (PAT)</span>
-          <input id="gist-token" type="password" autocomplete="off" placeholder="ghp_…" class="mt-1 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 font-mono text-xs shadow-inner focus:border-green-500 focus:outline-none" />
-        </label>
-        <label class="block text-xs">
-          <span class="font-medium text-stone-500 dark:text-stone-400" data-i18n="gistIdLabel">Gist-ID (leer = wird beim ersten Upload gesetzt)</span>
-          <input id="gist-id" type="text" autocomplete="off" data-i18n-placeholder="gistIdPlaceholder" placeholder="automatisch gesetzt" class="mt-1 block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 font-mono text-xs shadow-inner focus:border-green-500 focus:outline-none" />
-        </label>
-      </div>
-      <div class="mt-3 flex flex-wrap items-center gap-2">
-        <button id="btn-gist-save-creds" data-i18n="btnGistSaveCreds" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Token merken</button>
-        <button id="btn-gist-clear-creds" data-i18n="btnGistClearCreds" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Token vergessen</button>
-        <span class="h-4 w-px bg-stone-300 dark:bg-stone-700"></span>
-        <button id="btn-gist-push" data-i18n="btnGistPush" class="rounded-lg bg-green-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-green-800">Zu Gist hochladen ↑</button>
-        <button id="btn-gist-pull" data-i18n="btnGistPull" class="rounded-lg bg-blue-700 px-3 py-1.5 text-xs font-medium text-white shadow hover:bg-blue-800">Von Gist abrufen ↓</button>
-        <span id="gist-status" class="text-xs text-stone-500 dark:text-stone-400"></span>
-      </div>
-    </details>
+  <!-- Danger Zone: apart from everything that keeps data safe -->
+  <section id="danger-zone" class="mb-8 rounded-xl border border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-5">
+    <h2 class="text-lg font-semibold text-red-800 dark:text-red-200" data-i18n="dangerZoneTitle">Danger Zone</h2>
+    <p class="mt-1 text-xs text-red-700 dark:text-red-300" data-i18n="dangerZoneDesc">Löscht alle Pflanzendatensätze und deine Einstellungen unwiderruflich.</p>
+    <button id="btn-clear-all" data-i18n="btnClearAll" class="mt-3 rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white ring-1 ring-red-700 hover:bg-red-700">Alle Daten löschen</button>
   </section>
 
   <div id="toast" class="fixed bottom-6 right-6 hidden rounded-lg bg-green-700 px-4 py-2.5 text-sm font-medium text-white shadow-lg transition"></div>
 
-  <!-- Projekt als Link teilen (src/lib/share.ts) -->
-  <dialog id="share-dialog" aria-labelledby="share-title" class="m-auto w-[min(36rem,calc(100vw-2rem))] rounded-xl bg-white dark:bg-stone-800 p-0 text-stone-800 dark:text-stone-100 shadow-2xl backdrop:bg-black/50">
-    <div class="space-y-3 p-5">
-      <h2 id="share-title" class="text-base font-semibold" data-i18n="shareTitle">Projekt als Link teilen</h2>
-      <p class="text-xs text-stone-600 dark:text-stone-300" data-i18n="shareIntro">Pflanzen, Polykulturen und Waldgartenpläne werden komprimiert in den Link gepackt. Es wird nichts auf einem Server gespeichert. Wer den Link hat, kann das Projekt in die eigene App übernehmen.</p>
-      <fieldset class="space-y-1.5 text-sm">
-        <label class="flex items-center gap-2"><input id="share-polycultures" type="checkbox" checked class="accent-green-600" /> <span data-i18n="shareIncludePolycultures">Polykulturen mitteilen</span></label>
-        <label class="flex items-center gap-2"><input id="share-gardenplans" type="checkbox" checked class="accent-green-600" /> <span data-i18n="shareIncludeGardenPlans">Waldgartenpläne mitteilen</span></label>
-        <label class="flex items-center gap-2"><input id="share-notes" type="checkbox" checked class="accent-green-600" /> <span data-i18n="shareIncludeNotes">Notizen mitteilen</span></label>
-        <label class="flex items-start gap-2"><input id="share-views" type="checkbox" checked class="mt-1 accent-green-600" /> <span><span data-i18n="shareIncludeViews">Ansicht der Pläne mitschicken</span><br /><span class="text-xs text-stone-500 dark:text-stone-400" data-i18n="shareViewsHint">Kamera, Ausschnitt, 2D/3D, Sonnenstand und Einfärben – so, wie du die Pläne zuletzt verlassen hast.</span></span></label>
-        <label class="flex flex-wrap items-center gap-2 pl-6 text-xs"><span data-i18n="shareStartPlan">Öffnet nach dem Übernehmen:</span>
-          <select id="share-start" class="rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2 py-1 text-xs"></select>
-        </label>
-        <label class="flex items-start gap-2"><input id="share-location" type="checkbox" class="mt-1 accent-green-600" /> <span><span data-i18n="shareIncludeLocation">Standort der Waldgartenpläne mitteilen</span><br /><span class="text-xs text-stone-500 dark:text-stone-400" data-i18n="shareLocationHint">Zeigt, wo dein Garten liegt – oft deine Adresse. Ohne Standort kommen die Pläne ohne Kartenhintergrund an.</span></span></label>
-      </fieldset>
-      <div id="share-result" hidden class="space-y-2">
-        <textarea id="share-url" readonly rows="3" data-i18n-aria-label="shareTitle" aria-label="Projekt als Link teilen" class="block w-full resize-none break-all rounded-md border border-stone-300 dark:border-stone-600 bg-stone-50 dark:bg-stone-900 px-2.5 py-1.5 font-mono text-[11px]"></textarea>
-        <p id="share-size" class="text-xs text-stone-500 dark:text-stone-400"></p>
-        <div class="flex flex-wrap gap-2">
-          <button id="share-copy" type="button" data-i18n="shareCopy" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Link kopieren</button>
-          <button id="share-native" type="button" hidden data-i18n="shareNative" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Teilen…</button>
-        </div>
-      </div>
-      <div class="flex justify-end gap-2 pt-1">
-        <button id="share-close" type="button" data-i18n="shareClose" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Schließen</button>
-        <button id="share-create" type="button" data-i18n="shareCreate" class="rounded-lg bg-green-700 px-4 py-1.5 text-sm font-medium text-white shadow hover:bg-green-800">Link erstellen</button>
-      </div>
-    </div>
-  </dialog>
 </Layout>
 
 <script>
@@ -345,6 +328,7 @@ import Layout from '../layouts/Layout.astro';
     GIST_FILENAME, type WebdavCreds,
   } from '../lib/sync';
   import { escapeHtml, withButtonSpinner } from '../lib/html';
+  import { saveFile } from '../lib/save-file';
   import { providePageApi } from '../lib/expert-api';
   import { createT, applyStaticI18n, getLang } from '../lib/i18n/core';
   import { settingsDict } from '../lib/i18n/dict-settings';
@@ -446,10 +430,12 @@ import Layout from '../layouts/Layout.astro';
 
   let settings: AppSettings;
 
+  let toastTimer: ReturnType<typeof setTimeout> | undefined;
   function showToast(msg: string) {
     toast.textContent = msg;
     toast.classList.remove('hidden');
-    setTimeout(() => toast.classList.add('hidden'), 2000);
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.add('hidden'), 2000);
   }
 
   function renderSources() {
@@ -661,100 +647,27 @@ import Layout from '../layouts/Layout.astro';
       varietyPart: backup.varietyLists.length ? t('restoreVarietyPart', { n: backup.varietyLists.length }) : '',
     };
     if (!confirm(t('restoreConfirm', { ...parts, settingsPart: backup.settings ? t('restoreSettingsPart') : '' }))) return null;
+    showToast(t('restoreRunning'));
     const { keptLocal } = await applyBackup(backup, { keepNewer });
     if (backup.settings) {
       settings = loadSettings();
       renderSources(); renderPrefs();
     }
-    await renderStats();
-    if (backup.varietyLists.length) await renderVarietyLists();
+    // not awaited: storage.estimate()/persisted() can take long on iOS and must not hold back the result (#7)
+    void renderStats().catch(() => {});
+    if (backup.varietyLists.length) void renderVarietyLists().catch(() => {});
     return t('restoreToast', parts) + (keptLocal ? ' ' + t('restoreKeptLocal', { n: keptLocal }) : '');
-  }
-
-  function downloadBackupBlob(blob: Blob, filename: string) {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = filename;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    URL.revokeObjectURL(url);
   }
 
   document.getElementById('btn-backup')!.addEventListener('click', async () => {
     try {
       const { blob, filename } = await buildBackupBlob();
-      downloadBackupBlob(blob, filename);
+      if (!await saveFile(blob, filename, { title: 'Perma Design Kit Backup' })) return;
       rememberBackupAt();
       renderLastBackup();
     } catch (err) {
       alert(t('genericError', { msg: err instanceof Error ? err.message : String(err) }));
     }
-  });
-
-  // ── Projekt als Link teilen ─────────────────────────────────────────────
-  // Data goes into the link's #fragment (src/lib/share.ts), never to a server.
-  // Very long links may be cut off by messengers, hence the size hint.
-  const SHARE_LONG_LINK = 8000;
-  const shareDialog = document.getElementById('share-dialog') as HTMLDialogElement;
-  const shareUrlEl = document.getElementById('share-url') as HTMLTextAreaElement;
-  const shareResult = document.getElementById('share-result')!;
-  const shareNative = document.getElementById('share-native') as HTMLButtonElement;
-  const shareOpts = ['share-polycultures', 'share-gardenplans', 'share-notes', 'share-location', 'share-views']
-    .map(id => document.getElementById(id) as HTMLInputElement);
-  const shareStart = document.getElementById('share-start') as HTMLSelectElement;
-  /** Start-plan choices: none, or one of the plans (default: the last opened one). */
-  async function fillShareStart() {
-    const [{ getAllGardenPlans }, { LAST_PLAN_KEY }] = await Promise.all([import('../lib/db'), import('../lib/plan-view')]);
-    const plans = await getAllGardenPlans();
-    let last: string | null = null;
-    try { last = localStorage.getItem(LAST_PLAN_KEY); } catch {}
-    shareStart.innerHTML = `<option value="">${escapeHtml(t('shareStartNone'))}</option>`
-      + plans.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name || '—')}</option>`).join('');
-    shareStart.value = plans.some(p => p.id === last) ? last! : (plans[0]?.id ?? '');
-  }
-  shareStart.addEventListener('change', () => { shareResult.hidden = true; });
-  document.getElementById('btn-share-link')!.addEventListener('click', () => {
-    shareResult.hidden = true;
-    void fillShareStart();
-    shareDialog.showModal();
-  });
-  shareOpts.forEach(o => o.addEventListener('change', () => { shareResult.hidden = true; }));
-  // Deep link from the plant page's "Daten ⋮" menu.
-  if (location.hash === '#teilen') {
-    history.replaceState(null, '', location.pathname);
-    shareResult.hidden = true;
-    void fillShareStart();
-    shareDialog.showModal();
-  }
-  document.getElementById('share-close')!.addEventListener('click', () => shareDialog.close());
-  document.getElementById('share-create')!.addEventListener('click', async (e) => {
-    await withButtonSpinner(e.currentTarget as HTMLButtonElement, async () => {
-      const [incPoly, incPlans, incNotes, incLoc, incViews] = shareOpts.map(o => o.checked);
-      const { readPlanView } = await import('../lib/plan-view');
-      const [{ encodeShare, shareUrl }, { getAllPolycultures, getAllGardenPlans }] = await Promise.all([import('../lib/share'), import('../lib/db')]);
-      const [plants, polycultures, gardenPlans] = await Promise.all([
-        getAllPlants(), incPoly ? getAllPolycultures() : Promise.resolve([]), incPlans ? getAllGardenPlans() : Promise.resolve([]),
-      ]);
-      const views = Object.fromEntries(gardenPlans.map(g => [g.id, readPlanView(g.id)]).filter(([, v]) => v));
-      const start = shareStart.value ? { planId: shareStart.value } : null;
-      const data = await encodeShare({ plants, polycultures, gardenPlans, views, start }, { includeNotes: incNotes, includeLocation: incLoc, includeViews: incViews });
-      const url = shareUrl(location.origin, data);
-      shareUrlEl.value = url;
-      const kb = new Intl.NumberFormat(getLang(), { maximumFractionDigits: 1 }).format(url.length / 1024);
-      document.getElementById('share-size')!.textContent = url.length > SHARE_LONG_LINK
-        ? t('shareSizeLong', { kb, plants: plants.length })
-        : t('shareSize', { kb, plants: plants.length });
-      shareNative.hidden = !('share' in navigator);
-      shareResult.hidden = false;
-      shareUrlEl.select();
-    });
-  });
-  document.getElementById('share-copy')!.addEventListener('click', async () => {
-    try { await navigator.clipboard.writeText(shareUrlEl.value); showToast(t('shareCopied')); }
-    catch { shareUrlEl.focus(); shareUrlEl.select(); } // clipboard blocked: leave it selected for Ctrl+C
-  });
-  shareNative.addEventListener('click', async () => {
-    try { await navigator.share({ title: 'Perma Design Kit', url: shareUrlEl.value }); }
-    catch (err) { if ((err as Error).name !== 'AbortError') alert(t('shareFailed', { err: String(err) })); }
   });
 
   const shareBtn = document.getElementById('btn-share-backup') as HTMLButtonElement | null;
@@ -769,7 +682,7 @@ import Layout from '../layouts/Layout.astro';
           rememberBackupAt();
           renderLastBackup();
         } else {
-          downloadBackupBlob(blob, filename);
+          await saveFile(blob, filename);
           rememberBackupAt();
           renderLastBackup();
         }
@@ -778,6 +691,19 @@ import Layout from '../layouts/Layout.astro';
       }
     });
   }
+
+  // ── Sync: one target (WebDAV or Gist), the other one's panel stays hidden ──
+  const syncTarget = document.getElementById('sync-target') as HTMLSelectElement;
+  const showSyncTarget = () => document.querySelectorAll<HTMLElement>('[data-sync-target]').forEach(el => { el.hidden = el.dataset.syncTarget !== syncTarget.value; });
+  try {
+    syncTarget.value = localStorage.getItem('pdk-sync-target')
+      ?? (localStorage.getItem('webdav-url') ? 'webdav' : localStorage.getItem('gist-token') ? 'gist' : '');
+  } catch { /* storage blocked */ }
+  showSyncTarget();
+  syncTarget.addEventListener('change', () => {
+    try { localStorage.setItem('pdk-sync-target', syncTarget.value); } catch {}
+    showSyncTarget();
+  });
 
   // ── Sync: Auto-Sync Toggle ───────────────────────────────────────────────
   autoSyncToggle.addEventListener('change', () => {
@@ -994,7 +920,7 @@ import Layout from '../layouts/Layout.astro';
     }
   });
 
-  // ── Daten: Golden Master neu laden ──────────────────────────────────────
+  // ── Standard-Artenliste laden ──────────────────────────────────────
   document.getElementById('btn-reload-master')!.addEventListener('click', async () => {
     if (!confirm(t('reloadMasterConfirm'))) return;
     try {
@@ -1021,11 +947,7 @@ import Layout from '../layouts/Layout.astro';
   const openVarietyLists = new Set<string>();
 
   function downloadText(text: string, filename: string, type: string) {
-    const url = URL.createObjectURL(new Blob(['\ufeff' + text], { type }));
-    const a = document.createElement('a');
-    a.href = url; a.download = filename;
-    document.body.appendChild(a); a.click(); a.remove();
-    URL.revokeObjectURL(url);
+    void saveFile(new Blob(['\ufeff' + text], { type }), filename);
   }
 
   async function renderVarietyLists() {

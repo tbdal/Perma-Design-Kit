@@ -16,7 +16,7 @@ describe('example polycultures (client)', () => {
     expect(r.polyculture.name).toBe('Apfelbaum-Polykultur');
     expect(new Set(r.newPlants.map(p => p.id)).size).toBe(r.newPlants.length);
   });
-  it('all six defaults load into a complete polyculture', () => {
+  it('all defaults load into a complete polyculture', () => {
     for (const e of (defaults as { items: Example[] }).items) {
       const r = installExample(e, []);
       expect(r.polyculture.anchorPlantId, e.id).toBeTruthy();

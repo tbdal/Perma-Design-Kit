@@ -224,6 +224,7 @@ import Layout from '../layouts/Layout.astro';
           <button data-feature="row" id="btn-draw-row" type="button" data-i18n="btnDrawRow" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">⋯ Reihe pflanzen</button>
           <button data-feature="export" id="btn-export-geojson" type="button" data-i18n="btnExportGeojson" data-i18n-title="exportGeojsonTitle" title="Für QGIS & Co.: Umriss, Flächen und Pflanzen als GeoJSON (WGS84)" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">⤓ GeoJSON (QGIS)</button>
           <a data-feature="export" id="btn-plan-calendar" href="/kalender" data-i18n="btnPlanCalendar" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">Kalender</a>
+          <button id="btn-share-link" type="button" data-i18n="shareOpen" data-i18n-title="shareOpenTitle" title="Projekt als Link teilen" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">🔗 Teilen…</button>
           <button data-feature="export" id="btn-shopping" type="button" data-i18n="btnShopping" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">Pflanzliste</button>
           <button data-feature="export" id="btn-export-pdf" data-i18n="btnExportPdf" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">PDF exportieren</button>
           <button id="btn-redraw-area" data-i18n="btnRedrawArea" class="text-xs font-medium text-stone-500 dark:text-stone-400 hover:text-red-600 dark:hover:text-red-400">Fläche neu zeichnen</button>
@@ -583,6 +584,7 @@ import Layout from '../layouts/Layout.astro';
 
 <script>
   import { getAllPlants, getAllPolycultures, getAllGardenPlans, saveGardenPlan, deleteGardenPlan, importPlants } from '../lib/db';
+  import { onForeignChange } from '../lib/data-channel';
   import { normalizeGardenPlan } from '../lib/plant-normalize';
   import { displayName, displayCommonName, nameWithVariety } from '../lib/plant-name';
   import { LAST_PLAN_KEY, planViewKey, readPlanView, writePlanView, type PlanView } from '../lib/plan-view';
@@ -627,15 +629,17 @@ import Layout from '../layouts/Layout.astro';
   import { providePageApi } from '../lib/expert-api';
   import { sortPlans, defaultDir, planAreaM2, PLAN_SORT_FIELDS, type PlanSortField, type SortDir } from '../lib/plan-list-sort';
   import { escapeHtml, withButtonSpinner } from '../lib/html';
+  import { saveFile } from '../lib/save-file';
   import { exportGardenPlanPDF, planFitsPaper, type PlanPaper } from '../lib/pdf-export';
   import { createT, applyStaticI18n, getLang } from '../lib/i18n/core';
+  import { shareDict } from '../lib/i18n/dict-share';
   import { searchDict } from '../lib/i18n/dict-search';
   import { initPlantSearchUi } from '../lib/plant-search-ui';
   import { gartenplanDict } from '../lib/i18n/dict-gartenplan';
   import { plantDetailDict } from '../lib/i18n/dict-plant-detail';
 
   const t = createT(gartenplanDict, plantDetailDict);
-  applyStaticI18n(gartenplanDict, plantDetailDict, searchDict);
+  applyStaticI18n(gartenplanDict, plantDetailDict, searchDict, shareDict);
 
   const SVG_NS = 'http://www.w3.org/2000/svg';
   const SVG_UNITS_PER_METER = 100;
@@ -1215,6 +1219,14 @@ import Layout from '../layouts/Layout.astro';
     renderSimpleGuide();
     window.scrollTo({ top: 0 });
   }
+
+  // Another tab (or a restore) changed the data: with no plan open, the list must not keep — and later
+  // write back — its old copy (#7). An open plan is left to Layout's stale banner.
+  onForeignChange(async () => {
+    if (editing) return;
+    plans = await getAllGardenPlans();
+    if (!editing) renderList();
+  });
 
   function closeEditor() {
     finishPick(null);
@@ -1977,6 +1989,7 @@ import Layout from '../layouts/Layout.astro';
       : better ? t('pdfTooBigPaper', { paper: better }) : t('pdfTooBigScale');
   }
   [pdfPaper, pdfScale].forEach(s => s.addEventListener('change', syncPdfDialog));
+  document.getElementById('btn-share-link')!.addEventListener('click', () => void import('../lib/share-dialog').then(m => m.openShareDialog(editing?.id)));
   document.getElementById('btn-export-pdf')!.addEventListener('click', () => {
     if (!editing) return;
     syncFormIntoEditing();
@@ -3540,11 +3553,7 @@ import Layout from '../layouts/Layout.astro';
     syncFormIntoEditing();
     const { planToGeoJson } = await import('../lib/gartenplan-geojson');
     const blob = new Blob([JSON.stringify(planToGeoJson(editing, plantsById), null, 1)], { type: 'application/geo+json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `${(editing.name || 'gartenplan').replace(/[^\p{L}\p{N}_-]+/gu, '_')}.geojson`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    await saveFile(blob, `${(editing.name || 'gartenplan').replace(/[^\p{L}\p{N}_-]+/gu, '_')}.geojson`);
   });
 
   (document.getElementById('geojson-input') as HTMLInputElement).addEventListener('change', async (e) => {
@@ -4388,7 +4397,7 @@ import Layout from '../layouts/Layout.astro';
   yearsInput.addEventListener('input', () => { renderYield(); renderPhases(); });
   yearsInput.addEventListener('change', () => { clearTimeout(years3dTimer); if (editing) view3d?.updateYears(editing.yearsSincePlanting); });
 
-  document.getElementById('btn-care-ics')!.addEventListener('click', () => {
+  document.getElementById('btn-care-ics')!.addEventListener('click', async () => {
     if (!editing) return;
     const seen = new Set<string>();
     const tasks: CareTask[] = [];
@@ -4410,11 +4419,7 @@ import Layout from '../layouts/Layout.astro';
     tasks.sort((a, b) => a.month - b.month);
     const name = editing.name || t('planUnnamed');
     const ics = buildIcs(t('careCalName', { name }), tasks, new Date().getFullYear(), editing.id);
-    const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }));
-    const a = document.createElement('a');
-    a.href = url; a.download = `pflegekalender-${name.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-')}.ics`;
-    document.body.appendChild(a); a.click(); a.remove();
-    URL.revokeObjectURL(url);
+    if (!await saveFile(new Blob([ics], { type: 'text/calendar' }), `pflegekalender-${name.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-')}.ics`)) return;
     showToast(t('careIcsDone', { n: tasks.length }));
   });
 
@@ -5607,12 +5612,7 @@ import Layout from '../layouts/Layout.astro';
     }
     const blob = await new Promise<Blob | null>(r => c.toBlob(r, 'image/png'));
     if (!blob) return;
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${(editing.name || t('planUnnamed')).replace(/[\\/:*?"<>|]+/g, '_')} – 3D.png`;
-    document.body.appendChild(a); a.click(); a.remove();
-    URL.revokeObjectURL(url);
+    await saveFile(blob, `${(editing.name || t('planUnnamed')).replace(/[\\/:*?"<>|]+/g, '_')} – 3D.png`);
   }
   document.getElementById('btn-snapshot')!.addEventListener('click', () => void saveSnapshot());
 
@@ -5844,6 +5844,7 @@ import Layout from '../layouts/Layout.astro';
     plans = await getAllGardenPlans();
     renderList();
     closeEditor();
+    try { localStorage.removeItem(planViewKey(deletedId)); } catch { /* ignore */ } // closeEditor() just wrote it
     notifyPlanDeleted(deletedId);
     showToast(t('toastPlanDeleted'));
   });

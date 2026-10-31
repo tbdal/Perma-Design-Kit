@@ -21,9 +21,9 @@ describe('example polycultures (server)', () => {
   it('drops doubles and junk from a list', () => {
     expect(cleanItems([item(), item(), 5, null, item({ id: 'b' })]).map((i: { id: string }) => i.id)).toEqual(['a', 'b']);
   });
-  it('serves the six defaults until an admin saves; hidden ones are not public', () => {
+  it('serves the twelve defaults until an admin saves; hidden ones are not public', () => {
     const store = createBeispiele({ dir: mkdtempSync(join(tmpdir(), 'bsp-')) });
-    expect(store.all()).toHaveLength(6);
+    expect(store.all()).toHaveLength(12);
     store.save([item({ hidden: true }), item({ id: 'b' })]);
     expect(store.all()).toHaveLength(2);
     expect(store.visible().map((i: { id: string }) => i.id)).toEqual(['b']);
@@ -39,7 +39,7 @@ describe('example polycultures (server)', () => {
       const done = await handle(req, res, new URL(`http://x${path}`));
       return { done, status, json: out ? JSON.parse(out) : null };
     };
-    expect((await call('GET', '/api/polykultur-beispiele')).json.items).toHaveLength(6);
+    expect((await call('GET', '/api/polykultur-beispiele')).json.items).toHaveLength(12);
     expect((await call('GET', '/api/admin/big/beispiele')).status).toBe(401);
     role = 'team';
     expect((await call('PUT', '/api/admin/big/beispiele', { items: [] })).status).toBe(403);

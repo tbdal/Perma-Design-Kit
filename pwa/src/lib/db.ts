@@ -57,6 +57,35 @@ function getDB() {
   return dbPromise;
 }
 
+/** Drops the shared connection; the next call opens a fresh one. iOS (installed app) loses the
+ *  link to its IndexedDB server in the background without a close event, and transactions on the
+ *  dead link then neither complete nor fail (#7). close() lets running transactions finish. */
+export function reopenDB(): void {
+  dbPromise?.then(db => db.close(), () => {});
+  dbPromise = null;
+}
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reopenDB(); });
+}
+
+const DB_TIMEOUT_MS = 10_000;
+/** Runs one IndexedDB job; if it hangs, reopens the connection and tries once more, then throws
+ *  so the page shows an error instead of waiting forever. Every job here is safe to repeat. */
+async function run<T>(job: (db: Awaited<ReturnType<typeof getDB>>) => Promise<T>): Promise<T> {
+  for (let attempt = 0; ; attempt++) {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error('IndexedDB timeout')), DB_TIMEOUT_MS); });
+    try {
+      return await Promise.race([getDB().then(job), timeout]);
+    } catch (err) {
+      if ((err as Error).message !== 'IndexedDB timeout' || attempt > 0) throw err;
+      reopenDB();
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+}
+
 function openPlantDB() {
   return openDB<PlantDB>(DB_NAME, DB_VERSION, {
     blocking() {
@@ -92,35 +121,34 @@ function openPlantDB() {
 }
 
 export async function getAllPlants(): Promise<PlantData[]> {
-  const db = await getDB();
-  return db.getAll('plants');
+  return run(db => db.getAll('plants'));
 }
 
 export async function getPlant(id: string): Promise<PlantData | undefined> {
-  const db = await getDB();
-  return db.get('plants', id);
+  return run(db => db.get('plants', id));
 }
 
 export async function savePlant(plant: PlantData): Promise<void> {
-  const db = await getDB();
-  plant.updatedAt = new Date().toISOString();
-  await db.put('plants', plant);
+  await run(async db => {
+    plant.updatedAt = new Date().toISOString();
+    await db.put('plants', plant);
+  });
   changed();
 }
 
 export async function deletePlant(id: string): Promise<void> {
-  const db = await getDB();
-  await db.delete('plants', id);
+  await run(db => db.delete('plants', id));
   changed();
 }
 
 export async function importPlants(plants: PlantData[]): Promise<void> {
-  const db = await getDB();
-  const tx = db.transaction('plants', 'readwrite');
-  for (const plant of plants) {
-    await tx.store.put(plant);
-  }
-  await tx.done;
+  await run(async db => {
+    const tx = db.transaction('plants', 'readwrite');
+    for (const plant of plants) {
+      await tx.store.put(plant);
+    }
+    await tx.done;
+  });
   changed();
 }
 
@@ -129,97 +157,87 @@ export async function exportPlants(): Promise<PlantData[]> {
 }
 
 export async function clearAllPlants(): Promise<void> {
-  const db = await getDB();
-  await db.clear('plants');
+  await run(db => db.clear('plants'));
   changed();
 }
 
 // ── Polycultures ──────────────────────────────────────────────────────────
 
 export async function getAllPolycultures(): Promise<Polyculture[]> {
-  const db = await getDB();
-  return db.getAll('polycultures');
+  return run(db => db.getAll('polycultures'));
 }
 
 export async function getPolyculture(id: string): Promise<Polyculture | undefined> {
-  const db = await getDB();
-  return db.get('polycultures', id);
+  return run(db => db.get('polycultures', id));
 }
 
 export async function savePolyculture(polyculture: Polyculture): Promise<void> {
   polyculture.updatedAt = new Date().toISOString();
-  const db = await getDB();
-  await db.put('polycultures', polyculture);
+  await run(db => db.put('polycultures', polyculture));
   changed();
 }
 
 export async function deletePolyculture(id: string): Promise<void> {
-  const db = await getDB();
-  await db.delete('polycultures', id);
+  await run(db => db.delete('polycultures', id));
   changed();
 }
 
 export async function importPolycultures(polycultures: Polyculture[]): Promise<void> {
-  const db = await getDB();
-  const tx = db.transaction('polycultures', 'readwrite');
-  for (const polyculture of polycultures) {
-    await tx.store.put(polyculture);
-  }
-  await tx.done;
+  await run(async db => {
+    const tx = db.transaction('polycultures', 'readwrite');
+    for (const polyculture of polycultures) {
+      await tx.store.put(polyculture);
+    }
+    await tx.done;
+  });
   changed();
 }
 
 // ── Garden plans ──────────────────────────────────────────────────────────
 
 export async function getAllGardenPlans(): Promise<GardenPlan[]> {
-  const db = await getDB();
-  return db.getAll('gardenPlans');
+  return run(db => db.getAll('gardenPlans'));
 }
 
 export async function getGardenPlan(id: string): Promise<GardenPlan | undefined> {
-  const db = await getDB();
-  return db.get('gardenPlans', id);
+  return run(db => db.get('gardenPlans', id));
 }
 
 export async function saveGardenPlan(plan: GardenPlan): Promise<void> {
   plan.updatedAt = new Date().toISOString();
-  const db = await getDB();
-  await db.put('gardenPlans', plan);
+  await run(db => db.put('gardenPlans', plan));
   changed();
 }
 
 export async function deleteGardenPlan(id: string): Promise<void> {
-  const db = await getDB();
-  await db.delete('gardenPlans', id);
+  await run(db => db.delete('gardenPlans', id));
   changed();
 }
 
 export async function importGardenPlans(plans: GardenPlan[]): Promise<void> {
-  const db = await getDB();
-  const tx = db.transaction('gardenPlans', 'readwrite');
-  for (const plan of plans) {
-    await tx.store.put(plan);
-  }
-  await tx.done;
+  await run(async db => {
+    const tx = db.transaction('gardenPlans', 'readwrite');
+    for (const plan of plans) {
+      await tx.store.put(plan);
+    }
+    await tx.done;
+  });
   changed();
 }
 
 // ── Variety lists (Sortenlisten) ────────────────────────────────────────────
 
 export async function getVarietyLists(): Promise<VarietyList[]> {
-  const db = await getDB();
-  return (await db.getAll('varietyLists')).sort((a, b) => a.name.localeCompare(b.name, 'de'));
+  return run(async db => (await db.getAll('varietyLists')).sort((a, b) => a.name.localeCompare(b.name, 'de')));
 }
 
 export async function saveVarietyList(list: VarietyList): Promise<void> {
-  const db = await getDB();
-  await db.put('varietyLists', list);
+  await run(db => db.put('varietyLists', list));
   changed();
 }
 
 export async function deleteVarietyList(id: string): Promise<void> {
-  const db = await getDB();
-  await db.delete('varietyLists', id);
+  await run(db => db.delete('varietyLists', id));
   changed();
 }
 
@@ -227,14 +245,15 @@ export async function deleteVarietyList(id: string): Promise<void> {
 
 /** Empties every store ("Alle Daten löschen"). */
 export async function clearAllData(): Promise<void> {
-  const db = await getDB();
-  const tx = db.transaction(['plants', 'polycultures', 'gardenPlans', 'varietyLists'], 'readwrite');
-  await Promise.all([
-    tx.objectStore('plants').clear(),
-    tx.objectStore('polycultures').clear(),
-    tx.objectStore('gardenPlans').clear(),
-    tx.objectStore('varietyLists').clear(),
-    tx.done,
-  ]);
+  await run(async db => {
+    const tx = db.transaction(['plants', 'polycultures', 'gardenPlans', 'varietyLists'], 'readwrite');
+    await Promise.all([
+      tx.objectStore('plants').clear(),
+      tx.objectStore('polycultures').clear(),
+      tx.objectStore('gardenPlans').clear(),
+      tx.objectStore('varietyLists').clear(),
+      tx.done,
+    ]);
+  });
   changed();
 }

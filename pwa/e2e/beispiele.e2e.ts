@@ -8,7 +8,7 @@ test('example polycultures: dialog with tiles, loading one fills the list and th
   await page.route('**/api/polykultur-beispiele', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ items: defaults.items.map(i => ({ ...i, image: '' })) }) }));
   await page.goto('/polykulturen');
   await page.click('#btn-examples');
-  await expect(page.locator('#examples-grid article')).toHaveCount(6);
+  await expect(page.locator('#examples-grid article')).toHaveCount(12);
   await page.locator('#examples-grid article', { hasText: 'Drei Schwestern' }).locator('[data-example]').click();
   await expect(page.locator('#examples-dialog')).toBeHidden();
   await expect(page.locator('#polyculture-list')).toContainText('Drei Schwestern');

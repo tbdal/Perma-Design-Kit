@@ -5,6 +5,8 @@ import { renderBaumscheibeSvg } from './baumscheibe-render';
 import { renderGardenPlanInnerSvg, SVG_UNITS_PER_METER } from './gartenplan-render';
 import { dataCredits, type GardenPlan, type PlantData } from './types';
 import { escapeHtml } from './html';
+import { imageSrc } from './commons-image';
+import { saveFile } from './save-file';
 import { discAndRing, packCircles } from './circle-pack';
 
 // Card dimensions in mm
@@ -66,24 +68,9 @@ function drawCanvasOnPage(
 
 // ── Wikimedia / image fetch helpers ─────────────────────────────────────────
 
-async function resolveWikimediaUrl(url: string): Promise<string> {
-  const match = url.match(/Special:FilePath\/([^?]+)/);
-  if (!match) return url;
-  const filename = decodeURIComponent(match[1]);
-  const apiUrl =
-    `https://commons.wikimedia.org/w/api.php?action=query&titles=File:${encodeURIComponent(filename)}` +
-    `&prop=imageinfo&iiprop=url&iiurlwidth=400&format=json&origin=*`;
-  try {
-    const res  = await fetch(apiUrl);
-    const data = await res.json();
-    const pages = data.query?.pages;
-    const page: any = Object.values(pages as object)[0];
-    return page?.imageinfo?.[0]?.thumburl || url;
-  } catch { return url; }
-}
-
 async function imageUrlToDataUrl(url: string): Promise<string | null> {
-  const resolved = await resolveWikimediaUrl(url);
+  // Commons pictures come same-origin through our proxy (which also follows Special:FilePath).
+  const resolved = imageSrc(url);
   try {
     const res = await fetch(resolved, { mode: 'cors' });
     if (res.ok) {
@@ -179,12 +166,7 @@ export async function finishPdf(pdfDoc: PDFDocument, o: PdfFinishOptions): Promi
 // ── Download helper ──────────────────────────────────────────────────────────
 
 export function downloadPdf(bytes: Uint8Array, filename: string) {
-  const blob = new Blob([bytes as BlobPart], { type: 'application/pdf' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href = url; a.download = filename;
-  document.body.appendChild(a); a.click();
-  document.body.removeChild(a); URL.revokeObjectURL(url);
+  void saveFile(new Blob([bytes as BlobPart], { type: 'application/pdf' }), filename);
 }
 
 // ── Exports ──────────────────────────────────────────────────────────────────

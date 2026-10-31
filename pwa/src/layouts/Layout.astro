@@ -416,8 +416,8 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
         { selector: '#btn-view-cards', title: 'tourCardsTitle', text: 'tourCardsText' },
         { selector: 'a[data-nav="/polykulturen"]', title: 'tourGuildsTitle', text: 'tourGuildsText' },
         { selector: 'a[data-nav="/gartenplan"]', title: 'tourPlanTitle', text: 'tourPlanText' },
-        // Last: start from an example — both buttons live in the "Daten ⋮" menu.
-        { selector: '#data-menu > summary', title: 'tourSamplesTitle', text: 'tourSamplesText',
+        // Last: start from an example — the loaders sit in the empty plant list ("Womit starten?").
+        { selector: '#btn-load-samples-crawford', title: 'tourSamplesTitle', text: 'tourSamplesText',
           link: { href: 'tourSamplesHref', label: 'tourSamplesLink' } },
       ];
       const visible = (el: Element | null): el is HTMLElement => {
@@ -710,6 +710,8 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
         });
         document.addEventListener('visibilitychange', () => { if (!document.hidden && reloadOnReturn) location.reload(); });
         document.getElementById('stale-reload')?.addEventListener('click', () => location.reload());
+        // back/forward cache: a frozen page missed every change message and would save its old copy (#7)
+        window.addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
       })();
 
       // Service worker (public/sw.js): keeps the whole build for offline use.

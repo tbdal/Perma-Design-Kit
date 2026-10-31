@@ -64,16 +64,8 @@ import Layout from '../layouts/Layout.astro';
           Daten ⋮
         </summary>
         <div class="absolute right-0 top-full z-40 mt-1 min-w-56 rounded-lg bg-white dark:bg-stone-800 p-1 shadow-lg ring-1 ring-stone-200 dark:ring-stone-700">
-          <button id="btn-import" data-i18n="menuImportJson" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Import JSON</button>
           <button id="btn-import-csv" data-i18n="menuImportCsv" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Import CSV</button>
           <button id="btn-csv-template" data-i18n="menuCsvTemplate" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">CSV-Vorlage ↓</button>
-          <hr class="my-1 border-stone-200 dark:border-stone-700">
-          <button id="btn-export" data-i18n="menuExportAll" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Alle exportieren (JSON)</button>
-          <a href="/settings/#teilen" data-i18n="menuShareLink" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">🔗 Projekt als Link teilen…</a>
-          <hr class="my-1 border-stone-200 dark:border-stone-700">
-          <button id="btn-load-samples" data-i18n="menuLoadSamples" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Beispieldaten laden</button>
-          <button id="btn-load-samples-crawford" data-i18n="menuLoadSamplesCrawford" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Beispieldaten laden (Crawford)</button>
-          <button id="btn-load-master" data-i18n="menuLoadMaster" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Standard-Artenliste laden (≈190 Arten)</button>
           <hr class="my-1 border-stone-200 dark:border-stone-700">
           <div id="data-menu-extra"></div>
           <button id="btn-enrich-all" data-i18n="menuEnrichAll" class="block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700">Lade alle fehlenden Daten</button>
@@ -471,7 +463,6 @@ import Layout from '../layouts/Layout.astro';
     </form>
   </dialog>
 
-  <input type="file" id="file-import" accept=".json" class="hidden" />
   <input type="file" id="file-import-csv" accept=".csv,.txt" class="hidden" />
 </Layout>
 
@@ -484,7 +475,6 @@ import Layout from '../layouts/Layout.astro';
   import { samplePlants } from '../lib/sample-data';
   import { crawfordPlants } from '../lib/sample-data-crawford';
   import { importFromCSV, buildCSV, buildCSVTemplate } from '../lib/csv';
-  import { parseBackup } from '../lib/sync';
   import { applyFilters, emptyFilters, sortPlants, allGroups, type ListFilters, type SortField } from '../lib/plant-list';
   import { getAllGardenPlans } from '../lib/db';
   import { planUsage, splitByPlan, habitGroup, HABIT_GROUPS, type PlanUse } from '../lib/plan-usage';
@@ -496,10 +486,12 @@ import Layout from '../layouts/Layout.astro';
   import { newId } from '../lib/id';
   import { enrichPlant, needsEnrichment, trackSources, createPlantFromSearch } from '../lib/enrich';
   import { announce, escapeHtml, withButtonSpinner, imageCreditOverlayHtml } from '../lib/html';
+  import { saveFile } from '../lib/save-file';
   import { isSourceEnabled, loadSettings } from '../lib/settings';
   import { deriveLayer, LAYER_STYLE, LAYER_I18N, LAYER_CODE, PLANT_LAYERS } from '../lib/plant-layer';
   import { exportPolyCardsPDF, exportStripeCardsPDF, exportSingleCardPDF, exportSingleStripeCardPDF, exportBaumscheibePDF, exportBaumscheibesPDF, exportBaumscheibeSheetPDF, exportBaumscheibeScaledPDF, type ScaledPaper } from '../lib/pdf-export';
   import { renderPolyCardHtml, renderStripeCardHtml, printStepperHtml } from '../lib/card-html';
+  import { imageSrc } from '../lib/commons-image';
   import { renderBaumscheibeCardHtml } from '../lib/baumscheibe-render';
   import { createT, applyStaticI18n, getLang } from '../lib/i18n/core';
   import { indexDict } from '../lib/i18n/dict-index';
@@ -513,7 +505,6 @@ import Layout from '../layouts/Layout.astro';
   const listEl = document.getElementById('plant-list')!;
   const dialog = document.getElementById('plant-dialog') as HTMLDialogElement;
   const form = document.getElementById('plant-form') as HTMLFormElement;
-  const fileInput = document.getElementById('file-import') as HTMLInputElement;
   const csvInput = document.getElementById('file-import-csv') as HTMLInputElement;
   const bulkBar = document.getElementById('bulk-bar')!;
   const bulkCountEl = document.getElementById('bulk-count')!;
@@ -966,10 +957,7 @@ import Layout from '../layouts/Layout.astro';
   }
 
   function triggerDownload(content: string, filename: string, type: string) {
-    const blob = new Blob([content], { type });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob); a.download = filename; a.click();
-    URL.revokeObjectURL(a.href);
+    void saveFile(new Blob([content], { type }), filename);
   }
 
   // ── renderList ────────────────────────────────────────────────────────────────
@@ -1015,6 +1003,12 @@ import Layout from '../layouts/Layout.astro';
           <p class="mb-1 text-base font-semibold text-stone-500 dark:text-stone-400">${escapeHtml(t('emptyStateTitle'))}</p>
           <p class="mb-4 text-sm text-stone-500 dark:text-stone-400">${escapeHtml(t('emptyStateSubtitle'))}</p>
           <button type="button" data-focus-search class="rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">${escapeHtml(t('emptyStateBtn'))}</button>
+          <p class="mb-2 mt-8 text-sm font-semibold text-stone-600 dark:text-stone-300">${escapeHtml(t('emptyStartWith'))}</p>
+          <div class="flex flex-wrap justify-center gap-2">
+            <button type="button" id="btn-load-samples" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-700">${escapeHtml(t('menuLoadSamples'))}</button>
+            <button type="button" id="btn-load-samples-crawford" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-700">${escapeHtml(t('menuLoadSamplesCrawford'))}</button>
+            <button type="button" id="btn-load-master" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-700">${escapeHtml(t('menuLoadMaster'))}</button>
+          </div>
         </div>`;
       displayPlants = [];
       return;
@@ -1088,7 +1082,7 @@ import Layout from '../layouts/Layout.astro';
           <div class="absolute left-0 top-0 h-full w-1 ${accentColor(p)}"></div>
           <!-- Image thumbnail -->
           ${p.imageUrl ? `<div data-img-wrapper data-tile-open class="relative h-32 cursor-pointer overflow-hidden bg-stone-100 dark:bg-stone-800 pl-1">
-            <img src="${escapeHtml(p.imageUrl)}" alt="${escapeHtml(displayName(p))}" class="h-full w-full object-cover" loading="lazy" />
+            <img src="${escapeHtml(imageSrc(p.imageUrl))}" alt="${escapeHtml(displayName(p))}" class="h-full w-full object-cover" loading="lazy" />
             ${imageCreditOverlayHtml(p.imageCredit)}
           </div>` : ''}
           <!-- Content (a click opens the editor, like the ✎ button) -->
@@ -1291,6 +1285,8 @@ import Layout from '../layouts/Layout.astro';
     let el: HTMLElement | null;
 
     if (hit('[data-focus-search]')) { document.getElementById('plant-search')!.focus(); return; }
+    const starter = hit('#btn-load-samples, #btn-load-samples-crawford, #btn-load-master');
+    if (starter) { await startWith[starter.id](); return; }
     if (hit('[data-show-more]')) { showLimit += PAGE_SIZE; void renderList(); return; }
 
     // Sort column headers (desktop table only)
@@ -1674,7 +1670,9 @@ import Layout from '../layouts/Layout.astro';
 
   // ── Standard actions ──────────────────────────────────────────────────────────
 
-  document.getElementById('btn-load-samples')!.addEventListener('click', async () => {
+  // Starting points, offered in the empty list ("Womit starten?"); the Standard-Artenliste also in Einstellungen.
+  const startWith: Record<string, () => Promise<void>> = {};
+  startWith['btn-load-samples'] = async () => {
     try {
       await importPlants(samplePlants);
       // Filter könnten alle Samples ausblenden — Hinweis im Status, falls so.
@@ -1686,8 +1684,8 @@ import Layout from '../layouts/Layout.astro';
       alert(t('alertSampleImportFailed', { error: err instanceof Error ? err.message : String(err) }));
       console.error(err);
     }
-  });
-  document.getElementById('btn-load-samples-crawford')!.addEventListener('click', async () => {
+  };
+  startWith['btn-load-samples-crawford'] = async () => {
     try {
       await importPlants(crawfordPlants);
       const before = anyFilterActive();
@@ -1698,8 +1696,8 @@ import Layout from '../layouts/Layout.astro';
       alert(t('alertSampleImportFailed', { error: err instanceof Error ? err.message : String(err) }));
       console.error(err);
     }
-  });
-  document.getElementById('btn-load-master')!.addEventListener('click', async () => {
+  };
+  startWith['btn-load-master'] = async () => {
     if (!confirm(t('confirmLoadMaster'))) return;
     try {
       const { loadMasterList } = await import('../lib/master-list');
@@ -1711,7 +1709,7 @@ import Layout from '../layouts/Layout.astro';
     } catch (err) {
       alert(t('alertSampleImportFailed', { error: err instanceof Error ? err.message : String(err) }));
     }
-  });
+  };
   document.getElementById('btn-enrich-all')!.addEventListener('click', async () => {
     const b = document.getElementById('btn-enrich-all') as HTMLButtonElement;
     const origText = b.textContent;
@@ -1757,22 +1755,6 @@ import Layout from '../layouts/Layout.astro';
   });
   document.getElementById('btn-csv-template')!.addEventListener('click', () => {
     triggerDownload(buildCSVTemplate(), 'pflanzen-vorlage.csv', 'text/csv;charset=utf-8;');
-  });
-  document.getElementById('btn-export')!.addEventListener('click', () => {
-    triggerDownload(JSON.stringify(cachedPlants, null, 2), 'plants.json', 'application/json');
-  });
-  document.getElementById('btn-import')!.addEventListener('click', () => fileInput.click());
-  fileInput.addEventListener('change', async () => {
-    const f = fileInput.files?.[0]; if (!f) return;
-    try {
-      const { plants } = parseBackup(await f.text());
-      if (plants.length === 0) { alert(t('alertNoJsonPlants')); return; }
-      await importPlants(plants); renderList();
-    } catch (err) {
-      alert(t('alertJsonImportFailed', { msg: err instanceof Error ? err.message : String(err) }));
-    } finally {
-      fileInput.value = '';
-    }
   });
   document.getElementById('btn-import-csv')!.addEventListener('click', () => csvInput.click());
   csvInput.addEventListener('change', async () => {

@@ -1,6 +1,6 @@
 import {
   getAllPlants, getAllPolycultures, getAllGardenPlans, getVarietyLists,
-  importPlants, importPolycultures, importGardenPlans, saveVarietyList,
+  importPlants, importPolycultures, importGardenPlans, saveVarietyList, reopenDB,
 } from './db';
 import { loadSettings, saveSettings, type AppSettings } from './settings';
 import type { PlantData, Polyculture, GardenPlan } from './types';
@@ -202,6 +202,8 @@ function dropOlder<T extends { id: string; updatedAt: string }>(incoming: T[], l
  *  returns how many local records were kept that way. */
 export async function applyBackup(b: ParsedBackup, opts: { keepNewer?: boolean } = {}): Promise<{ keptLocal: number }> {
   let keptLocal = 0;
+  // a file picker or sync round may have sent the app to the background: start on a fresh connection (#7)
+  reopenDB();
   const pick = async <T extends { id: string; updatedAt: string }>(incoming: T[], local: () => Promise<T[]>) => {
     if (!opts.keepNewer || !incoming.length) return incoming;
     const r = dropOlder(incoming, await local());

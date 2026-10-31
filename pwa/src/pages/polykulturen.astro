@@ -9,6 +9,7 @@ import Layout from '../layouts/Layout.astro';
       <div class="flex flex-wrap items-center gap-2">
         <select id="from-group" data-i18n-aria-label="fromGroupLabel" aria-label="Polykultur aus einer Pflanzengruppe anlegen" class="rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-2 text-sm text-stone-700 dark:text-stone-200"></select>
         <button id="btn-examples" type="button" data-i18n="btnExamples" class="rounded-lg bg-white dark:bg-stone-800 px-3.5 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-50 dark:hover:bg-stone-700">Beispiele laden</button>
+        <button id="btn-share-link" type="button" data-i18n="shareOpen" data-i18n-title="shareOpenTitle" title="Projekt als Link teilen" class="rounded-lg bg-white dark:bg-stone-800 px-3.5 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">🔗 Teilen…</button>
         <button id="btn-new-polyculture" data-i18n="btnNewGuild" class="rounded-lg bg-green-700 px-3.5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">+ Neue Polykultur</button>
       </div>
     </div>
@@ -111,6 +112,7 @@ import Layout from '../layouts/Layout.astro';
     type Polyculture, type PolycultureMember, type PolycultureRole, type PlantData,
   } from '../lib/types';
   import { escapeHtml } from '../lib/html';
+  import { imageSrc } from '../lib/commons-image';
   import { installExample, type Example } from '../lib/beispiele';
   import { importPlants } from '../lib/db';
   import { providePageApi } from '../lib/expert-api';
@@ -121,10 +123,11 @@ import Layout from '../layouts/Layout.astro';
   import type { GardenPlan } from '../lib/types';
   import { polycultureFromGroup, allGroups } from '../lib/polyculture-from-group';
   import { createT, applyStaticI18n } from '../lib/i18n/core';
+  import { shareDict } from '../lib/i18n/dict-share';
   import { polyculturesDict } from '../lib/i18n/dict-polykulturen';
 
   const t = createT(polyculturesDict);
-  applyStaticI18n(polyculturesDict);
+  applyStaticI18n(polyculturesDict, shareDict);
 
   type RoleSuggestion = { latin: string; common: string };
   let curatedByRole: Partial<Record<PolycultureRole, RoleSuggestion[]>> = {};
@@ -529,6 +532,7 @@ import Layout from '../layouts/Layout.astro';
   }
 
   document.getElementById('btn-new-polyculture')!.addEventListener('click', () => openEditor(null));
+  document.getElementById('btn-share-link')!.addEventListener('click', () => void import('../lib/share-dialog').then(m => m.openShareDialog()));
   document.getElementById('btn-empty-new')!.addEventListener('click', () => openEditor(null));
   document.getElementById('btn-back-to-list')!.addEventListener('click', closeEditor);
 
@@ -570,7 +574,7 @@ import Layout from '../layouts/Layout.astro';
   function renderExamples() {
     examplesGrid.innerHTML = (examples ?? []).map((ex, i) => `
       <article class="flex flex-col overflow-hidden rounded-xl bg-white dark:bg-stone-800 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
-        ${ex.image ? `<div data-img-wrapper class="h-36 bg-stone-100 dark:bg-stone-700"><img src="${escapeHtml(ex.image)}" alt="" loading="lazy" class="h-full w-full object-cover" /></div>` : ''}
+        ${ex.image ? `<div data-img-wrapper class="h-36 bg-stone-100 dark:bg-stone-700"><img src="${escapeHtml(imageSrc(ex.image))}" alt="" loading="lazy" class="h-full w-full object-cover" /></div>` : ''}
         <div class="flex flex-1 flex-col gap-1.5 p-3">
           <h3 class="font-semibold">${escapeHtml(ex.title)}</h3>
           <p class="flex-1 text-sm text-stone-600 dark:text-stone-300">${escapeHtml(ex.description)}</p>

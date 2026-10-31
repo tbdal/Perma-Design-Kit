@@ -40,6 +40,7 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
   <script>
     import { applyStaticI18n, getLang } from '../lib/i18n/core';
     import { reportDict } from '../lib/i18n/dict-report';
+    import { saveFile } from '../lib/save-file';
     import { buildDebugInfo, environmentLine, issueUrl, mailtoUrl, APP_VERSION, REPORT_MAIL, type ReportText } from '../lib/bug-report';
 
     // ?art=idee (Feedback → "Idee einreichen"): the same form for an idea; no debug file.
@@ -75,12 +76,7 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
       return new File([JSON.stringify(info, null, 2)], `pdk-debug-${APP_VERSION}-${new Date().toISOString().slice(0, 10)}.json`, { type: 'application/json' });
     };
     function download(f: File) {
-      const url = URL.createObjectURL(f);
-      const a = document.createElement('a');
-      a.href = url; a.download = f.name;
-      document.body.appendChild(a); a.click(); a.remove();
-      // Revoking at once cancels the download in Firefox/Safari: keep the link for a while.
-      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      void saveFile(f, f.name);
       status.textContent = `${f.name} (${(f.size / 1024).toFixed(0)} kB)`;
     }
     const failed = (err: unknown) => { status.textContent = `${getLang() === 'de' ? 'Die Datei konnte nicht erzeugt werden' : 'The file could not be created'}: ${err instanceof Error ? err.message : String(err)}`; };

@@ -4,6 +4,14 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Sichern, Downloads auf iOS, Pflanzenbilder offline, neue Beispiel-Polykulturen 2026-10-31
+- [x] **Sichern statt 20 Knöpfe (GitHub-Issue 4):** Einstellungen → „Sichern“ mit Backup herunterladen/einlesen/teilen und einem Online-Speicher (keiner, WebDAV oder Gist); doppelter JSON-Export/-Import entfällt, „Projekt als Link teilen“ im Plan und bei den Polykulturen, „Standard-Artenliste laden“ unter Datenquellen, Beispiel- und Standarddaten in der leeren Pflanzenliste, „Alle Daten löschen“ abgesetzt am Ende #major #prüfen
+- [x] **Downloads in der installierten iPhone-App (GitHub-Issue 8):** Backup, Debug-Datei, PDFs, CSV, GeoJSON, Kalender, 3D-Bild öffnen dort das Teilen-Menü („In Dateien sichern“); wenn das nicht geht, ein Hinweis statt Stille #bugs #prüfen
+- [x] **iOS: gelöschter Plan kommt zurück, Backup einlesen hängt (GitHub-Issue 7):** Datenbank-Verbindung wird nach App-Wechsel neu geöffnet, hängende Zugriffe brechen nach 10 s mit Meldung ab, Einlesen endet immer mit Meldung; Änderungen aus anderen Tabs laden die Planliste neu #bugs #prüfen
+- [x] **Pflanzenbilder offline und ohne Wikimedia-Kontakt (GitHub-Issue 5):** Bilder kommen über unseren Server (zwischengespeichert), einmal gesehene Bilder gibt es auch offline; Datenschutzerklärung angepasst #minor #prüfen
+- [x] **Mobil-Test (GitHub-Issue 6):** neuer Browsertest misst horizontales Scrollen auf 360/375 px; noch zu breit: Plan-Editor (Werkzeugleiste, Jahres-Regler), Kartenansicht bei 360 px, Navigation #minor
+- [x] **Sechs neue Beispiel-Polykulturen** im Stil von Jacke & Toensmeier, Crawford und Hemenway: Esskastanien-Savanne, Papau-Dickicht mit Kiwibeere, Mispel mit Ölweide, Birne mit Italienischer Erle, Pflaumen-Polykultur, Beerenstrauch mit Nützlingssaum #minor #prüfen
+
 ## Luftbild in 3D lückenhaft (Werkstatt #462) 2026-10-30
 - [x] **Luftbild vollständig:** das neue Anfrage-Limit für Luftbild-Kacheln war zu knapp (auch Cache-Treffer zählten), jede 4.–5. Kachel kam als Fehler zurück und wurde durch die Karte ersetzt – in 2D und 3D. Eigenes, großzügiges Limit #bugs #prüfen
 

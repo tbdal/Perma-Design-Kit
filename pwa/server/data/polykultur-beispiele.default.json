@@ -606,6 +606,713 @@
      "notes": "Ring in der Baumscheibe"
     }
    ]
+  },
+  {
+   "id": "kastanien-savanne",
+   "title": "Esskastanien-Savanne",
+   "description": "Angelehnt an die Savannen- und Waldrand-Muster aus Jacke & Toensmeier, „Edible Forest Gardens“: lichte Esskastanie, darunter Heidelbeere (beide mögen sauren Boden), Säckelblume und Weißklee als Stickstoffsammler, Indianernessel und Schafgarbe für Nützlinge.",
+   "image": "",
+   "anchor": "Castanea sativa",
+   "hidden": false,
+   "plants": [
+    {
+     "latinName": "Castanea sativa",
+     "commonName": "Edelkastanie",
+     "commonNameEn": "Sweet chestnut",
+     "heightM": 20,
+     "widthM": 15,
+     "habit": "tree",
+     "eatable": true,
+     "wood": true,
+     "fuel": true,
+     "insects": true,
+     "sunFull": true,
+     "waterMid": true,
+     "phAcid": true,
+     "growSpeedMid": true
+    },
+    {
+     "latinName": "Vaccinium corymbosum",
+     "commonName": "Kulturheidelbeere",
+     "commonNameEn": "Highbush blueberry",
+     "heightM": 1.8,
+     "widthM": 1.5,
+     "habit": "shrub",
+     "eatable": true,
+     "insects": true,
+     "sunFull": true,
+     "sunMid": true,
+     "waterMid": true,
+     "phAcid": true,
+     "growSpeedLow": true
+    },
+    {
+     "latinName": "Ceanothus americanus",
+     "commonName": "Amerikanische Säckelblume",
+     "commonNameEn": "New Jersey tea",
+     "heightM": 1,
+     "widthM": 1,
+     "habit": "shrub",
+     "nitrogenFix": true,
+     "insects": true,
+     "meds": true,
+     "sunFull": true,
+     "sunMid": true,
+     "waterDry": true,
+     "growSpeedLow": true
+    },
+    {
+     "latinName": "Monarda fistulosa",
+     "commonName": "Wilde Indianernessel",
+     "commonNameEn": "Wild bergamot",
+     "heightM": 1,
+     "widthM": 0.6,
+     "habit": "herb",
+     "culinaric": true,
+     "meds": true,
+     "insects": true,
+     "sunFull": true,
+     "waterMid": true
+    },
+    {
+     "latinName": "Achillea millefolium",
+     "commonName": "Gemeine Schafgarbe",
+     "commonNameEn": "Yarrow",
+     "heightM": 0.6,
+     "widthM": 0.5,
+     "habit": "herb",
+     "meds": true,
+     "insects": true,
+     "mineralFix": true,
+     "sunFull": true,
+     "waterDry": true
+    },
+    {
+     "latinName": "Trifolium repens",
+     "commonName": "Weißklee",
+     "commonNameEn": "White clover",
+     "heightM": 0.15,
+     "widthM": 0.5,
+     "habit": "herb",
+     "nitrogenFix": true,
+     "groundCover": true,
+     "insects": true,
+     "fodder": true,
+     "sunFull": true,
+     "waterMid": true,
+     "growSpeedHigh": true
+    }
+   ],
+   "members": [
+    {
+     "latinName": "Vaccinium corymbosum",
+     "role": "fruitProducer",
+     "notes": "Teilt den sauren Boden der Kastanie, Beeren am Kronenrand"
+    },
+    {
+     "latinName": "Ceanothus americanus",
+     "role": "nFixer",
+     "notes": "Kleiner Strauch, bindet Stickstoff, Blüten für Nützlinge"
+    },
+    {
+     "latinName": "Monarda fistulosa",
+     "role": "insectary",
+     "notes": "Lange Blüte für Bienen und Hummeln, Teekraut"
+    },
+    {
+     "latinName": "Achillea millefolium",
+     "role": "insectary",
+     "notes": "Lockt Schlupfwespen und Schwebfliegen"
+    },
+    {
+     "latinName": "Trifolium repens",
+     "role": "nFixer",
+     "notes": "Lebender Mulch zwischen den Sträuchern"
+    }
+   ]
+  },
+  {
+   "id": "papau-dickicht",
+   "title": "Papau-Dickicht mit Kiwibeere",
+   "description": "Im Stil von Jacke & Toensmeier, „Edible Forest Gardens“: Indianerbanane (Papau) als kleiner Obstbaum in der Gruppe, Kiwibeere am Gerüst daneben, im Halbschatten Süßdolde, Beinwell und Bärlauch.",
+   "image": "",
+   "anchor": "Asimina triloba",
+   "hidden": false,
+   "plants": [
+    {
+     "latinName": "Asimina triloba",
+     "commonName": "Indianerbanane",
+     "commonNameEn": "Pawpaw",
+     "heightM": 5,
+     "widthM": 4,
+     "habit": "tree",
+     "eatable": true,
+     "insects": true,
+     "sunFull": true,
+     "sunMid": true,
+     "waterMid": true,
+     "growSpeedLow": true
+    },
+    {
+     "latinName": "Actinidia arguta",
+     "commonName": "Kiwibeere",
+     "commonNameEn": "Hardy kiwi",
+     "heightM": 8,
+     "widthM": 3,
+     "habit": "climber",
+     "eatable": true,
+     "sunFull": true,
+     "sunMid": true,
+     "waterMid": true,
+     "growSpeedHigh": true
+    },
+    {
+     "latinName": "Myrrhis odorata",
+     "commonName": "Süßdolde",
+     "commonNameEn": "Sweet cicely",
+     "heightM": 1,
+     "widthM": 1,
+     "habit": "herb",
+     "eatable": true,
+     "culinaric": true,
+     "insects": true,
+     "sunMid": true,
+     "sunShadow": true,
+     "waterMid": true
+    },
+    {
+     "latinName": "Symphytum officinale",
+     "commonName": "Echter Beinwell",
+     "commonNameEn": "Comfrey",
+     "heightM": 1,
+     "widthM": 1,
+     "habit": "herb",
+     "meds": true,
+     "mineralFix": true,
+     "insects": true,
+     "groundCover": true,
+     "sunMid": true,
+     "sunFull": true,
+     "waterMid": true,
+     "growSpeedHigh": true
+    },
+    {
+     "latinName": "Allium ursinum",
+     "commonName": "Bärlauch",
+     "commonNameEn": "Wild garlic",
+     "heightM": 0.3,
+     "widthM": 0.3,
+     "habit": "herb",
+     "eatable": true,
+     "culinaric": true,
+     "groundCover": true,
+     "sunMid": true,
+     "sunShadow": true,
+     "waterMid": true
+    }
+   ],
+   "members": [
+    {
+     "latinName": "Actinidia arguta",
+     "role": "fruitProducer",
+     "notes": "Am Rankgerüst neben dem Papau, männliche und weibliche Pflanze nötig"
+    },
+    {
+     "latinName": "Myrrhis odorata",
+     "role": "insectary",
+     "notes": "Doldenblüten für Nützlinge, verträgt Schatten"
+    },
+    {
+     "latinName": "Symphytum officinale",
+     "role": "mineralFixer",
+     "notes": "Mulch für die nährstoffhungrigen Papaus"
+    },
+    {
+     "latinName": "Allium ursinum",
+     "role": "groundCover",
+     "notes": "Frühjahrsdecke, bevor der Papau austreibt"
+    }
+   ]
+  },
+  {
+   "id": "mispel-oelweide",
+   "title": "Mispel mit Ölweide",
+   "description": "Im Stil von Martin Crawford, „Creating a Forest Garden“ (Dartington): Mispel als kleiner Obstbaum, Schirm-Ölweide als Stickstofflieferant, Schwarze Johannisbeere im Halbschatten, Kaukasus-Beinwell und Felsen-Storchschnabel als dichte Bodendecker.",
+   "image": "",
+   "anchor": "Mespilus germanica",
+   "hidden": false,
+   "plants": [
+    {
+     "latinName": "Mespilus germanica",
+     "commonName": "Echte Mispel",
+     "commonNameEn": "Medlar",
+     "heightM": 5,
+     "widthM": 5,
+     "habit": "tree",
+     "eatable": true,
+     "insects": true,
+     "sunFull": true,
+     "sunMid": true,
+     "waterMid": true,
+     "growSpeedLow": true
+    },
+    {
+     "latinName": "Elaeagnus umbellata",
+     "commonName": "Schirm-Ölweide",
+     "commonNameEn": "Autumn olive",
+     "heightM": 4,
+     "widthM": 4,
+     "habit": "shrub",
+     "eatable": true,
+     "nitrogenFix": true,
+     "insects": true,
+     "windBreaking": true,
+     "sunFull": true,
+     "waterDry": true,
+     "growSpeedHigh": true
+    },
+    {
+     "latinName": "Ribes nigrum",
+     "commonName": "Schwarze Johannisbeere",
+     "commonNameEn": "Blackcurrant",
+     "heightM": 1.5,
+     "widthM": 1.5,
+     "habit": "shrub",
+     "eatable": true,
+     "meds": true,
+     "sunFull": true,
+     "sunMid": true,
+     "waterMid": true,
+     "growSpeedMid": true
+    },
+    {
+     "latinName": "Symphytum grandiflorum",
+     "commonName": "Kaukasus-Beinwell",
+     "commonNameEn": "Creeping comfrey",
+     "heightM": 0.4,
+     "widthM": 0.6,
+     "habit": "herb",
+     "mineralFix": true,
+     "groundCover": true,
+     "insects": true,
+     "sunMid": true,
+     "sunShadow": true,
+     "waterMid": true,
+     "growSpeedHigh": true
+    },
+    {
+     "latinName": "Geranium macrorrhizum",
+     "commonName": "Felsen-Storchschnabel",
+     "commonNameEn": "Bigroot geranium",
+     "heightM": 0.4,
+     "widthM": 0.6,
+     "habit": "herb",
+     "groundCover": true,
+     "insects": true,
+     "sunMid": true,
+     "sunShadow": true,
+     "waterDry": true
+    },
+    {
+     "latinName": "Allium fistulosum",
+     "commonName": "Winterheckenzwiebel",
+     "commonNameEn": "Welsh onion",
+     "heightM": 0.5,
+     "widthM": 0.3,
+     "habit": "herb",
+     "eatable": true,
+     "culinaric": true,
+     "pest": true,
+     "sunFull": true,
+     "sunMid": true,
+     "waterMid": true
+    }
+   ],
+   "members": [
+    {
+     "latinName": "Elaeagnus umbellata",
+     "role": "nFixer",
+     "notes": "Bindet Stickstoff, Beeren im Herbst; regelmäßig zurückschneiden"
+    },
+    {
+     "latinName": "Ribes nigrum",
+     "role": "fruitProducer",
+     "notes": "Trägt auch im lichten Schatten"
+    },
+    {
+     "latinName": "Symphytum grandiflorum",
+     "role": "groundCover",
+     "notes": "Kriechender Beinwell, unterdrückt Gras, Bienenweide"
+    },
+    {
+     "latinName": "Geranium macrorrhizum",
+     "role": "groundCover",
+     "notes": "Wintergrüner Teppich, verträgt Trockenheit"
+    },
+    {
+     "latinName": "Allium fistulosum",
+     "role": "pestConfuser",
+     "notes": "Mehrjähriges Lauchgemüse, Duft verwirrt Schädlinge"
+    }
+   ]
+  },
+  {
+   "id": "birne-erle",
+   "title": "Birne mit Italienischer Erle",
+   "description": "Im Stil von Martin Crawford, „Creating a Forest Garden“: Italienische Erle als Stickstoff-Baum und Windschutz neben der Birne, darunter Stachelbeere, Kriechende Himbeere als Bodendecker, Guter Heinrich als Dauergemüse und Süßdolde.",
+   "image": "",
+   "anchor": "Pyrus communis",
+   "hidden": false,
+   "plants": [
+    {
+     "latinName": "Pyrus communis",
+     "commonName": "Kulturbirne",
+     "commonNameEn": "Pear",
+     "heightM": 10,
+     "widthM": 6,
+     "habit": "tree",
+     "eatable": true,
+     "insects": true,
+     "wood": true,
+     "sunFull": true,
+     "waterMid": true,
+     "growSpeedMid": true
+    },
+    {
+     "latinName": "Alnus cordata",
+     "commonName": "Italienische Erle",
+     "commonNameEn": "Italian alder",
+     "heightM": 15,
+     "widthM": 8,
+     "habit": "tree",
+     "nitrogenFix": true,
+     "windBreaking": true,
+     "fuel": true,
+     "wood": true,
+     "sunFull": true,
+     "waterMid": true,
+     "growSpeedHigh": true
+    },
+    {
+     "latinName": "Ribes uva-crispa",
+     "commonName": "Stachelbeere",
+     "commonNameEn": "Gooseberry",
+     "heightM": 1.2,
+     "widthM": 1.2,
+     "habit": "shrub",
+     "eatable": true,
+     "sunMid": true,
+     "waterMid": true,
+     "growSpeedMid": true
+    },
+    {
+     "latinName": "Rubus tricolor",
+     "commonName": "Kriechende Himbeere",
+     "commonNameEn": "Creeping bramble",
+     "heightM": 0.6,
+     "widthM": 2,
+     "habit": "shrub",
+     "eatable": true,
+     "groundCover": true,
+     "sunMid": true,
+     "sunShadow": true,
+     "waterMid": true,
+     "growSpeedHigh": true
+    },
+    {
+     "latinName": "Blitum bonus-henricus",
+     "commonName": "Guter Heinrich",
+     "commonNameEn": "Good King Henry",
+     "heightM": 0.5,
+     "widthM": 0.4,
+     "habit": "herb",
+     "eatable": true,
+     "sunMid": true,
+     "waterMid": true
+    },
+    {
+     "latinName": "Myrrhis odorata",
+     "commonName": "Süßdolde",
+     "commonNameEn": "Sweet cicely",
+     "heightM": 1,
+     "widthM": 1,
+     "habit": "herb",
+     "eatable": true,
+     "culinaric": true,
+     "insects": true,
+     "sunMid": true,
+     "sunShadow": true,
+     "waterMid": true
+    }
+   ],
+   "members": [
+    {
+     "latinName": "Alnus cordata",
+     "role": "nFixer",
+     "notes": "Windseitig pflanzen; Rückschnitt als Mulch gibt Stickstoff frei"
+    },
+    {
+     "latinName": "Ribes uva-crispa",
+     "role": "fruitProducer",
+     "notes": "Strauchschicht, verträgt Halbschatten"
+    },
+    {
+     "latinName": "Rubus tricolor",
+     "role": "groundCover",
+     "notes": "Wüchsiger, immergrüner Bodendecker"
+    },
+    {
+     "latinName": "Blitum bonus-henricus",
+     "role": "companion",
+     "notes": "Mehrjähriges Blattgemüse für den Halbschatten"
+    },
+    {
+     "latinName": "Myrrhis odorata",
+     "role": "insectary",
+     "notes": "Frühe Doldenblüte für Nützlinge"
+    }
+   ]
+  },
+  {
+   "id": "pflaumen-gilde",
+   "title": "Pflaumen-Polykultur",
+   "description": "Im Stil der Obstbaum-Gilde von Toby Hemenway, „Gaia’s Garden“, übertragen auf die Pflaume: Erbsenstrauch bindet Stickstoff, Beinwell liefert Mulch, ein Narzissenring hält Gras ab, Schafgarbe und Fenchel locken Nützlinge.",
+   "image": "",
+   "anchor": "Prunus domestica",
+   "hidden": false,
+   "plants": [
+    {
+     "latinName": "Prunus domestica",
+     "commonName": "Pflaume",
+     "commonNameEn": "Plum",
+     "heightM": 6,
+     "widthM": 5,
+     "habit": "tree",
+     "eatable": true,
+     "insects": true,
+     "sunFull": true,
+     "waterMid": true,
+     "growSpeedMid": true
+    },
+    {
+     "latinName": "Caragana arborescens",
+     "commonName": "Erbsenstrauch",
+     "commonNameEn": "Siberian pea shrub",
+     "heightM": 4,
+     "widthM": 3,
+     "habit": "shrub",
+     "eatable": true,
+     "nitrogenFix": true,
+     "insects": true,
+     "windBreaking": true,
+     "fodder": true,
+     "sunFull": true,
+     "waterDry": true,
+     "growSpeedMid": true
+    },
+    {
+     "latinName": "Symphytum officinale",
+     "commonName": "Echter Beinwell",
+     "commonNameEn": "Comfrey",
+     "heightM": 1,
+     "widthM": 1,
+     "habit": "herb",
+     "meds": true,
+     "mineralFix": true,
+     "insects": true,
+     "groundCover": true,
+     "sunMid": true,
+     "sunFull": true,
+     "waterMid": true,
+     "growSpeedHigh": true
+    },
+    {
+     "latinName": "Narcissus pseudonarcissus",
+     "commonName": "Wilde Narzisse",
+     "commonNameEn": "Wild daffodil",
+     "heightM": 0.4,
+     "widthM": 0.2,
+     "habit": "herb",
+     "pest": true,
+     "insects": true,
+     "sunMid": true,
+     "waterMid": true
+    },
+    {
+     "latinName": "Achillea millefolium",
+     "commonName": "Gemeine Schafgarbe",
+     "commonNameEn": "Yarrow",
+     "heightM": 0.6,
+     "widthM": 0.5,
+     "habit": "herb",
+     "meds": true,
+     "insects": true,
+     "mineralFix": true,
+     "sunFull": true,
+     "waterDry": true
+    },
+    {
+     "latinName": "Foeniculum vulgare",
+     "commonName": "Fenchel",
+     "commonNameEn": "Fennel",
+     "heightM": 1.8,
+     "widthM": 0.6,
+     "habit": "herb",
+     "eatable": true,
+     "culinaric": true,
+     "insects": true,
+     "sunFull": true,
+     "waterDry": true
+    }
+   ],
+   "members": [
+    {
+     "latinName": "Caragana arborescens",
+     "role": "nFixer",
+     "notes": "Stickstoff für den Baum, Samen als Hühnerfutter"
+    },
+    {
+     "latinName": "Symphytum officinale",
+     "role": "mineralFixer",
+     "notes": "Tiefwurzler; Blätter als Mulch schneiden"
+    },
+    {
+     "latinName": "Narcissus pseudonarcissus",
+     "role": "pestConfuser",
+     "notes": "Ring an der Kronentraufe gegen Gras und Wühlmäuse"
+    },
+    {
+     "latinName": "Achillea millefolium",
+     "role": "insectary",
+     "notes": "Kleine Blüten für Schlupfwespen"
+    },
+    {
+     "latinName": "Foeniculum vulgare",
+     "role": "insectary",
+     "notes": "Dolden für Nützlinge; an den Rand setzen, hemmt Nachbarn"
+    }
+   ]
+  },
+  {
+   "id": "beeren-insektarium",
+   "title": "Beerenstrauch mit Nützlingssaum",
+   "description": "Im Stil von Toby Hemenway, „Gaia’s Garden“ (Nützlings- und Stickstoffpflanzen in der Gilde): Schwarze Johannisbeere, umgeben von Rotklee, Dill, Borretsch, Rainfarn und Schafgarbe, die über die ganze Saison Nützlinge anlocken.",
+   "image": "",
+   "anchor": "Ribes nigrum",
+   "hidden": false,
+   "plants": [
+    {
+     "latinName": "Ribes nigrum",
+     "commonName": "Schwarze Johannisbeere",
+     "commonNameEn": "Blackcurrant",
+     "heightM": 1.5,
+     "widthM": 1.5,
+     "habit": "shrub",
+     "eatable": true,
+     "meds": true,
+     "sunFull": true,
+     "sunMid": true,
+     "waterMid": true,
+     "growSpeedMid": true
+    },
+    {
+     "latinName": "Trifolium pratense",
+     "commonName": "Rotklee",
+     "commonNameEn": "Red clover",
+     "heightM": 0.4,
+     "widthM": 0.3,
+     "habit": "herb",
+     "nitrogenFix": true,
+     "insects": true,
+     "fodder": true,
+     "meds": true,
+     "sunFull": true,
+     "waterMid": true,
+     "growSpeedHigh": true
+    },
+    {
+     "latinName": "Anethum graveolens",
+     "commonName": "Dill",
+     "commonNameEn": "Dill",
+     "heightM": 0.8,
+     "widthM": 0.3,
+     "habit": "herb",
+     "eatable": true,
+     "culinaric": true,
+     "insects": true,
+     "sunFull": true,
+     "waterMid": true,
+     "growSpeedHigh": true
+    },
+    {
+     "latinName": "Borago officinalis",
+     "commonName": "Borretsch",
+     "commonNameEn": "Borage",
+     "heightM": 0.6,
+     "widthM": 0.4,
+     "habit": "herb",
+     "eatable": true,
+     "culinaric": true,
+     "insects": true,
+     "mineralFix": true,
+     "sunFull": true,
+     "waterMid": true,
+     "growSpeedHigh": true
+    },
+    {
+     "latinName": "Tanacetum vulgare",
+     "commonName": "Rainfarn",
+     "commonNameEn": "Tansy",
+     "heightM": 1,
+     "widthM": 0.6,
+     "habit": "herb",
+     "pest": true,
+     "insects": true,
+     "sunFull": true,
+     "waterDry": true,
+     "growSpeedHigh": true
+    },
+    {
+     "latinName": "Achillea millefolium",
+     "commonName": "Gemeine Schafgarbe",
+     "commonNameEn": "Yarrow",
+     "heightM": 0.6,
+     "widthM": 0.5,
+     "habit": "herb",
+     "meds": true,
+     "insects": true,
+     "mineralFix": true,
+     "sunFull": true,
+     "waterDry": true
+    }
+   ],
+   "members": [
+    {
+     "latinName": "Trifolium pratense",
+     "role": "nFixer",
+     "notes": "Stickstoff und Hummelweide"
+    },
+    {
+     "latinName": "Anethum graveolens",
+     "role": "insectary",
+     "notes": "Dolden für Schwebfliegen; sät sich selbst aus"
+    },
+    {
+     "latinName": "Borago officinalis",
+     "role": "insectary",
+     "notes": "Bienenmagnet, Blätter als Mulch"
+    },
+    {
+     "latinName": "Tanacetum vulgare",
+     "role": "pestConfuser",
+     "notes": "Starker Duft; wuchert, im Zaum halten"
+    },
+    {
+     "latinName": "Achillea millefolium",
+     "role": "insectary",
+     "notes": "Lockt Schlupfwespen"
+    }
+   ]
   }
  ]
 }

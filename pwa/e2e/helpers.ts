@@ -51,16 +51,14 @@ export { expect };
 /** Loads the two built-in sample plants through the UI. */
 export async function loadSamples(page: Page) {
   await page.goto('/');
-  await page.evaluate(() => { (document.getElementById('data-menu') as HTMLDetailsElement).open = true; });
-  await page.click('#btn-load-samples');
+  await page.click('#btn-load-samples');   // offered in the empty list
   await expect(page.locator('#plant-list [data-id]').first()).toBeAttached();
 }
 
 /** Loads the default species list (190 names) through the UI. */
 export async function loadMasterList(page: Page) {
   await page.goto('/');
-  await page.evaluate(() => { (document.getElementById('data-menu') as HTMLDetailsElement).open = true; });
-  await page.click('#btn-load-master');
+  await page.click('#btn-load-master');   // offered in the empty list
   await expect(page.locator('#plant-list [data-id]').first()).toBeAttached();
 }
 

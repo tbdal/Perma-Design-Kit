@@ -11,7 +11,8 @@ test('share link with view: recipient imports, start plan opens in 3D with the s
     localStorage.setItem('pgd-gartenplan-view-shared-plan', JSON.stringify({ view2d: null, cam3d: { position: [30, 18, 35], target: [10, 0, 7] }, mode: '3d', sun: { date: '2026-06-21', minutes: 1140 }, coverage: '' }));
     localStorage.setItem('pgd-gartenplan-last-id', 'shared-plan');
   });
-  await a.goto('/settings/');
+  await a.goto('/gartenplan');   // sharing sits with the plan (#4), no longer in the backup settings
+  await expect(a.locator('#phase-b')).not.toHaveClass(/hidden/);   // the last opened plan opens by itself
   await a.click('#btn-share-link');
   await expect(a.locator('#share-start')).toHaveValue('shared-plan');
   await a.click('#share-create');
@@ -71,8 +72,7 @@ test('persistence banner appears once there is data', async ({ page }) => {
   await stubNetwork(page);
   await page.goto('/');
   await expect(page.locator('#persist-banner')).toBeHidden();
-  await page.evaluate(() => { (document.getElementById('data-menu') as HTMLDetailsElement).open = true; });
-  await page.click('#btn-load-samples');
+  await page.click('#btn-load-samples');   // offered in the empty list
   await expect(page.locator('#plant-list [data-id]').first()).toBeAttached();
   await page.goto('/');
   await expect(page.locator('#persist-banner')).toBeVisible();
