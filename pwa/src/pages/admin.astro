@@ -219,6 +219,17 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
       try { localStorage.setItem(CLOSED_KEY, JSON.stringify([...closedGroups])); } catch { /* ignore */ }
     }, true);
 
+    // Licence popovers open under their "i" (the top layer otherwise puts them at the top left).
+    rows.addEventListener('beforetoggle', e => {
+      const pop = e.target as HTMLElement;
+      if (!pop.hasAttribute('popover') || (e as ToggleEvent).newState !== 'open') return;
+      const r = rows.querySelector(`[popovertarget="${pop.id}"]`)!.getBoundingClientRect();
+      const w = Math.min(384, innerWidth - 16); // max-w-sm
+      Object.assign(pop.style, { position: 'fixed', inset: 'auto', margin: '0', top: `${r.bottom + 4}px`, left: `${Math.max(8, Math.min(r.left, innerWidth - w - 8))}px` });
+    }, true);
+    // fixed to the viewport: close instead of drifting away while the page scrolls
+    addEventListener('scroll', () => rows.querySelectorAll<HTMLElement>('[popover]:popover-open').forEach(p => p.hidePopover()), { passive: true });
+
     rows.addEventListener('change', e => {
       const box = e.target as HTMLInputElement;
       const targets = box.dataset.group ? defs.filter(d => groupOf(d) === box.dataset.group) : defs.filter(d => d.id === box.dataset.id);

@@ -115,6 +115,11 @@ test('admin overrides from the server apply; admin page edits them', async ({ pa
   await page.click('[popovertarget="lic-climate"]');
   await expect(page.locator('#lic-climate')).toBeVisible();
   await expect(page.locator('#lic-climate')).toContainText('Open-Meteo');
+  // right under its "i", not at the top left of the window
+  const iBox = (await page.locator('[popovertarget="lic-climate"]').boundingBox())!;
+  const popBox = (await page.locator('#lic-climate').boundingBox())!;
+  expect(Math.abs(popBox.y - (iBox.y + iBox.height + 4))).toBeLessThan(2);
+  expect(popBox.x).toBeLessThanOrEqual(iBox.x + 1);
   await page.keyboard.press('Escape');
   // the planner group folds, and "Alle" switches the whole group
   await expect(page.locator('[data-group-box="gartenplan"] summary')).toContainText('Waldgartenplan');
