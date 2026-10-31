@@ -815,15 +815,20 @@ export function createGardenPlan3DView(
   // fluid). Simple 3D shares its geometry → InstancedMesh per shape and colour; full 3D has its own geometry per
   // plant part → BatchedMesh per material (foliage kinds, bark, stake, see-through copies; vertex colours,
   // alphaTest and the leaf-shaped shadow depth material all work batched).
-  // The per-plant groups stay in plantsGroup, hidden, for picking and dragging.
+  // The per-plant groups stay in plantsGroup, hidden, as transform holders for dragging and previewYears; full 3D
+  // swaps their batched geometry for NO_GEO (the batch holds the vertices) and picks via the batches (ownerOf).
   const instGroup = new THREE.Group();
   scene.add(instGroup);
   const instancesOf = new Map<string, { mesh: THREE.InstancedMesh | THREE.BatchedMesh; index: number; part: THREE.Object3D }[]>();
+  /** batch/instanced mesh → placementId per batchId/instanceId (picking). */
+  const ownerOf = new Map<THREE.Object3D, string[]>();
+  const NO_GEO = new THREE.BufferGeometry();
   const tmpM = new THREE.Matrix4();
   function buildInstances() {
     for (const c of instGroup.children) (c as THREE.InstancedMesh | THREE.BatchedMesh).dispose();
     instGroup.clear();
     instancesOf.clear();
+    ownerOf.clear();
     plantsGroup.updateMatrixWorld(true);
     const parts = new Map<string, { geo: THREE.BufferGeometry; mat: THREE.Material; list: { part: THREE.Mesh; id: string }[] }>();
     for (const g of plantsGroup.children) {
@@ -842,6 +847,9 @@ export function createGardenPlan3DView(
       const arr = instancesOf.get(id) ?? [];
       arr.push({ mesh, index, part });
       instancesOf.set(id, arr);
+      let owners = ownerOf.get(mesh);
+      if (!owners) ownerOf.set(mesh, owners = []);
+      owners[index] = id;
     };
     if (!simple) {
       for (const { mat, list } of parts.values()) {
@@ -859,6 +867,8 @@ export function createGardenPlan3DView(
           list.forEach(({ part, id }, k) => track(batch, ids[k], part, id));
           batch.computeBoundingSphere();
           instGroup.add(batch);
+          // Full-3D part geometry is per plant (rebuildPlacements disposes it too): the batch has a copy now.
+          for (const { part } of list) { part.geometry.dispose(); part.geometry = NO_GEO; }
         } catch (err) {
           // Parts that don't fit one batch (inconsistent attributes) are simply drawn on their own.
           console.warn('3D batching failed', err);
@@ -954,7 +964,7 @@ export function createGardenPlan3DView(
   const firstFrame = new Promise<void>(r => { firstFrameDone = r; });
   function rebuildPlacements() {
     // Free the old per-plant geometry (materials/textures are shared).
-    plantsGroup.traverse(o => { if (!simple || o.name === 'selection-ring') (o as THREE.Mesh).geometry?.dispose(); });
+    plantsGroup.traverse(o => { const g = (o as THREE.Mesh).geometry; if (g !== NO_GEO && (!simple || o.name === 'selection-ring')) g?.dispose(); });
     plantsGroup.clear();
     for (const placement of plan.placements) {
       if (opts.hidden?.(placement.id)) continue;
@@ -996,7 +1006,7 @@ export function createGardenPlan3DView(
     const fx = (f.minX + f.maxX) / 2, fz = (f.minY + f.maxY) / 2;
     const vf = (VFOV / 2) * Math.PI / 180;
     const hf = Math.atan(Math.tan(vf) * camera.aspect);
-    const tallest = plantsGroup.children.length ? new THREE.Box3().setFromObject(plantsGroup).max.y : 0;
+    const tallest = plantsGroup.children.length ? new THREE.Box3().setFromObject(plantsGroup).expandByObject(instGroup).max.y : 0;
     const dist = Math.max((f.maxX - f.minX) / 2 / Math.tan(hf), (f.maxY - f.minY) / 2 / Math.tan(vf), tallest * 2.5, 3);
     controls.target.set(fx, 0, fz);
     camera.position.set(fx, dist, fz + dist * 0.001);
@@ -1211,6 +1221,15 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
     return null;
   }
 
+  /** The plant under the ray: batches (full 3D) or the hidden part meshes (simple 3D, which shares its geometry),
+   *  plus selection rings and parts drawn unbatched. */
+  function pickPlacement(): string | null {
+    const hit = raycaster.intersectObjects(simple ? plantsGroup.children : [...instGroup.children, ...plantsGroup.children], true)[0];
+    if (!hit) return null;
+    const owners = ownerOf.get(hit.object);
+    return owners ? owners[hit.batchId ?? hit.instanceId ?? -1] ?? null : findPlacementId(hit.object);
+  }
+
   let dragState: { placementId: string; moved: boolean; startClientX: number; startClientY: number; pointerId: number; lastX: number; lastY: number } | null = null;
   let handingOver = false;
 
@@ -1341,8 +1360,7 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
       }
     }
 
-    const hit = raycaster.intersectObjects(plantsGroup.children, true)[0];
-    const hitId = hit ? findPlacementId(hit.object) : null;
+    const hitId = pickPlacement();
 
     if (hitId) {
       controls.enabled = false;

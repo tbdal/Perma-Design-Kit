@@ -1818,8 +1818,7 @@ import Layout from '../layouts/Layout.astro';
         renderUnplacedList();
         renderSuggestions();
         view3d?.refreshPlacements();
-        scheduleCoverage();
-        scheduleAutosave();
+        addPlacementMarkers([placement]); // the 2D marker right away (and saving, hints, modules), not only after switching back
       },
       onPlacementDragEnd(placementId, xM, yM) {
         const pl = editing?.placements.find(p => p.id === placementId);

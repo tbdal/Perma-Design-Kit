@@ -33,6 +33,7 @@ describe('imageSrc (Wikimedia pictures through /geo/commons/)', () => {
     const conf = readFileSync(new URL('../server/nginx/permadesignkit.org.conf', import.meta.url), 'utf8');
     expect(conf).toContain('location /geo/commons/file/ {');
     expect(conf).toContain('location /geo/commons/wikipedia/ {');
+    expect(conf).toContain('location = /geo/commons/credit {');
     expect(conf).toContain('location @pdk_commons_follow {');
     expect(conf).toMatch(/proxy_cache_path \S+ .*keys_zone=pdk_commons:/);
     expect(conf).toContain('proxy_pass https://upload.wikimedia.org/wikipedia/;');

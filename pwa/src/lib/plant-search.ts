@@ -304,14 +304,8 @@ export function needsImageCredit(p: Pick<PlantData, 'imageUrl' | 'imageCredit'>)
  *  if Commons has no usable metadata (or the request fails). */
 export async function fetchCommonsCredit(fileName: string): Promise<string> {
   try {
-    const url = new URL('https://commons.wikimedia.org/w/api.php');
-    url.searchParams.set('action', 'query');
-    url.searchParams.set('titles', `File:${fileName}`);
-    url.searchParams.set('prop', 'imageinfo');
-    url.searchParams.set('iiprop', 'extmetadata');
-    url.searchParams.set('format', 'json');
-    url.searchParams.set('origin', '*');
-    const res = await fetch(url.toString());
+    // Through our server (nginx /geo/commons/credit, cached): no visitor address reaches Wikimedia.
+    const res = await fetch(`/geo/commons/credit?file=${encodeURIComponent(fileName)}`);
     if (!res.ok) return '';
     const data = await res.json();
     const page: any = Object.values(data.query?.pages ?? {})[0];

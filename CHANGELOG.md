@@ -4,6 +4,12 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Baumscheiben drucken, 3D-Speicher, Bildnachweise 2026-10-31
+- [x] **Baumscheiben bei vielen Pflanzen (GitHub-Issue 12):** die Kartenansicht hängt nicht mehr („Invalid string length“), Karten erscheinen beim Hinscrollen; der Druck in Firefox schreibt Seite für Seite statt eines riesigen Textes #bugs #prüfen
+- [x] **3D braucht weniger Speicher:** Pflanzen liegen im vollen 3D nur noch einmal im Speicher, Antippen trifft direkt die gezeichneten Pflanzen #minor #prüfen
+- [x] **3D: getippte Pflanze sofort im 2D-Plan** (vorher erst nach dem Umschalten) #bugs #prüfen
+- [x] **Bildnachweise über unseren Server (GitHub-Issue 5):** auch Autor und Lizenz der Pflanzenbilder fragt der Browser nicht mehr direkt bei Wikimedia ab #minor #prüfen
+
 ## Sichern, Downloads auf iOS, Pflanzenbilder offline, neue Beispiel-Polykulturen 2026-10-31
 - [x] **Sichern statt 20 Knöpfe (GitHub-Issue 4):** Einstellungen → „Sichern“ mit Backup herunterladen/einlesen/teilen und einem Online-Speicher (keiner, WebDAV oder Gist); doppelter JSON-Export/-Import entfällt, „Projekt als Link teilen“ im Plan und bei den Polykulturen, „Standard-Artenliste laden“ unter Datenquellen, Beispiel- und Standarddaten in der leeren Pflanzenliste, „Alle Daten löschen“ abgesetzt am Ende #major #prüfen
 - [x] **Downloads in der installierten iPhone-App (GitHub-Issue 8):** Backup, Debug-Datei, PDFs, CSV, GeoJSON, Kalender, 3D-Bild öffnen dort das Teilen-Menü („In Dateien sichern“); wenn das nicht geht, ein Hinweis statt Stille #bugs #prüfen

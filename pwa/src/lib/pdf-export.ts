@@ -325,38 +325,35 @@ async function embedBaumscheibePage(pdfDoc: PDFDocument, plant: PlantData) {
   page.drawImage(img, { x: 0, y: 0, width: cardW, height: cardH });
 }
 
-function buildPrintHtml(svgs: string[], title: string): string {
-  const pages = svgs.map((svg, i) => {
-    const scaled = svg.replace('<svg', '<svg style="width:100%;height:100%;display:block;"');
-    const pb = i < svgs.length - 1 ? ' style="page-break-after:always;"' : '';
-    return `<div class="page"${pb}>${scaled}</div>`;
-  }).join('');
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${title}</title>
-<style>
-  @page { size: A4 portrait; margin: 0; }
-  html, body { margin: 0; padding: 0; }
-  .page { width: 100vw; height: 100vh; overflow: hidden; }
-</style></head><body>${pages}</body></html>`;
-}
-
-async function openPrintWindow(svgs: string[], title: string): Promise<void> {
+/** A print window filled page by page: each Baumscheibe is a ~5 MB SVG, and all of them joined into one
+ *  string broke past ~100 plants ("Invalid string length", the export then hung — GitHub issue 12). */
+async function printPages(title: string, css: string, count: number, page: (i: number) => Promise<string>): Promise<void> {
   const w = window.open('', '_blank');
   if (!w) {
     alert('Popup-Blocker aktiv? Bitte für diese Seite erlauben und nochmal probieren.');
     return;
   }
   w.document.open();
-  w.document.write(buildPrintHtml(svgs, escapeHtml(title)));
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title><style>${css}</style></head><body>`);
+  for (let i = 0; i < count; i++) w.document.write(await page(i));
+  w.document.write('</body></html>');
   w.document.close();
   await new Promise(r => setTimeout(r, 300));
   w.focus();
   w.print();
 }
 
+const PAGE_CSS = '@page { size: A4 portrait; margin: 0; } html, body { margin: 0; padding: 0; } .page { width: 100vw; height: 100vh; overflow: hidden; }';
+async function openPrintWindow(plants: PlantData[], title: string): Promise<void> {
+  await printPages(title, PAGE_CSS, plants.length, async i => {
+    const svg = (await renderBaumscheibeSvg(plants[i])).replace('<svg', '<svg style="width:100%;height:100%;display:block;"');
+    return `<div class="page"${i < plants.length - 1 ? ' style="page-break-after:always;"' : ''}>${svg}</div>`;
+  });
+}
+
 export async function exportBaumscheibePDF(plant: PlantData): Promise<void> {
   if (isFirefox) {
-    const svg = await renderBaumscheibeSvg(plant);
-    await openPrintWindow([svg], `${plant.latinName || 'Pflanze'} — Baumscheibe`);
+    await openPrintWindow([plant], `${plant.latinName || 'Pflanze'} — Baumscheibe`);
     return;
   }
   const pdfDoc = await PDFDocument.create();
@@ -368,8 +365,7 @@ export async function exportBaumscheibesPDF(plants: PlantData[]): Promise<void> 
   plants = expandByPrintCount(plants);
   if (plants.length === 0) return;
   if (isFirefox) {
-    const svgs = await Promise.all(plants.map(p => renderBaumscheibeSvg(p)));
-    await openPrintWindow(svgs, 'Permakultur-Baumscheiben');
+    await openPrintWindow(plants, 'Permakultur-Baumscheiben');
     return;
   }
   const pdfDoc = await PDFDocument.create();
@@ -451,45 +447,18 @@ async function embedBaumscheibeSheetPage(pdfDoc: PDFDocument, plants: PlantData[
   }
 }
 
-function buildSheetPrintHtml(plantGroups: PlantData[][], svgsByGroup: string[][], title: string): string {
+async function openSheetPrintWindow(plantGroups: PlantData[][], title: string): Promise<void> {
   const origin = sheetGridOrigin();
-  const pages = plantGroups.map((group, gi) => {
-    const cells = svgsByGroup[gi].map(svg =>
-      `<div class="cell">${svg.replace('<svg', `<svg style="width:100%;height:100%;display:block;"`)}</div>`
-    ).join('');
+  const css = `@page { size: 210mm 297mm; margin: 0; } html, body { margin: 0; padding: 0; }
+    .page { width: 210mm; height: 297mm; overflow: hidden; box-sizing: border-box; }
+    .grid { display: grid; grid-template-columns: repeat(${SHEET_COLS}, ${TILE_MM}mm); grid-auto-rows: ${TILE_MM}mm; gap: ${SHEET_GAP_MM}mm; }
+    .cell { width: ${TILE_MM}mm; height: ${TILE_MM}mm; overflow: hidden; }`;
+  await printPages(title, css, plantGroups.length, async gi => {
+    let cells = '';
+    for (const p of plantGroups[gi]) cells += `<div class="cell">${cropSvgToDisc(await renderBaumscheibeSvg(p)).replace('<svg', '<svg style="width:100%;height:100%;display:block;"')}</div>`;
     const pb = gi < plantGroups.length - 1 ? ' style="page-break-after:always;"' : '';
     return `<div class="page"${pb}><div class="grid" style="margin:${origin.y}mm ${origin.x}mm;">${cells}</div></div>`;
-  }).join('');
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${title}</title>
-<style>
-  @page { size: 210mm 297mm; margin: 0; }
-  html, body { margin: 0; padding: 0; }
-  .page { width: 210mm; height: 297mm; overflow: hidden; box-sizing: border-box; }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(${SHEET_COLS}, ${TILE_MM}mm);
-    grid-auto-rows: ${TILE_MM}mm;
-    gap: ${SHEET_GAP_MM}mm;
-  }
-  .cell { width: ${TILE_MM}mm; height: ${TILE_MM}mm; overflow: hidden; }
-</style></head><body>${pages}</body></html>`;
-}
-
-async function openSheetPrintWindow(plantGroups: PlantData[][], title: string): Promise<void> {
-  const svgsByGroup = await Promise.all(
-    plantGroups.map(group => Promise.all(group.map(async p => cropSvgToDisc(await renderBaumscheibeSvg(p)))))
-  );
-  const w = window.open('', '_blank');
-  if (!w) {
-    alert('Popup-Blocker aktiv? Bitte für diese Seite erlauben und nochmal probieren.');
-    return;
-  }
-  w.document.open();
-  w.document.write(buildSheetPrintHtml(plantGroups, svgsByGroup, escapeHtml(title)));
-  w.document.close();
-  await new Promise(r => setTimeout(r, 300));
-  w.focus();
-  w.print();
+  });
 }
 
 function chunk<T>(arr: T[], size: number): T[][] {
@@ -576,26 +545,20 @@ export async function exportBaumscheibeScaledPDF(plants: PlantData[], scale: num
   const clipOverDisc = (DISC_RADIUS_UNITS + 10) / DISC_RADIUS_UNITS;
 
   if (isFirefox) {
-    const svgs = await Promise.all(plants.map(async p => cropSvgToDisc(await renderBaumscheibeSvg(p))));
-    const pages = Array.from({ length: pageCount }, (_, pg) => {
-      const cells = packed.filter(c => c.page === pg).map(c => {
+    await printPages(`Baumscheiben 1:${scale}`, `@page{size:${pw}mm ${ph}mm;margin:0}html,body{margin:0;padding:0}`, pageCount, async pg => {
+      let cells = '';
+      for (const c of packed.filter(x => x.page === pg)) {
         const { disc, ring } = sizes(c);
         const side = disc * cropOverDisc, clipD = disc * clipOverDisc;
-        return `<div style="position:absolute;left:${c.cx - clipD / 2}mm;top:${c.cy - clipD / 2}mm;width:${clipD}mm;height:${clipD}mm;border-radius:50%;overflow:hidden;">` +
+        const svg = cropSvgToDisc(await renderBaumscheibeSvg(plants[c.index]));
+        cells += `<div style="position:absolute;left:${c.cx - clipD / 2}mm;top:${c.cy - clipD / 2}mm;width:${clipD}mm;height:${clipD}mm;border-radius:50%;overflow:hidden;">` +
           `<div style="position:absolute;left:${(clipD - side) / 2}mm;top:${(clipD - side) / 2}mm;width:${side}mm;height:${side}mm;">` +
-          `${svgs[c.index].replace('<svg', '<svg style="width:100%;height:100%;display:block;"')}</div></div>` +
+          `${svg.replace('<svg', '<svg style="width:100%;height:100%;display:block;"')}</div></div>` +
           (fixedDisc && ring > disc ? `<div style="position:absolute;left:${c.cx - ring / 2}mm;top:${c.cy - ring / 2}mm;width:${ring}mm;height:${ring}mm;box-sizing:border-box;border:0.3mm solid #555;border-radius:50%;"></div>` : '');
-      }).join('');
+      }
       const caption = `<div style="position:absolute;left:${SCALED_PAGE_MARGIN_MM}mm;bottom:1.2mm;font:6pt Helvetica,Arial,sans-serif;color:#999;">${getLang() === 'de' ? 'Maßstab' : 'Scale'} 1:${scale}</div>`;
       return `<div style="position:relative;width:${pw}mm;height:${ph}mm;overflow:hidden;${pg < pageCount - 1 ? 'page-break-after:always;' : ''}">${cells}${caption}</div>`;
-    }).join('');
-    const w = window.open('', '_blank');
-    if (!w) { alert('Popup-Blocker aktiv? Bitte für diese Seite erlauben und nochmal probieren.'); return { pages: pageCount, shrunk, discarded }; }
-    w.document.open();
-    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Baumscheiben 1:${scale}</title><style>@page{size:${pw}mm ${ph}mm;margin:0}html,body{margin:0;padding:0}</style></head><body>${pages}</body></html>`);
-    w.document.close();
-    await new Promise(r => setTimeout(r, 300));
-    w.focus(); w.print();
+    });
     return { pages: pageCount, shrunk, discarded };
   }
 

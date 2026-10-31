@@ -61,6 +61,8 @@ node scripts/check-private.mjs dist
 # Browser tests against the fresh build (offline, external services stubbed).
 # Needs Playwright's Chromium once: npx playwright install chromium
 npx playwright test --reporter=line
+# The private modules' browser tests too: an outdated one (baumbio, 30.10.) went unnoticed otherwise.
+if [[ -f src/expert/test/e2e/playwright.config.ts ]]; then npx playwright test -c src/expert/test/e2e/playwright.config.ts --reporter=line; fi
 
 # /x/ (private chunks) keeps the files of earlier builds: a tab still running
 # the previous build (the service worker holds it until "Neu laden") would
