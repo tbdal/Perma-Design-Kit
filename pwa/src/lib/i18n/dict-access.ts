@@ -28,6 +28,8 @@ export const accessDict: Dict = {
   adGroupCount: { de: '{n} Funktionen', en: '{n} features' },
   adGroupChanged: { de: '{n} abweichend vom Standard', en: '{n} differ from default' },
   adPrivate: { de: 'nur VPS', en: 'VPS only' },
+  adLicence: { de: 'Lizenzhinweis', en: 'Licence note' },
+  adLicenceProblem: { de: 'Lizenz derzeit problematisch', en: 'Licence currently problematic' },
   adChanged: { de: 'geändert', en: 'changed' },
   adSave: { de: 'Übernehmen', en: 'Apply' },
   adReset: { de: 'Alles auf Standard', en: 'Reset all to defaults' },

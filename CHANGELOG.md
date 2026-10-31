@@ -4,6 +4,10 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Funktionen verwalten: Menü und Lizenzhinweise 2026-10-31
+- [x] **„Funktionen verwalten“ nicht mehr im Modus- und Kontomenü** (jetzt im Team-Menü „Entwicklung“, weiter auch über Strg+, und die Anmeldeseite) #minor
+- [x] **Lizenzhinweise auf „Funktionen verwalten“:** ein „i“ mit Popover bei Funktionen mit lizenzrechtlicher Relevanz (Luftbild/Satellit, Gelände, Gebäude, Standortklima), rot, wenn die Lizenz derzeit problematisch ist #minor
+
 ## Baumscheiben drucken, 3D-Speicher, Bildnachweise 2026-10-31
 - [x] **Baumscheiben bei vielen Pflanzen (GitHub-Issue 12):** die Kartenansicht hängt nicht mehr („Invalid string length“), Karten erscheinen beim Hinscrollen; der Druck in Firefox schreibt Seite für Seite statt eines riesigen Textes #bugs #prüfen
 - [x] **3D braucht weniger Speicher:** Pflanzen liegen im vollen 3D nur noch einmal im Speicher, Antippen trifft direkt die gezeichneten Pflanzen #minor #prüfen

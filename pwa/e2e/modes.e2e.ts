@@ -111,6 +111,11 @@ test('admin overrides from the server apply; admin page edits them', async ({ pa
   // water: also on in simple mode; zones: off everywhere ("Aus")
   await page.check('input[data-id="zones"][data-off]');
   await expect(page.locator('input[data-id="zones"][data-mode="classic"]')).not.toBeChecked();
+  // licence note: an "i" that opens a popover
+  await page.click('[popovertarget="lic-climate"]');
+  await expect(page.locator('#lic-climate')).toBeVisible();
+  await expect(page.locator('#lic-climate')).toContainText('Open-Meteo');
+  await page.keyboard.press('Escape');
   // the planner group folds, and "Alle" switches the whole group
   await expect(page.locator('[data-group-box="gartenplan"] summary')).toContainText('Waldgartenplan');
   await page.check('input[data-group="gartenplan"][data-mode="simple"]');

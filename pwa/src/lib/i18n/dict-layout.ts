@@ -164,7 +164,6 @@ export const layoutDict: Dict = {
   modeTeamDesc: { de: 'Alle Funktionen zum Testen (nur Team)', en: 'Every feature, for testing (team only)' },
   modeLogin: { de: 'Anmelden', en: 'Log in' },
   modeLogout: { de: 'Abmelden', en: 'Log out' },
-  modeAdmin: { de: 'Funktionen verwalten', en: 'Manage features' },
   internNote: { de: 'Diese Seite ist nur nach Anmeldung im passenden Modus sichtbar.', en: 'This page is only visible after logging in, in the matching mode.' },
   modeLoggedInAs: { de: 'Angemeldet als {name}', en: 'Logged in as {name}' },
 };

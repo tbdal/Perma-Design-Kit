@@ -43,6 +43,8 @@ export interface FeatureDef {
   private?: boolean;
   /** Group on the admin page (FEATURE_GROUPS); without one: 'other'. */
   group?: string;
+  /** Licence notes for the admin page (an "i" with a popover); problem = currently unresolved (red "i"). */
+  licence?: { de: string; en: string; problem?: boolean };
 }
 
 /** Groups on the admin page, in this order (unknown groups follow, then 'other'). */
@@ -68,16 +70,16 @@ export const FEATURES: readonly FeatureDef[] = [
   { id: 'polyculture', de: 'Polykultur verknüpfen', en: 'Link a polyculture', modes: FULL, group: 'gartenplan' },
   { id: 'polyculture-package', de: 'Polykultur als Paket setzen', en: 'Place a polyculture as a package', modes: ['simple', ...FULL], group: 'gartenplan' },
   { id: 'location', de: 'Standort festlegen und drehen', en: 'Set location and rotation', modes: FULL, group: 'gartenplan' },
-  { id: 'basemap-extra', de: 'Luftbild, Satellit, Deckkraft der Karte', en: 'Aerial photo, satellite, map opacity', modes: FULL, group: 'gartenplan' },
-  { id: 'terrain', de: 'Gelände und Höhenlinien', en: 'Terrain and contour lines', modes: FULL, group: 'gartenplan' },
-  { id: 'buildings', de: 'Gebäude aus OpenStreetMap', en: 'Buildings from OpenStreetMap', modes: FULL, group: 'gartenplan' },
+  { id: 'basemap-extra', de: 'Luftbild, Satellit, Deckkraft der Karte', en: 'Aerial photo, satellite, map opacity', modes: FULL, group: 'gartenplan', licence: { de: 'Luftbilder der Länder (dl-de/by-2.0, dl-de/zero-2.0, CC BY 4.0), basemap.at (CC BY 4.0), swisstopo, PDOK: Quellenvermerk muss sichtbar bleiben. Satellit: Sentinel-2 cloudless über EOX — die gehosteten Kacheln sind nur nichtkommerziell frei.', en: 'State aerial photos (dl-de/by-2.0, dl-de/zero-2.0, CC BY 4.0), basemap.at (CC BY 4.0), swisstopo, PDOK: the credit must stay visible. Satellite: Sentinel-2 cloudless via EOX — the hosted tiles are free for non-commercial use only.' } },
+  { id: 'terrain', de: 'Gelände und Höhenlinien', en: 'Terrain and contour lines', modes: FULL, group: 'gartenplan', licence: { de: 'Höhen: Terrain Tiles (Mapzen/AWS) und Geländemodelle der Länder (dl-de) — Namensnennung nötig.', en: 'Heights: Terrain Tiles (Mapzen/AWS) and state terrain models (dl-de) — attribution required.' } },
+  { id: 'buildings', de: 'Gebäude aus OpenStreetMap', en: 'Buildings from OpenStreetMap', modes: FULL, group: 'gartenplan', licence: { de: 'OpenStreetMap (ODbL 1.0): Namensnennung „© OpenStreetMap-Mitwirkende“; abgeleitete Datenbanken unter ODbL.', en: 'OpenStreetMap (ODbL 1.0): credit “© OpenStreetMap contributors”; derived databases under ODbL.' } },
   { id: 'sun-advanced', de: 'Sonne: Datum, Zeitraffer, Kamera, 3D-Bild', en: 'Sun: date, time-lapse, camera, 3D image', modes: FULL, group: 'gartenplan' },
   { id: 'coverage', de: 'Funktions-Abdeckung, Besonnung, Vorschläge', en: 'Function coverage, sun hours, suggestions', modes: FULL, group: 'gartenplan' },
   { id: 'warnings', de: 'Hinweise (Abstand, Licht, Nachbarn)', en: 'Hints (spacing, light, neighbours)', modes: FULL, group: 'gartenplan' },
   { id: 'phases', de: 'Bauabschnitte', en: 'Planting phases', modes: FULL, group: 'gartenplan' },
   { id: 'water', de: 'Wasser im Gelände, Swales', en: 'Water on the land, swales', modes: FULL, group: 'gartenplan' },
   { id: 'zones', de: 'Zonen & Sektoren', en: 'Zones & sectors', modes: FULL, group: 'gartenplan' },
-  { id: 'climate', de: 'Standortklima', en: 'Site climate', modes: FULL, group: 'gartenplan' },
+  { id: 'climate', de: 'Standortklima', en: 'Site climate', modes: FULL, group: 'gartenplan', licence: { de: 'Open-Meteo (ERA5, CC BY 4.0): Namensnennung nötig; die kostenlose API ist nur für nichtkommerzielle Nutzung.', en: 'Open-Meteo (ERA5, CC BY 4.0): attribution required; the free API is for non-commercial use only.' } },
   { id: 'yield', de: 'Ertrag & Pflege, Pflegekalender', en: 'Yield & care, care calendar', modes: FULL, group: 'gartenplan' },
   { id: 'export', de: 'Export: PDF, GeoJSON, Pflanzliste, Kalender', en: 'Export: PDF, GeoJSON, plant list, calendar', modes: FULL, group: 'gartenplan' },
 ];
