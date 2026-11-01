@@ -6,7 +6,7 @@ export const settingsDict: Dict = {
 
   sectionSources: { de: 'Datenquellen', en: 'Data sources' },
   sectionLogin: { de: 'Anmeldung', en: 'Sign-in' },
-  loginOut: { de: 'Nicht angemeldet. Mit einem Zugang (Experte, Team) siehst du Funktionen in Erprobung.', en: 'Not signed in. With an account (expert, team) you see features being tried out.' },
+  loginOut: { de: 'Nicht angemeldet. Mit einem Zugang (Beta-Test, Team) siehst du Funktionen in Erprobung.', en: 'Not signed in. With an account (beta test, team) you see features being tried out.' },
   loginAs: { de: 'Angemeldet als {name} ({role}).', en: 'Signed in as {name} ({role}).' },
   loginTo: { de: 'Anmelden', en: 'Sign in' },
   loginOutBtn: { de: 'Abmelden', en: 'Sign out' },

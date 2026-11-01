@@ -14,7 +14,7 @@ declare const __PDK_VERSION__: string;
 export const APP_VERSION: string = typeof __PDK_VERSION__ !== 'undefined' ? __PDK_VERSION__ : 'dev';
 
 /** `idea`: an idea / wish instead of a problem (Feedback → "Idee einreichen"). */
-export interface ReportText { page: string; what: string; expected: string; idea?: boolean }
+export interface ReportText { page: string; what: string; expected: string; idea?: boolean; beta?: boolean }
 
 export interface CapturedError { t: string; msg: string; src?: string; }
 
@@ -66,7 +66,7 @@ const body = (r: ReportText, env: string, de: boolean) => [
   `${de ? 'Umgebung' : 'Environment'}: ${env}`,
 ].join('\n');
 
-const title = (r: ReportText) => `${r.idea ? 'Idee: ' : ''}[${r.page}] ${(r.what.split('\n')[0] || (r.idea ? 'Idee' : 'Fehler')).slice(0, 80)}`;
+const title = (r: ReportText) => `${r.beta ? '[Beta] ' : ''}${r.idea ? 'Idee: ' : ''}[${r.page}] ${(r.what.split('\n')[0] || (r.idea ? 'Idee' : 'Fehler')).slice(0, 80)}`;
 
 /** New-issue link with the issue form (.github/ISSUE_TEMPLATE/bug_report.yml) pre-filled. */
 export function issueUrl(r: ReportText, env: string): string {

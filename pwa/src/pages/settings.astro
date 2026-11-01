@@ -342,7 +342,7 @@ import Layout from '../layouts/Layout.astro';
     const phone = document.getElementById('login-phone') as HTMLButtonElement, out = document.getElementById('login-out') as HTMLButtonElement;
     const box = document.getElementById('login-qr-box')!, left = document.getElementById('login-qr-left')!, err = document.getElementById('login-qr-err')!;
     let url = '', until = 0, tick: ReturnType<typeof setInterval> | undefined;
-    const ROLE: Record<string, string> = { expert: 'Experte', team: 'Team', admin: 'Admin' };
+    const ROLE: Record<string, string> = { expert: 'Beta-Test', team: 'Team', admin: 'Admin' };
     const showWho = () => {
       const a = getAuth();
       who.textContent = a ? t('loginAs', { name: a.name, role: getLang() === 'en' ? a.role : ROLE[a.role] ?? a.role }) : t('loginOut');

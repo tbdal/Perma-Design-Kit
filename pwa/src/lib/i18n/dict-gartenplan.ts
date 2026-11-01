@@ -503,5 +503,5 @@ export const gartenplanDict: Dict = {
   guideTipRhizo: { de: 'Fehlt nur noch die Wurzelschicht, zum Beispiel Topinambur oder Meerrettich. Sie lockert den Boden.', en: 'Only the root layer is missing, for example Jerusalem artichoke or horseradish. It loosens the soil.' },
   guideTipAll: { de: 'Alle fünf Schichten sind belegt. Sieh dir deinen Waldgarten jetzt in 3D an.', en: 'All five layers are filled. Now look at your forest garden in 3D.' },
   guideTipDone: { de: 'Alle Schichten belegt. Mit dem Regler „Jahre seit Projektbeginn“ siehst du, wie dein Garten wächst.', en: 'All layers filled. The “years since project start” slider shows how your garden grows.' },
-  expertBadge: { de: 'Experte', en: 'Expert' },
+  expertBadge: { de: 'Beta-Test', en: 'Beta test' },
 };

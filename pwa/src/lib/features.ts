@@ -90,11 +90,12 @@ export const isUiMode = (v: unknown): v is UiMode => typeof v === 'string' && (U
 /** Feature ids allowed in a config: lowercase words with dashes (the server applies the same rule). */
 export const FEATURE_ID_RE = /^[a-z0-9][a-z0-9-]{0,39}$/;
 
-/** Modes in which a feature is on, after admin overrides. Private features are never on outside the login modes. */
+/** Modes in which a feature is on, after admin overrides. Private features are never on outside the login modes;
+ *  a feature with an unresolved licence problem is never on in the beta mode ('expert'), whatever the admin ticks. */
 export function modesFor(id: string, config: FeatureConfig = {}, defs: readonly FeatureDef[] = FEATURES): UiMode[] {
   const def = defs.find(d => d.id === id);
   const modes = config[id] ?? def?.modes ?? [];
-  return modes.filter(m => !def?.private || LOGIN_MODES.includes(m));
+  return modes.filter(m => (!def?.private || LOGIN_MODES.includes(m)) && !(def?.licence?.problem && m === 'expert'));
 }
 
 /** Ids of all features that are off in the given mode (defaults plus any ids only the config knows). */

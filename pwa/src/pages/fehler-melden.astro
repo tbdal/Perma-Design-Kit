@@ -68,7 +68,8 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
     const env = environmentLine();
     document.getElementById('rp-env')!.textContent = env;
 
-    const text = (): ReportText => ({ page: page.value.trim(), what: what.value.trim(), expected: expected.value.trim(), ...(idea ? { idea } : {}) });
+    const beta = new URLSearchParams(location.search).get('beta') === '1'; // from the Beta shield in the header
+    const text = (): ReportText => ({ page: page.value.trim(), what: what.value.trim(), expected: expected.value.trim(), ...(idea ? { idea } : {}), ...(beta ? { beta } : {}) });
 
     const status = document.getElementById('rp-status')!;
     const makeFile = async () => {

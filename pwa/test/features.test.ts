@@ -54,6 +54,13 @@ describe('admin overrides', () => {
     expect(modesFor('waldrand', { waldrand: ['classic', 'team'] }, defs)).toEqual(['team']);
   });
 
+  it('a feature with a licence problem is never on in the beta mode (expert), whatever the config says', () => {
+    const defs: FeatureDef[] = [...FEATURES, { id: 'steckbrief', de: 'S', en: 'S', modes: ['expert', 'team'], licence: { de: 'x', en: 'x', problem: true } }];
+    expect(modesFor('steckbrief', {}, defs)).toEqual(['team']);
+    expect(modesFor('steckbrief', { steckbrief: ['classic', 'expert', 'team'] }, defs)).toEqual(['classic', 'team']);
+    expect(modesFor('terrain', { terrain: ['expert'] }, defs)).toEqual(['expert']); // licence notes without "problem" stay on
+  });
+
   it('every feature has a known group', () => {
     for (const f of FEATURES) expect(f.group, f.id).toBe('gartenplan');
   });

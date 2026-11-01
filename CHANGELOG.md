@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Beta-Test statt Experte, Schritt 1 2026-11-01
+- [x] **Rolle „Experte“ heißt überall „Beta-Test“** (Moduswahl, /anmelden/, /admin/, Datenschutz-Abschnitt „Beta-Zugang“, Hilfe; der interne Schlüssel `expert` bleibt), Schild „Beta“ in der Kopfzeile öffnet das Feedback-Formular mit „[Beta]“ im Betreff, Funktionen mit ungeklärter Lizenz (`licence.problem`) sind im Beta-Modus nie an #major #prüfen
+
 ## Waldgartenplan: 3D-Höhenlinien, Rechtsklick, Globus, Mapbox 2026-11-01
 - [x] **3D: Höhenlinien werden angezeigt** (auf dem Gelände aufgelegt, jede fünfte stärker; folgen dem Häkchen und der Abstandswahl wie in 2D) #bugs #prüfen (Werkstatt #473)
 - [x] **3D: Rechtsklick (am Handy langes Drücken) öffnet die Karte „Punkt im Plan“** wie in 2D; ein Rechts-Zug zum Verschieben der Ansicht öffnet nichts #bugs #prüfen (Werkstatt #475)
