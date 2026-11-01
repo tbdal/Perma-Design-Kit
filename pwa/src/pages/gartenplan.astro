@@ -222,8 +222,7 @@ import Layout from '../layouts/Layout.astro';
           <button data-feature="boundary-edit" id="btn-edit-boundary" type="button" aria-pressed="false" data-i18n="btnEditBoundary" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700 aria-pressed:bg-amber-100 aria-pressed:ring-amber-400 dark:aria-pressed:bg-amber-900/40">✎ Umriss bearbeiten</button>
           <button data-feature="areas" id="btn-draw-area" type="button" data-i18n="btnDrawArea" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">▱ Fläche einzeichnen</button>
           <button data-feature="row" id="btn-draw-row" type="button" data-i18n="btnDrawRow" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">⋯ Reihe pflanzen</button>
-          <button data-feature="export" id="btn-export-geojson" type="button" data-i18n="btnExportGeojson" data-i18n-title="exportGeojsonTitle" title="Für QGIS & Co.: Umriss, Flächen und Pflanzen als GeoJSON (WGS84)" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">⤓ GeoJSON (QGIS)</button>
-          <a data-feature="export" id="btn-plan-calendar" href="/kalender" data-i18n="btnPlanCalendar" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">Kalender</a>
+          <button data-feature="export" id="btn-export-geojson" type="button" data-i18n="btnExportGeojson" data-i18n-title="exportGeojsonTitle" title="Für QGIS & Co.: Umriss, Flächen und Pflanzen als GeoJSON (WGS84)" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">⤓ GeoJSON</button>
           <button id="btn-share-link" type="button" data-i18n="shareOpen" data-i18n-title="shareOpenTitle" title="Projekt als Link teilen" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">🔗 Teilen…</button>
           <button data-feature="export" id="btn-shopping" type="button" data-i18n="btnShopping" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">Pflanzliste</button>
           <button data-feature="export" id="btn-export-pdf" data-i18n="btnExportPdf" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">PDF exportieren</button>
@@ -5554,12 +5553,6 @@ import Layout from '../layouts/Layout.astro';
   }
   const shopFile = (ext: string) => `${(editing?.name || t('planUnnamed')).replace(/[\\/:*?"<>|]+/g, '_')} – ${t('shopTitle')}.${ext}`;
   document.getElementById('btn-shopping')!.addEventListener('click', () => { renderShopping(); shoppingDialog.showModal(); });
-  // "Kalender": the calendar page filtered to this plan's plants.
-  document.getElementById('btn-plan-calendar')!.addEventListener('click', e => {
-    if (!editing) return;
-    e.preventDefault();
-    location.href = `/kalender?plan=${encodeURIComponent(editing.id)}`;
-  });
   document.getElementById('shopping-close')!.addEventListener('click', () => shoppingDialog.close());
   shoppingDialog.addEventListener('click', e => { if (e.target === shoppingDialog) shoppingDialog.close(); });
   document.getElementById('shopping-csv')!.addEventListener('click', () => {
