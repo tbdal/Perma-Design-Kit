@@ -102,6 +102,8 @@ export interface SuggestionPreview3D {
   label: string;
 }
 
+export interface Contours3D { segments: { x1: number; y1: number; x2: number; y2: number; index: boolean }[] }
+
 export interface GardenPlan3DView {
   /** Renders the current view and returns a copy of the image. */
   snapshot(): HTMLCanvasElement;
@@ -111,6 +113,8 @@ export interface GardenPlan3DView {
   setCoverage(overlay: CoverageOverlay3D | null): void;
   /** Flow paths, sinks and swale suggestions draped on the ground (null hides them). */
   setWater(water: Water3D | null): void;
+  /** Contour lines (plan meters, `index` = every fifth, drawn stronger) draped on the ground; null hides them. */
+  setContours(contours: Contours3D | null): void;
   /** Own position (GPS) as a pole with an accuracy ring on the ground; null hides it. */
   setPositionMarker(pos: { xM: number; yM: number; accM: number } | null): void;
   updateYears(years: number): void;
@@ -362,7 +366,7 @@ export function createGardenPlan3DView(
 
   const VFOV = 50;
   const maxDim = Math.max(plan.areaWidthM, plan.areaHeightM, 2);
-  const camera = new THREE.PerspectiveCamera(VFOV, Math.max(1, container.clientWidth) / Math.max(1, container.clientHeight), 0.1, 400000); // far: unlimited zoom-out (log depth keeps precision)
+  const camera = new THREE.PerspectiveCamera(VFOV, Math.max(1, container.clientWidth) / Math.max(1, container.clientHeight), 0.1, 1e8); // far: zoom-out to the whole globe (log depth keeps precision)
   const { x: cx, z: cz } = boundaryCentroid(plan);
   camera.position.set(cx + maxDim * 0.6, maxDim * 0.8, cz + maxDim * 0.6);
   // Terrain: heights relative to the plan centre, so the camera, sun path
@@ -989,7 +993,7 @@ export function createGardenPlan3DView(
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.target.set(cx, 0, cz);
   controls.minDistance = 1;
-  controls.maxDistance = 50000; // zoom out without limit (≈ region scale)
+  controls.maxDistance = 3e7; // zoom out to the whole globe
   controls.maxPolarAngle = Math.PI / 2 - 0.02;
   controls.enableDamping = false;
   // Moving the view (right / Cmd / Ctrl / Shift + drag, two fingers) slides over the ground at the same height —
@@ -1415,7 +1419,7 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
   // (corner heights from the terrain) plus dashed rings at the gaps. ──
   let coverageGroup: THREE.Group | null = null;
   // Last overlays as given, so setTerrain can drape them again on the new ground.
-  let lastCoverage: CoverageOverlay3D | null = null, lastWater: Water3D | null = null, lastPreview: SuggestionPreview3D | null = null;
+  let lastCoverage: CoverageOverlay3D | null = null, lastWater: Water3D | null = null, lastContours: Contours3D | null = null, lastPreview: SuggestionPreview3D | null = null;
   let lastPos: { xM: number; yM: number; accM: number } | null = null;
   function setCoverage(o: CoverageOverlay3D | null) {
     lastCoverage = o;
@@ -1468,6 +1472,42 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
       }
       scene.add(g);
       coverageGroup = g;
+    }
+    requestRender();
+  }
+
+  // ── Contour lines: thin lines draped on the ground (subdivided so they follow it). ──
+  let contourGroup: THREE.LineSegments | null = null;
+  function setContours(c: Contours3D | null) {
+    lastContours = c;
+    if (contourGroup) {
+      contourGroup.geometry.dispose();
+      (contourGroup.material as THREE.Material).dispose();
+      scene.remove(contourGroup);
+      contourGroup = null;
+    }
+    if (c?.segments.length) {
+      const step = Math.max(0.5, (terrain?.cellM ?? 2) / 2);
+      const lift = 0.1 + (plan.areas?.length ?? 0) * 0.02 + drapeLift;
+      const pos: number[] = [], col: number[] = [];
+      for (const s of c.segments) {
+        const n = Math.max(1, Math.ceil(Math.hypot(s.x2 - s.x1, s.y2 - s.y1) / step));
+        const shade = s.index ? 1 : 0.7;
+        for (let i = 0; i < n; i++) {
+          for (const f of [i / n, (i + 1) / n]) {
+            const x = s.x1 + (s.x2 - s.x1) * f, z = s.y1 + (s.y2 - s.y1) * f;
+            pos.push(x, ground(x, z) + lift, z);
+            col.push(0.57 * shade, 0.25 * shade, 0.07 * shade);
+          }
+        }
+      }
+      const geom = new THREE.BufferGeometry();
+      geom.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+      geom.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+      const lines = new THREE.LineSegments(geom, new THREE.LineBasicMaterial({ vertexColors: true, depthWrite: false }));
+      lines.renderOrder = 2;
+      scene.add(lines);
+      contourGroup = lines;
     }
     requestRender();
   }
@@ -1604,6 +1644,7 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
     setPreview,
     setCoverage,
     setWater,
+    setContours,
     setTreeOpacity(v: number) {
       const next = Math.min(1, Math.max(0, v));
       if (next === treeOpacity) return;
@@ -1796,6 +1837,7 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
       rebuildAreas();
       setCoverage(lastCoverage);
       setWater(lastWater);
+      setContours(lastContours);
       setPreview(lastPreview);
       view.setPositionMarker(lastPos);
       return true;

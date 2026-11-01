@@ -25,6 +25,12 @@ describe('orthophoto sources', () => {
     for (const [lat, lon, id] of cases) expect(orthoFor(lat, lon)?.id ?? null, `${lat},${lon}`).toBe(id);
   });
 
+  it('offers Mapbox satellite in Great Britain only while its feature is on', () => {
+    expect(orthoFor(50.4437, -3.7, () => true)?.id).toBe('mb');   // Dartington
+    expect(orthoFor(50.4437, -3.7, () => false)).toBeNull();
+    expect(orthoFor(48.1372, 11.5756, () => true)?.id).toBe('by'); // the official photo wins where it exists
+  });
+
   it('has an attribution and coverage for every source', () => {
     for (const s of ORTHO_SOURCES) {
       expect(s.attributionHtml.length).toBeGreaterThan(5);

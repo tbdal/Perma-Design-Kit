@@ -4,6 +4,12 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Waldgartenplan: 3D-Höhenlinien, Rechtsklick, Globus, Mapbox 2026-11-01
+- [x] **3D: Höhenlinien werden angezeigt** (auf dem Gelände aufgelegt, jede fünfte stärker; folgen dem Häkchen und der Abstandswahl wie in 2D) #bugs #prüfen (Werkstatt #473)
+- [x] **3D: Rechtsklick (am Handy langes Drücken) öffnet die Karte „Punkt im Plan“** wie in 2D; ein Rechts-Zug zum Verschieben der Ansicht öffnet nichts #bugs #prüfen (Werkstatt #475)
+- [x] **Rauszoomen bis auf Globus-Ebene** in 2D und 3D (bisher 50 km) #minor #prüfen (Werkstatt #476)
+- [x] **Satellit (fein) von Mapbox** für Orte in Großbritannien und Irland, wo es kein amtliches Luftbild gibt: Schlüssel nur im nginx (`/etc/nginx/pdk-mapbox.conf`), Kacheln höchstens 12 h im Cache, Funktion `basemap-mapbox` (nur Team, Lizenzhinweis rot), Abschnitt in /datenschutz #minor #prüfen (Werkstatt #477)
+
 ## Funktionen verwalten: Menü und Lizenzhinweise 2026-10-31
 - [x] **„Funktionen verwalten“ nicht mehr im Modus- und Kontomenü** (jetzt im Team-Menü „Entwicklung“, weiter auch über Strg+, und die Anmeldeseite) #minor
 - [x] **Lizenzhinweise auf „Funktionen verwalten“:** ein „i“ mit Popover bei Funktionen mit lizenzrechtlicher Relevanz (Luftbild/Satellit, Gelände, Gebäude, Standortklima), rot, wenn die Lizenz derzeit problematisch ist #minor

@@ -621,7 +621,7 @@ import Layout from '../layouts/Layout.astro';
   import { fetchBuildings, BUILDINGS_ATTRIBUTION, type Building } from '../lib/osm-buildings';
   import { niceScale, scaleLabel } from '../lib/scale-bar';
   import { sunSamples, sunHoursAt, sunClass, planOccluders, planCells, SEASON_DATES, type SunScene, type SunSample, type SunClass, type Occluder } from '../lib/sun-hours';
-  import type { Scene3DLayer } from '../lib/gartenplan-3d';
+  import type { Scene3DLayer, Contours3D } from '../lib/gartenplan-3d';
   import { BOOL_FIELDS } from '../lib/plant-fields';
   import { orthoFor } from '../lib/ortho-sources';
   import { dgmFor, refineWithDgm } from '../lib/dgm';
@@ -1868,6 +1868,7 @@ import Layout from '../layouts/Layout.astro';
     view3d.setArmedPlant(armedPlantId);
     view3d.setCoverage(coverage3d);
     view3d.setWater(water3d);
+    renderContours();
     view3d.setPositionMarker(gpsPos);
     sunControls.hidden = false;
     if (!sunDateInput.value) {
@@ -3138,8 +3139,8 @@ import Layout from '../layouts/Layout.astro';
   function zoomedView(base: typeof planView, factor: number, cx: number, cy: number): typeof planView {
     if (!editing) return base;
     const full = editing.areaWidthM * U;
-    // Zoom out without a practical limit (50 km); tiles get coarser on their own.
-    const w = Math.max(Math.min(full, 2 * U), Math.min(50000 * U, base.w / factor));
+    // Zoom out to the whole globe (the tile frame is Web Mercator, so 30 000 km is more than the world); tiles get coarser on their own.
+    const w = Math.max(Math.min(full, 2 * U), Math.min(30_000_000 * U, base.w / factor));
     const f = w / base.w;
     return { x: cx - (cx - base.x) * f, y: cy - (cy - base.y) * f, w, h: base.h * f };
   }
@@ -3884,12 +3885,14 @@ import Layout from '../layouts/Layout.astro';
       + (terrain.dgm ? ` · ${t('terrainDgmLabel', { region: terrain.dgm.region[lang], res: fmt(terrain.dgm.resolutionM) })}` : '');
   }
 
-  let contourCache: { grid: ElevationGrid; chosen: number; html: string } | null = null;
+  let contourCache: { grid: ElevationGrid; chosen: number; html: string; segments: Contours3D['segments'] } | null = null;
   function renderContours() {
     const layer = planSvg.querySelector('#contour-layer');
     document.getElementById('contour-step-label')!.hidden = !terrain || !editing?.geo;
+    const hide = !terrain || !contoursInput.checked || !editing?.geo || !featureOn('terrain');
+    if (hide) view3d?.setContours(null);
     if (!layer) return;
-    if (!terrain || !contoursInput.checked || !editing?.geo || !featureOn('terrain')) { layer.innerHTML = ''; return; }
+    if (hide || !terrain) { layer.innerHTML = ''; return; }
     // Chosen spacing (m); never so fine that the plan fills with hundreds of lines.
     const chosen = Number(contourStepSel.value) || 0;
     if (contourCache?.grid !== terrain || contourCache.chosen !== chosen) {
@@ -3897,18 +3900,21 @@ import Layout from '../layouts/Layout.astro';
       for (const h of terrain.heights) { lo = Math.min(lo, h); hi = Math.max(hi, h); }
       const interval = chosen ? Math.max(chosen, (hi - lo) / 150) : contourInterval(hi - lo);
       const byLevel = new Map<number, string[]>();
+      const segments: Contours3D['segments'] = [];
       for (const { level, seg } of contourSegments(terrain, interval)) {
+        segments.push({ x1: seg[0], y1: seg[1], x2: seg[2], y2: seg[3], index: Math.abs(level / (interval * 5) - Math.round(level / (interval * 5))) < 1e-6 });
         const arr = byLevel.get(level) ?? [];
         arr.push(`M${seg[0] * U} ${seg[1] * U}L${seg[2] * U} ${seg[3] * U}`);
         byLevel.set(level, arr);
       }
       // px strokes that ignore the zoom: the lines never need redrawing for it.
-      contourCache = { grid: terrain, chosen, html: [...byLevel.entries()].map(([level, d]) => {
+      contourCache = { grid: terrain, chosen, segments, html: [...byLevel.entries()].map(([level, d]) => {
         const index = Math.abs(level / (interval * 5) - Math.round(level / (interval * 5))) < 1e-6;
         return `<path d="${d.join('')}" fill="none" stroke="#92400e" stroke-opacity="${index ? 0.7 : 0.45}" stroke-width="${index ? 1.8 : 1}" vector-effect="non-scaling-stroke"/>`;
       }).join('') };
     }
     layer.innerHTML = contourCache.html;
+    view3d?.setContours({ segments: contourCache.segments });
   }
 
   // ── Funktions-Abdeckung ────────────────────────────────────────────────

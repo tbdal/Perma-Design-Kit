@@ -27,10 +27,10 @@ describe('feature table', () => {
     expect([...used].filter(id => !known.has(id))).toEqual([]);
   });
 
-  it('simple mode hides everything but the guide and the polyculture package; classic shows everything but the guide', () => {
+  it('simple mode hides everything but the guide and the polyculture package; classic shows everything but the guide and the team-only Mapbox satellite', () => {
     expect(offFeatures('simple')).toEqual(FEATURES.filter(f => f.id !== 'simple-guide' && f.id !== 'polyculture-package').map(f => f.id));
-    expect(offFeatures('classic')).toEqual(['simple-guide']);
-    expect(offFeatures('expert')).toEqual(['simple-guide']);
+    expect(offFeatures('classic')).toEqual(['simple-guide', 'basemap-mapbox']);
+    expect(offFeatures('expert')).toEqual(['simple-guide', 'basemap-mapbox']);
     expect(offFeatures('team')).toEqual(['simple-guide']);
   });
 });

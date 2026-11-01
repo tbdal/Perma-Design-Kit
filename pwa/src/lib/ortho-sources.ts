@@ -1,4 +1,5 @@
 import type { Lang } from './i18n/core';
+import { featureOn } from './ui-mode';
 
 // Official high-resolution orthophotos ("amtliche Luftbilder", 8–40 cm) from
 // the state survey offices and neighbouring countries, all under open
@@ -24,6 +25,8 @@ export interface OrthoSource {
   url: string;              // {z}/{x}/{y} or {bbox} (EPSG:3857) template
   attributionHtml: string;  // {YEAR} = year of retrieval
   coverage: [number, number][][];
+  /** Only offered while this feature (features.ts) is on. */
+  feature?: string;
 }
 
 export const ORTHO_SOURCES: OrthoSource[] = [
@@ -135,6 +138,15 @@ export const ORTHO_SOURCES: OrthoSource[] = [
     attributionHtml: 'Luchtfoto: <a href="https://www.pdok.nl" target="_blank" rel="noopener">Kadaster / Beeldmateriaal.nl</a>, <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>',
     coverage: [[[3.402,51.554],[3.404,51.511],[3.472,51.474],[3.488,51.42],[3.367,51.397],[3.327,51.371],[3.354,51.337],[3.334,51.322],[3.348,51.271],[3.434,51.225],[3.554,51.234],[3.548,51.269],[3.637,51.274],[3.762,51.244],[3.764,51.214],[3.791,51.195],[3.889,51.185],[4.077,51.233],[4.186,51.285],[4.258,51.343],[4.257,51.361],[4.315,51.362],[4.323,51.344],[4.386,51.339],[4.443,51.352],[4.458,51.38],[4.414,51.417],[4.429,51.447],[4.511,51.463],[4.513,51.415],[4.645,51.406],[4.686,51.415],[4.771,51.485],[4.811,51.469],[4.796,51.449],[4.745,51.439],[4.747,51.409],[4.911,51.378],[4.941,51.382],[5.039,51.455],[5.059,51.455],[5.075,51.433],[5.044,51.394],[5.093,51.353],[5.111,51.31],[5.213,51.298],[5.202,51.266],[5.227,51.247],[5.422,51.246],[5.497,51.278],[5.525,51.26],[5.542,51.208],[5.644,51.171],[5.743,51.167],[5.756,51.14],[5.792,51.13],[5.733,51.035],[5.739,51.005],[5.697,50.971],[5.71,50.941],[5.615,50.863],[5.632,50.812],[5.664,50.798],[5.661,50.749],[5.744,50.743],[5.766,50.757],[5.814,50.74],[6.055,50.739],[6.06,50.828],[6.099,50.831],[6.117,50.852],[6.13,50.931],[6.058,50.951],[6.06,50.99],[6.046,51.005],[5.972,51.01],[6.008,51.032],[6.027,51.07],[6.061,51.074],[6.143,51.124],[6.204,51.126],[6.205,51.212],[6.121,51.212],[6.122,51.23],[6.253,51.344],[6.251,51.528],[6.161,51.608],[6.159,51.669],[6.038,51.757],[6.062,51.821],[6.325,51.822],[6.433,51.806],[6.61,51.873],[6.755,51.876],[6.858,51.949],[6.869,52.005],[6.772,52.055],[6.796,52.093],[6.875,52.092],[7.109,52.232],[7.118,52.387],[7.026,52.488],[6.763,52.487],[6.737,52.51],[6.75,52.534],[6.791,52.539],[6.794,52.576],[6.773,52.603],[6.791,52.629],[7.087,52.608],[7.116,52.811],[7.257,52.968],[7.277,53.243],[6.894,53.463],[6.578,53.582],[5.649,53.495],[5.179,53.415],[4.815,53.241],[4.69,53.075],[4.632,52.978],[4.608,52.747],[4.474,52.349],[4.394,52.248],[4.091,52.012],[3.978,52.01],[3.919,51.959],[3.96,51.872],[3.821,51.826],[3.818,51.784],[3.66,51.736],[3.641,51.704],[3.656,51.658],[3.625,51.624],[3.524,51.606]]],
   },
+  {
+    // Commercial, not an official survey: the token stays on the server (nginx adds it, see the /geo/ortho/mb location),
+    // the area is limited to the British Isles, where no free orthophoto exists (shortcut: one box, add areas when needed).
+    id: 'mb', region: { de: 'Satellit (fein)', en: 'Satellite (fine)' }, resolutionCm: 50, minZoom: 12, maxZoom: 19,
+    url: 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.jpg90',
+    attributionHtml: '<a href="https://www.mapbox.com/about/maps/" target="_blank" rel="noopener">© Mapbox</a> <a href="https://www.openstreetmap.org/about/" target="_blank" rel="noopener">© OpenStreetMap</a> <a href="https://www.maxar.com/" target="_blank" rel="noopener">© Maxar</a>',
+    coverage: [[[-10.8,49.8],[2.0,49.8],[2.0,61.0],[-10.8,61.0]]],
+    feature: 'basemap-mapbox',
+  },
 ];
 
 function inRing(lon: number, lat: number, ring: [number, number][]): boolean {
@@ -147,6 +159,6 @@ function inRing(lon: number, lat: number, ring: [number, number][]): boolean {
 }
 
 /** The orthophoto service covering a location, or null. */
-export function orthoFor(lat: number, lon: number): OrthoSource | null {
-  return ORTHO_SOURCES.find(s => s.coverage.some(r => inRing(lon, lat, r))) ?? null;
+export function orthoFor(lat: number, lon: number, on: (feature: string) => boolean = featureOn): OrthoSource | null {
+  return ORTHO_SOURCES.find(s => (!s.feature || on(s.feature)) && s.coverage.some(r => inRing(lon, lat, r))) ?? null;
 }
