@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Mapbox-Satellit weltweit 2026-11-01
+- [x] **Satellit (fein) von Mapbox gilt weltweit** als zweite Wahl nach den amtlichen Luftbildern (vor dem groben Sentinel-2); weiter nur bei eingeschalteter Funktion `basemap-mapbox` (Team) und mit Token #minor #prüfen (Werkstatt #477)
+
 ## Beta-Test statt Experte, Schritt 1 2026-11-01
 - [x] **Rolle „Experte“ heißt überall „Beta-Test“** (Moduswahl, /anmelden/, /admin/, Datenschutz-Abschnitt „Beta-Zugang“, Hilfe; der interne Schlüssel `expert` bleibt), Schild „Beta“ in der Kopfzeile öffnet das Feedback-Formular mit „[Beta]“ im Betreff, Funktionen mit ungeklärter Lizenz (`licence.problem`) sind im Beta-Modus nie an #major #prüfen
 

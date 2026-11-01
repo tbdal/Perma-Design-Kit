@@ -25,9 +25,10 @@ describe('orthophoto sources', () => {
     for (const [lat, lon, id] of cases) expect(orthoFor(lat, lon)?.id ?? null, `${lat},${lon}`).toBe(id);
   });
 
-  it('offers Mapbox satellite in Great Britain only while its feature is on', () => {
+  it('offers Mapbox satellite worldwide after the official photos, only while its feature is on', () => {
     expect(orthoFor(50.4437, -3.7, () => true)?.id).toBe('mb');   // Dartington
     expect(orthoFor(50.4437, -3.7, () => false)).toBeNull();
+    expect(orthoFor(48.8566, 2.3522, () => true)?.id).toBe('mb'); // Paris: no official photo
     expect(orthoFor(48.1372, 11.5756, () => true)?.id).toBe('by'); // the official photo wins where it exists
   });
 
