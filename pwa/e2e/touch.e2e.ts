@@ -2,7 +2,8 @@
 // pinch, pan, tap and drag in 2D and 3D, also when a finger starts on a plant.
 import { devices, type Page } from '@playwright/test';
 import { test, expect, stubNetwork, loadSamples, withDb, planRecord } from './helpers';
-test.use({ ...devices['Pixel 7'] });
+// taller than a Pixel 7: the planner toolbar is wider than a phone and zooms the page out; the test grid has to stay above the fold
+test.use({ ...devices['Pixel 7'], viewport: { width: 412, height: 1300 } });
 
 type Pt = [number, number];
 async function touch(page: Page) {

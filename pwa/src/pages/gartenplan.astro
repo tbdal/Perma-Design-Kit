@@ -222,10 +222,15 @@ import Layout from '../layouts/Layout.astro';
           <button data-feature="boundary-edit" id="btn-edit-boundary" type="button" aria-pressed="false" data-i18n="btnEditBoundary" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700 aria-pressed:bg-amber-100 aria-pressed:ring-amber-400 dark:aria-pressed:bg-amber-900/40">✎ Umriss bearbeiten</button>
           <button data-feature="areas" id="btn-draw-area" type="button" data-i18n="btnDrawArea" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">▱ Fläche einzeichnen</button>
           <button data-feature="row" id="btn-draw-row" type="button" data-i18n="btnDrawRow" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">⋯ Reihe pflanzen</button>
-          <button data-feature="export" id="btn-export-geojson" type="button" data-i18n="btnExportGeojson" data-i18n-title="exportGeojsonTitle" title="Für QGIS & Co.: Umriss, Flächen und Pflanzen als GeoJSON (WGS84)" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">⤓ GeoJSON</button>
-          <button id="btn-share-link" type="button" data-i18n="shareOpen" data-i18n-title="shareOpenTitle" title="Projekt als Link teilen" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">🔗 Teilen…</button>
-          <button data-feature="export" id="btn-shopping" type="button" data-i18n="btnShopping" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">Pflanzliste</button>
-          <button data-feature="export" id="btn-export-pdf" data-i18n="btnExportPdf" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">PDF exportieren</button>
+          <details id="share-menu" class="relative">
+            <summary data-i18n-title="shareMenu" title="Weitergeben" class="flex cursor-pointer list-none items-center gap-1.5 rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700 [&::-webkit-details-marker]:hidden"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg><span data-i18n="shareMenu">Weitergeben</span></summary>
+            <div class="absolute right-0 z-30 mt-1 flex min-w-48 flex-col items-stretch gap-1 rounded-xl bg-white dark:bg-stone-900 p-2 shadow-lg ring-1 ring-stone-200 dark:ring-stone-700">
+              <button id="btn-share-link" type="button" data-i18n="shareOpen" data-i18n-title="shareOpenTitle" title="Projekt als Link teilen" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">🔗 Teilen…</button>
+              <button data-feature="export" id="btn-shopping" type="button" data-i18n="btnShopping" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">Pflanzliste</button>
+              <button data-feature="export" id="btn-export-pdf" data-i18n="btnExportPdf" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">PDF exportieren</button>
+              <button data-feature="export" id="btn-export-geojson" type="button" data-i18n="btnExportGeojson" data-i18n-title="exportGeojsonTitle" title="Für QGIS & Co.: Umriss, Flächen und Pflanzen als GeoJSON (WGS84)" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">⤓ GeoJSON</button>
+            </div>
+          </details>
           <button id="btn-redraw-area" data-i18n="btnRedrawArea" class="text-xs font-medium text-stone-500 dark:text-stone-400 hover:text-red-600 dark:hover:text-red-400">Fläche neu zeichnen</button>
         </div>
       </div>
@@ -1987,6 +1992,10 @@ import Layout from '../layouts/Layout.astro';
       : better ? t('pdfTooBigPaper', { paper: better }) : t('pdfTooBigScale');
   }
   [pdfPaper, pdfScale].forEach(s => s.addEventListener('change', syncPdfDialog));
+  // "Weitergeben" menu: closes after a choice and on a click elsewhere.
+  const shareMenu = document.getElementById('share-menu') as HTMLDetailsElement;
+  shareMenu.addEventListener('click', e => { if ((e.target as HTMLElement).closest('button')) shareMenu.open = false; });
+  document.addEventListener('click', e => { if (!shareMenu.contains(e.target as Node)) shareMenu.open = false; });
   document.getElementById('btn-share-link')!.addEventListener('click', () => void import('../lib/share-dialog').then(m => m.openShareDialog(editing?.id)));
   document.getElementById('btn-export-pdf')!.addEventListener('click', () => {
     if (!editing) return;

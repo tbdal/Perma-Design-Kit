@@ -13,6 +13,7 @@ test('share link with view: recipient imports, start plan opens in 3D with the s
   });
   await a.goto('/gartenplan');   // sharing sits with the plan (#4), no longer in the backup settings
   await expect(a.locator('#phase-b')).not.toHaveClass(/hidden/);   // the last opened plan opens by itself
+  await a.click('#share-menu > summary');
   await a.click('#btn-share-link');
   await expect(a.locator('#share-start')).toHaveValue('shared-plan');
   await a.click('#share-create');

@@ -20,6 +20,7 @@ export const shareDict: Dict = {
   shareViewsHint: { de: 'Kamera, Ausschnitt, 2D/3D, Sonnenstand und Einfärben – so, wie du die Pläne zuletzt verlassen hast.', en: 'Camera, section, 2D/3D, sun position and colouring – as you last left the plans.' },
   shareStartPlan: { de: 'Öffnet nach dem Übernehmen:', en: 'Opens after importing:' },
   shareStartNone: { de: '– keinen Plan –', en: '– no plan –' },
+  shareMenu: { de: 'Weitergeben', en: 'Share' },
   shareOpen: { de: '🔗 Teilen…', en: '🔗 Share…' },
   shareOpenTitle: { de: 'Projekt als Link teilen', en: 'Share project as link' },
 };

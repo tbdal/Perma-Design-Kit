@@ -186,6 +186,7 @@ test('plan PDF: paper/scale check and a scaled download', async ({ page, errors 
   await stubNetwork(page);
   await seedNeighbourPlan(page);           // 30 × 20 m
   await openPlan(page, 'np');
+  await page.click('#share-menu > summary');
   await page.click('#btn-export-pdf');
   await page.selectOption('#pdf-paper', 'A4');
   await page.selectOption('#pdf-scale', '50');
@@ -219,6 +220,7 @@ test('construction phases: later plants as outline, phase panel, shopping list p
   await page.fill('#g-years', '3');
   await page.dispatchEvent('#g-years', 'input');
   await expect(page.locator('[data-placement-id="e"]')).not.toHaveCSS('opacity', '0.35');
+  await page.click('#share-menu > summary');
   await page.click('#btn-shopping');
   await expect(page.locator('#shopping-body')).toContainText('(2030)');
   void errors;
