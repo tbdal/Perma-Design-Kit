@@ -1,310 +1,1110 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { hilfeDict } from '../lib/i18n/dict-hilfe';
-// Pictures from the project documentation (public/hilfe/); a click opens them full size.
-const de = (k: string) => hilfeDict[k].de;
-const img = 'w-full rounded-lg ring-1 ring-stone-200 dark:ring-stone-700';
-const cap = 'mt-1 text-xs text-stone-500 dark:text-stone-400';
+// The help page holds long, richly formatted text, so each language is one block
+// (.lang-de / .lang-en) chosen by <html lang> (set by boot.js before first paint)
+// instead of one dictionary key per sentence. Ids in the English block carry
+// the prefix "en-"; links use the plain ids and the script below maps them.
+// Pictures live in public/hilfe/; a click opens them full size.
 ---
 <Layout title="Perma Design Kit — Hilfe">
-  <article class="mx-auto max-w-3xl space-y-8 text-stone-800 dark:text-stone-100 [&>section]:scroll-mt-28">
-    <header>
-      <h1 class="text-2xl font-bold" data-i18n="pageTitle">Hilfe & Glossar</h1>
-      <p class="mt-2 text-sm text-stone-500 dark:text-stone-400" data-i18n="pageSubtitle">Konzepte, Ansichten und Funktionen kurz erklärt.</p>
-    </header>
+  <article class="hilfe mx-auto max-w-3xl">
 
-    <section id="idee" class="space-y-2">
-      <h2 class="text-xl font-semibold" data-i18n="aboutHeading">{de('aboutHeading')}</h2>
-      <p data-i18n="aboutP1">{de('aboutP1')}</p>
-      <p data-i18n="aboutP2">{de('aboutP2')}</p>
-      <figure class="max-w-md">
-        <a href="/hilfe/ko-design.jpg" target="_blank" rel="noopener"><img src="/hilfe/ko-design.jpg" width="662" height="662" loading="lazy" decoding="async" class={img} alt={de('figCoDesignAlt')} data-i18n-alt="figCoDesignAlt" /></a>
-        <figcaption class={cap} data-i18n="figCoDesign">{de('figCoDesign')}</figcaption>
-      </figure>
-      <h3 class="pt-1 font-semibold" data-i18n="aboutUsesHeading">{de('aboutUsesHeading')}</h3>
-      <dl class="space-y-3">
-        <div><dt class="font-semibold" data-i18n="aboutUse1Term">{de('aboutUse1Term')}</dt><dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="aboutUse1Desc">{de('aboutUse1Desc')}</dd></div>
-        <div><dt class="font-semibold" data-i18n="aboutUse2Term">{de('aboutUse2Term')}</dt><dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="aboutUse2Desc">{de('aboutUse2Desc')}</dd></div>
-        <div><dt class="font-semibold" data-i18n="aboutUse3Term">{de('aboutUse3Term')}</dt><dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="aboutUse3Desc">{de('aboutUse3Desc')}</dd></div>
-      </dl>
-      <figure class="max-w-md">
-        <a href="/hilfe/spielidee.jpg" target="_blank" rel="noopener"><img src="/hilfe/spielidee.jpg" width="777" height="564" loading="lazy" decoding="async" class={img} alt={de('figGameAlt')} data-i18n-alt="figGameAlt" /></a>
-        <figcaption class={cap} data-i18n="figGame">{de('figGame')}</figcaption>
-      </figure>
-    </section>
+    <!-- ═════════════════════════════ DEUTSCH ═════════════════════════════ -->
+    <div class="lang-de">
+      <header>
+        <p class="eyebrow">Hilfe &amp; Dokumentation</p>
+        <h1>Waldgärten gestalten mit dem Perma&nbsp;Design&nbsp;Kit</h1>
+        <p class="lead">Digitales Planungstool für permanente Nutzpflanzensysteme – ein Designwerkzeug zur Flächenplanung in Waldgärten.</p>
+      </header>
 
-    <section id="definitionen" class="space-y-2">
-      <h2 class="text-xl font-semibold" data-i18n="defHeading">{de('defHeading')}</h2>
-      <dl class="space-y-3">
-        <div><dt class="font-semibold" data-i18n="defPolyTerm">{de('defPolyTerm')}</dt><dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="defPolyDesc">{de('defPolyDesc')}</dd></div>
-        <div><dt class="font-semibold" data-i18n="defGuildTerm">{de('defGuildTerm')}</dt><dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="defGuildDesc">{de('defGuildDesc')}</dd></div>
-      </dl>
-    </section>
-
-    <section id="polykulturen" class="space-y-2">
-      <h2 class="text-xl font-semibold" data-i18n="guildHeading">Was ist eine Permakultur-Polykultur?</h2>
-      <p><span data-i18n="guildDefIntro">Eine</span> <strong data-i18n="guildDefStrong">Polykultur</strong> <span data-i18n="guildDefRest">ist eine Gruppe von Pflanzen, die sich gegenseitig fördert: Bäume,
-        Sträucher, Stauden, Bodendecker und Wurzelpflanzen werden so kombiniert, dass sie sich Nährstoffe,
-        Schatten, Bestäuber und Schädlingsabwehr teilen. Statt einer Monokultur entsteht ein kleines, sich
-        weitgehend selbst regulierendes Ökosystem rund um eine zentrale Hauptpflanze (oft ein Obstbaum).</span></p>
-      <p data-i18n="guildAppIntro">Diese App hilft dir, Pflanzen mit ihren wichtigsten Eigenschaften zu erfassen, anzureichern und
-        als Karten zu drucken — als Grundlage, um eigene Polykulturen zu komponieren.</p>
-      <p><span data-i18n="guildPageIntro">Auf der Seite</span> <a href="/polykulturen" data-i18n="guildPageLink" class="text-green-700 dark:text-green-400 underline underline-offset-2 hover:no-underline">Polykulturen</a> <span data-i18n="guildPageRest">kannst du eigene Polykulturen anlegen: Ankerart wählen, Mitglieder mit Rolle hinzufügen
-        (Begleiter, Bodendecker, N-Fixer, Mineraliensammler, Insekten- oder Duftpflanze, Obst/Beere).
-        Das Vorschlags-Panel filtert deinen Pflanzen-Bestand nach offenen Rollen und
-        zeigt dir eine Sonne/Wasser/pH-Kompatibilität (0–3) zur Ankerart an.</span></p>
-      <h3 class="pt-1 font-semibold" data-i18n="procHeading">{de('procHeading')}</h3>
-      <p data-i18n="procP1">{de('procP1')}</p>
-      <figure class="max-w-xl">
-        <a href="/hilfe/designprozess.jpg" target="_blank" rel="noopener"><img src="/hilfe/designprozess.jpg" width="622" height="455" loading="lazy" decoding="async" class={img} alt={de('figProcessAlt')} data-i18n-alt="figProcessAlt" /></a>
-        <figcaption class={cap} data-i18n="figProcess">{de('figProcess')}</figcaption>
-      </figure>
-      <p data-i18n="procP2">{de('procP2')}</p>
-      <h3 class="pt-1 font-semibold" data-i18n="colorsHeading">{de('colorsHeading')}</h3>
-      <p data-i18n="colorsP">{de('colorsP')}</p>
-      <p data-i18n="colorsPrinciples">{de('colorsPrinciples')}</p>
-    </section>
-
-    <section class="space-y-2">
-      <h2 class="text-xl font-semibold" data-i18n="viewsHeading">Ansichten</h2>
-      <dl class="space-y-3">
-        <div>
-          <dt class="font-semibold" data-i18n="viewTilesTerm">Kacheln</dt>
-          <dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="viewTilesDesc">Übersicht mit Bildvorschau, Akzentstreifen
-            nach Primärnutzung und Vollständigkeitsbalken. Gut zum Stöbern.</dd>
-        </div>
-        <div>
-          <dt class="font-semibold" data-i18n="viewListTerm">Liste</dt>
-          <dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="viewListDesc">Sortierbare Tabelle (Desktop) bzw. kompakte
-            Karten (Mobil) mit Nutzungs-Dots und Vollständigkeit. Ideal für Mehrfach­auswahl und Bulk-Aktionen.</dd>
-        </div>
-        <div>
-          <dt class="font-semibold" data-i18n="viewCardsTerm">Karten</dt>
-          <dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="viewCardsDesc">Druckansicht der Pflanzenkarten — Vorschau
-            des PDF-Exports im Browser.</dd>
-        </div>
-      </dl>
-    </section>
-
-    <section class="space-y-2">
-      <h2 class="text-xl font-semibold" data-i18n="variantsHeading">Karten-Varianten</h2>
-      <dl class="space-y-3">
-        <div>
-          <dt class="font-semibold" data-i18n="variantPolyTerm">Pflanzenkarten (Polykarte)</dt>
-          <dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="variantPolyDesc">70 × 120 mm. Eine Karte pro Pflanze mit
-            Bild, Namen, Eigenschaften und Phänologie. Standardformat zum Auslegen oder Anheften.</dd>
-        </div>
-        <div>
-          <dt class="font-semibold" data-i18n="variantStripeTerm">Streifenkarten</dt>
-          <dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="variantStripeDesc">290 × 17 mm Querformat. Kompakte Zeile pro
-            Pflanze — gut für Etiketten oder Schnellübersichten.</dd>
-        </div>
-        <div>
-          <dt class="font-semibold" data-i18n="variantBaumscheibeTerm">Baumscheibe</dt>
-          <dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="variantBaumscheibeDesc">{de('variantBaumscheibeDesc')}</dd>
-        </div>
-      </dl>
-    </section>
-
-    <section id="baumscheibe" class="space-y-2">
-      <h2 class="text-xl font-semibold" data-i18n="readHeading">{de('readHeading')}</h2>
-      <p data-i18n="readIntro">{de('readIntro')}</p>
-      <div class="grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,16rem)] sm:items-start">
-        <dl class="min-w-0 space-y-3">
-          <div><dt class="font-semibold" data-i18n="readTopTerm">{de('readTopTerm')}</dt><dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="readTopDesc">{de('readTopDesc')}</dd></div>
-          <div><dt class="font-semibold" data-i18n="readNicheTerm">{de('readNicheTerm')}</dt><dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="readNicheDesc">{de('readNicheDesc')}</dd></div>
-          <div><dt class="font-semibold" data-i18n="readSoilTerm">{de('readSoilTerm')}</dt><dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="readSoilDesc">{de('readSoilDesc')}</dd></div>
-          <div><dt class="font-semibold" data-i18n="readMonthsTerm">{de('readMonthsTerm')}</dt><dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="readMonthsDesc">{de('readMonthsDesc')}</dd></div>
-          <div><dt class="font-semibold" data-i18n="readFuncTerm">{de('readFuncTerm')}</dt><dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="readFuncDesc">{de('readFuncDesc')}</dd></div>
-        </dl>
-        <figure>
-          <a href="/hilfe/pflanzeninformationen.jpg" target="_blank" rel="noopener"><img src="/hilfe/pflanzeninformationen.jpg" width="447" height="632" loading="lazy" decoding="async" class={img} alt={de('figLegendAlt')} data-i18n-alt="figLegendAlt" /></a>
-          <figcaption class={cap} data-i18n="figLegend">{de('figLegend')}</figcaption>
+      <section aria-labelledby="so-planst-du" class="intro">
+        <h2 id="so-planst-du">So planst du</h2>
+        <figure class="hero">
+          <a href="/hilfe/planspiel.jpg" target="_blank" rel="noopener"><img src="/hilfe/planspiel.jpg" width="1200" height="795" decoding="async" alt="Auf einem Holzboden ist mit Kreppband der Umriss eines Gartens geklebt. Darin liegen viele bunte runde Baumscheiben, Schachteln als Gebäude, daneben ein Infoboard und Papierfächer für die Sektoren." /></a>
+          <figcaption>Die erste Version des Planungstools in Aktion: Grundkarte aus Kreppband, Baumscheiben im Maßstab 1:50, Schachteln als Gebäude, Infoboard und Sektoren.</figcaption>
         </figure>
-      </div>
-      <p class="text-sm text-stone-600 dark:text-stone-300" data-i18n="readNote">{de('readNote')}</p>
-    </section>
+        <div class="ways">
+          <div class="way">
+            <h3>Auf dem Boden</h3>
+            <ol>
+              <li><b>Designziel und Standort kennen.</b> Klarheit haben, was erreicht werden soll. Sonne, Wind, Wasser, Boden und Umgebung beobachten, Standortfaktoren recherchieren und dokumentieren.</li>
+              <li><b>Pflanzenliste.</b> Eine vorhandene Liste importieren oder unter <i>Pflanzen</i> die gewünschten Arten suchen und die Daten vervollständigen lassen.</li>
+              <li><b>Baumscheiben drucken.</b> In der Kartenansicht das maßstabsgetreue PDF (1:50) drucken, ausschneiden und anpassen.</li>
+              <li><b>Grundkarte anlegen.</b> Die Grenzen der Fläche im selben Maßstab auf eine beliebige Oberfläche übertragen, die Standortdaten übersichtlich daneben.</li>
+              <li><b>Platzieren und verschieben.</b> Nach Schichten: erst Bäume, dann Sträucher, dann Stauden, zuletzt Kletterpflanzen. Entwürfe fotografieren und verbessern, bis alle Pflanzen gut untergebracht sind.</li>
+            </ol>
+          </div>
+          <div class="way">
+            <h3>Im Waldgartenplan</h3>
+            <ol>
+              <li><b>Fläche zeichnen.</b> Adresse suchen und den Garten auf der Karte umranden. Größe, Nordung und Gelände ergeben sich daraus.</li>
+              <li><b>Pflanzen setzen.</b> Pflanze wählen und auf die Fläche tippen – einzeln, als Reihe oder als ganze Polykultur.</li>
+              <li><b>Wachsen lassen und prüfen.</b> Mit dem Jahre-Regler in 2D oder 3D wachsen lassen, Besonnung prüfen und Lücken bei den Funktionen schließen.</li>
+            </ol>
+            <figure>
+              <a href="/hilfe/waldgartenplan.jpg" target="_blank" rel="noopener"><img src="/hilfe/waldgartenplan.jpg" width="1206" height="947" loading="lazy" decoding="async" alt="Bildschirmfoto des Waldgartenplans: 3D-Ansicht einer Fläche auf dem Luftbild mit Sonnenbahn, links die Werkzeugleiste, rechts die Pflanzenliste, unten der Jahre-Regler." /></a>
+              <figcaption>Dieselbe Idee am Bildschirm: der Plan in 3D auf Luftbild und Gelände.</figcaption>
+            </figure>
+          </div>
+        </div>
+        <p class="bridge"><b>Beides verbinden:</b> gemeinsam auf dem Boden auslegen und diskutieren, danach das Ergebnis in den Waldgartenplan übertragen, dort wachsen lassen, ausdrucken und teilen. Deine Daten bleiben dabei auf deinem Gerät.</p>
+      </section>
 
-    <section id="auslegen" class="space-y-2">
-      <h2 class="text-xl font-semibold" data-i18n="layHeading">{de('layHeading')}</h2>
-      <h3 class="pt-1 font-semibold" data-i18n="layPrintHeading">{de('layPrintHeading')}</h3>
-      <p data-i18n="layPrint">{de('layPrint')}</p>
-      <p data-i18n="layMaterial">{de('layMaterial')}</p>
-      <h3 class="pt-1 font-semibold" data-i18n="layMapHeading">{de('layMapHeading')}</h3>
-      <p data-i18n="layMapIntro">{de('layMapIntro')}</p>
-      <ul class="list-disc space-y-1 pl-5">
-        <li data-i18n="layMap1">{de('layMap1')}</li>
-        <li data-i18n="layMap2">{de('layMap2')}</li>
-        <li data-i18n="layMap3">{de('layMap3')}</li>
-        <li data-i18n="layMap4">{de('layMap4')}</li>
-        <li data-i18n="layMap5">{de('layMap5')}</li>
-      </ul>
-      <p data-i18n="layMapP2">{de('layMapP2')}</p>
-      <div class="grid gap-4 sm:grid-cols-2">
-        <figure class="min-w-0">
-          <a href="/hilfe/infoboard.jpg" target="_blank" rel="noopener"><img src="/hilfe/infoboard.jpg" width="852" height="564" loading="lazy" decoding="async" class={img} alt={de('figBoardAlt')} data-i18n-alt="figBoardAlt" /></a>
-          <figcaption class={cap} data-i18n="figBoard">{de('figBoard')}</figcaption>
-        </figure>
-        <figure class="min-w-0">
-          <a href="/hilfe/grundkarte-infoboard.jpg" target="_blank" rel="noopener"><img src="/hilfe/grundkarte-infoboard.jpg" width="509" height="337" loading="lazy" decoding="async" class={img} alt={de('figMapBoardAlt')} data-i18n-alt="figMapBoardAlt" /></a>
-          <figcaption class={cap} data-i18n="figMapBoard">{de('figMapBoard')}</figcaption>
-        </figure>
-      </div>
-      <figure class="max-w-xs">
-        <a href="/hilfe/szenario-a.jpg" target="_blank" rel="noopener"><img src="/hilfe/szenario-a.jpg" width="620" height="876" loading="lazy" decoding="async" class={img} alt={de('figScenarioAlt')} data-i18n-alt="figScenarioAlt" /></a>
-        <figcaption class={cap} data-i18n="figScenario">{de('figScenario')}</figcaption>
-      </figure>
-      <p data-i18n="layPlanP">{de('layPlanP')}</p>
-      <h3 class="pt-1 font-semibold" data-i18n="limitsHeading">{de('limitsHeading')}</h3>
-      <p data-i18n="limits1">{de('limits1')}</p>
-      <p data-i18n="limits2">{de('limits2')}</p>
-    </section>
+      <nav class="toc" aria-label="Kapitel">
+        <a href="#idee">Idee &amp; Konzept</a>
+        <a href="#anwendung">Anwendung</a>
+        <a href="#analog">Das analoge Werkzeug</a>
+        <a href="#software">Die Software</a>
+        <a href="#hintergrund">Fachlicher Hintergrund</a>
+        <a href="#literatur">Quellen</a>
+        <a href="#projekt">Das Projekt</a>
+      </nav>
 
-    <section id="quellen" class="space-y-2">
-      <h2 class="text-xl font-semibold" data-i18n="sourcesHeading">Datenquellen</h2>
-      <p><span data-i18n="sourcesIntro">Beim Anlegen oder Anreichern werden Pflanzendaten aus verschiedenen Quellen kombiniert. Welche
-        aktiv sind, stellst du in den</span> <a href="/settings" data-i18n="sourcesIntroLink" class="text-green-700 dark:text-green-400 underline underline-offset-2 hover:no-underline">Einstellungen</a> <span data-i18n="sourcesIntroEnd">ein.</span></p>
-      <dl class="space-y-3">
-        <div>
-          <dt class="font-semibold" data-i18n="sourceWikidataTerm">Wikidata</dt>
-          <dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="sourceWikidataDesc">Lateinische und deutsche Namen, Bilder,
-            Taxonomie. CORS-frei, direkter Zugriff aus dem Browser.</dd>
+      <!-- 1 -->
+      <details class="part" id="idee">
+        <summary><span class="num">1</span><span><span class="title">Idee &amp; Konzept</span><span class="hint">Warum Baumscheiben auf einer Grundkarte</span></span></summary>
+        <div class="part-body">
+          <p>Das Perma Design Kit entstand ursprünglich aus der Suche nach einer flexiblen Methode, mehrschichtige Waldgärten zu planen. Gezeichnete Pläne sind starr und mühsam zu ändern. Am Bildschirm geht dies leichter, dabei gehen aber das Räumliche und das gemeinsame Planen verloren. So entstand die Idee, beide Welten zu verbinden: Baumscheiben, die eine Pflanze mit ihren Eigenschaften charakterisieren, werden auf einem vorab abgesteckten Grundriss der Fläche in einem anschaulichen Maßstab platziert – spielerisch und im Team. Auf der Baumscheibe stehen die wichtigsten Daten zur ökologischen Nische der Pflanze. So bleibt beim Platzieren immer im Blick, was sie braucht und was sie leistet.</p>
+          <p>Zentral ist also das <b>Set von Baumscheiben</b>, die den Kronendurchmesser der ausgewachsenen Pflanze im gewählten Maßstab abbilden. Die Software erlaubt es, ein solches Set im gewünschten Maßstab zu erstellen und auszudrucken.</p>
+          <p>Im Folgenden ist beschrieben, <a href="#analog">wie man die Software zu diesem Zweck verwendet</a> und <a href="#software">was sie darüber hinaus bietet</a>.</p>
         </div>
-        <div>
-          <dt class="font-semibold" data-i18n="sourcePfafTerm">PFAF (Plants For A Future)</dt>
-          <dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="sourcePfafDesc">Nutzungs-Scores (Essbarkeit, Medizin,
-            Material), Lichtbedarf, pH, Wasserbedarf, Wachstumsrate, Höhe/Breite, Frucht-/Blütemonate.
-            Über Server-Proxy.</dd>
-        </div>
-        <div>
-          <dt class="font-semibold" data-i18n="sourceEfgTerm">Edible Forest Gardens (Jacke &amp; Toensmeier)</dt>
-          <dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="sourceEfgDesc">Artentabelle aus „Edible Forest Gardens" Bd. 2.</dd>
-        </div>
-        <div>
-          <dt class="font-semibold" data-i18n="sourceSizeTerm">Höhe und Breite</dt>
-          <dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="sourceSizeDesc">Höhe und Breite</dd>
-        </div>
-        <div>
-          <dt class="font-semibold" data-i18n="sourcePriorityTerm">Reihenfolge</dt>
-          <dd class="text-sm text-stone-600 dark:text-stone-300" data-i18n="sourcePriorityDesc">Haben mehrere Quellen Daten zu einem Feld, gewinnt die höher eingestufte.</dd>
-        </div>
-      </dl>
-    </section>
+      </details>
 
-    <section class="space-y-2">
-      <h2 class="text-xl font-semibold" data-i18n="vocabHeading">Visuelles Vokabular</h2>
-      <ul class="list-disc space-y-1 pl-6 text-sm text-stone-600 dark:text-stone-300">
-        <li><strong data-i18n="vocabBadgesTerm">Ausgefüllte Badges</strong> <span data-i18n="vocabBadgesDesc">= Nutzung der Pflanze (essbar, medizinisch, Material…).</span></li>
-        <li><strong data-i18n="vocabChipsTerm">Outline-Chips</strong> <span data-i18n="vocabChipsDesc">= Datenquelle, aus der ein Wert stammt (z.B. PFAF).</span></li>
-        <li><strong data-i18n="vocabAccentTerm">Akzentstreifen / -punkt</strong> <span data-i18n="vocabAccentDesc">= Primärnutzung in Kacheln (linker Rand) und Listenzeile. Bei mehreren Nutzungen gilt die erste passende Farbe dieser Reihenfolge:</span>
-          <ul class="mt-1 space-y-0.5 pl-2">
-            <li><span class="inline-block h-3 w-1.5 rounded-sm align-middle bg-amber-400"></span> <span data-i18n="vocabAccentEdible">essbar / Küche</span></li>
-            <li><span class="inline-block h-3 w-1.5 rounded-sm align-middle bg-rose-400"></span> <span data-i18n="vocabAccentMeds">Heilpflanze</span></li>
-            <li><span class="inline-block h-3 w-1.5 rounded-sm align-middle bg-lime-500"></span> <span data-i18n="vocabAccentNitrogen">Stickstofffixierer</span></li>
-            <li><span class="inline-block h-3 w-1.5 rounded-sm align-middle bg-teal-400"></span> <span data-i18n="vocabAccentGround">Bodendecker</span></li>
-            <li><span class="inline-block h-3 w-1.5 rounded-sm align-middle bg-cyan-400"></span> <span data-i18n="vocabAccentInsects">Insektenpflanze</span></li>
-            <li><span class="inline-block h-3 w-1.5 rounded-sm align-middle bg-stone-200 dark:bg-stone-700"></span> <span data-i18n="vocabAccentNone">keine davon</span></li>
+      <!-- 2 -->
+      <details class="part" id="anwendung">
+        <summary><span class="num">2</span><span><span class="title">Anwendungsmöglichkeiten</span><span class="hint">Flächendesign, gemeinsames Planen, Bildung</span></span></summary>
+        <div class="part-body">
+          <div class="split">
+            <div>
+              <h3>Flächendesign</h3>
+              <p>Das Perma Design Kit ist ein visuelles Hilfsmittel zum Flächendesign, genauer zur konkreten Platzierung von Elementen (Pflanzen). Es ermöglicht besseres Design im Sinne einer möglichst guten Positionierung der Elemente in Beziehung zueinander („knowing what goes where“). Die Software erzeugt dazu die analogen Baumscheiben zum Ausdrucken; das Flächendesign kann aber auch digital im <a href="#gartenplan">Waldgartenplan</a> erfolgen.</p>
+              <p>Auf beide Arten ist es ein Werkzeug, das auch in einer Gruppe funktioniert und die gemeinsame Planung von Gemeinschaftsflächen erlaubt.</p>
+            </div>
+            <figure>
+              <a href="/hilfe/gemeinschaftsgarten.jpg" target="_blank" rel="noopener"><img src="/hilfe/gemeinschaftsgarten.jpg" width="800" height="800" loading="lazy" decoding="async" alt="Zwei Menschen knien auf dem Boden und legen farbige runde Baumscheiben auf einen langen Plan aus Papierbahnen, daneben ein Laptop." /></a>
+              <figcaption>Planung eines gemeinschaftlichen Waldgartens.</figcaption>
+            </figure>
+          </div>
+          <h3>Bildung</h3>
+          <p>Das Perma Design Kit funktioniert auch als Lehr- und Lernmittel für alle Ansätze der Landnutzung mit Bäumen. Es vermittelt Prinzipien des Flächendesigns spielerisch und schult das Vorstellungsvermögen für die dynamischen Beziehungsnetze in Raum und Zeit, die permanente Systeme auszeichnen.</p>
+          <p>Wer Pflanzenlisten erstellt und bearbeitet, erwirbt nebenbei spezialisiertes Pflanzenwissen zur ökologischen Nische. Einen besonders hohen Lerneffekt hat es, ein Set maßstabsgetreuer Baumscheiben zu erstellen und individuell anzupassen.</p>
+        </div>
+      </details>
+
+      <!-- 3 -->
+      <details class="part" id="analog">
+        <summary><span class="num">3</span><span><span class="title">Das analoge Werkzeug</span><span class="hint">Standortanalyse, Grundkarte, Baumscheiben lesen und drucken, Pflanzen platzieren</span></span></summary>
+        <div class="part-body">
+          <p>So funktioniert das Tool als analoges Werkzeug zum Flächendesign – die fünf Schritte stehen oben unter <a href="#so-planst-du">So planst du</a>, hier im Detail.</p>
+
+          <details class="sub" id="standort"><summary>Von der Standortanalyse zur Grundkarte</summary><div class="sub-body">
+            <p>Meist bezieht man sich auf eine konkrete Fläche, über die mehr oder weniger Wissen vorhanden ist.</p>
+            <h4>Standortdaten sammeln</h4>
+            <p>Beobachtung vor Ort und Recherche ergeben eine Sammlung von Daten zu den <b>Bedingungen und Umgebungsfaktoren</b> der Fläche: allgemeine Klimadaten und Mikroklima, Nutzungshistorie, Böden, Bestand an Pflanzen und Tieren und vieles mehr.</p>
+            <p>Analysemethoden aus der Permakultur wie die <b>Sektorierung</b> eröffnen weitere Perspektiven auf die gesammelten Daten. So lassen sich Einflüsse darstellen, die von außen auf die Fläche wirken: Sonnenverlauf über das Jahr, Wind, Lärm, Ein- und Ausblicke. In Wohnumgebungen ist außerdem die <b>Zonierung</b> sinnvoll, die eine Fläche nach Häufigkeit und Intensität der Nutzung unterteilt.</p>
+            <figure class="narrow">
+              <a href="/hilfe/sektoren.jpg" target="_blank" rel="noopener"><img src="/hilfe/sektoren.jpg" width="838" height="496" loading="lazy" decoding="async" alt="Fächer aus farbigem Papier mit Aufschriften wie Aussicht, Verkehrslärm, Nachbarn und Lärm." /></a>
+              <figcaption>Sektorierungsdaten auf einfache Art veranschaulicht.</figcaption>
+            </figure>
+            <h4>Grundkarte abbilden</h4>
+            <ul>
+              <li>Die Grenzen der Fläche aus eigenen Plänen, öffentlichen Flurstückplänen oder Maßstabsplänen von Architekten entnehmen und die Fläche im Maßstab der ausgedruckten Scheiben darstellen (Voreinstellung 1:50). Wie bei gezeichneten Plänen ist die Maßstabsgenauigkeit wichtig, um die richtigen Pflanzabstände zu finden.</li>
+              <li>Das geht auf viele Arten: im Sandkasten abstecken, mit Kreppband auf den Boden kleben, mit Kreide auf eine Wand oder große Unterlage zeichnen – Magnettafeln, Pinnwände, großformatige Poster, Möbelkartons oder Tapetenrollen.</li>
+              <li>Umgebende Strukturen wie Gebäude und Hecken lassen sich mit Objekten darstellen, etwa Schachteln. Mit einer beweglichen Lichtquelle wird ihr Schatten greifbar.</li>
+              <li>Damit die Standortbedingungen immer präsent bleiben, werden die Ergebnisse der Analyse vereinfacht dargestellt – als Infoblatt oder wie hier als „Infoboard“.</li>
+            </ul>
+            <div class="figs">
+              <figure>
+                <a href="/hilfe/grundkarte.jpg" target="_blank" rel="noopener"><img src="/hilfe/grundkarte.jpg" width="1100" height="728" loading="lazy" decoding="async" alt="Auf einem Holzboden ist mit Malerkrepp der Umriss einer Fläche geklebt, darin zwei Holzklötze als Gebäude und ein Infoboard." /></a>
+                <figcaption>Die Grundkarte mit Malerkrepp auf den Fußboden geklebt.</figcaption>
+              </figure>
+              <figure>
+                <a href="/hilfe/infoboard.jpg" target="_blank" rel="noopener"><img src="/hilfe/infoboard.jpg" width="1100" height="728" loading="lazy" decoding="async" alt="Holzbrett mit drehbarer Sonnenscheibe, Nordpfeil, Windpfeil sowie Farbskalen für Niederschlag und Winterhärtezone." /></a>
+                <figcaption>Die wichtigsten Standortfaktoren auf einen Blick: Sonnenverlauf, Jahresniederschlag, Bodentyp, Hauptwindrichtung, Winterhärtezone.</figcaption>
+              </figure>
+            </div>
+            <figure class="narrow">
+              <a href="/hilfe/szenario.jpg" target="_blank" rel="noopener"><img src="/hilfe/szenario.jpg" width="930" height="487" loading="lazy" decoding="async" alt="Infobalken „Szenario C: Schrebergarten inmitten von Feldern“ mit Flächengröße 200 × 50 m, Nordpfeil, 800 mm Niederschlag und USDA-Zone 6, darunter eine kurze Beschreibung." /></a>
+              <figcaption>Grobe Übersicht als Grundlage für ein Standort-Szenario.</figcaption>
+            </figure>
+          </div></details>
+
+          <details class="sub" id="baumscheibe"><summary>Von der Pflanzenliste zum Set von Baumscheiben</summary><div class="sub-body">
+            <p>Alle Kartenansichten sollen die <b>ökologische Nische</b> einer Pflanze abbilden, damit die Platzierung auf der bestmöglichen Informationsgrundlage erfolgt. Die wichtigsten Informationen stehen auf der Vorderseite: Namen, Abmessungen, Anforderungen und Toleranzen, Nutzen und Funktionen. Die Rückseite bleibt frei für weitere Notizen.</p>
+            <div class="split">
+              <figure>
+                <a href="/hilfe/baumscheibe.jpg" target="_blank" rel="noopener"><img src="/hilfe/baumscheibe.jpg" width="900" height="917" loading="lazy" decoding="async" alt="Baumscheibe der Robinie (Robinia pseudoacacia, Black Locust): oben Name und Bewertung, darunter Höhe 25 m, Krone 15 m, Winterhärte 4–9, unten farbige Felder für Funktionen und Nutzen, außen die Monatsringe." /></a>
+                <figcaption>Baumscheibe am Beispiel Robinie.</figcaption>
+              </figure>
+              <div>
+                <h4>Die Baumscheibe im Detail</h4>
+                <dl>
+                  <dt>Ganz oben</dt><dd>Die <b>Bewertung</b> als Nutzpflanze, darunter im weißen Feld <b>botanischer und deutscher Name</b>. Das Symbol links zeigt die <b>Schicht</b>.</dd>
+                  <dt>Grauer Bereich</dt><dd>Die für die Platzierung wichtigsten Eckdaten (siehe unten).</dd>
+                  <dt>Unterer Halbkreis</dt><dd>Die beiden inneren Kreise zeigen die <b>Funktionen</b> im Ökosystem, der äußere die <b>Erträge</b> für Menschen, meist Produkte (siehe <a href="#platzieren">Platzieren der Pflanzen</a>).</dd>
+                  <dt>Ringe</dt><dd>Außen die <b>Blütezeit</b>, innen die <b>Reife- und Erntezeit</b>, jeweils gegen den Uhrzeigersinn von Januar bis Dezember.</dd>
+                </dl>
+              </div>
+            </div>
+            <h4>Der graue Bereich</h4>
+            <dl>
+              <dt>Wachstum</dt><dd>langsam – moderat – schnell wachsend</dd>
+              <dt>Höhe</dt><dd>maximale Höhe der ausgewachsenen Pflanze</dd>
+              <dt>Kronendurchmesser</dt><dd>Durchmesser der ausgewachsenen Gehölzkrone bzw. Ausbreitung bei Stauden</dd>
+              <dt>Boden-pH</dt><dd>sauer bis neutral, neutral, neutral bis basisch</dd>
+              <dt>Winterhärte</dt><dd>Zone nach USDA</dd>
+              <dt>Licht</dt><dd>Vorliebe der Pflanze (Optimum) von sonnig über halbschattig bis vollschattig</dd>
+              <dt>Wasser</dt><dd>Wasserbedarf, kombiniert mit der Durchlässigkeit bzw. Wasserhaltefähigkeit des Bodens (durchlässig, feucht, nass)</dd>
+              <dt>Boden <span class="soon">bald</span></dt><dd>Sand – Schluff – Lehm – Mitte. Sind alle vier Symbole eingeblendet, eignet sich die Pflanze für alle Böden.</dd>
+            </dl>
+            <h4>Das Set drucken</h4>
+            <p>In der Kartenansicht unter <code>Maßstabsgetreues PDF</code>. Jede Scheibe bekommt die Kronenbreite im gewählten Maßstab, verteilt auf A4, A3 oder A2.</p>
+            <div class="split">
+              <dl>
+                <dt>Maßstab 1:50</dt><dd>Voreingestellt. Bildet mittlere bis große Flächen ab, das Set bleibt handlich. 4 m Krone = 8 cm Scheibe.</dd>
+                <dt>Min. Größe 4 cm</dt><dd>Kleinere Scheiben werden nicht gedruckt, weil sie kaum lesbar wären. Das Programm sagt dir, welche fehlen.</dd>
+                <dt>Fix 6 cm + Ring</dt><dd>Jeder Infokreis ist 6 cm groß, der äußere Ring zeigt die echte Kronengröße.</dd>
+              </dl>
+              <figure>
+                <a href="/hilfe/baumscheiben-druck.jpg" target="_blank" rel="noopener"><img src="/hilfe/baumscheiben-druck.jpg" width="787" height="727" loading="lazy" decoding="async" alt="Bildschirmfoto der Kartenansicht mit geöffnetem Menü „PDF (Maßstab)“: Maßstab 1:50, Papier A4, Mindestgröße 4 cm und die Option „Scheibe fix 6 cm + Maßstabsring“." /></a>
+                <figcaption>Einstellungen für das maßstabsgetreue PDF.</figcaption>
+              </figure>
+            </div>
+            <h4>Individuelle Anpassung</h4>
+            <p>Drucke in Farbe oder Graustufen auf Papier oder Folie und schneide die Kreise aus. Es lohnt sich, die Ausdrucke auf die eigene Situation und die eigene Art der Wahrnehmung anzupassen: Farbiges Papier oder Ausmalen machen die Scheiben unterscheidbar, die Rückseite bietet Platz für weitere Informationen.</p>
+          </div></details>
+
+          <details class="sub" id="platzieren"><summary>Vom Flächenentwurf zum fertigen Pflanzplan</summary><div class="sub-body">
+            <h4>Platzieren der Pflanzen</h4>
+            <p>Wo genau eine Pflanze hinkommt, bestimmen vor allem die Standortbedingungen und die Eigenschaften der Pflanze. Deshalb sollten diese Informationen immer präsent sein.</p>
+            <p>Die Ergebnisse der <b>Standortanalyse</b> lassen sich am einfachsten auf einem Blatt mit den Eckdaten darstellen. Am anderen Ende der Skala steht ein „Infoboard“, das Nordung und Sonnenverlauf veranschaulicht und Niederschlag, Hauptwindrichtung, Winterhärtezone und Bodentyp zeigt. Licht ist in unseren Breiten der begrenzende Faktor für Systeme, die auf allen Ebenen produktiv sind – der Sonnenverlauf ist darum die wichtigste Information für die Position einzelner Pflanzen.</p>
+            <p>Die für die Platzierung wichtigen <b>Eigenschaften der Pflanzen</b> stehen auf den Baumscheiben. Ihre Funktionen sind farbig markiert, so dass die Grundbedingungen für eine Polykultur schnell ersichtlich sind – ein <b>Polykultur-Design nach Farben</b>:</p>
+            <div class="tip"><b>Grundrezept</b>Jede Farbe kommt in einer Teilfläche mindestens einmal vor, besser zweimal. Dann ist die Basis geschaffen. Mit etwas Stapeln von Funktionen und Redundanz innerhalb der Teilfläche bist du schnell auf dem richtigen Weg (siehe <a href="#polykulturen">Polykulturen &amp; Gilden</a>).</div>
+            <figure>
+              <a href="/hilfe/legende.jpg" target="_blank" rel="noopener"><img src="/hilfe/legende.jpg" width="1000" height="1229" loading="lazy" decoding="async" alt="Erklärgrafik „Pflanzeninformationen“: eine Baumscheibe mit Beschriftung aller Felder, darunter die farbige Legende der Funktionen für das Ökosystem und der Nutzen für Menschen." /></a>
+              <figcaption>Legende der Pflanzeninformationen, Funktionen und Nutzen.</figcaption>
+            </figure>
+            <h4>Dokumentation</h4>
+            <p>Beim analogen Set hält man Entwürfe am besten mit Fotos fest. Mit einer klaren, eingängigen Benennung der Bilddateien lassen sich die Ergebnisse gut ordnen. Wer die Entwürfe professioneller weiterbearbeiten möchte, überträgt sie in den digitalen <a href="#gartenplan">Waldgartenplan</a>, der ähnliche Möglichkeiten wie ein Geoinformationssystem (GIS) bietet.</p>
+          </div></details>
+
+          <details class="sub" id="grenzen"><summary>Derzeitige Grenzen</summary><div class="sub-body">
+            <h4>Lesbarkeit der Baumscheiben</h4>
+            <p>Beim Standardmaßstab 1:50 lassen sich nur Gehölze und ausreichend große Stauden (ab etwa 1 m Durchmesser) gut abbilden; bei kleineren Kreisen sind die Daten an der Grenze der Lesbarkeit. Eine Variante mit Kürzeln statt Symbolen ist im Test und kann hier helfen (<code>Einstellungen → Ansicht → Kürzel</code> statt Farbpunkte).</p>
+            <p>Die frühen Phasen der Umsetzung lassen sich im Standardmaßstab sehr gut abbilden: Meist werden zuerst Baum- und Strauchschicht gepflanzt, die krautigen Schichten folgen erfahrungsgemäß in den Folgejahren.</p>
+            <h4>Abbildung von Gilden</h4>
+            <p>Ob alle Ökosystemfunktionen für alle Pflanzen abgedeckt sind, lässt sich bisher nur begrenzt beurteilen. Für einzelne Polykulturen gibt es eine vorläufige Lösung: unförmig ausgeschnittene Flächen, die Gruppen krautiger Pflanzen darstellen. Deren Informationen lassen sich außerhalb des Plans zeigen, etwa mit der Streifenansicht.</p>
+            <div class="figs">
+              <figure>
+                <a href="/hilfe/gilden.jpg" target="_blank" rel="noopener"><img src="/hilfe/gilden.jpg" width="1000" height="663" loading="lazy" decoding="async" alt="Baumscheibe der Schwarzen Maulbeere auf einer großen Pappfläche, daneben zwei grüne, unförmig ausgeschnittene Flächen für Bestäuberpflanzen und Duft-Verwirrer." /></a>
+                <figcaption>Ausgeschnittene Flächen für die Gilden einer Polykultur.</figcaption>
+              </figure>
+              <figure>
+                <a href="/hilfe/kraeuterschicht.jpg" target="_blank" rel="noopener"><img src="/hilfe/kraeuterschicht.jpg" width="957" height="521" loading="lazy" decoding="async" alt="Türkise, unförmige Karte „Herb Layer Patch“ mit einer Liste von Kräutern und farbigen Punkten für ihre Funktionen." /></a>
+                <figcaption>Eine Karte für die Krautschicht einer Teilfläche.</figcaption>
+              </figure>
+            </div>
+            <p>Eine Gilde ist allerdings nicht dasselbe wie eine Polykultur, denn ihre Mitglieder sind nicht auf eine Teilfläche beschränkt. Die Bestäubergilde etwa besteht meist aus Blühpflanzen, die über den ganzen Waldgarten verteilt sind. Diese Komplexität versuchen wir vorerst in den digitalen Funktionen <i>Polykulturen</i> und <i>Waldgartenplan</i> abzudecken (siehe <a href="#polykulturen">Polykulturen &amp; Gilden</a>).</p>
+          </div></details>
+        </div>
+      </details>
+
+      <!-- 4 -->
+      <details class="part" id="software">
+        <summary><span class="num">4</span><span><span class="title">Die Software: permadesignkit.org</span><span class="hint">Pflanzen, Kalender, Polykulturen, Waldgartenplan, Daten sichern, Tastenkürzel, Ausblick</span></span></summary>
+        <div class="part-body">
+          <p>Über das physische Set aus Baumscheiben hinaus bietet die Software wirkungsvolle Werkzeuge, vor allem für die Designphase eines Designprozesses.</p>
+          <h3>Technisches</h3>
+          <p>Das Perma Design Kit läuft <b>im Browser</b>. Es sammelt Daten aus öffentlichen Datenbanken (vor allem PFAF und Wikidata) und bereitet sie für verschiedene Ansichten auf. Alle importierten Daten und eigenen Eingaben werden nur im Browser gespeichert und verlassen den Computer nicht – bis der Speicher des Browsers gelöscht wird. Wie du sie sicherst, steht unter <a href="#daten">Daten sichern, teilen, offline nutzen</a>.</p>
+          <p>Das Tool sollte in allen gängigen Browsern und auf mobilen Geräten funktionieren. Wenn nicht: bitte <a href="/fehler-melden/">Fehler melden</a>.</p>
+          <div class="warn"><b>Achtung</b>Die Pflanzendaten stammen aus fremden Quellen und sind nicht immer vollständig oder richtig. Besonders für wichtige Entscheidungen solltest du sie prüfen.</div>
+          <h3>Aufbau &amp; Bedienung</h3>
+          <p>Beim ersten Aufruf erscheint ein Rundgang, der die Grundzüge des Tools erklärt. Oben im Menü findest du die Seiten:</p>
+          <dl>
+            <dt>Pflanzen</dt><dd>Sammlung und grafische Aufbereitung der Nischendaten in verschiedenen Ansichten</dd>
+            <dt>Kalender</dt><dd>Blüh- und Erntekalender</dd>
+            <dt>Polykulturen</dt><dd>funktionale Pflanzengemeinschaften zusammenstellen</dd>
+            <dt>Waldgartenplan</dt><dd>Flächenplanung mit einer Pflanzenliste am realen Standort (in Entwicklung)</dd>
+          </dl>
+          <figure>
+            <a href="/hilfe/pflanzenkacheln.jpg" target="_blank" rel="noopener"><img src="/hilfe/pflanzenkacheln.jpg" width="1221" height="947" loading="lazy" decoding="async" alt="Bildschirmfoto der Seite Pflanzen in der Kachelansicht: oben das Menü, darunter Filter und Pflanzenkacheln mit Fotos, Namen und farbigen Nutzungs-Badges." /></a>
+            <figcaption>Die Seite <i>Pflanzen</i> in der Kachelansicht.</figcaption>
+          </figure>
+
+          <details class="sub" id="pflanzen"><summary>Pflanzen</summary><div class="sub-body">
+            <p>Das grundlegende Werkzeug der Anwendung: die gesammelten Daten zur ökologischen Nische der Pflanzen, filter- und sortierbar in verschiedenen Ansichten.</p>
+            <h4>a) Eine Pflanzenliste neu erstellen</h4>
+            <ol>
+              <li><b>Pflanze hinzufügen.</b> Über das Suchfeld findest du Pflanzen aus den Quellen. Die Zahl der Exemplare stellst du direkt dort ein. Mit <code>Neue Pflanze</code> legst du alles von Hand an.</li>
+              <li><b>Daten ergänzen lassen.</b> Fehlende Angaben kommen aus PFAF, Edible Forest Gardens und Wikidata (siehe <a href="#quellen">Datenquellen</a>).</li>
+              <li><b>Nachbessern und bearbeiten.</b> Im Bearbeiten-Dialog jeden Wert ändern. Das Quellen-Kürzel springt dann auf <b>M</b> für manuell, und dieser Wert wird nie überschrieben.</li>
+            </ol>
+            <div class="tip"><b>Tipp</b>Die Suche gelingt mit dem botanischen Namen am besten, Gemeinnamen sind nicht immer eindeutig.</div>
+            <p>Es ist wichtig, die Pflanzendaten an die eigene Situation anzupassen: Eigene <b>Größenangaben</b> braucht es für Sorten, verschiedene Unterlagen oder ältere Bestandsgehölze. Das gilt auch, wenn die Größe von der Bewirtschaftung abhängt, etwa bei Bäumen im Niederwald (Linde für Salat, Hasel für Stecken, Weide für Korbmaterial). Sorten haben außerdem oft andere <b>Blüte- und Reifezeiten</b>.</p>
+            <h4>b) Vorhandene Listen verwenden</h4>
+            <p>Fertige Pflanzenlisten liest du als CSV oder JSON über das Menü <code>Daten</code> ein. Dort liegt als Beispiel die Liste „Pflanzen für kleine Gärten“ (42 Arten). Tabellen aus Excel exportierst du als CSV und importierst sie hier.</p>
+            <h4>Ansichten</h4>
+            <p>In allen Ansichten gibt es den Knopf <code>Daten</code>: Daten vervollständigen, Listen importieren und exportieren, Druckansichten erzeugen. Die Filterzeile sortiert und filtert die Pflanzen.</p>
+            <figure class="narrow">
+              <img src="/hilfe/menue.jpg" width="646" height="98" loading="lazy" decoding="async" alt="Kopfzeile „Pflanzenkacheln“ mit dem Umschalter Ansicht für Kacheln, Liste und Karten." />
+            </figure>
+            <dl>
+              <dt>Kacheln</dt><dd>Sortier- und filterbare Übersicht mit Bild, Akzentstreifen nach Hauptnutzung und Vollständigkeitsbalken.</dd>
+              <dt>Liste</dt><dd>Sortier- und filterbare Tabelle. Mehrere Pflanzen auswählen und gemeinsam ergänzen, löschen, exportieren oder drucken.</dd>
+              <dt>Baumscheiben</dt><dd>Eine weitere Ansicht neben den Kacheln. Über die Druckknöpfe entstehen die maßstabsgetreuen Baumscheiben als PDF.</dd>
+            </dl>
+            <h4>Zeichen in der Pflanzenliste</h4>
+            <ul class="legend">
+              <li><b>Ausgefüllte Badges:</b> Nutzung der Pflanze (essbar, medizinisch, Material …).</li>
+              <li><b>Umrandete Chips:</b> Herkunft eines Werts, zum Beispiel PFAF.</li>
+              <li><b>Akzentstreifen links:</b> Hauptnutzung in dieser Reihenfolge:
+                <span class="swatches"><span><i class="sw" style="background:#fbbf24"></i>essbar/Küche</span><span><i class="sw" style="background:#fb7185"></i>Heilpflanze</span><span><i class="sw" style="background:#84cc16"></i>Stickstofffixierer</span><span><i class="sw" style="background:#2dd4bf"></i>Bodendecker</span><span><i class="sw" style="background:#22d3ee"></i>Insektenpflanze</span></span></li>
+              <li><b>Vollständigkeit der Daten:</b> grün ab 80 %, gelb ab 50 %, darunter rot.</li>
+            </ul>
+            <h4>Bearbeiten</h4>
+            <p>Jede Pflanze öffnest du über den <code>Stift</code>-Knopf zum Bearbeiten, um fehlende Daten zu ergänzen und die Angaben an deinen Garten anzupassen.</p>
+          </div></details>
+
+          <details class="sub" id="kalender"><summary>Kalender</summary><div class="sub-body">
+            <p>Blüte- und Erntezeiträume als Kalender, sortierbar und als PDF druckbar.</p>
+            <figure>
+              <a href="/hilfe/kalender.jpg" target="_blank" rel="noopener"><img src="/hilfe/kalender.jpg" width="1218" height="955" loading="lazy" decoding="async" alt="Bildschirmfoto des Blüh- und Erntekalenders: oben eine Monatsübersicht mit Balken, darunter für jede Pflanze Blüte und Ernte als farbige Balken über die zwölf Monate." /></a>
+              <figcaption>Blüh- und Erntekalender.</figcaption>
+            </figure>
+          </div></details>
+
+          <details class="sub" id="polykulturen-app"><summary>Polykulturen</summary><div class="sub-body">
+            <p>Dieses Werkzeug schlägt Pflanzpartner vor, die ähnliche Ansprüche und Toleranzen bei Licht, Wasser und Boden-pH haben. Gespeicherte Polykulturen lassen sich als Verbund in den Waldgartenplan einfügen. <span class="soon">erster Entwurf, in Entwicklung</span></p>
+            <h4>Polykulturen erstellen</h4>
+            <ol>
+              <li>Eine Ankerart wählen, oft ein zentrales Element wie ein Obstbaum.</li>
+              <li>Mitglieder hinzufügen und dabei jede Rolle mindestens doppelt besetzen: Begleiter, Bodendecker, Stickstofffixierer, Mineraliensammler, Insekten- oder Duftpflanze, Obst oder Beere (siehe <a href="#polykulturen">Designprinzipien für Polykulturen</a>).</li>
+              <li>Das Vorschlags-Panel rechts zeigt passende Pflanzen aus deiner Liste und weitere Vorschläge – je höher die Zahl, desto besser passen Licht, Wasser und pH.</li>
+              <li>Speichern.</li>
+            </ol>
+            <p>Alternativ legst du im Bearbeiten-Dialog einer Pflanze eine <b>Gruppe</b> an und machst daraus über <code>Aus Gruppe anlegen</code> eine Polykultur. Fertige Beispiel-Polykulturen findest du im Menü der Seite und in den <a href="#literatur">Quellen</a>.</p>
+          </div></details>
+
+          <details class="sub" id="gartenplan"><summary>Waldgartenplan</summary><div class="sub-body">
+            <p>Die digitale Alternative zum Baumscheiben-Set. Hier gibt es noch den meisten Entwicklungsbedarf: Ein digitales Werkzeug muss letztlich komplex genug für professionelle Planungen und mit GIS-Anwendungen verträglich sein.</p>
+            <div class="beta">
+              <b>Beta-Test</b>
+              <p>Wir tüfteln gerade einiges aus. Das Werkzeug hat schon viele neue Funktionen, die noch nicht öffentlich sind und getestet werden möchten, darunter:</p>
+              <ul>
+                <li>Baumbiographien und Aufgaben: für jeden Baum eine Zeitachse mit Bonitur, Ernte, Schnitt, Pflege und Fotos</li>
+                <li>bessere Einbindung in (Q)GIS</li>
+                <li>gemeinsam im Team an Plänen arbeiten und sie freigeben</li>
+                <li>ein professioneller Waldgartenplaner mit Ebenen, Erntelücken-Analyse, Windschutz, Wasserablauf und mehr</li>
+              </ul>
+              <p>Wenn du die neuen Funktionen im <a href="/beta/">Beta-Test</a> ausprobieren möchtest: Wir freuen uns über dein Feedback, deine Unterstützung und deinen Rat, wohin sich das Werkzeug entwickeln soll. Vielleicht hast du sogar Lust, mitzuwirken und Teil des Teams zu werden?</p>
+            </div>
+            <p>Oben rechts stellst du ein, wie umfangreich die <b>Oberfläche</b> ist. <b>Einfach</b> führt in drei Schritten durch den Plan und zeigt fünf Schichten zum Füllen – genug für die meisten Gärten. <b>Klassisch</b> zeigt alle Werkzeuge und bietet einen professionellen Funktionsumfang. Ein Wechsel ist jederzeit möglich und ändert nur die Oberfläche, nicht die Daten im Plan. Unabhängig davon lässt sich jeder Plan in <b>2D oder 3D</b> ansehen.</p>
+            <h4>Flächenplan anlegen und Pflanzen positionieren</h4>
+            <ul>
+              <li><code>+ Neuer Waldgartenplan</code>, Adresse suchen oder <i>Mein Standort</i> wählen und die Eckpunkte der Fläche per Klick setzen. Flächengröße, Nordung und Gelände ergeben sich daraus. Ohne Standort gibt es ein einfaches Raster.</li>
+              <li><i>Fläche einzeichnen</i> für Teilbereiche wie Beete, Teich und Wege.</li>
+              <li><b>Pflanzen setzen:</b> Pflanze wählen und auf die Fläche klicken – einzeln, als Reihe mit festem Abstand oder als ganze Polykultur (<i>Polykultur als Paket</i> setzt Anker und Mitglieder auf einmal).</li>
+              <li>Pflanzen per Ziehen verschieben, mit dem <i>Lasso</i> mehrere zugleich markieren. Ziehen auf freier Fläche verschiebt die Karte.</li>
+              <li>Der Regler <i>Jahre seit Projektbeginn</i> (0–80) zeigt die geschätzte Kronengröße im jeweiligen Jahr. Schnell wachsende Pflanzen sind nach etwa 6, mittlere nach 15, langsame nach 30 Jahren ausgewachsen. Wuchsform und Habitus sind bisher einfach standardisiert dargestellt.</li>
+            </ul>
+            <h4>Karte, Luftbild, Gelände</h4>
+            <p>Der Hintergrund kommt aus öffentlichen Daten: OpenStreetMap, amtliche Luftbilder (8–40 cm, in 13 Bundesländern, Österreich, der Schweiz und den Niederlanden) oder ein grobes Satellitenbild. Das Gelände stammt, wo verfügbar, aus amtlichen 1-m-Modellen. Gebäude im Umkreis von etwa 150 m stehen in 3D und werfen Schatten.</p>
+            <h4>Auswertungen</h4>
+            <dl>
+              <dt>Funktionen</dt><dd>Effektive Gilden für das Gesamtsystem: wo die sieben Ökosystemfunktionen wirken und wo sie fehlen, mit Vorschlägen aus deinem Bestand und <i>Hier pflanzen</i>.</dd>
+              <dt>Besonnung</dt><dd>Sonnenstunden pro Tag mit Schatten von Baumkronen, Gelände und Gebäuden: Sonne ab 6 h, Halbschatten 3–6 h, Schatten unter 3 h.</dd>
+              <dt>Hinweise</dt><dd>(experimentell) Mögliche Konflikte durch zu eng stehende Pflanzen derselben Schicht und ungedeckten Lichtbedarf, jeweils für ausgewachsene Pflanzen.</dd>
+            </dl>
+            <h4>Werkzeuge und Ausgaben</h4>
+            <div class="cols">
+              <ul>
+                <li>verschiedene Auswahlmodi</li>
+                <li>Messen</li>
+                <li>Bild speichern</li>
+                <li>Flächen und Umrisse zeichnen</li>
+                <li>GPS-Daten</li>
+              </ul>
+              <ul>
+                <li>Pflanzliste mit Stückzahl und Preisen (CSV, PDF)</li>
+                <li>Kalender nur für diesen Plan</li>
+                <li>PDF-Export</li>
+                <li>GeoJSON für QGIS</li>
+                <li>Teilen-Link</li>
+              </ul>
+            </div>
+          </div></details>
+
+          <details class="sub" id="daten"><summary>Daten sichern, teilen, offline nutzen</summary><div class="sub-body">
+            <dl>
+              <dt>Backup</dt><dd><code>Einstellungen → Daten</code>: alle Daten als JSON-Datei speichern, auch zum Umzug auf ein anderes Gerät. Automatisch per WebDAV oder Gist möglich.</dd>
+              <dt>Export</dt><dd>Alle oder ausgewählte Pflanzen als CSV oder JSON.</dd>
+              <dt>Teilen-Link</dt><dd>Pflanzen, Polykulturen und Pläne stecken komprimiert im Link. Auf dem Server wird nichts gespeichert.</dd>
+              <dt>App installieren</dt><dd>Android/Chrome: Hinweis „App installieren“. iOS: Teilen-Symbol → „Zum Home-Bildschirm“. Nach dem ersten Besuch läuft alles offline, außer Suche, Datenquellen und Karte.</dd>
+            </dl>
+            <div class="warn"><b>Wichtig auf iPhone und iPad</b>Die App auf dem Home-Bildschirm hat einen eigenen, leeren Speicher. Lege vorher im Browser ein Backup an und lies es in der App ein. Im Safari-Tab kann iOS Daten nach 7 Tagen ohne Besuch löschen.</div>
+          </div></details>
+
+          <details class="sub" id="shortcuts"><summary>Tastenkürzel</summary><div class="sub-body">
+            <div class="tablewrap"><table>
+              <tbody>
+                <tr><td><kbd>/</kbd></td><td>Suche fokussieren</td></tr>
+                <tr><td><kbd>Esc</kbd></td><td>Offenen Dialog schließen</td></tr>
+                <tr><td><kbd>f</kbd></td><td>Liste nach Namen filtern</td></tr>
+                <tr><td><kbd>n</kbd></td><td>Neue Pflanze</td></tr>
+                <tr><td><kbd>g</kbd> <kbd>l</kbd> <kbd>c</kbd></td><td>Ansicht wechseln: Kacheln, Liste, Karten</td></tr>
+                <tr><td><kbd>Shift</kbd> + Klick</td><td>Bereich in der Liste auswählen</td></tr>
+                <tr><td><kbd>Alt</kbd> + <kbd>1</kbd>…<kbd>9</kbd></td><td>Menüpunkte der Reihe nach</td></tr>
+                <tr><td><kbd>?</kbd></td><td>Alle Kürzel der aktuellen Seite</td></tr>
+              </tbody>
+            </table></div>
+            <p><b>Im Waldgartenplan:</b> <kbd>2</kbd>/<kbd>3</kbd> für 2D/3D, <kbd>H</kbd> <kbd>V</kbd> <kbd>L</kbd> <kbd>M</kbd> für Bewegen, Markieren, Lasso, Messen, <kbd>F</kbd> <kbd>R</kbd> <kbd>U</kbd> für Fläche, Reihe, Umriss, <kbd>I</kbd>/<kbd>O</kbd> für die Jahre, <kbd>J</kbd>/<kbd>K</kbd> für die Sonne.</p>
+          </div></details>
+
+          <details class="sub" id="ausblick"><summary>Ausblick &amp; Mitmachen</summary><div class="sub-body">
+            <h4>Geplante Weiterentwicklung</h4>
+            <p>Viele weitere Funktionen sind angedacht oder schon im Test:</p>
+            <ul>
+              <li>Pflanzenlisten nach Designziel: Ertragssystem zur Nahrungserzeugung, komplexe Agroforstsysteme, Anbau für die Gesundheit und mehr</li>
+              <li>Darstellung verschiedener Sukzessionsphasen im Plan</li>
+              <li>Polykulturen und Gilden: selbst festlegen, nach welchen Kriterien Pflanzen vorgeschlagen werden, und Gilden räumlich abbilden</li>
+              <li>austauschbare Nutzen und Funktionen</li>
+              <li>Vektordateien, um Baumscheiben aus Holz, MDF oder Kunststoff zu lasern</li>
+            </ul>
+            <h4>Mitmachen &amp; Fördern</h4>
+            <ul>
+              <li>Das Werkzeug nutzen und Feedback geben, Fehler über <a href="/fehler-melden/">Fehler melden</a> mitteilen</li>
+              <li>Pflanzenlisten und Polykulturen zum Teilen erstellen</li>
+              <li>Konzeption und Code auf GitHub beitragen</li>
+              <li>Server- und Domainkosten über <a href="/unterstuetzen/">Unterstützen</a> mittragen</li>
+              <li>Unveröffentlichte Funktionen im <a href="/beta/">Beta-Test</a> ausprobieren</li>
+            </ul>
+          </div></details>
+        </div>
+      </details>
+
+      <!-- 5 -->
+      <details class="part" id="hintergrund">
+        <summary><span class="num">5</span><span><span class="title">Fachlicher Hintergrund</span><span class="hint">Designprozess, Waldgärten, Polykulturen &amp; Gilden</span></span></summary>
+        <div class="part-body">
+          <p>Für die meisten Menschen funktioniert das Werkzeug in vereinfachter Form am besten. Es ist aber viel weiter gedacht und erlaubt deutlich mehr Detail und Anpassung, so dass auch fachliche Planungen möglich sind. Hier geben wir nur eine kurze fachliche Einordnung; zur Vertiefung stehen unten die <a href="#literatur">Quellen</a>.</p>
+          <p>Ganz allgemein möchten wir die Frage beantworten, wie sich unsere Landnutzung im Einklang mit der Natur gestalten lässt. Dazu nutzen wir vor allem Wissen aus der Ökologie und den Naturwissenschaften, angewandt im Sinne der Ethik und der Designprinzipien der Permakultur. Am wichtigsten ist dabei, die Natur zu beobachten und nachzuahmen – von ihr lernen wir, zu „gärtnern wie der Wald“.</p>
+
+          <details class="sub" id="designprozess"><summary>Designprozess</summary><div class="sub-body">
+            <p>Gutes Design gelingt am ehesten, wenn man sich an einem Designprozess orientiert. Diese logische Abfolge von Phasen stellt sicher, dass wir möglichst viel über den Standort wissen, bevor das eigentliche Flächendesign beginnt. Je fundierter das Flächendesign, desto erfolg- und ertragreicher die Umsetzung. Und je länger wir uns von diesem Prozess leiten lassen, desto besser wird das Design durch wiederholte Schleifen von Beurteilung und Verbesserung.</p>
+            <figure>
+              <a href="/hilfe/designprozess.jpg" target="_blank" rel="noopener"><img src="/hilfe/designprozess.jpg" width="622" height="455" loading="lazy" decoding="async" alt="Farbige Grafik eines Designprozesses für Waldgärten mit den Phasen Beobachtung, Analyse, Design, Umsetzung und Management rund um eine Spirale." /></a>
+              <figcaption>Ein Designprozess für Waldgärten.</figcaption>
+            </figure>
+          </div></details>
+
+          <details class="sub" id="waldgaerten"><summary>Waldgärten</summary><div class="sub-body">
+            <p>Anders als der Intensivanbau einjähriger Pflanzen verlangen mehrschichtige, permanente Systeme ein komplexeres, ganzheitlicheres Denken. Schon räumlich gehen wir vom fast zweidimensionalen Gemüsebeet in die dritte Dimension. Der größte Unterschied ist aber die vierte Dimension, die Zeit. Wälder sind die effizientesten Ökosysteme, die wir schaffen und prägen können, darum ist meist das <b>Klimaxstadium der natürlichen Sukzession</b> unser Ziel. Was in natürlichem Tempo ein Jahrtausend dauern kann, lässt sich durch ökologisch informierte Eingriffe deutlich beschleunigen.</p>
+            <p>Dazu hilft es sehr, die Zeit im Kopf „vorzuspulen“ und sich spätere Stufen der Sukzession vorzustellen – also in Weltzeit statt in Menschenzeit zu denken. Mit etwas Übung bildet sich ein <b>sukzessionales Vorstellungsvermögen</b>, das die zeitliche Perspektive öffnet und bessere Entscheidungen über die Position von Bäumen und Sträuchern erlaubt. Im Waldgartenplan hilft dabei der Jahre-Regler.</p>
+            <p>Beim Flächendesign von Waldgärten und komplexen Agroforstsystemen gehen wir von den etablierten Standardwerken aus: „Einen Waldgarten erschaffen“ von Martin Crawford und den zwei Bänden „Edible Forest Gardens“ von Dave Jacke und Eric Toensmeier (siehe <a href="#literatur">Quellen</a>).</p>
+          </div></details>
+
+          <details class="sub" id="polykulturen"><summary>Polykulturen &amp; Gilden</summary><div class="sub-body">
+            <p>Grob vereinfacht ist ein Waldgarten eine Ansammlung von Polykulturen: Meist teilen die Wege die Fläche in begrenzte Teilflächen (<i>patches</i>), auf denen mehrschichtige Pflanzengemeinschaften wachsen. Idealerweise decken sie die Ökosystemfunktionen ab, die für ihren Erfolg nötig sind – und der misst sich an den Erträgen, für die sie gestaltet sind. Ein Obstbaum hat in einer Lebensgemeinschaft am wenigsten Stress, weil sie ihn mit Bestäubung, Schädlingskontrolle, Nährstoffen und Bodendeckung unterstützt und schützt.</p>
+            <div class="def"><b>Polykultur</b>Eine Polykultur ist durch den physischen Raum bestimmt: eine Gruppe vorwiegend mehrjähriger Pflanzen auf einer klar begrenzten Fläche (<i>patch</i>), so angeordnet, dass ihre Wechselbeziehungen von möglichst wenig Konkurrenz und möglichst viel Kooperation geprägt sind.</div>
+            <p>Kennt man die ökologischen Nischen der Pflanzen, lassen sie sich vor dem Hintergrund der Standortfaktoren so anordnen, dass sie die gewünschten <b>Erträge</b> liefern.</p>
+            <figure>
+              <a href="/hilfe/nutzen.jpg" target="_blank" rel="noopener"><img src="/hilfe/nutzen.jpg" width="1232" height="415" loading="lazy" decoding="async" alt="Symbole der Nutzen für Menschen: essbare Teile, medizinisch, Küche, Brennholz, Material, Seife, Färben, Zierwert; darunter Frucht, Blätter, Grün, Blüten, Samen, Nüsse, Zwiebeln, Wurzeln, Pilze, Öle." /></a>
+              <figcaption>Nutzen für Menschen.</figcaption>
+            </figure>
+            <p>Die Gestaltung erfolgreicher Polykulturen folgt diesen <b>Designprinzipien</b>:</p>
+            <dl>
+              <dt>Beziehungsbildende Platzierung</dt><dd>Elemente so zueinander positionieren, dass Konkurrenz gering und Kooperation begünstigt wird.</dd>
+              <dt>Stapeln von Funktionen</dt><dd>Jedes Element erfüllt möglichst viele Funktionen und baut so viele Wechselbeziehungen auf.</dd>
+              <dt>Redundanz</dt><dd>Jede Funktion wird von mehreren Elementen erfüllt, damit sie für die Polykultur sicher gewährleistet ist.</dd>
+            </dl>
+            <p>Darüber hinaus hilft es immer, Prinzipien der <b>Permakultur</b> mitzudenken: Design vom Muster zum Detail, Vielfalt nutzen und fördern, integrieren statt trennen (siehe Holmgren in den <a href="#literatur">Quellen</a>).</p>
+            <p>Neben den Nutzen für uns sollen Polykulturen zugleich wichtige <b>Funktionen für das Ökosystem</b> erfüllen.</p>
+            <figure>
+              <a href="/hilfe/funktionen.jpg" target="_blank" rel="noopener"><img src="/hilfe/funktionen.jpg" width="1237" height="273" loading="lazy" decoding="async" alt="Symbole der Funktionen für das Ökosystem: Stickstofffixierer (N+), Mineraliensammler (DA), Windschutz, Nahrung und Schutz für Insekten und Kleintiere, Bodendecker, Schädlingsschutz." /></a>
+              <figcaption>Funktionen für das Ökosystem.</figcaption>
+            </figure>
+            <p>Gruppiert man die Pflanzen nach Funktionen und betrachtet die Beziehungen zwischen ihnen, kommt eine zweite Perspektive hinzu: die auf das gesamte Ökosystem. Um diese Komplexität zu fassen, sind die Arbeiten von Dave Jacke und Eric Toensmeier hilfreich. Sie präzisieren den Begriff <b>Gilde</b>, um die systemübergreifenden Wirkungen deutlich zu machen.</p>
+            <div class="def"><b>Gilde</b>Anders als Polykulturen lassen sich Gilden nicht auf die Fläche einer Polykultur beschränken; sie bilden übergreifende Systemfunktionen und damit die „soziale“ Struktur des Systems ab. Eine Gilde ist durch die Art der Beziehungen zwischen den Elementen bestimmt, etwa eine Gilde für Windschutz, Bestäubung oder Bodendeckung. Daraus folgt: <b>Nicht alle Gilden sind Polykulturen.</b> Und: <b>Um wirksam zu sein, muss eine Polykultur mehrere Gilden enthalten.</b></div>
+            <p class="small">Diese Konzepte sind hier vereinfacht dargestellt; mehr in Dave Jackes Vorträgen und in „Edible Forest Gardens“ (siehe <a href="#literatur">Quellen</a>).</p>
+          </div></details>
+
+          <details class="sub" id="beispiele"><summary>Beispiele für Polykulturen</summary><div class="sub-body">
+            <p>Von Polykultur kann man schon sprechen, wenn im Intensivanbau mehr als eine Schicht gepflanzt wird. Solch ein <b>Mischkulturanbau</b> („companion planting“, „interplanting“) kann sich durchaus gegenseitig fördern, baut aber keine komplexen Wechselbeziehungen auf.</p>
+            <p>Diese entstehen erst, wenn Gehölze hinzukommen, meist als zentrales Element. Dann ist oft von <b>Obstbaum-Lebensgemeinschaften</b> die Rede: Obstbäume, die mit Förderpflanzen unterpflanzt werden.</p>
+            <p>Darüber hinaus sind alle möglichen Zusammenstellungen holziger und krautiger Pflanzen für <b>besondere Designziele</b> denkbar – die einzige Grenze ist die Fantasie. Ein typisches Beispiel ist eine Windschutzhecke; ähnlich kann Sicht- oder Lärmschutz der gewünschte Ertrag sein. Polykulturen können als Gründüngungsfläche für benachbarten Intensivanbau dienen, in Küchennähe kulinarische Nutzen erfüllen, Naturmaterialien für Kunst und Handwerk liefern und vieles mehr.</p>
+          </div></details>
+        </div>
+      </details>
+
+      <!-- 6 -->
+      <details class="part" id="literatur">
+        <summary><span class="num">6</span><span><span class="title">Quellen</span><span class="hint">Literatur, Vorträge, Datenquellen</span></span></summary>
+        <div class="part-body">
+          <h3>Grundlegende und weiterführende Quellen</h3>
+          <ul class="refs">
+            <li>Balkep: The Polyculture Project<br><small><a href="https://www.thepolycultureproject.com/" rel="noopener">thepolycultureproject.com</a></small></li>
+            <li>Crawford, Martin (2022): <i>Einen Waldgarten erschaffen</i>. OLV<br><small>Original: <i>Creating a Forest Garden</i> (2010), Green Books</small></li>
+            <li>Jacke, Dave &amp; Toensmeier, Eric (2005): <i>Edible Forest Gardens</i>, Band 1 und 2. Chelsea Green</li>
+            <li>Jacke, Dave: Reframing and Deepening into Guilds and Polycultures (FFFG1)<br><small><a href="https://www.agroforestry.co.uk/symposium/" rel="noopener">Symposium – The Agroforestry Research Trust</a></small></li>
+            <li>Jacke, Dave: Gardening Like a Forest – Applied Ecological Design for Homesteads<br><small><a href="https://www.youtube.com/watch?v=IL4VCbgCGD4" rel="noopener">YouTube</a></small></li>
+            <li>Jacke, Dave: Ecosystem Mimicry (Vortrag)<br><small><a href="https://www.youtube.com/watch?v=oOx06AEJVa0" rel="noopener">YouTube</a></small></li>
+            <li>Hemenway, Toby (2009): <i>Gaia's Garden: A Guide to Home-Scale Permaculture</i>. Chelsea Green (Kapitel 9)</li>
+            <li>Holmgren, David: Das Wesen der Permakultur<br><small><a href="https://holmgren.com.au/downloads/Essence_of_Pc_DE.pdf" rel="noopener">PDF</a></small></li>
+            <li>Müller, Jörn: Ein Designprozess für Waldgärten. Vortrag beim Vernetzungstreffen des Waldgartenkongresses<br><small><a href="https://www.youtube.com/watch?v=5Y307puQaHo" rel="noopener">YouTube</a></small></li>
+            <li>Müller, Jörn: Pop goes the canopy – a forest garden design tool<br><small><a href="https://www.agroforestry.co.uk/presentations-2023/" rel="noopener">Agroforestry Research Trust, Vorträge 2023</a></small></li>
+            <li>Müller, Jörn: Polykultur für den Nahrungsertrag unter trockenen Bedingungen<br><small><a href="https://permakultur-plattform.de/blog/polykultur-fur-den-nahrungsertrag-unter-trockenen-bedingungen/" rel="noopener">Permakultur-Plattform</a></small></li>
+            <li>Müller, Jörn: Polykultur für den Nahrungsertrag unter schattigen Bedingungen<br><small><a href="https://permakultur-plattform.de/blog/polykultur-fuer-den-nahrungsertrag-schattig/" rel="noopener">Permakultur-Plattform</a></small></li>
+            <li>Toensmeier, Eric: Guidelines for Perennial Polyculture Design<br><small><a href="https://www.permaculturenews.org/2016/01/15/guidelines-for-perennial-polyculture-design/" rel="noopener">permaculturenews.org</a></small></li>
+            <li>Quellcode der Software<br><small><a href="https://github.com/js32/Perma-Guild-Forge" rel="noopener">github.com/js32/Perma-Guild-Forge</a></small></li>
           </ul>
-          <span data-i18n="vocabAccentImage">Hat die Pflanze ein Bild, ist der Streifen nur unterhalb davon zu sehen.</span>
-        </li>
-        <li><strong data-i18n="vocabBarTerm">Vollständigkeits­balken</strong> <span data-i18n="vocabBarDesc">= wieviele Felder gegenüber dem Maximum gefüllt sind
-          (grün ≥ 80 %, gelb ≥ 50 %, rot darunter).</span></li>
-      </ul>
-    </section>
+          <h3 id="quellen">Datenquellen</h3>
+          <dl>
+            <dt>Plants For A Future</dt><dd><a href="https://pfaf.org" rel="noopener">pfaf.org</a> – die Datenbank eignet sich auch für eine detaillierte Suche nach Nutzpflanzen.</dd>
+            <dt>Wikidata</dt><dd><a href="https://www.wikidata.org" rel="noopener">wikidata.org</a> – Namen, Bilder, Taxonomie.</dd>
+            <dt>Edible Forest Gardens</dt><dd>Artenliste „Species Toolkit“ (Lally Luck Farm), als Tabelle auf unserem Server.</dd>
+            <dt>Karten</dt><dd>OpenStreetMap, amtliche Luftbilder und Geländemodelle der Landesvermessungen, Sentinel-2 (EOX). Die jeweilige Quelle steht im Plan unten rechts.</dd>
+          </dl>
+          <p class="small">Haben mehrere Quellen einen Wert, gewinnt die höher eingestufte (Standard: PFAF, dann Edible Forest Gardens, dann Wikidata; änderbar in den <a href="/settings">Einstellungen</a>). Selbst eingetragene Werte werden nie überschrieben. Gespeichert wird die Endgröße der ausgewachsenen Pflanze; Spannen in Fuß rechnet das Programm über ihre Mitte um (25–35 ft → 9,1 m).</p>
+        </div>
+      </details>
 
-    <section class="space-y-2">
-      <h2 class="text-xl font-semibold" data-i18n="exportHeading">Daten exportieren & sichern</h2>
-      <ul class="list-disc space-y-1 pl-6 text-sm text-stone-600 dark:text-stone-300">
-        <li><strong data-i18n="exportBackupTerm">Backup (JSON)</strong> <span data-i18n="exportBackupDesc">in den Einstellungen unter „Sichern“: kompletter Datensatz inkl. Konfiguration —
-          ideal als Sicherung oder zum Übertragen auf ein anderes Gerät.</span></li>
-        <li><strong data-i18n="exportCsvTerm">CSV / JSON-Export</strong> <span data-i18n="exportCsvDesc">auf der Hauptseite: einzelne oder ausgewählte Pflanzen.</span></li>
-        <li><strong data-i18n="exportPdfTerm">PDF-Export</strong> <span data-i18n="exportPdfDesc">aus der Kartenansicht: alle Karten, Streifen oder Baumscheiben.</span></li>
-        <li><strong data-i18n="exportShareTerm">Projekt als Link teilen</strong> <span data-i18n="exportShareDesc">über „🔗 Teilen…“ im Waldgartenplan oder auf der Polykulturen-Seite: Pflanzen, Polykulturen und Waldgartenpläne stecken komprimiert im Link, nichts wird auf einem Server gespeichert. Wer den Link öffnet, kann das Projekt übernehmen.</span></li>
-        <li><strong data-i18n="exportGroupTerm">Gruppe als Polykultur</strong> <span data-i18n="exportGroupDesc">auf der Polykulturen-Seite über „Aus Gruppe anlegen…“ — Gruppen vergibst du im Bearbeiten-Dialog einer Pflanze.</span></li>
-        <li><strong data-i18n="exportManualTerm">„M“ = manuell</strong> <span data-i18n="exportManualDesc">im Bearbeiten-Dialog springt das Quellen-Kürzel eines Feldes (z. B. P für PFAF) auf M, sobald du den Wert änderst.</span></li>
-      </ul>
-    </section>
+      <!-- 7 -->
+      <details class="part" id="projekt">
+        <summary><span class="num">7</span><span><span class="title">Das Projekt</span><span class="hint">Wer dahintersteht, woher die Idee kommt, wohin es gehen soll</span></span></summary>
+        <div class="part-body">
+          <p>Das Perma Design Kit ist ein freies Werkzeug zur Planung von Waldgärten und anderen permanenten Nutzpflanzensystemen. Die Software macht eine Nischenanalyse: Sie sammelt Daten zur ökologischen Nische einer Pflanze aus offenen Quellen und stellt sie auf verschiedene Arten dar. Neben Infokarten und Baumscheiben zum Auslegen zeigt sie die Pflanzen in filterbaren Listen und Kalendern. In einem nächsten Schritt entstehen Pflanzpläne in 2D und 3D. Alles läuft im Browser, ohne Konto, und die Daten bleiben auf deinem Gerät.</p>
+          <p><b>Unsere Motivation:</b> Menschen dabei helfen, Waldgärten und andere dauerhafte Landnutzungssysteme anzulegen. Dabei wägen wir unseren ökologischen Fußabdruck gegen unseren Handabdruck ab. Daraus entsteht ein Pragmatismus, der für uns auch den Einsatz von KI beim Programmieren rechtfertigt.</p>
+          {/* Werte und Ziele: Text folgt (wird gerade im Team abgestimmt). */}
+          <h3>Wie das Tool entstand</h3>
+          <ol class="timeline">
+            <li><b>2023</b><span>Jörn Müller stellt das Werkzeug beim internationalen Waldgartensymposium unter dem Titel „Pop goes the canopy – a forest garden design multitool“ vor. Ausgangspunkt waren seine Beratungen für Waldgärten auf Gemeinschaftsflächen und die Entwicklung von Kursen.</span></li>
+            <li><b>2024/25</b><span>Sebastian Schucht kontaktiert Jörn; aus der Zusammenarbeit entsteht eine erste Version als PowerShell-Skript, das Baumscheiben im Maßstab erzeugt.</span></li>
+            <li><b>2025/26</b><span>Andi Linder übernimmt die Entwicklung, Sebastian steigt aus.</span></li>
+            <li><b>2026</b><span>Jens Steger treibt die Entwicklung mit KI und weiterführenden Ideen zu Architektur, Bedienung und Server voran. Daraus entsteht eine Web-App mit Polykulturen, Kalendern und Waldgartenplan.</span></li>
+          </ol>
+          <p class="small">Fotos und Grafiken auf dieser Seite: aus der Projektdokumentation von Jörn Müller (permagrün).</p>
+        </div>
+      </details>
+    </div>
 
-    <section id="gartenplan" class="space-y-2">
-      <h2 class="text-xl font-semibold" data-i18n="gpHeading">Waldgartenplan</h2>
-      <p data-i18n="gpIntro">Im Waldgartenplan entsteht aus deinen Pflanzen ein maßstäblicher Plan des Gartens.</p>
-      <h3 class="pt-1 font-semibold" data-i18n="gpModesHeading">Einfach, Klassisch, Beta-Test</h3>
-      <p data-i18n="gpModes">Oben rechts in der Kopfzeile wählst du die Ansicht.</p>
-      <h3 class="pt-1 font-semibold" data-i18n="gpStartHeading">Anlegen und bepflanzen</h3>
-      <ul class="list-disc space-y-1 pl-5">
-        <li data-i18n="gpStart1">Neuer Waldgartenplan → Garten auf der Karte umranden.</li>
-        <li data-i18n="gpStart2">Pflanzen platzieren.</li>
-        <li data-i18n="gpStart3">Flächen, Reihe, Paket.</li>
-        <li data-i18n="gpStart4">Jahre-Regler.</li>
-      </ul>
-      <h3 class="pt-1 font-semibold" data-i18n="gpMapHeading">Karte, Luftbild und Gelände</h3>
-      <ul class="list-disc space-y-1 pl-5">
-        <li data-i18n="gpMap1">Hintergrund.</li>
-        <li data-i18n="gpMap2">Gelände.</li>
-        <li data-i18n="gpMap3">Gebäude.</li>
-      </ul>
-      <h3 class="pt-1 font-semibold" data-i18n="gpAnalysisHeading">Auswertungen</h3>
-      <ul class="list-disc space-y-1 pl-5">
-        <li data-i18n="gpAna1">Funktions-Abdeckung.</li>
-        <li data-i18n="gpAna2">Besonnung.</li>
-        <li data-i18n="gpAna3">Hinweise.</li>
-      </ul>
-      <h3 class="pt-1 font-semibold" data-i18n="gpToolsHeading">Werkzeuge und Ausgaben</h3>
-      <ul class="list-disc space-y-1 pl-5">
-        <li data-i18n="gpTool1">3D.</li>
-        <li data-i18n="gpTool2">Messen, Rückgängig.</li>
-        <li data-i18n="gpTool3">Pflanzliste, Kalender.</li>
-        <li data-i18n="gpTool4">Export, Teilen.</li>
-      </ul>
-      <p data-i18n="gpLimits">Grenzen.</p>
-    </section>
+    <!-- ═════════════════════════════ ENGLISH ═════════════════════════════ -->
+    <div class="lang-en">
+      <header>
+        <p class="eyebrow">Help &amp; documentation</p>
+        <h1>Designing forest gardens with the Perma&nbsp;Design&nbsp;Kit</h1>
+        <p class="lead">A digital planning tool for permanent food plant systems – a design tool for laying out forest gardens.</p>
+      </header>
 
-    <section id="shortcuts" class="space-y-2">
-      <h2 class="text-xl font-semibold" data-i18n="shortcutsHeading">Tastatur-Shortcuts</h2>
-      <p class="text-sm text-stone-600 dark:text-stone-300"><span data-i18n="shortcutsIntro">Greifen auf der Hauptseite — nicht
-        während du in einem Eingabefeld tippst (außer</span> <kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1 text-xs">Esc</kbd><span data-i18n="shortcutsIntroEnd">, das schließt überall den offenen Dialog).</span></p>
-      <table class="w-full text-sm">
-        <tbody class="divide-y divide-stone-200 dark:divide-stone-700">
-          <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">/</kbd></td><td data-i18n="shortcutFocusSearch">Suche fokussieren</td></tr>
-          <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Esc</kbd></td><td data-i18n="shortcutCloseDialog">Offenen Dialog schließen</td></tr>
-          <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">f</kbd></td><td data-i18n="shortcutFilterName">Liste nach Namen filtern</td></tr>
-          <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">n</kbd></td><td data-i18n="shortcutNewPlant">Neue Pflanze</td></tr>
-          <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">g</kbd></td><td data-i18n="shortcutTiles">Kachelansicht</td></tr>
-          <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">l</kbd></td><td data-i18n="shortcutList">Listenansicht</td></tr>
-          <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">c</kbd></td><td data-i18n="shortcutCards">Kartenansicht</td></tr>
-          <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Shift</kbd>+Klick</td><td data-i18n="shortcutShiftClick">In der Liste: Bereich von letzter bis aktueller Checkbox auswählen</td></tr>
-          <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Alt</kbd>+<kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">1</kbd>…<kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">4</kbd></td><td data-i18n="shortcutNav">Auf allen Seiten: Pflanzen / Kalender / Polykulturen / Waldgartenplan</td></tr>
-          <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">?</kbd></td><td data-i18n="shortcutOverview">Übersicht der Kürzel der aktuellen Seite — im Waldgartenplan dessen eigene (2/3, H/V/L/M, F/R/U, G, P, Strg+Z …)</td></tr>
-        </tbody>
-      </table>
-      <p class="rounded-lg bg-green-50 dark:bg-green-900/20 px-3 py-2 text-sm text-stone-700 dark:text-stone-200 ring-1 ring-green-200 dark:ring-green-800"><span data-i18n="shortcutsMore">Je nach Seite und Ansicht gibt es weitere Kürzel – vor allem im Waldgartenplan: 2/3 für 2D/3D, H/V/L/M für Bewegen, Markieren, Lasso und Messen, F/R/U für Fläche, Reihe und Umriss, I/O für die Jahre, J/K für die Sonne in 3D, Strg+Z zum Rückgängigmachen, Alt+4 zurück zur Projektübersicht.</span> <span data-i18n="shortcutsMoreKey">Die vollständige Liste der aktuellen Seite zeigt jederzeit die Taste</span> <kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1 text-xs">?</kbd>.</p>
-    </section>
+      <section aria-labelledby="en-so-planst-du" class="intro">
+        <h2 id="en-so-planst-du">How to plan</h2>
+        <figure class="hero">
+          <a href="/hilfe/planspiel.jpg" target="_blank" rel="noopener"><img src="/hilfe/planspiel.jpg" width="1200" height="795" decoding="async" alt="A garden outline taped onto a wooden floor with masking tape. Inside lie many colourful round canopy cards, boxes as buildings, next to it an info board and paper fans for the sectors." /></a>
+          <figcaption>The first version of the planning tool in action: base map of masking tape, canopy cards at 1:50, boxes as buildings, info board and sectors.</figcaption>
+        </figure>
+        <div class="ways">
+          <div class="way">
+            <h3>On the floor</h3>
+            <ol>
+              <li><b>Know your goal and site.</b> Be clear about what you want to achieve. Observe sun, wind, water, soil and surroundings; research and record the site factors.</li>
+              <li><b>Plant list.</b> Import an existing list or search for the species you want under <i>Plants</i> and let the app complete the data.</li>
+              <li><b>Print canopy cards.</b> In the card view print the true-to-scale PDF (1:50), cut out and adapt.</li>
+              <li><b>Make a base map.</b> Transfer the site boundary at the same scale onto any surface, with the site data laid out clearly next to it.</li>
+              <li><b>Place and move.</b> By layers: trees first, then shrubs, then perennials, climbers last. Photograph the drafts and keep improving until every plant has a good spot.</li>
+            </ol>
+          </div>
+          <div class="way">
+            <h3>In the forest garden plan</h3>
+            <ol>
+              <li><b>Draw the area.</b> Search an address and outline the garden on the map. Size, north and terrain follow from that.</li>
+              <li><b>Place plants.</b> Pick a plant and tap the area – one at a time, as a row or as a whole polyculture.</li>
+              <li><b>Let it grow and check.</b> Let it grow with the years slider in 2D or 3D, check the sunlight and close gaps in the functions.</li>
+            </ol>
+            <figure>
+              <a href="/hilfe/waldgartenplan.jpg" target="_blank" rel="noopener"><img src="/hilfe/waldgartenplan.jpg" width="1206" height="947" loading="lazy" decoding="async" alt="Screenshot of the forest garden plan: 3D view of a site on the aerial photo with the sun’s path, the toolbar on the left, the plant list on the right, the years slider below." /></a>
+              <figcaption>The same idea on screen: the plan in 3D on aerial photo and terrain.</figcaption>
+            </figure>
+          </div>
+        </div>
+        <p class="bridge"><b>Combine both:</b> lay out and discuss together on the floor, then transfer the result into the forest garden plan, let it grow there, print and share it. Your data stays on your device.</p>
+      </section>
 
-    <section class="space-y-2">
-      <h2 class="text-xl font-semibold" data-i18n="installHeading">App installieren</h2>
-      <p><span data-i18n="installP1">Auf</span> <strong data-i18n="installAndroidChrome">Android / Chrome</strong> <span data-i18n="installP2">erscheint oben ein Banner „App installieren". Auf</span> <strong data-i18n="installIosSafari">iOS
-        Safari</strong> <span data-i18n="installP3">tippe auf das Teilen-Symbol und „Zum Home-Bildschirm". Im installierten Zustand läuft
-        die App offline und ohne Browser-Chrome.</span></p>
-      <p data-i18n="installOffline">Nach dem ersten Besuch funktioniert die ganze App auch ohne Netz, im Browser wie installiert; nur Suche, Datenquellen und Kartenhintergrund brauchen eine Verbindung. Gibt es eine neue Version, erscheint oben ein Hinweis mit „Neu laden“ — bis dahin arbeitest du mit der bisherigen weiter.</p>
-      <p data-i18n="installStorage">Wichtig auf iPhone und iPad: Die App auf dem Home-Bildschirm hat ihren eigenen, leeren Speicher. Lege vorher im Browser ein Backup an (Einstellungen → Daten) und lies es in der installierten App ein. Im Safari-Tab kann iOS deine Daten nach 7 Tagen ohne Besuch löschen, in der installierten App nicht.</p>
-      <p data-i18n="installTabs">Hast du die App in mehreren Tabs offen und änderst in einem etwas, lädt der andere beim Zurückkehren neu oder zeigt einen Hinweis — so überschreibt kein Tab die Änderungen des anderen.</p>
-    </section>
+      <nav class="toc" aria-label="Chapters">
+        <a href="#idee">Idea &amp; concept</a>
+        <a href="#anwendung">Uses</a>
+        <a href="#analog">The analogue tool</a>
+        <a href="#software">The software</a>
+        <a href="#hintergrund">Background</a>
+        <a href="#literatur">Sources</a>
+        <a href="#projekt">The project</a>
+      </nav>
 
-    <section id="quellen-literatur" class="space-y-2">
-      <h2 class="text-xl font-semibold" data-i18n="litHeading">{de('litHeading')}</h2>
-      <ul class="list-disc space-y-1 pl-5 text-sm text-stone-600 dark:text-stone-300">
-        <li data-i18n="lit1">{de('lit1')}</li>
-        <li data-i18n="lit2">{de('lit2')}</li>
-      </ul>
-      <p class="text-sm text-stone-600 dark:text-stone-300" data-i18n="litOrigin">{de('litOrigin')}</p>
-      <p class="text-xs text-stone-500 dark:text-stone-400" data-i18n="litImages">{de('litImages')}</p>
-    </section>
+      <details class="part" id="en-idee">
+        <summary><span class="num">1</span><span><span class="title">Idea &amp; concept</span><span class="hint">Why canopy cards on a base map</span></span></summary>
+        <div class="part-body">
+          <p>The Perma Design Kit grew out of the search for a flexible way to plan multi-layered forest gardens. Drawn plans are rigid and tedious to change. On a screen it is easier, but the sense of space and planning together get lost. Hence the idea of joining both worlds: canopy cards that characterise a plant and its traits are placed on a base map of the site, staked out beforehand at a tangible scale – playfully and as a team. Each card carries the key data on the plant’s ecological niche, so while placing it you keep in view what it needs and what it gives.</p>
+          <p>At the heart of it is the <b>set of canopy cards</b>, each showing the crown diameter of the mature plant at the chosen scale. The software lets you create and print such a set at any scale.</p>
+          <p>Below you find <a href="#analog">how to use the software for this</a> and <a href="#software">what else it offers</a>.</p>
+        </div>
+      </details>
+
+      <details class="part" id="en-anwendung">
+        <summary><span class="num">2</span><span><span class="title">Uses</span><span class="hint">Site design, planning together, education</span></span></summary>
+        <div class="part-body">
+          <div class="split">
+            <div>
+              <h3>Site design</h3>
+              <p>The Perma Design Kit is a visual aid for site design, more precisely for placing elements (plants) concretely. It makes for better design in the sense of positioning elements as well as possible in relation to each other (“knowing what goes where”). The software produces the analogue canopy cards for printing; the site design can also be done digitally in the <a href="#gartenplan">forest garden plan</a>.</p>
+              <p>Either way it is a tool that works in a group too and lets people plan shared land together.</p>
+            </div>
+            <figure>
+              <a href="/hilfe/gemeinschaftsgarten.jpg" target="_blank" rel="noopener"><img src="/hilfe/gemeinschaftsgarten.jpg" width="800" height="800" loading="lazy" decoding="async" alt="Two people kneel on the floor and place coloured round canopy cards on a long plan made of paper strips, a laptop next to them." /></a>
+              <figcaption>Planning a community forest garden.</figcaption>
+            </figure>
+          </div>
+          <h3>Education</h3>
+          <p>The Perma Design Kit also works as a teaching and learning aid for all approaches to land use with trees. It conveys principles of site design playfully and trains the imagination for the dynamic webs of relationships in space and time that mark permanent systems.</p>
+          <p>Building and editing plant lists teaches specialised knowledge of ecological niches along the way. Creating and personalising a set of true-to-scale canopy cards has a particularly strong learning effect.</p>
+        </div>
+      </details>
+
+      <details class="part" id="en-analog">
+        <summary><span class="num">3</span><span><span class="title">The analogue tool</span><span class="hint">Site analysis, base map, reading and printing canopy cards, placing plants</span></span></summary>
+        <div class="part-body">
+          <p>This is how the tool works as an analogue site design aid – the five steps are listed above under <a href="#so-planst-du">How to plan</a>, here in detail.</p>
+
+          <details class="sub" id="en-standort"><summary>From site analysis to base map</summary><div class="sub-body">
+            <p>Usually you work on a specific site you know more or less about.</p>
+            <h4>Gathering site data</h4>
+            <p>Observation on site and research give you a collection of data on the site’s <b>conditions and surroundings</b>: general climate and microclimate, history of use, soils, existing plants and animals and much more.</p>
+            <p>Permaculture analysis methods such as <b>sector analysis</b> open further perspectives on that data. They show influences acting on the site from outside: the sun’s path over the year, wind, noise, views in and out. In residential settings <b>zoning</b> is useful too, dividing the site by how often and how intensively it is used.</p>
+            <figure class="narrow">
+              <a href="/hilfe/sektoren.jpg" target="_blank" rel="noopener"><img src="/hilfe/sektoren.jpg" width="838" height="496" loading="lazy" decoding="async" alt="Fans of coloured paper labelled view, traffic noise, neighbours and noise." /></a>
+              <figcaption>Sector data made visible the simple way.</figcaption>
+            </figure>
+            <h4>Making the base map</h4>
+            <ul>
+              <li>Take the site boundary from your own plans, public cadastral maps or architects’ scale drawings and draw the site at the scale of the printed cards (1:50 by default). As with drawn plans, an accurate scale matters for finding the right planting distances.</li>
+              <li>There are many ways to do this: stake it out in a sandpit, tape it onto the floor with masking tape, draw it with chalk on a wall or a large surface – magnetic boards, pinboards, large posters, furniture boxes or rolls of wallpaper.</li>
+              <li>Surrounding structures such as buildings and hedges can be shown with objects, e.g. boxes. With a movable light source their shade becomes tangible.</li>
+              <li>To keep the site conditions present at all times, the analysis results are shown in simplified form – as an info sheet or, as here, an “info board”.</li>
+            </ul>
+            <div class="figs">
+              <figure>
+                <a href="/hilfe/grundkarte.jpg" target="_blank" rel="noopener"><img src="/hilfe/grundkarte.jpg" width="1100" height="728" loading="lazy" decoding="async" alt="The outline of a site taped onto a wooden floor with masking tape, two wooden blocks as buildings and an info board inside." /></a>
+                <figcaption>The base map taped onto the floor with masking tape.</figcaption>
+              </figure>
+              <figure>
+                <a href="/hilfe/infoboard.jpg" target="_blank" rel="noopener"><img src="/hilfe/infoboard.jpg" width="1100" height="728" loading="lazy" decoding="async" alt="Wooden board with a rotating sun disc, north arrow, wind arrow and colour scales for rainfall and hardiness zone." /></a>
+                <figcaption>The key site factors at a glance: sun path, annual rainfall, soil type, prevailing wind, hardiness zone.</figcaption>
+              </figure>
+            </div>
+            <figure class="narrow">
+              <a href="/hilfe/szenario.jpg" target="_blank" rel="noopener"><img src="/hilfe/szenario.jpg" width="930" height="487" loading="lazy" decoding="async" alt="Info bar “Scenario C: allotment amid fields” with site size 200 × 50 m, north arrow, 800 mm rainfall and USDA zone 6, below it a short description." /></a>
+              <figcaption>A rough overview as the basis for a site scenario.</figcaption>
+            </figure>
+          </div></details>
+
+          <details class="sub" id="en-baumscheibe"><summary>From plant list to a set of canopy cards</summary><div class="sub-body">
+            <p>All card views aim to show a plant’s <b>ecological niche</b>, so that placing it rests on the best possible information. The key information is on the front: names, dimensions, needs and tolerances, uses and functions. The back is free for further notes.</p>
+            <div class="split">
+              <figure>
+                <a href="/hilfe/baumscheibe.jpg" target="_blank" rel="noopener"><img src="/hilfe/baumscheibe.jpg" width="900" height="917" loading="lazy" decoding="async" alt="Canopy card of black locust (Robinia pseudoacacia): name and rating at the top, below height 25 m, crown 15 m, hardiness 4–9, coloured fields for functions and uses at the bottom, month rings around the edge." /></a>
+                <figcaption>A canopy card, using black locust as the example.</figcaption>
+              </figure>
+              <div>
+                <h4>The canopy card in detail</h4>
+                <dl>
+                  <dt>Very top</dt><dd>The <b>rating</b> as a useful plant, below it in the white field the <b>botanical and common name</b>. The symbol on the left shows the <b>layer</b>.</dd>
+                  <dt>Grey band</dt><dd>The data that matter most for placing (see below).</dd>
+                  <dt>Lower half</dt><dd>The two inner circles show the <b>functions</b> in the ecosystem, the outer one the <b>yields</b> for people, mostly products (see <a href="#platzieren">Placing the plants</a>).</dd>
+                  <dt>Rings</dt><dd>Outside the <b>flowering time</b>, inside the <b>ripening and harvest time</b>, each anticlockwise from January to December.</dd>
+                </dl>
+              </div>
+            </div>
+            <h4>The grey band</h4>
+            <dl>
+              <dt>Growth</dt><dd>slow – moderate – fast growing</dd>
+              <dt>Height</dt><dd>maximum height of the mature plant</dd>
+              <dt>Crown diameter</dt><dd>diameter of the mature crown, or spread for perennials</dd>
+              <dt>Soil pH</dt><dd>acid to neutral, neutral, neutral to alkaline</dd>
+              <dt>Hardiness</dt><dd>USDA zone</dd>
+              <dt>Light</dt><dd>the plant’s preference (optimum) from full sun through part shade to full shade</dd>
+              <dt>Water</dt><dd>water need combined with the soil’s drainage or water-holding capacity (free-draining, moist, wet)</dd>
+              <dt>Soil <span class="soon">soon</span></dt><dd>sand – silt – loam – centre. If all four symbols are shown, the plant suits every soil.</dd>
+            </dl>
+            <h4>Printing the set</h4>
+            <p>In the card view under <code>True-to-scale PDF</code>. Each disc gets the crown width at the chosen scale, laid out on A4, A3 or A2.</p>
+            <div class="split">
+              <dl>
+                <dt>Scale 1:50</dt><dd>The default. Covers medium to large sites, and the set stays handy. 4 m crown = 8 cm disc.</dd>
+                <dt>Min. size 4 cm</dt><dd>Smaller discs are not printed because they would hardly be readable. The app tells you which are missing.</dd>
+                <dt>Fixed 6 cm + ring</dt><dd>Every info circle is 6 cm, the outer ring shows the real crown size.</dd>
+              </dl>
+              <figure>
+                <a href="/hilfe/baumscheiben-druck.jpg" target="_blank" rel="noopener"><img src="/hilfe/baumscheiben-druck.jpg" width="787" height="727" loading="lazy" decoding="async" alt="Screenshot of the card view with the “PDF (scale)” menu open: scale 1:50, paper A4, minimum size 4 cm and the option “fixed 6 cm disc + scale ring”." /></a>
+                <figcaption>Settings for the true-to-scale PDF.</figcaption>
+              </figure>
+            </div>
+            <h4>Making them your own</h4>
+            <p>Print in colour or greyscale on paper or film and cut out the circles. It pays to adapt the prints to your situation and your own way of seeing: coloured paper or colouring in makes the discs easy to tell apart, and the back has room for more information.</p>
+          </div></details>
+
+          <details class="sub" id="en-platzieren"><summary>From site draft to planting plan</summary><div class="sub-body">
+            <h4>Placing the plants</h4>
+            <p>Where exactly a plant goes depends above all on the site conditions and the plant’s traits. So this information should always be present.</p>
+            <p>The simplest way to show the <b>site analysis</b> is a sheet with the key data. At the other end of the scale is an “info board” that shows north and the sun’s path plus rainfall, prevailing wind, hardiness zone and soil type. In our latitudes light is the limiting factor for systems that are productive on every level – so the sun’s path is the most important information for positioning individual plants.</p>
+            <p>The <b>plant traits</b> that matter for placing are on the canopy cards. Their functions are colour-coded, so the basic conditions for a polyculture are quickly visible – <b>polyculture design by colours</b>:</p>
+            <div class="tip"><b>Basic recipe</b>Every colour appears at least once in a patch, better twice. That lays the foundation. With some stacking of functions and redundancy within the patch you are quickly on the right track (see <a href="#polykulturen">Polycultures &amp; guilds</a>).</div>
+            <figure>
+              <a href="/hilfe/legende.jpg" target="_blank" rel="noopener"><img src="/hilfe/legende.jpg" width="1000" height="1229" loading="lazy" decoding="async" alt="Explanatory graphic “plant information” (in German): a canopy card with every field labelled, below it the colour legend of functions for the ecosystem and uses for people." /></a>
+              <figcaption>Legend of plant information, functions and uses (German).</figcaption>
+            </figure>
+            <h4>Documentation</h4>
+            <p>With the analogue set, photos are the best way to record drafts. Clear, consistent file names keep the results in order. If you want to develop the drafts further professionally, transfer them into the digital <a href="#gartenplan">forest garden plan</a>, which offers features similar to a geographic information system (GIS).</p>
+          </div></details>
+
+          <details class="sub" id="en-grenzen"><summary>Current limits</summary><div class="sub-body">
+            <h4>Readability of the cards</h4>
+            <p>At the default scale of 1:50 only woody plants and large enough perennials (from about 1 m across) show well; on smaller circles the data is at the edge of readability. A variant with abbreviations instead of symbols is being tested and can help (<code>Settings → View → Abbreviations</code> instead of colour dots).</p>
+            <p>The early phases of planting show very well at the default scale: tree and shrub layers usually go in first, the herbaceous layers follow in later years.</p>
+            <h4>Showing guilds</h4>
+            <p>Whether all ecosystem functions are covered for all plants can only be judged to a limited extent so far. For single polycultures there is a provisional solution: irregularly cut-out shapes that stand for groups of herbaceous plants. Their information can be shown outside the plan, e.g. with the strip view.</p>
+            <div class="figs">
+              <figure>
+                <a href="/hilfe/gilden.jpg" target="_blank" rel="noopener"><img src="/hilfe/gilden.jpg" width="1000" height="663" loading="lazy" decoding="async" alt="Canopy card of black mulberry on a large piece of cardboard, next to it two green irregular cut-outs for pollinator plants and scent confusers." /></a>
+                <figcaption>Cut-out shapes for the guilds of a polyculture.</figcaption>
+              </figure>
+              <figure>
+                <a href="/hilfe/kraeuterschicht.jpg" target="_blank" rel="noopener"><img src="/hilfe/kraeuterschicht.jpg" width="957" height="521" loading="lazy" decoding="async" alt="Turquoise irregular card “herb layer patch” listing herbs with coloured dots for their functions." /></a>
+                <figcaption>A card for the herb layer of a patch.</figcaption>
+              </figure>
+            </div>
+            <p>A guild is not the same as a polyculture, though, because its members are not confined to one patch. The pollinator guild, for example, usually consists of flowering plants spread across the whole forest garden. For now we try to cover this complexity in the digital features <i>Polycultures</i> and <i>Forest garden plan</i> (see <a href="#polykulturen">Polycultures &amp; guilds</a>).</p>
+          </div></details>
+        </div>
+      </details>
+
+      <details class="part" id="en-software">
+        <summary><span class="num">4</span><span><span class="title">The software: permadesignkit.org</span><span class="hint">Plants, calendar, polycultures, forest garden plan, backups, shortcuts, outlook</span></span></summary>
+        <div class="part-body">
+          <p>Beyond the physical set of canopy cards, the software offers powerful tools, above all for the design phase of a design process.</p>
+          <h3>Technical notes</h3>
+          <p>The Perma Design Kit runs <b>in the browser</b>. It gathers data from public databases (mainly PFAF and Wikidata) and prepares it for different views. All imported data and your own entries are stored only in the browser and never leave your computer – until the browser’s storage is cleared. How to back them up is described under <a href="#daten">Backup, sharing, offline use</a>.</p>
+          <p>The tool should work in all common browsers and on mobile devices. If it doesn’t, please <a href="/fehler-melden/">report a bug</a>.</p>
+          <div class="warn"><b>Caution</b>The plant data comes from third-party sources and is not always complete or correct. Check it, especially for important decisions.</div>
+          <h3>Layout &amp; use</h3>
+          <p>On your first visit a tour explains the basics. The menu at the top holds the pages:</p>
+          <dl>
+            <dt>Plants</dt><dd>collecting the niche data and showing it graphically in different views</dd>
+            <dt>Calendar</dt><dd>flowering and harvest calendars</dd>
+            <dt>Polycultures</dt><dd>putting together functional plant communities</dd>
+            <dt>Forest garden plan</dt><dd>laying out a plant list on the real site (in development)</dd>
+          </dl>
+          <figure>
+            <a href="/hilfe/pflanzenkacheln.jpg" target="_blank" rel="noopener"><img src="/hilfe/pflanzenkacheln.jpg" width="1221" height="947" loading="lazy" decoding="async" alt="Screenshot of the Plants page in tile view: the menu at the top, below filters and plant tiles with photos, names and coloured use badges." /></a>
+            <figcaption>The <i>Plants</i> page in tile view.</figcaption>
+          </figure>
+
+          <details class="sub" id="en-pflanzen"><summary>Plants</summary><div class="sub-body">
+            <p>The core of the app: the collected data on the plants’ ecological niches, filterable and sortable in several views.</p>
+            <h4>a) Starting a plant list from scratch</h4>
+            <ol>
+              <li><b>Add a plant.</b> The search box finds plants in the sources. Set the number of specimens right there. <code>New plant</code> lets you enter everything by hand.</li>
+              <li><b>Let the app complete the data.</b> Missing details come from PFAF, Edible Forest Gardens and Wikidata (see <a href="#quellen">data sources</a>).</li>
+              <li><b>Correct and edit.</b> Change any value in the edit dialog. The source tag then switches to <b>M</b> for manual, and that value is never overwritten.</li>
+            </ol>
+            <div class="tip"><b>Tip</b>Searching works best with the botanical name; common names are not always unambiguous.</div>
+            <p>It is important to adapt the plant data to your own situation: you need your own <b>sizes</b> for varieties, different rootstocks or older existing trees. The same goes when the size depends on management, e.g. trees grown as coppice (lime for salad leaves, hazel for poles, willow for basketry). Varieties also often have different <b>flowering and ripening times</b>.</p>
+            <h4>b) Using existing lists</h4>
+            <p>Read in ready-made plant lists as CSV or JSON via the <code>Data</code> menu. An example list, “Plants for small gardens” (42 species), is available there. Export tables from Excel as CSV and import them here.</p>
+            <h4>Views</h4>
+            <p>Every view has the <code>Data</code> button: complete data, import and export lists, create print views. The filter row sorts and filters the plants.</p>
+            <figure class="narrow">
+              <img src="/hilfe/menue.jpg" width="646" height="98" loading="lazy" decoding="async" alt="Header “Pflanzenkacheln” (plant tiles) with the view switch for tiles, list and cards." />
+            </figure>
+            <dl>
+              <dt>Tiles</dt><dd>Sortable, filterable overview with image, accent stripe by main use and completeness bar.</dd>
+              <dt>List</dt><dd>Sortable, filterable table. Select several plants and complete, delete, export or print them together.</dd>
+              <dt>Canopy cards</dt><dd>A further view alongside the tiles. The print buttons create the true-to-scale canopy cards as a PDF.</dd>
+            </dl>
+            <h4>Symbols in the plant list</h4>
+            <ul class="legend">
+              <li><b>Filled badges:</b> the plant’s use (edible, medicinal, material …).</li>
+              <li><b>Outlined chips:</b> where a value came from, e.g. PFAF.</li>
+              <li><b>Accent stripe on the left:</b> main use in this order:
+                <span class="swatches"><span><i class="sw" style="background:#fbbf24"></i>edible/culinary</span><span><i class="sw" style="background:#fb7185"></i>medicinal</span><span><i class="sw" style="background:#84cc16"></i>nitrogen fixer</span><span><i class="sw" style="background:#2dd4bf"></i>ground cover</span><span><i class="sw" style="background:#22d3ee"></i>insect plant</span></span></li>
+              <li><b>Data completeness:</b> green from 80 %, yellow from 50 %, red below.</li>
+            </ul>
+            <h4>Editing</h4>
+            <p>Open any plant for editing with the <code>pencil</code> button to fill in missing data and adapt it to your garden.</p>
+          </div></details>
+
+          <details class="sub" id="en-kalender"><summary>Calendar</summary><div class="sub-body">
+            <p>Flowering and harvest periods as a calendar, sortable and printable as a PDF.</p>
+            <figure>
+              <a href="/hilfe/kalender.jpg" target="_blank" rel="noopener"><img src="/hilfe/kalender.jpg" width="1218" height="955" loading="lazy" decoding="async" alt="Screenshot of the flowering and harvest calendar: a monthly overview with bars at the top, below it flowering and harvest as coloured bars across twelve months for each plant." /></a>
+              <figcaption>Flowering and harvest calendar.</figcaption>
+            </figure>
+          </div></details>
+
+          <details class="sub" id="en-polykulturen-app"><summary>Polycultures</summary><div class="sub-body">
+            <p>This tool suggests planting partners with similar needs and tolerances for light, water and soil pH. Saved polycultures can be placed in the forest garden plan as a unit. <span class="soon">first draft, in development</span></p>
+            <h4>Creating polycultures</h4>
+            <ol>
+              <li>Choose an anchor species, often a central element such as a fruit tree.</li>
+              <li>Add members, filling each role at least twice: companion, ground cover, nitrogen fixer, mineral accumulator, insect or scent plant, fruit or berry (see <a href="#polykulturen">design principles for polycultures</a>).</li>
+              <li>The suggestion panel on the right shows matching plants from your list and further suggestions – the higher the number, the better light, water and pH match.</li>
+              <li>Save.</li>
+            </ol>
+            <p>Alternatively create a <b>group</b> in a plant’s edit dialog and turn it into a polyculture with <code>Create from group</code>. Ready-made example polycultures are in the page menu and in the <a href="#literatur">sources</a>.</p>
+          </div></details>
+
+          <details class="sub" id="en-gartenplan"><summary>Forest garden plan</summary><div class="sub-body">
+            <p>The digital alternative to the set of canopy cards. This is where most development is still needed: a digital tool ultimately has to be complex enough for professional planning and compatible with GIS applications.</p>
+            <div class="beta">
+              <b>Beta test</b>
+              <p>We are working out quite a few things. The tool already has many new features that are not public yet and want testing, among them:</p>
+              <ul>
+                <li>tree biographies and tasks: a timeline for every tree with assessments, harvest, pruning, care and photos</li>
+                <li>better integration with (Q)GIS</li>
+                <li>working on plans together as a team and sharing them</li>
+                <li>a professional forest garden planner with layers, harvest gap analysis, windbreak, water flow and more</li>
+              </ul>
+              <p>If you’d like to try the new features in the <a href="/beta/">beta test</a>: we look forward to your feedback, your support and your advice on where the tool should go. Maybe you even feel like joining in and becoming part of the team?</p>
+            </div>
+            <p>At the top right you choose how extensive the <b>interface</b> is. <b>Simple</b> walks you through the plan in three steps and shows five layers to fill – enough for most gardens. <b>Classic</b> shows all tools with a professional feature set. You can switch at any time; it only changes the interface, not the data in the plan. Independently of that, every plan can be viewed in <b>2D or 3D</b>.</p>
+            <h4>Creating a site plan and placing plants</h4>
+            <ul>
+              <li><code>+ New forest garden plan</code>, search an address or choose <i>My location</i>, and click the corners of the site. Size, north and terrain follow from that. Without a location you get a plain grid.</li>
+              <li><i>Draw area</i> for parts such as beds, pond and paths.</li>
+              <li><b>Placing plants:</b> pick a plant and click the area – one at a time, as a row at a fixed spacing or as a whole polyculture (<i>Polyculture as package</i> places anchor and members at once).</li>
+              <li>Drag plants to move them, select several at once with the <i>lasso</i>. Dragging on empty ground pans the map.</li>
+              <li>The <i>years since project start</i> slider (0–80) shows the estimated crown size in each year. Fast-growing plants are mature after about 6, medium ones after 15, slow ones after 30 years. Growth form and habit are shown in a simple standard way for now.</li>
+            </ul>
+            <h4>Map, aerial photo, terrain</h4>
+            <p>The background comes from public data: OpenStreetMap, official aerial photos (8–40 cm, in 13 German states, Austria, Switzerland and the Netherlands) or a coarse satellite image. Terrain comes from official 1 m models where available. Buildings within about 150 m stand in 3D and cast shade.</p>
+            <h4>Analyses</h4>
+            <dl>
+              <dt>Functions</dt><dd>Effective guilds for the whole system: where the seven ecosystem functions act and where they are missing, with suggestions from your collection and <i>Plant here</i>.</dd>
+              <dt>Sunlight</dt><dd>Hours of sun per day with shade from tree crowns, terrain and buildings: sun from 6 h, part shade 3–6 h, shade below 3 h.</dd>
+              <dt>Hints</dt><dd>(experimental) Possible conflicts from plants of the same layer standing too close and unmet light needs, each for mature plants.</dd>
+            </dl>
+            <h4>Tools and output</h4>
+            <div class="cols">
+              <ul>
+                <li>several selection modes</li>
+                <li>measuring</li>
+                <li>saving an image</li>
+                <li>drawing areas and outlines</li>
+                <li>GPS data</li>
+              </ul>
+              <ul>
+                <li>plant list with quantities and prices (CSV, PDF)</li>
+                <li>calendar for this plan only</li>
+                <li>PDF export</li>
+                <li>GeoJSON for QGIS</li>
+                <li>share link</li>
+              </ul>
+            </div>
+          </div></details>
+
+          <details class="sub" id="en-daten"><summary>Backup, sharing, offline use</summary><div class="sub-body">
+            <dl>
+              <dt>Backup</dt><dd><code>Settings → Data</code>: save all data as a JSON file, also to move to another device. Can run automatically via WebDAV or Gist.</dd>
+              <dt>Export</dt><dd>All or selected plants as CSV or JSON.</dd>
+              <dt>Share link</dt><dd>Plants, polycultures and plans are packed, compressed, into the link. Nothing is stored on the server.</dd>
+              <dt>Install the app</dt><dd>Android/Chrome: “Install app” prompt. iOS: Share icon → “Add to Home Screen”. After the first visit everything runs offline except search, data sources and the map.</dd>
+            </dl>
+            <div class="warn"><b>Important on iPhone and iPad</b>The app on the home screen has its own, empty storage. Make a backup in the browser first and read it into the app. In a Safari tab iOS may delete data after 7 days without a visit.</div>
+          </div></details>
+
+          <details class="sub" id="en-shortcuts"><summary>Keyboard shortcuts</summary><div class="sub-body">
+            <div class="tablewrap"><table>
+              <tbody>
+                <tr><td><kbd>/</kbd></td><td>Focus search</td></tr>
+                <tr><td><kbd>Esc</kbd></td><td>Close the open dialog</td></tr>
+                <tr><td><kbd>f</kbd></td><td>Filter the list by name</td></tr>
+                <tr><td><kbd>n</kbd></td><td>New plant</td></tr>
+                <tr><td><kbd>g</kbd> <kbd>l</kbd> <kbd>c</kbd></td><td>Switch view: tiles, list, cards</td></tr>
+                <tr><td><kbd>Shift</kbd> + click</td><td>Select a range in the list</td></tr>
+                <tr><td><kbd>Alt</kbd> + <kbd>1</kbd>…<kbd>9</kbd></td><td>Menu items in order</td></tr>
+                <tr><td><kbd>?</kbd></td><td>All shortcuts of the current page</td></tr>
+              </tbody>
+            </table></div>
+            <p><b>In the forest garden plan:</b> <kbd>2</kbd>/<kbd>3</kbd> for 2D/3D, <kbd>H</kbd> <kbd>V</kbd> <kbd>L</kbd> <kbd>M</kbd> for pan, select, lasso, measure, <kbd>F</kbd> <kbd>R</kbd> <kbd>U</kbd> for area, row, outline, <kbd>I</kbd>/<kbd>O</kbd> for the years, <kbd>J</kbd>/<kbd>K</kbd> for the sun.</p>
+          </div></details>
+
+          <details class="sub" id="en-ausblick"><summary>Outlook &amp; getting involved</summary><div class="sub-body">
+            <h4>Planned development</h4>
+            <p>Many more features are planned or already being tested:</p>
+            <ul>
+              <li>plant lists by design goal: food production systems, complex agroforestry, growing for health and more</li>
+              <li>showing different succession phases in the plan</li>
+              <li>polycultures and guilds: set your own criteria for suggestions and show guilds in space</li>
+              <li>interchangeable uses and functions</li>
+              <li>vector files for laser-cutting canopy cards from wood, MDF or plastic</li>
+            </ul>
+            <h4>Get involved &amp; support</h4>
+            <ul>
+              <li>Use the tool and give feedback, report bugs via <a href="/fehler-melden/">report a bug</a></li>
+              <li>Create plant lists and polycultures to share</li>
+              <li>Contribute ideas and code on GitHub</li>
+              <li>Help cover server and domain costs via <a href="/unterstuetzen/">support</a></li>
+              <li>Try unreleased features in the <a href="/beta/">beta test</a></li>
+            </ul>
+          </div></details>
+        </div>
+      </details>
+
+      <details class="part" id="en-hintergrund">
+        <summary><span class="num">5</span><span><span class="title">Background</span><span class="hint">Design process, forest gardens, polycultures &amp; guilds</span></span></summary>
+        <div class="part-body">
+          <p>For most people the tool works best in its simplified form. But it is designed to go much further and allows far more detail and customisation, so professional planning is possible too. Here we only give a short outline; for more depth see the <a href="#literatur">sources</a> below.</p>
+          <p>In general we want to answer the question of how our land use can be shaped in harmony with nature. For this we draw above all on ecology and the natural sciences, applied in the spirit of permaculture ethics and design principles. Most important is observing and imitating nature – from it we learn to “garden like the forest”.</p>
+
+          <details class="sub" id="en-designprozess"><summary>Design process</summary><div class="sub-body">
+            <p>Good design is most likely when you follow a design process. This logical sequence of phases ensures that we know as much as possible about the site before the actual site design begins. The better founded the site design, the more successful and productive the implementation. And the longer we let the process guide us, the better the design gets through repeated loops of evaluation and improvement.</p>
+            <figure>
+              <a href="/hilfe/designprozess.jpg" target="_blank" rel="noopener"><img src="/hilfe/designprozess.jpg" width="622" height="455" loading="lazy" decoding="async" alt="Colourful diagram of a design process for forest gardens with the phases observation, analysis, design, implementation and management around a spiral." /></a>
+              <figcaption>A design process for forest gardens.</figcaption>
+            </figure>
+          </div></details>
+
+          <details class="sub" id="en-waldgaerten"><summary>Forest gardens</summary><div class="sub-body">
+            <p>Unlike intensive growing of annuals, multi-layered permanent systems call for more complex, holistic thinking. Spatially alone we move from the almost two-dimensional vegetable bed into the third dimension. The biggest difference, though, is the fourth dimension: time. Forests are the most efficient ecosystems we can create and shape, so our goal is usually the <b>climax stage of natural succession</b>. What can take a millennium at nature’s pace can be sped up considerably through ecologically informed interventions.</p>
+            <p>It helps a lot to “fast-forward” time in your head and picture later stages of succession – to think in world time instead of human time. With some practice a <b>successional imagination</b> develops that opens up the time perspective and allows better decisions about where trees and shrubs go. In the forest garden plan the years slider helps with this.</p>
+            <p>For designing forest gardens and complex agroforestry systems we build on the established standard works: “Creating a Forest Garden” by Martin Crawford and the two volumes of “Edible Forest Gardens” by Dave Jacke and Eric Toensmeier (see <a href="#literatur">sources</a>).</p>
+          </div></details>
+
+          <details class="sub" id="en-polykulturen"><summary>Polycultures &amp; guilds</summary><div class="sub-body">
+            <p>Roughly speaking, a forest garden is a collection of polycultures: paths usually divide the site into bounded <i>patches</i> on which multi-layered plant communities grow. Ideally they cover the ecosystem functions their success requires – measured by the yields they are designed for. A fruit tree has the least stress in a community, because it supports and protects it with pollination, pest control, nutrients and ground cover.</p>
+            <div class="def"><b>Polyculture</b>A polyculture is defined by physical space: a group of mainly perennial plants on a clearly bounded area (<i>patch</i>), arranged so that their interactions show as little competition and as much cooperation as possible.</div>
+            <p>Once you know the plants’ ecological niches, you can arrange them against the background of the site factors so that they deliver the <b>yields</b> you want.</p>
+            <figure>
+              <a href="/hilfe/nutzen.jpg" target="_blank" rel="noopener"><img src="/hilfe/nutzen.jpg" width="1232" height="415" loading="lazy" decoding="async" alt="Symbols of uses for humans: edible parts, medicinal, culinary, timber fuel, materials, soap, dyes, aesthetic; below fruit, leaves, greens, flowers, seeds, nuts, bulbs, roots, fungi, oils." /></a>
+              <figcaption>Uses for humans.</figcaption>
+            </figure>
+            <p>Designing successful polycultures follows these <b>design principles</b>:</p>
+            <dl>
+              <dt>Relative location</dt><dd>Place elements in relation to each other so that competition is low and cooperation is favoured.</dd>
+              <dt>Stacking functions</dt><dd>Each element fulfils as many functions as possible and so builds many relationships.</dd>
+              <dt>Redundancy</dt><dd>Each function is fulfilled by several elements, so it is reliably provided for the polyculture.</dd>
+            </dl>
+            <p>It also always helps to keep <b>permaculture</b> principles in mind: design from patterns to details, use and value diversity, integrate rather than segregate (see Holmgren in the <a href="#literatur">sources</a>).</p>
+            <p>Besides their uses for us, polycultures should also provide important <b>functions for the ecosystem</b>.</p>
+            <figure>
+              <a href="/hilfe/funktionen.jpg" target="_blank" rel="noopener"><img src="/hilfe/funktionen.jpg" width="1237" height="273" loading="lazy" decoding="async" alt="Symbols of functions for the ecosystem: nitrogen fixer (N+), mineral accumulator (DA), windbreak, food and protection for insects and small animals, ground cover, pest control." /></a>
+              <figcaption>Functions for the ecosystem.</figcaption>
+            </figure>
+            <p>Grouping the plants by function and looking at the relationships between them adds a second perspective: that of the whole ecosystem. To grasp this complexity, the work of Dave Jacke and Eric Toensmeier is helpful. They sharpen the term <b>guild</b> to make the effects across the system visible.</p>
+            <div class="def"><b>Guild</b>Unlike polycultures, guilds cannot be confined to the area of one polyculture; they represent functions across the system and thus its “social” structure. A guild is defined by the kind of relationships between the elements, e.g. a guild for windbreak, pollination or ground cover. It follows that <b>not all guilds are polycultures</b>, and that <b>to be effective, a polyculture must contain several guilds</b>.</div>
+            <p class="small">These concepts are simplified here; more in Dave Jacke’s talks and in “Edible Forest Gardens” (see <a href="#literatur">sources</a>).</p>
+          </div></details>
+
+          <details class="sub" id="en-beispiele"><summary>Examples of polycultures</summary><div class="sub-body">
+            <p>You can already speak of a polyculture when more than one layer is planted in intensive growing. Such <b>mixed cropping</b> (“companion planting”, “interplanting”) can be mutually beneficial, but it does not build complex relationships.</p>
+            <p>Those only arise once woody plants join in, usually as the central element. People then often speak of <b>fruit tree guilds</b>: fruit trees underplanted with supporting plants.</p>
+            <p>Beyond that, all kinds of combinations of woody and herbaceous plants for <b>special design goals</b> are possible – the only real limit is imagination. A typical example is a windbreak hedge; screening from view or noise can be the desired yield as well. Polycultures can serve as green manure areas for neighbouring intensive beds, provide culinary uses near the kitchen, supply natural materials for arts and crafts, and much more.</p>
+          </div></details>
+        </div>
+      </details>
+
+      <details class="part" id="en-literatur">
+        <summary><span class="num">6</span><span><span class="title">Sources</span><span class="hint">Books, talks, data sources</span></span></summary>
+        <div class="part-body">
+          <h3>Foundational and further reading</h3>
+          <ul class="refs">
+            <li>Balkep: The Polyculture Project<br><small><a href="https://www.thepolycultureproject.com/" rel="noopener">thepolycultureproject.com</a></small></li>
+            <li>Crawford, Martin (2010): <i>Creating a Forest Garden</i>. Green Books<br><small>German: <i>Einen Waldgarten erschaffen</i> (2022), OLV</small></li>
+            <li>Jacke, Dave &amp; Toensmeier, Eric (2005): <i>Edible Forest Gardens</i>, vol. 1 and 2. Chelsea Green</li>
+            <li>Jacke, Dave: Reframing and Deepening into Guilds and Polycultures (FFFG1)<br><small><a href="https://www.agroforestry.co.uk/symposium/" rel="noopener">Symposium – The Agroforestry Research Trust</a></small></li>
+            <li>Jacke, Dave: Gardening Like a Forest – Applied Ecological Design for Homesteads<br><small><a href="https://www.youtube.com/watch?v=IL4VCbgCGD4" rel="noopener">YouTube</a></small></li>
+            <li>Jacke, Dave: Ecosystem Mimicry (talk)<br><small><a href="https://www.youtube.com/watch?v=oOx06AEJVa0" rel="noopener">YouTube</a></small></li>
+            <li>Hemenway, Toby (2009): <i>Gaia's Garden: A Guide to Home-Scale Permaculture</i>. Chelsea Green (chapter 9)</li>
+            <li>Holmgren, David: Essence of Permaculture (German edition)<br><small><a href="https://holmgren.com.au/downloads/Essence_of_Pc_DE.pdf" rel="noopener">PDF</a></small></li>
+            <li>Müller, Jörn: Ein Designprozess für Waldgärten (a design process for forest gardens), talk in German<br><small><a href="https://www.youtube.com/watch?v=5Y307puQaHo" rel="noopener">YouTube</a></small></li>
+            <li>Müller, Jörn: Pop goes the canopy – a forest garden design tool<br><small><a href="https://www.agroforestry.co.uk/presentations-2023/" rel="noopener">Agroforestry Research Trust, presentations 2023</a></small></li>
+            <li>Müller, Jörn: polyculture for food under dry conditions (German)<br><small><a href="https://permakultur-plattform.de/blog/polykultur-fur-den-nahrungsertrag-unter-trockenen-bedingungen/" rel="noopener">Permakultur-Plattform</a></small></li>
+            <li>Müller, Jörn: polyculture for food under shady conditions (German)<br><small><a href="https://permakultur-plattform.de/blog/polykultur-fuer-den-nahrungsertrag-schattig/" rel="noopener">Permakultur-Plattform</a></small></li>
+            <li>Toensmeier, Eric: Guidelines for Perennial Polyculture Design<br><small><a href="https://www.permaculturenews.org/2016/01/15/guidelines-for-perennial-polyculture-design/" rel="noopener">permaculturenews.org</a></small></li>
+            <li>Source code of the software<br><small><a href="https://github.com/js32/Perma-Guild-Forge" rel="noopener">github.com/js32/Perma-Guild-Forge</a></small></li>
+          </ul>
+          <h3 id="en-quellen">Data sources</h3>
+          <dl>
+            <dt>Plants For A Future</dt><dd><a href="https://pfaf.org" rel="noopener">pfaf.org</a> – the database is also good for a detailed search for useful plants.</dd>
+            <dt>Wikidata</dt><dd><a href="https://www.wikidata.org" rel="noopener">wikidata.org</a> – names, images, taxonomy.</dd>
+            <dt>Edible Forest Gardens</dt><dd>“Species Toolkit” species list (Lally Luck Farm), hosted as a table on our server.</dd>
+            <dt>Maps</dt><dd>OpenStreetMap, official aerial photos and terrain models of the survey offices, Sentinel-2 (EOX). The source in use is shown at the bottom right of the plan.</dd>
+          </dl>
+          <p class="small">When several sources have a value, the higher-ranked one wins (default: PFAF, then Edible Forest Gardens, then Wikidata; changeable in the <a href="/settings">settings</a>). Values you enter yourself are never overwritten. The final size of the mature plant is stored; ranges in feet are converted via their middle (25–35 ft → 9.1 m).</p>
+        </div>
+      </details>
+
+      <details class="part" id="en-projekt">
+        <summary><span class="num">7</span><span><span class="title">The project</span><span class="hint">Who is behind it, where the idea comes from, where it is going</span></span></summary>
+        <div class="part-body">
+          <p>The Perma Design Kit is a free tool for planning forest gardens and other permanent food plant systems. The software performs a niche analysis: it gathers data on a plant’s ecological niche from open sources and presents it in different ways. Besides info cards and canopy cards for laying out, it shows plants in filterable lists and calendars. As a next step, planting plans are created in 2D and 3D. Everything runs in the browser, without an account, and the data stays on your device.</p>
+          <p><b>Our motivation:</b> helping people create forest gardens and other lasting land use systems. In doing so we weigh our ecological footprint against our handprint. This leads to a pragmatism that, for us, also justifies using AI for programming.</p>
+          <h3>How the tool came about</h3>
+          <ol class="timeline">
+            <li><b>2023</b><span>Jörn Müller presents the tool at the international forest garden symposium under the title “Pop goes the canopy – a forest garden design multitool”. It grew out of his consulting for forest gardens on community land and from developing courses.</span></li>
+            <li><b>2024/25</b><span>Sebastian Schucht contacts Jörn; their collaboration produces a first version as a PowerShell script that generates canopy cards to scale.</span></li>
+            <li><b>2025/26</b><span>Andi Linder takes over development, Sebastian leaves.</span></li>
+            <li><b>2026</b><span>Jens Steger drives development forward with AI and further ideas on architecture, usability and server. The result is a web app with polycultures, calendars and the forest garden plan.</span></li>
+          </ol>
+          <p class="small">Photos and graphics on this page: from the project documentation by Jörn Müller (permagrün).</p>
+        </div>
+      </details>
+    </div>
   </article>
 </Layout>
 
-<script>
-  import { applyStaticI18n } from '../lib/i18n/core';
-  import { hilfeDict } from '../lib/i18n/dict-hilfe';
+<style is:global>
+  @font-face {
+    font-family: 'Fraunces';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('/fonts/fraunces-600-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+  }
+  @font-face {
+    font-family: 'Fraunces';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('/fonts/fraunces-600-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  }
+  @font-face {
+    font-family: 'Source Sans 3';
+    font-style: normal;
+    font-weight: 200 900;
+    font-display: swap;
+    src: url('/fonts/source-sans-3-var-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+  }
+  @font-face {
+    font-family: 'Source Sans 3';
+    font-style: normal;
+    font-weight: 200 900;
+    font-display: swap;
+    src: url('/fonts/source-sans-3-var-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  }
 
-  applyStaticI18n(hilfeDict);
+  html[lang='en'] .hilfe .lang-de, html:not([lang='en']) .hilfe .lang-en { display: none; }
+
+  .hilfe {
+    --h-fg: #1f2a22; --h-muted: #5d6b61; --h-line: #d9ded3; --h-card: #ffffff;
+    --h-accent: #2f6b3f; --h-soft: #e1eedd; --h-warn-bg: #fbf0d9; --h-warn-fg: #6b4a0c;
+    --h-beta-bg: #ece6f6; --h-beta-fg: #3f2e66;
+    --h-display: 'Fraunces', Georgia, serif;
+    color: var(--h-fg);
+    font: 17px/1.6 'Source Sans 3', system-ui, sans-serif;
+  }
+  .dark .hilfe {
+    --h-fg: #e4e9e1; --h-muted: #9aa89d; --h-line: #2c372f; --h-card: #1b231d;
+    --h-accent: #8cc79a; --h-soft: #233a2a; --h-warn-bg: #3a2f12; --h-warn-fg: #efcf86;
+    --h-beta-bg: #2b2440; --h-beta-fg: #d8ccf3;
+  }
+  .hilfe > div { display: flex; flex-direction: column; gap: 28px; }
+  /* "html" outranks the Horizont design's heading face (global.css) */
+  html .hilfe :is(h1, h2, h3, h4, .title, summary) { font-family: var(--h-display); font-weight: 600; line-height: 1.2; text-wrap: balance; }
+  .hilfe h1 { font-size: clamp(1.8rem, 5vw, 2.4rem); font-weight: 600; margin: 0; }
+  .hilfe h2 { font-size: 1.6rem; font-weight: 600; }
+  .hilfe h3 { font-size: 1.2rem; font-weight: 600; margin-top: 8px; }
+  .hilfe h4 { font-size: 1.02rem; font-weight: 600; margin-top: 10px; }
+  .hilfe p { margin: 0; }
+  .hilfe a { color: var(--h-accent); text-decoration: underline; text-underline-offset: 2px; }
+  .hilfe a:hover { text-decoration: none; }
+  .hilfe a:focus-visible, .hilfe summary:focus-visible { outline: 2px solid var(--h-accent); outline-offset: 2px; border-radius: 4px; }
+  .hilfe .eyebrow { font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; color: var(--h-muted); font-weight: 600; margin-bottom: 4px; }
+  .hilfe .lead { font-size: 1.15rem; color: var(--h-muted); margin-top: 10px; }
+  .hilfe .small { font-size: .9rem; color: var(--h-muted); }
+  .hilfe section, .hilfe .part-body, .hilfe .sub-body { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .hilfe figure { margin: 0; min-width: 0; }
+  .hilfe figure img { display: block; width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--h-line); }
+  .hilfe figure.hero img { border-radius: 12px; }
+  .hilfe figure.narrow { max-width: 30rem; }
+  .hilfe figcaption { font-size: .85rem; color: var(--h-muted); margin-top: 4px; }
+  .hilfe ol, .hilfe ul { margin: 0; padding-left: 1.3rem; }
+  .hilfe ol { list-style: decimal; }
+  .hilfe ul { list-style: disc; }
+  .hilfe li { margin-bottom: 5px; }
+  .hilfe li::marker { color: var(--h-accent); font-weight: 600; }
+  .hilfe dl { margin: 0; display: grid; grid-template-columns: minmax(0, 11rem) minmax(0, 1fr); gap: 8px 16px; }
+  .hilfe dt { font-weight: 600; }
+  .hilfe dd { margin: 0; }
+  @media (max-width: 520px) { .hilfe dl { grid-template-columns: 1fr; gap: 2px; } .hilfe dd { margin-bottom: 8px; } }
+  .hilfe code, .hilfe kbd { font-family: ui-monospace, Menlo, monospace; font-size: .86em; background: var(--h-card); border: 1px solid var(--h-line); border-radius: 4px; padding: 0 5px; white-space: nowrap; }
+
+  /* "So planst du": two ways side by side */
+  .hilfe .ways { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); gap: 16px; }
+  .hilfe .way { background: var(--h-card); border: 1px solid var(--h-line); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .hilfe .bridge { background: var(--h-soft); border-radius: 8px; padding: 12px 16px; }
+  .hilfe .toc { display: flex; flex-wrap: wrap; gap: 8px; }
+  .hilfe .toc a { text-decoration: none; font-size: .92rem; border: 1px solid var(--h-line); background: var(--h-card); border-radius: 999px; padding: 3px 12px; }
+  .hilfe .toc a:hover { border-color: var(--h-accent); }
+
+  /* Chapters and sub-chapters fold */
+  .hilfe details.part { border-top: 2px solid var(--h-fg); scroll-margin-top: 7rem; }
+  .hilfe details.part > summary { cursor: pointer; list-style: none; padding: 16px 0 10px; display: flex; gap: 14px; align-items: baseline; }
+  .hilfe details > summary::-webkit-details-marker { display: none; }
+  .hilfe details.part > summary .num { font: 600 1.5rem/1 var(--h-display); color: var(--h-accent); min-width: 1.2rem; }
+  .hilfe details.part > summary > span:nth-child(2) { min-width: 0; }
+  .hilfe details.part > summary .title { display: block; font-size: clamp(1.3rem, 5vw, 1.55rem); font-weight: 600; hyphens: auto; overflow-wrap: anywhere; }
+  .hilfe details.part > summary .hint { display: block; font: 400 .95rem/1.4 'Source Sans 3', system-ui, sans-serif; color: var(--h-muted); margin-top: 4px; }
+  .hilfe details.part > summary::after { content: '+'; margin-left: auto; font: 600 1.5rem/1 var(--h-display); color: var(--h-accent); }
+  .hilfe details.part[open] > summary::after { content: '−'; }
+  .hilfe .part-body { padding-bottom: 20px; }
+  .hilfe details.sub { border-bottom: 1px solid var(--h-line); scroll-margin-top: 7rem; }
+  .hilfe details.sub > summary { cursor: pointer; list-style: none; padding: 12px 0; font-size: 1.1rem; font-weight: 600; display: flex; justify-content: space-between; gap: 12px; }
+  .hilfe details.sub > summary::after { content: '›'; color: var(--h-accent); transition: transform .15s; }
+  .hilfe details.sub[open] > summary::after { transform: rotate(90deg); }
+  .hilfe .sub-body { padding-bottom: 18px; }
+  @media (prefers-reduced-motion: reduce) { .hilfe details.sub > summary::after { transition: none; } }
+  .hilfe [id] { scroll-margin-top: 7rem; }
+
+  .hilfe .split { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: 16px; align-items: start; }
+  .hilfe .split > div { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .hilfe .figs { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: 12px; }
+  .hilfe .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: 0 16px; }
+
+  .hilfe .tip, .hilfe .warn, .hilfe .def, .hilfe .beta { padding: 12px 16px; border-radius: 8px; }
+  .hilfe .tip { background: var(--h-soft); }
+  .hilfe .warn { background: var(--h-warn-bg); color: var(--h-warn-fg); }
+  .hilfe .def { border-left: 4px solid var(--h-accent); background: var(--h-card); }
+  .hilfe .beta { background: var(--h-beta-bg); color: var(--h-beta-fg); display: flex; flex-direction: column; gap: 8px; }
+  .hilfe .beta a { color: inherit; }
+  .hilfe .tip > b:first-child, .hilfe .warn > b:first-child, .hilfe .def > b:first-child, .hilfe .beta > b:first-child { display: block; margin-bottom: 2px; font-family: var(--h-display); }
+  .hilfe .soon { font-size: .72rem; letter-spacing: .05em; text-transform: uppercase; color: var(--h-muted); border: 1px solid var(--h-line); border-radius: 999px; padding: 0 6px; vertical-align: middle; white-space: nowrap; }
+  .hilfe .swatches { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 4px; }
+  .hilfe .sw { display: inline-block; width: 6px; height: 14px; border-radius: 2px; margin-right: 5px; vertical-align: -2px; }
+  .hilfe .tablewrap { overflow-x: auto; }
+  .hilfe table { border-collapse: collapse; width: 100%; }
+  .hilfe td { padding: 6px 10px 6px 0; border-bottom: 1px solid var(--h-line); vertical-align: top; }
+  .hilfe td:first-child { white-space: nowrap; width: 1%; padding-right: 20px; }
+  .hilfe .refs { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .hilfe .refs small { color: var(--h-muted); }
+  .hilfe .timeline { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .hilfe .timeline li { display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: 12px; margin: 0; }
+  .hilfe .timeline b { font-variant-numeric: tabular-nums; color: var(--h-accent); font-family: var(--h-display); }
+</style>
+
+<script>
+  // Links use the German ids; in English the same chapter has the prefix "en-".
+  // A target inside folded chapters is unfolded before scrolling to it.
+  const en = document.documentElement.lang === 'en';
+  function reveal(): void {
+    const id = decodeURIComponent(location.hash.slice(1));
+    if (!id) return;
+    const el = document.getElementById(en && !id.startsWith('en-') ? `en-${id}` : id) ?? document.getElementById(id);
+    if (!el) return;
+    if (el instanceof HTMLDetailsElement) el.open = true;
+    for (let d = el.parentElement?.closest('details'); d; d = d.parentElement?.closest('details')) d.open = true;
+    el.scrollIntoView();
+  }
+  reveal();
+  addEventListener('hashchange', reveal);
 </script>
