@@ -449,7 +449,7 @@ details[data-panel] > summary::-webkit-details-marker { display: none; }
 .w-pics figure { margin: 0; display: grid; gap: 0.55rem; min-width: 0; }
 .w-pics img { display: block; width: 100%; height: auto; object-fit: cover; border-radius: 14px; background: var(--w-card); }
 .w-pics figure:first-child img { aspect-ratio: 10 / 9; }
-.w-pics figure:last-child img { aspect-ratio: 1400 / 1026; } /* the whole app window of the screenshot, not cropped */
+.w-pics figure:last-child img { aspect-ratio: 3 / 2; } /* with the 10:9 picture on the left in a 1 : 1.35 grid both are equally tall */
 .w-pics figcaption { font-size: 0.84rem; color: var(--w-muted); }
 
 .w-vision { display: grid; grid-template-columns: 1.1fr 1fr; gap: clamp(1rem, 3cqw, 2rem); align-items: start; text-align: right; }

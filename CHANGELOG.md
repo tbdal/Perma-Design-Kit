@@ -5,7 +5,7 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
 ## Willkommensseite: Dartington-Bild 2026-11-02
-- [x] **Willkommensseite: rechtes Bild ist jetzt der Waldgartenplan mit dem Vorbild Dartington in 3D** (ganzes Fenster, nicht beschnitten); „Baumbiographien und Aufgaben“ im Beta-Text wie die anderen Punkte, die Zeile „Ein Blick hinein“ entfällt #minor #prüfen
+- [x] **Willkommensseite: rechtes Bild ist jetzt der Waldgartenplan mit dem Vorbild Dartington in 3D** (nur die Karte mit der Werkzeugleiste links, gleich hoch wie das linke Bild); „Baumbiographien und Aufgaben“ im Beta-Text wie die anderen Punkte, die Zeile „Ein Blick hinein“ entfällt #minor #prüfen
 
 ## Karten-Deckkraft in 3D, Beta-Block schöner 2026-11-02
 - [x] **Deckkraft des Kartenhintergrunds wirkt auch in 3D**: unter 100 % wird die Karte am Boden durchsichtig und die Wiese scheint durch (der Regler baut die 3D-Ansicht neu auf); in 2D (alte und neue Oberfläche, Karte/Satellit/Luftbild) per Test abgesichert #bugs #prüfen
