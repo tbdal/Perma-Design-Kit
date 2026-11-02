@@ -113,6 +113,7 @@ test('admin overrides from the server apply; admin page edits them', async ({ pa
   const featBox = (await page.locator('[data-box="features"]').boundingBox())!;
   const userBox = (await page.locator('[data-box="users"]').boundingBox())!;
   expect(userBox.y).toBeGreaterThan(featBox.y + featBox.height - 1);
+  await expect(page.locator('[data-box="beispiele"] table')).toBeVisible(); // example polycultures: a table in a folding box too
   await page.click('[data-box="users"] > summary');
   await expect(page.locator('[data-box="users"]')).not.toHaveAttribute('open', '');
   await page.reload();

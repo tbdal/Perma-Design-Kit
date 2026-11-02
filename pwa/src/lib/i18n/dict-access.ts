@@ -28,6 +28,7 @@ export const accessDict: Dict = {
   acResetShort: { de: 'Das Passwort braucht mindestens 10 Zeichen.', en: 'The password needs at least 10 characters.' },
   acPrivacy: { de: 'Datenschutz', en: 'Privacy' },
 
+  adBspTitle: { de: 'Beispiel-Polykulturen', en: 'Example polycultures' },
   adPageTitle: { de: 'Verwalten', en: 'Manage' },
   adFeatTitle: { de: 'Funktionen und Modi', en: 'Features and modes' },
   adTitle: { de: 'Funktionen und Modi', en: 'Features and modes' },

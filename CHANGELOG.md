@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Admin-Seite: Beispiele und Tour-Vorschau als Tabellen 2026-11-02
+- [x] **/admin/: „Beispiel-Polykulturen“ und „Tour-Vorschau“ sind einklappbare Tabellen**; zur Tour-Vorschau gibt es Vorschläge auf Deutsch und Englisch (Knopf „Vorschlag“ je Zeile oder für alle leeren Felder; sichtbar wird erst, was gespeichert ist) #minor #prüfen
+
 ## Admin-Seite: Zugänge als Tabelle, alles einklappbar 2026-11-02
 - [x] **/admin/: „Zugänge“ ist eine Tabelle unter „Funktionen und Modi“** (nicht mehr rechts daneben), mit Spalten für den Beta-Test (Anmeldung, Mailadresse, Rückmeldungen); „Funktionen und Modi“, Zugänge, Einladungen und die Abschnitte der Module klappen ein und merken sich das #minor #prüfen
 
