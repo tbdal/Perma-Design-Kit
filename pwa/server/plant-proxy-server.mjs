@@ -312,8 +312,17 @@ async function handleExpert(req, res, url) {
   return expertServer.handle(req, res, url, { session, ip: clientIp(req) });
 }
 
+// The beta test's public routes (signup form, confirmation, tour preview …): no login, the module checks the rest.
+async function handleBeta(req, res, url) {
+  const send = (status, body) => { res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(body)); };
+  if (!expertServer?.handlePublic) return send(404, { error: 'not-found' });
+  if (req.method !== 'GET' && req.method !== 'HEAD' && !isAllowedOrigin(req.headers.origin || null)) return send(403, { error: 'origin' });
+  return expertServer.handlePublic(req, res, url, { ip: clientIp(req) });
+}
+
 async function handleRequest(req, res) {
   const url = new URL(req.url, `http://${req.headers.host}`);
+  if (url.pathname.startsWith('/api/beta/')) return handleBeta(req, res, url);
   if (url.pathname.startsWith('/api/x/')) return handleExpert(req, res, url);
   if (await handleBeispiele(req, res, url)) return;
   if (await handleAuth(req, res, url, clientIp(req))) return;

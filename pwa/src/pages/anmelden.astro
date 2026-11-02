@@ -34,6 +34,22 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
       <button id="login-submit" type="submit" data-i18n="acLoginBtn" class={`${btn} bg-green-700 text-white hover:bg-green-800 disabled:opacity-60`}>Anmelden</button>
     </form>
 
+    <p id="forgot-links" class="text-xs text-stone-600 dark:text-stone-300"><button id="btn-forgot" type="button" data-i18n="acForgot" class="underline underline-offset-2 hover:no-underline">Passwort vergessen?</button> · <a href="/beta/" data-i18n="acBetaJoin" class="underline underline-offset-2 hover:no-underline">Beim Beta-Test mitmachen</a></p>
+    <form id="forgot-form" hidden class="space-y-3 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+      <p class="text-sm" data-i18n="acForgotIntro">Gib die Mailadresse ein, mit der du dich zum Beta-Test angemeldet hast. Du bekommst einen Link zum Festlegen eines neuen Passworts.</p>
+      <input id="forgot-email" type="email" autocomplete="email" required maxlength="254" class={field} />
+      <p id="forgot-status" role="status" class="text-sm"></p>
+      <button type="submit" data-i18n="acForgotBtn" class={`${btn} bg-green-700 text-white hover:bg-green-800 disabled:opacity-60`}>Link senden</button>
+    </form>
+    <form id="reset-form" hidden class="space-y-3 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+      <h2 class="text-lg font-semibold" data-i18n="acResetTitle">Neues Passwort</h2>
+      <label class="block text-sm font-medium"><span data-i18n="acPassword">Passwort</span> <span class="font-normal text-stone-500 dark:text-stone-400" data-i18n="acInvPasswordHint">mindestens 10 Zeichen</span>
+        <input id="reset-password" type="password" autocomplete="new-password" required minlength="10" class={field} />
+      </label>
+      <p id="reset-status" role="alert" class="text-sm font-medium"></p>
+      <button type="submit" data-i18n="acResetBtn" class={`${btn} bg-green-700 text-white hover:bg-green-800 disabled:opacity-60`}>Passwort speichern</button>
+    </form>
+
     <div id="login-done" hidden class="space-y-3 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
       <p id="login-done-text" class="text-sm font-medium"></p>
       <div class="flex flex-wrap gap-2">
@@ -66,11 +82,12 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
     const inviteToken = params.get('einladung') || '';
     const inviteForm = document.getElementById('invite-form') as HTMLFormElement;
     let inviteOpen = false;
+    const resetOpen = !!params.get('zuruecksetzen');
     let inviteRole: 'team' | 'expert' = 'expert';
 
     function showDone() {
       const auth = getAuth();
-      if (!auth) { form.hidden = inviteOpen; inviteForm.hidden = !inviteOpen; done.hidden = true; return; }
+      if (!auth) { form.hidden = inviteOpen || resetOpen; inviteForm.hidden = !inviteOpen; done.hidden = true; return; }
       inviteForm.hidden = true;
       form.hidden = true;
       done.hidden = false;
@@ -177,6 +194,34 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
         err.textContent = res.status === 429 ? t('acErrRate') : accessDict[`adErr_${code}`] ? t(`adErr_${code}`) : t('acErrServer');
       } catch { err.textContent = t('acErrServer'); } finally { btnEl.disabled = false; }
     });
+
+    // Password forgotten (beta accounts): a link by mail, then a new password.
+    const forgotForm = document.getElementById('forgot-form') as HTMLFormElement;
+    const resetForm = document.getElementById('reset-form') as HTMLFormElement;
+    document.getElementById('btn-forgot')!.addEventListener('click', () => { forgotForm.hidden = !forgotForm.hidden; });
+    forgotForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      const status = document.getElementById('forgot-status')!;
+      try {
+        const res = await fetch('/api/beta/passwort-vergessen', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: (document.getElementById('forgot-email') as HTMLInputElement).value.trim() }) });
+        status.textContent = res.status === 429 ? t('acErrRate') : t('acForgotDone');
+      } catch { status.textContent = t('acErrServer'); }
+    });
+    const resetToken = params.get('zuruecksetzen') || '';
+    if (resetToken) {
+      resetForm.hidden = false; form.hidden = true; document.getElementById('forgot-links')!.hidden = true;
+      params.delete('zuruecksetzen');
+      history.replaceState(null, '', `${location.pathname}${params.size ? `?${params}` : ''}`); // the token stays out of the history
+      resetForm.addEventListener('submit', async e => {
+        e.preventDefault();
+        const status = document.getElementById('reset-status')!;
+        try {
+          const res = await fetch('/api/beta/passwort-setzen', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: resetToken, password: (document.getElementById('reset-password') as HTMLInputElement).value }) });
+          if (res.ok) { resetForm.hidden = true; form.hidden = false; document.getElementById('forgot-links')!.hidden = false; error.textContent = t('acResetDone'); return; }
+          status.textContent = res.status === 404 ? t('acResetInvalid') : t('acResetShort');
+        } catch { status.textContent = t('acErrServer'); }
+      });
+    }
 
     showDone();
     void loadInvite();

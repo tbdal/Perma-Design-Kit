@@ -47,6 +47,8 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
           <p id="user-status" role="status" class="text-sm text-stone-600 dark:text-stone-300"></p>
         </form>
 
+        <div id="admin-extra" class="space-y-4"></div>
+
         <h2 class="pt-2 text-lg font-semibold" data-i18n="adInvTitle">Einladungen</h2>
         <form id="invite-form" class="space-y-2 rounded-xl bg-white dark:bg-stone-800 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
           <p class="text-xs text-stone-600 dark:text-stone-300" data-i18n="adInvIntro">Ein Link oder QR-Code für genau eine Person.</p>
@@ -337,6 +339,15 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
     // Boxes that modules add to the invitation form, and what they send along.
     const inviteExtras: (() => Promise<Record<string, unknown> | null> | Record<string, unknown> | null)[] = [];
     providePageApi('admin', {
+      addSection(featureId, title) {
+        const section = document.createElement('section');
+        section.dataset.feature = featureId;
+        section.className = 'space-y-2';
+        section.innerHTML = '<h2 class="pt-2 text-lg font-semibold"></h2><div class="space-y-2"></div>';
+        section.querySelector('h2')!.textContent = title;
+        document.getElementById('admin-extra')!.appendChild(section);
+        return section.querySelector('div')!;
+      },
       addInviteExtra(featureId, build) {
         const box = document.createElement('div');
         box.dataset.feature = featureId;

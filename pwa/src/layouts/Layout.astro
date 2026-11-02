@@ -298,7 +298,7 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
           <a id="welcome-example" href="/beispiel" class="w-btn w-ghost" data-i18n="welcomeExample">Beispielprojekt ansehen</a>
           <button id="welcome-skip" type="button" class="w-btn w-quiet" data-i18n="tourSkip">Überspringen</button>
         </div>
-        <p class="w-privacy"><strong data-i18n="welcomePrivacyHead">Deine Daten bleiben in deinem Browser.</strong> <span data-i18n="welcomePrivacyBody">Es gibt kein Konto und keinen Server, der deine Pflanzen oder Pläne speichert. Lege regelmäßig ein Backup an (Einstellungen, Daten).</span></p>
+        <p class="w-privacy"><strong data-i18n="welcomePrivacyHead">Deine Daten bleiben in deinem Browser.</strong> <span data-i18n="welcomePrivacyBody">Es gibt kein Konto und keinen Server, der deine Pflanzen oder Pläne speichert (Ausnahme: ein freiwilliges Beta-Konto, das auf Wunsch auch Gartendaten speichert). Lege regelmäßig ein Backup an (Einstellungen, Daten).</span></p>
       </div>
     </dialog>
 
@@ -402,8 +402,9 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
       // First-visit intro: a storage explainer dialog, then a spotlight tour
       // over the real page. Skipped on the legal/help pages so they stay
       // readable; "Einführung" in the footer replays it.
-      import { createT } from '../lib/i18n/core';
+      import { createT, getLang } from '../lib/i18n/core';
       import { layoutDict } from '../lib/i18n/dict-layout';
+      import { currentMode } from '../lib/ui-mode';
       const tt = createT(layoutDict);
       const WELCOME_KEY = 'pdk-welcome-seen';
       const markSeen = () => { try { localStorage.setItem(WELCOME_KEY, '1'); } catch {} };
@@ -426,7 +427,17 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
         return r.width > 0 && r.height > 0;
       };
 
-      function runTour() {
+      /** The beta test's news for the last tour step: the private server lists what is on in the beta mode (names stay out of this build). */
+      type BetaItem = { id: string; title: string; text: string; bild?: string };
+      async function betaPreview(): Promise<BetaItem[]> {
+        try {
+          const res = await fetch(`/api/beta/vorschau?lang=${getLang()}`, { cache: 'no-store', signal: AbortSignal.timeout(2500) });
+          return res.ok ? ((await res.json()).items ?? []) as BetaItem[] : [];
+        } catch { return []; } // offline or no server: the step simply does not appear
+      }
+
+      async function runTour() {
+        const beta = await betaPreview();
         const block = document.getElementById('tour-block')!;
         const spot = document.getElementById('tour-spot')!;
         const card = document.getElementById('tour-card')!;
@@ -453,8 +464,11 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
           if (main) return { el: box && visible(box) ? box : main, title: s.title, text: s.text, link: s.link };
           const fb = s.fallback ? Array.from(document.querySelectorAll(s.fallback)).find(visible) : null;
           return fb ? { el: fb, title: s.title, text: s.fallbackText ?? s.text, link: s.link } : null;
-        }).filter((s): s is { el: HTMLElement; title: string; text: string; link: TourStep['link'] } => !!s);
+        }).filter((s): s is { el: HTMLElement; title: string; text: string; link: TourStep['link']; beta?: BetaItem[] } => !!s);
         if (dummy) dummy.hidden = true;
+        // Last: "Neu im Beta-Test" — only with something to show.
+        const betaStep = beta.length ? document.querySelector<HTMLElement>('#mode-toggle') : null;
+        if (betaStep && visible(betaStep)) steps.push({ el: betaStep, title: 'tourBetaTitle', text: 'tourBetaText', link: undefined, beta: beta.slice(0, 4) });
         if (steps.length === 0) return;
         let idx = 0;
         const place = () => {
@@ -475,6 +489,28 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
           document.getElementById('tour-title')!.textContent = tt(cur.title);
           const textEl = document.getElementById('tour-text')!;
           textEl.textContent = tt(cur.text);
+          if (cur.beta) {
+            const inBeta = currentMode() === 'expert';
+            textEl.textContent = tt(inBeta ? 'tourBetaTextIn' : 'tourBetaText');
+            const grid = document.createElement('div');
+            grid.className = 'mt-2 grid grid-cols-2 gap-2';
+            for (const item of cur.beta) {
+              const tile = document.createElement('div');
+              tile.className = 'rounded-lg ring-1 ring-stone-200 dark:ring-stone-700 p-1.5 text-xs';
+              if (item.bild) { const img = document.createElement('img'); img.src = item.bild; img.alt = ''; img.loading = 'lazy'; img.className = 'mb-1 h-16 w-full rounded object-cover'; tile.append(img); }
+              const h = document.createElement('p'); h.className = 'font-semibold'; h.textContent = item.title;
+              const p = document.createElement('p'); p.className = 'text-stone-600 dark:text-stone-300'; p.textContent = item.text;
+              tile.append(h, p);
+              grid.append(tile);
+            }
+            textEl.append(grid);
+            if (!inBeta) {
+              const a = document.createElement('a');
+              a.href = '/beta/'; a.className = 'mt-2 inline-block rounded-md bg-green-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-800';
+              a.textContent = tt('tourBetaJoin');
+              textEl.append(a);
+            }
+          }
           if (cur.link) {
             const a = document.createElement('a');
             a.href = tt(cur.link.href); a.target = '_blank'; a.rel = 'noopener';
@@ -520,7 +556,7 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
         document.getElementById('open-welcome')?.addEventListener('click', open);
         let seen = false;
         try { seen = !!localStorage.getItem(WELCOME_KEY); } catch {}
-        const legal = /^\/(impressum|datenschutz|hilfe|anmelden|admin)\/?$/.test(location.pathname);
+        const legal = /^\/(impressum|datenschutz|hilfe|anmelden|admin|beta)\/?$/.test(location.pathname);
         if (!seen && !legal) open();
       }
     </script>

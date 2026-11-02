@@ -30,6 +30,7 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
       <p class="text-xs text-stone-500 dark:text-stone-400" data-i18n="rpScreenshot">Ein Bildschirmfoto hilft oft: Windows Win+Umschalt+S, macOS Cmd+Umschalt+4, Android/iOS Ein-/Aus- und Leiser-Taste. Anhängen kannst du es in GitHub oder in der Mail.</p>
 
       <div class="flex flex-wrap gap-2">
+        <button type="submit" id="rp-beta" data-action="beta" hidden data-i18n="rpBeta" class={`${btn} bg-amber-600 text-white hover:bg-amber-700`}>Direkt an das Beta-Team</button>
         <button type="submit" data-action="github" data-i18n="rpGithub" class={`${btn} bg-green-700 text-white hover:bg-green-800`}>Auf GitHub melden</button>
         <button type="submit" data-action="mail" data-i18n="rpMail" class={`${btn} bg-white dark:bg-stone-800 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700`}>Per E-Mail senden</button>
       </div>
@@ -41,6 +42,7 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
     import { applyStaticI18n, getLang } from '../lib/i18n/core';
     import { reportDict } from '../lib/i18n/dict-report';
     import { saveFile } from '../lib/save-file';
+    import { currentMode } from '../lib/ui-mode';
     import { buildDebugInfo, environmentLine, issueUrl, mailtoUrl, APP_VERSION, REPORT_MAIL, type ReportText } from '../lib/bug-report';
 
     // ?art=idee (Feedback → "Idee einreichen"): the same form for an idea; no debug file.
@@ -69,6 +71,7 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
     document.getElementById('rp-env')!.textContent = env;
 
     const beta = new URLSearchParams(location.search).get('beta') === '1'; // from the Beta shield in the header
+    if (beta && currentMode() === 'expert') document.getElementById('rp-beta')!.hidden = false;
     const text = (): ReportText => ({ page: page.value.trim(), what: what.value.trim(), expected: expected.value.trim(), ...(idea ? { idea } : {}), ...(beta ? { beta } : {}) });
 
     const status = document.getElementById('rp-status')!;
@@ -92,6 +95,16 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
       e.preventDefault();
       const action = ((e as SubmitEvent).submitter as HTMLButtonElement | null)?.dataset.action;
       const de = getLang() === 'de';
+      if (action === 'beta') {
+        // the Beta shield: straight into the team's task list, no mail address involved
+        status.textContent = '…';
+        try {
+          const res = await fetch('/api/x/beta/feedback', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: [what.value.trim(), expected.value.trim()].filter(Boolean).join('\n\n'), page: page.value.trim() }) });
+          status.textContent = res.ok ? (de ? 'Danke! Deine Rückmeldung ist beim Team angekommen.' : 'Thank you! Your feedback reached the team.') : (de ? 'Das hat nicht geklappt. Bist du angemeldet?' : 'That did not work. Are you logged in?');
+          if (res.ok) { what.value = ''; expected.value = ''; }
+        } catch { status.textContent = de ? 'Der Server ist gerade nicht erreichbar.' : 'The server can’t be reached right now.'; }
+        return;
+      }
       let file: File | null = null;
       status.textContent = '…';
       if (!idea) { try { file = await makeFile(); } catch (err) { failed(err); } }
