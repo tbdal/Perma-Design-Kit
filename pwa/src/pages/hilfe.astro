@@ -474,7 +474,70 @@ import Layout from '../layouts/Layout.astro';
         <div class="part-body">
           <p>Das Perma Design Kit ist ein freies Werkzeug zur Planung von Waldgärten und anderen permanenten Nutzpflanzensystemen. Die Software macht eine Nischenanalyse: Sie sammelt Daten zur ökologischen Nische einer Pflanze aus offenen Quellen und stellt sie auf verschiedene Arten dar. Neben Infokarten und Baumscheiben zum Auslegen zeigt sie die Pflanzen in filterbaren Listen und Kalendern. In einem nächsten Schritt entstehen Pflanzpläne in 2D und 3D. Alles läuft im Browser, ohne Konto, und die Daten bleiben auf deinem Gerät.</p>
           <p><b>Unsere Motivation:</b> Menschen dabei helfen, Waldgärten und andere dauerhafte Landnutzungssysteme anzulegen. Dabei wägen wir unseren ökologischen Fußabdruck gegen unseren Handabdruck ab. Daraus entsteht ein Pragmatismus, der für uns auch den Einsatz von KI beim Programmieren rechtfertigt.</p>
-          {/* Werte und Ziele: Text folgt (wird gerade im Team abgestimmt). */}
+          <p>Das Perma Design Kit will Teil eines Kulturwandels sein – hin zu einer Schenkökonomie und einem anderen Umgang mit Natur. Es ist ein freies Werkzeug, das allen gehört: geschenkt und weitergegeben, nicht verkauft.</p>
+
+          <details class="sub" id="vision"><summary>Vision</summary><div class="sub-body">
+            <p>Teil eines Kulturwandels sein – hin zu einer Schenkökonomie und einem fürsorglichen Umgang mit Natur. Dazu stellen wir ein Werkzeug bereit, das zu diesem Wandel beiträgt.</p>
+            <p><b>Das Werkzeug dafür:</b> Menschen planen Polykulturen und Waldgärten nach den ökologischen Funktionen, dem Nutzen und dem Standort der Pflanzen – vom Pflanzensteckbrief über den Waldgartenplan bis zur Pflanzung draußen. Es soll dort helfen, wo geplant und gepflanzt wird: am Schreibtisch, im Feld und in Gruppen, Vereinen und Gemeinden.</p>
+            <p><b>Schenkökonomie:</b> Wir verstehen das Kit als Gabe, nicht als Ware. Wir geben es weiter wie Saatgut oder Ableger – ohne Preis und ohne Gegenleistung zu verlangen – und vertrauen darauf, dass zurückkommt, was das Projekt trägt: Unterstützung, Wissen, Pflanzendaten, Übersetzungen, geteilte Pläne und Vorbilder. Das knüpft an die dritte Ethik der Permakultur an, das gerechte Teilen von Überschüssen (Fair Share), und an die wachsende Kultur der Commons.</p>
+          </div></details>
+
+          <details class="sub" id="werte"><summary>Werte</summary><div class="sub-body">
+            <p>Sieben Werte tragen das Projekt; jeder hat eine Folge, an der man ihn im Alltag prüfen kann.</p>
+            <div class="values">
+              <div class="value"><h4>Gemeingut</h4><p>Das Werkzeug bleibt für alle frei und vollständig. Was mit Unterstützung finanziert wird, kommt allen zugute.</p><p class="proof">Jede Version wird nach zwei Jahren MIT (siehe <a href="#lizenz">Lizenz</a>).</p></div>
+              <div class="value"><h4>Schenken <span class="soon">Vorschlag</span></h4><p>Wir geben Werkzeug, Pläne und Wissen ohne Gegenleistung weiter und laden ein, zurückzugeben, was jede und jeder kann.</p><p class="proof">Unterstützen ist nie Bedingung; als Rückgabe zählen auch Wissen, Pflanzendaten, Übersetzungen und geteilte Vorbilder.</p></div>
+              <div class="value"><h4>Nicht kommerziell</h4><p>Geld kommt von Menschen und Stellen, die das Gemeingut wollen – nicht aus dem Verkauf des Werkzeugs.</p><p class="proof">Keine Werbung, kein Verkauf von Daten, keine bezahlten Funktionen, kein Konto als Pflicht.</p></div>
+              <div class="value"><h4>Digitale Souveränität &amp; Privatsphäre</h4><p>Als Standard: Die Daten bleiben bei den Nutzenden. Alles liegt zuerst im Browser; Server-Speicher, Freigabe und Abgleich sind freiwillig. Was der Server nur umwandelt (QGIS, PFAF), speichert er nicht.</p><p class="proof">Ein Alleinstellungsmerkmal gegenüber kommerziellen Planungs-Apps.</p></div>
+              <div class="value"><h4>Offenheit</h4><p>Kosten offenlegen, die Herkunft jedes Pflanzenwerts sichtbar machen, Pflanzendaten als offenen Datensatz pflegen.</p><p class="proof">Quelle pro Feld (PFAF, EFG, Wikidata, Hand); geplant ist eine Seite „Was das Projekt kostet“.</p></div>
+              <div class="value"><h4>Für alle bedienbar, barrierefrei</h4><p>Ein Werkzeug für ein Gemeingut muss ohne Vorwissen, ohne Maus und in mehreren Sprachen nutzbar sein.</p><p class="proof">Einfacher Modus, Tastatur, Kontraste, Deutsch und Englisch, weitere Sprachen über die Gemeinschaft.</p></div>
+              <div class="value"><h4>Respekt vor Quellen und Urhebern</h4><p>Fremde Daten nur mit geklärter Erlaubnis; Urheber werden genannt.</p><p class="proof">NaturaDB bleibt aus (Lizenz und robots.txt ungeklärt); Sebastian Schucht und Jens Steger stehen in README und NOTICE.</p></div>
+            </div>
+          </div></details>
+
+          <details class="sub" id="lizenz"><summary>Lizenz: Fair Source (FSL-1.1-MIT)</summary><div class="sub-body">
+            <p>Seit dem 4. Oktober 2026 steht das Perma Design Kit unter der Functional Source License 1.1 mit MIT-Zukunftslizenz. Lizenzgeber sind Andreas Linder und Jörn Müller.</p>
+            <h4>Was sie erlaubt</h4>
+            <ul>
+              <li>Code nutzen, kopieren, verändern und weitergeben – für jeden Zweck außer einem konkurrierenden kommerziellen Angebot (das Werkzeug oder etwas sehr Ähnliches gegen Geld anbieten).</li>
+              <li>Ausdrücklich erlaubt: interne Nutzung, Bildung und Forschung, Beratung, eine kostenlose eigene Instanz.</li>
+              <li>Pflanzenkarten, PDFs und Gartenpläne, die jemand mit der App erstellt, gehören ihr oder ihm – auch für kommerzielle Zwecke.</li>
+              <li>Jede Version wird zwei Jahre nach Veröffentlichung automatisch MIT.</li>
+              <li>Versionen vor dem Wechsel und der PowerShell-Code in <code>legacy/</code> bleiben MIT.</li>
+            </ul>
+            <h4>Warum diese Lizenz</h4>
+            <ul>
+              <li>Sie schützt das Gemeingut davor, dass jemand das freie Werkzeug nimmt und als Bezahlprodukt gegen uns verkauft.</li>
+              <li>Sie lässt alles zu, was zum Kulturwandel beiträgt: lernen, beraten, planen – Vereine und Gemeinden können es selbst betreiben.</li>
+              <li>Nach zwei Jahren wird jeder Stand vollständig frei (MIT). Der Schutz gilt also nur für die neueste Entwicklung, das Wissen bleibt dauerhaft offen.</li>
+              <li>Sie verkauft nichts: Es gibt kein Lizenzgeschäft. Das passt zu einem späteren gemeinnützigen Träger.</li>
+            </ul>
+          </div></details>
+
+          <details class="sub" id="ziele"><summary>Ziele</summary><div class="sub-body">
+            <p class="small">Stand: 1. November 2026</p>
+            <ol class="timeline">
+              <li><b>Jetzt</b><span>(Wochen) Beta-Test und Kommentierung durch weitere Menschen. Vorstellung bei der Konferenz FFFG26. Finanzierung des Projekts: Träger für Unterstützung klären. Fehler beheben, Leistungstest bei jedem Deploy.</span></li>
+              <li><b>Danach</b><span>(1–2 Monate) Nutzen mit den Nutzenden abgleichen und einen Fahrplan für die weitere Entwicklung erstellen.</span></li>
+              <li><b>Dann</b><span>(ab 3 Monaten) Ideen aus der Werkstatt umsetzen.</span></li>
+            </ol>
+            <p><b>Verbreiten</b> – dort, wo Waldgärten geplant werden: geteilte Beispielprojekte und Vorbilder, Permakultur- und Agroforst-Netzwerke, Solawis, Vorträge (z. B. FFFG26), Newsletter, öffentliche Steckbriefe.</p>
+          </div></details>
+
+          <details class="sub" id="worte"><summary>Worte, die wir verwenden</summary><div class="sub-body">
+            <p>Sprache prägt, wie Menschen das Projekt erleben. Diese Worte passen zum Bild einer Schenkökonomie:</p>
+            <ul class="words">
+              <li><s>Produkt, Angebot</s><b>Werkzeug, Gemeingut</b><span>Es gehört allen und wird nicht gehandelt.</span></li>
+              <li><s>Kunden, User</s><b>Gärtnernde, Gemeinschaft, Mitwirkende</b><span>Menschen sind Teil des Projekts, nicht Abnehmer.</span></li>
+              <li><s>verkaufen, anbieten</s><b>schenken, weitergeben, teilen</b><span>Für das, was das Projekt gibt. Geld, das ankommt, nennen wir nicht „Geschenk“ (steuerlich heikel).</span></li>
+              <li><s>Spende, Zahlung</s><b>Beitrag, Unterstützung</b><span>Freiwilliges Zurückgeben ohne Gegenleistung; „Spende“ erst mit gemeinnützigem Träger.</span></li>
+              <li><s>Preis, Gebühr</s><b>Beitrag nach Selbsteinschätzung</b><span>Bei Workshops und Kursen.</span></li>
+              <li><s>Fördermitglied</s><b>auch: Mittragende, Unterstützerkreis</b><span>Menschen, die das Gemeingut tragen.</span></li>
+              <li><s>Wachstum, Reichweite</s><b>Verbreitung, Weitergeben, Aussäen</b><span>Das Werkzeug verbreitet sich wie Saatgut.</span></li>
+            </ul>
+            <p>Weitere passende Worte: Gabe, Fülle statt Knappheit, Gegenseitigkeit, Beitragskultur, Commoning, Überschuss teilen, Ableger, Saatgut-Tausch.</p>
+          </div></details>
+
           <h3>Wie das Tool entstand</h3>
           <ol class="timeline">
             <li><b>2023</b><span>Jörn Müller stellt das Werkzeug beim internationalen Waldgartensymposium unter dem Titel „Pop goes the canopy – a forest garden design multitool“ vor. Ausgangspunkt waren seine Beratungen für Waldgärten auf Gemeinschaftsflächen und die Entwicklung von Kursen.</span></li>
@@ -945,6 +1008,70 @@ import Layout from '../layouts/Layout.astro';
         <div class="part-body">
           <p>The Perma Design Kit is a free tool for planning forest gardens and other permanent food plant systems. The software performs a niche analysis: it gathers data on a plant’s ecological niche from open sources and presents it in different ways. Besides info cards and canopy cards for laying out, it shows plants in filterable lists and calendars. As a next step, planting plans are created in 2D and 3D. Everything runs in the browser, without an account, and the data stays on your device.</p>
           <p><b>Our motivation:</b> helping people create forest gardens and other lasting land use systems. In doing so we weigh our ecological footprint against our handprint. This leads to a pragmatism that, for us, also justifies using AI for programming.</p>
+          <p>The Perma Design Kit wants to be part of a cultural shift – towards a gift economy and a different way of relating to nature. It is a free tool that belongs to everyone: given and passed on, not sold.</p>
+
+          <details class="sub" id="en-vision"><summary>Vision</summary><div class="sub-body">
+            <p>To be part of a cultural shift – towards a gift economy and a caring relationship with nature. To that end we provide a tool that contributes to this shift.</p>
+            <p><b>The tool for it:</b> people plan polycultures and forest gardens by the plants’ ecological functions, uses and site – from the plant profile through the forest garden plan to planting outside. It should help wherever planning and planting happen: at the desk, in the field, and in groups, associations and municipalities.</p>
+            <p><b>Gift economy:</b> we see the kit as a gift, not a commodity. We pass it on like seeds or cuttings – without asking a price or anything in return – and trust that what sustains the project will come back: support, knowledge, plant data, translations, shared plans and examples. This ties in with the third ethic of permaculture, the fair sharing of surplus (fair share), and with the growing culture of the commons.</p>
+          </div></details>
+
+          <details class="sub" id="en-werte"><summary>Values</summary><div class="sub-body">
+            <p>Seven values carry the project; each has a consequence by which it can be checked in everyday practice.</p>
+            <div class="values">
+              <div class="value"><h4>Commons</h4><p>The tool stays free and complete for everyone. Whatever is funded through support benefits everyone.</p><p class="proof">Every version becomes MIT after two years (see <a href="#lizenz">licence</a>).</p></div>
+              <div class="value"><h4>Giving <span class="soon">proposal</span></h4><p>We pass on tool, plans and knowledge without asking anything in return, and invite everyone to give back what they can.</p><p class="proof">Support is never a condition; knowledge, plant data, translations and shared examples count as giving back too.</p></div>
+              <div class="value"><h4>Non-commercial</h4><p>Money comes from people and bodies who want the commons – not from selling the tool.</p><p class="proof">No ads, no selling of data, no paid features, no mandatory account.</p></div>
+              <div class="value"><h4>Digital sovereignty &amp; privacy</h4><p>By default the data stays with the people using it. Everything lives in the browser first; server storage, sharing and sync are optional. What the server only converts (QGIS, PFAF) it does not store.</p><p class="proof">A distinguishing feature compared with commercial planning apps.</p></div>
+              <div class="value"><h4>Openness</h4><p>Disclose costs, make the origin of every plant value visible, maintain the plant data as an open data set.</p><p class="proof">Source per field (PFAF, EFG, Wikidata, manual); a page “What the project costs” is planned.</p></div>
+              <div class="value"><h4>Usable by all, accessible</h4><p>A tool for a commons has to be usable without prior knowledge, without a mouse and in several languages.</p><p class="proof">Simple mode, keyboard, contrast, German and English, more languages through the community.</p></div>
+              <div class="value"><h4>Respect for sources and authors</h4><p>Third-party data only with clear permission; authors are credited.</p><p class="proof">NaturaDB stays off (licence and robots.txt unresolved); Sebastian Schucht and Jens Steger are named in README and NOTICE.</p></div>
+            </div>
+          </div></details>
+
+          <details class="sub" id="en-lizenz"><summary>Licence: Fair Source (FSL-1.1-MIT)</summary><div class="sub-body">
+            <p>Since 4 October 2026 the Perma Design Kit has been licensed under the Functional Source License 1.1 with MIT future licence. Licensors are Andreas Linder and Jörn Müller.</p>
+            <h4>What it allows</h4>
+            <ul>
+              <li>Using, copying, modifying and distributing the code – for any purpose except a competing commercial offering (offering the tool or something very similar for money).</li>
+              <li>Expressly allowed: internal use, education and research, consulting, running your own free instance.</li>
+              <li>Plant cards, PDFs and garden plans someone creates with the app belong to them – for commercial purposes too.</li>
+              <li>Every version automatically becomes MIT two years after release.</li>
+              <li>Versions from before the switch and the PowerShell code in <code>legacy/</code> remain MIT.</li>
+            </ul>
+            <h4>Why this licence</h4>
+            <ul>
+              <li>It protects the commons from someone taking the free tool and selling it against us as a paid product.</li>
+              <li>It allows everything that contributes to the cultural shift: learning, consulting, planning – associations and municipalities can run it themselves.</li>
+              <li>After two years every version becomes fully free (MIT). So the protection only covers the newest development; the knowledge stays open for good.</li>
+              <li>It sells nothing: there is no licensing business. That fits a later non-profit body.</li>
+            </ul>
+          </div></details>
+
+          <details class="sub" id="en-ziele"><summary>Goals</summary><div class="sub-body">
+            <p class="small">As of 1 November 2026</p>
+            <ol class="timeline">
+              <li><b>Now</b><span>(weeks) Beta test and feedback from more people. Presentation at the FFFG26 conference. Funding the project: settle a body to receive support. Fixing bugs, a performance test with every deploy.</span></li>
+              <li><b>Next</b><span>(1–2 months) Check the benefits with the people using it and draw up a roadmap for further development.</span></li>
+              <li><b>Then</b><span>(from 3 months) Build ideas from the workshop list.</span></li>
+            </ol>
+            <p><b>Spreading it</b> – where forest gardens are planned: shared example projects and models, permaculture and agroforestry networks, community-supported agriculture, talks (e.g. FFFG26), newsletter, public plant profiles.</p>
+          </div></details>
+
+          <details class="sub" id="en-worte"><summary>Words we use</summary><div class="sub-body">
+            <p>Language shapes how people experience the project. These words fit the picture of a gift economy (the list was written for German usage):</p>
+            <ul class="words">
+              <li><s>product, offering</s><b>tool, commons</b><span>It belongs to everyone and is not traded.</span></li>
+              <li><s>customers, users</s><b>gardeners, community, contributors</b><span>People are part of the project, not buyers.</span></li>
+              <li><s>sell, offer</s><b>give, pass on, share</b><span>For what the project gives. Money that comes in we do not call a “gift” (tricky for tax).</span></li>
+              <li><s>donation, payment</s><b>contribution, support</b><span>Giving back voluntarily without anything in return; “donation” only once there is a non-profit body.</span></li>
+              <li><s>price, fee</s><b>pay-what-you-can contribution</b><span>For workshops and courses.</span></li>
+              <li><s>sponsoring member</s><b>also: co-carriers, circle of supporters</b><span>People who carry the commons.</span></li>
+              <li><s>growth, reach</s><b>spreading, passing on, sowing</b><span>The tool spreads like seed.</span></li>
+            </ul>
+            <p>More fitting words: gift, abundance instead of scarcity, reciprocity, culture of contribution, commoning, sharing surplus, cuttings, seed swap.</p>
+          </div></details>
+
           <h3>How the tool came about</h3>
           <ol class="timeline">
             <li><b>2023</b><span>Jörn Müller presents the tool at the international forest garden symposium under the title “Pop goes the canopy – a forest garden design multitool”. It grew out of his consulting for forest gardens on community land and from developing courses.</span></li>
@@ -1085,6 +1212,16 @@ import Layout from '../layouts/Layout.astro';
   .hilfe table { border-collapse: collapse; width: 100%; }
   .hilfe td { padding: 6px 10px 6px 0; border-bottom: 1px solid var(--h-line); vertical-align: top; }
   .hilfe td:first-child { white-space: nowrap; width: 1%; padding-right: 20px; }
+  .hilfe .values { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); gap: 12px; }
+  .hilfe .value { background: var(--h-card); border: 1px solid var(--h-line); border-top: 3px solid var(--h-accent); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .hilfe .value h4 { margin: 0; }
+  .hilfe .value .proof { font-size: .9rem; color: var(--h-muted); border-top: 1px dashed var(--h-line); padding-top: 6px; margin-top: auto; }
+  .hilfe .words { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0; }
+  .hilfe .words li { display: grid; grid-template-columns: minmax(0, 10rem) minmax(0, 14rem) minmax(0, 1fr); gap: 4px 16px; padding: 8px 0; margin: 0; border-bottom: 1px solid var(--h-line); }
+  .hilfe .words s { color: var(--h-muted); }
+  .hilfe .words b { color: var(--h-accent); }
+  .hilfe .words span { font-size: .92rem; }
+  @media (max-width: 640px) { .hilfe .words li { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .hilfe .words span { grid-column: 1 / -1; } }
   .hilfe .refs { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 8px; }
   .hilfe .refs small { color: var(--h-muted); }
   .hilfe .timeline { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 10px; }
