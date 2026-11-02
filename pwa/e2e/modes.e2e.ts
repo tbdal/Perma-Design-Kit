@@ -108,6 +108,17 @@ test('admin overrides from the server apply; admin page edits them', async ({ pa
   await page.goto('/admin/');
   await expect(page.locator('#admin-body')).toBeVisible();
   await expect(page.locator('#user-list')).toContainText('Ann');
+  // accounts: a table below the features, and the big boxes fold (remembered)
+  await expect(page.locator('#user-list tr')).toHaveCount(1);
+  const featBox = (await page.locator('[data-box="features"]').boundingBox())!;
+  const userBox = (await page.locator('[data-box="users"]').boundingBox())!;
+  expect(userBox.y).toBeGreaterThan(featBox.y + featBox.height - 1);
+  await page.click('[data-box="users"] > summary');
+  await expect(page.locator('[data-box="users"]')).not.toHaveAttribute('open', '');
+  await page.reload();
+  await expect(page.locator('[data-box="users"]')).not.toHaveAttribute('open', '');
+  await page.click('[data-box="users"] > summary');
+  await expect(page.locator('[data-box="users"]')).toHaveAttribute('open', '');
   // water: also on in simple mode; zones: off everywhere ("Aus")
   await page.check('input[data-id="zones"][data-off]');
   await expect(page.locator('input[data-id="zones"][data-mode="classic"]')).not.toBeChecked();

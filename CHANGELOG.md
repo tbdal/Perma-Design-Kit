@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Admin-Seite: Zugänge als Tabelle, alles einklappbar 2026-11-02
+- [x] **/admin/: „Zugänge“ ist eine Tabelle unter „Funktionen und Modi“** (nicht mehr rechts daneben), mit Spalten für den Beta-Test (Anmeldung, Mailadresse, Rückmeldungen); „Funktionen und Modi“, Zugänge, Einladungen und die Abschnitte der Module klappen ein und merken sich das #minor #prüfen
+
 ## Beta-Test: Anmeldung, Tour, Feedback, Admin 2026-11-02
 - [x] **Seite /beta/**: Anmeldung mit Mailadresse, freiwilliger Angabe „Ich plane …“ und Beta-Bedingungen zum Anhaken; Bestätigungsmail (48 h), danach Einladung oder Warteliste, Abmelden und Umfragen über Links in den Mails #major #prüfen
 - [x] **Mailversand ohne neue Abhängigkeit** (kleiner SMTP-Client im privaten Server, Einstellungen `smtp.json` + `smtp-pass` im privaten Datenordner), Willkommensmail, Fragen nach 14 Tagen, Abschlussmail, Hinweis auf erledigte Rückmeldungen #major #prüfen

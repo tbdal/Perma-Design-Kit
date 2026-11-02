@@ -177,8 +177,10 @@ export interface EinstellungenApi {
 
 /** What the admin page offers plugins. */
 export interface AdminApi {
-  /** A section with a heading between the account list and the invitations; returns its body. */
+  /** A collapsible section between the account table and the invitations; returns its body. */
   addSection(featureId: string, title: string): HTMLElement;
+  /** A column in the account table: `cell` gives the HTML for an account name (escape it), `load` fetches what `cell` needs before each redraw. */
+  addUserColumn(featureId: string, header: string, cell: (name: string) => string, load?: () => Promise<void>): void;
   /** A box in the invitation form. `build` fills it and returns what it adds to the invitation (a plain JSON object, or null); `role` is the form's role select. */
   addInviteExtra(featureId: string, build: (box: HTMLElement, role: HTMLSelectElement) => (() => Promise<Record<string, unknown> | null> | Record<string, unknown> | null)): void;
 }

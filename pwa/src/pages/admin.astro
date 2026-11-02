@@ -5,15 +5,17 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
 ---
 <Layout title="Perma Design Kit — Funktionen verwalten" wide>
   <article class="space-y-5 text-stone-800 dark:text-stone-100">
-    <h1 class="text-2xl font-bold" data-i18n="adTitle">Funktionen und Modi</h1>
+    <h1 class="text-2xl font-bold" data-i18n="adPageTitle">Verwalten</h1>
 
     <p id="admin-denied" hidden class="rounded-lg bg-amber-50 dark:bg-amber-900/30 px-3 py-2 text-sm text-amber-900 dark:text-amber-100 ring-1 ring-amber-200 dark:ring-amber-800">
       <span data-i18n="adNeedAdmin">Diese Seite ist nur für Admins.</span>
       <a id="admin-login" href="/anmelden/?next=/admin/" class="ml-1 font-semibold underline underline-offset-2" data-i18n="adLoginLink">Anmelden</a>
     </p>
 
-    <div id="admin-body" hidden class="grid gap-6 xl:grid-cols-3">
-      <section class="space-y-3 xl:col-span-2">
+    <div id="admin-body" hidden class="space-y-4">
+      <details data-box="features" open class="group/box rounded-xl bg-white dark:bg-stone-800 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+        <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-lg font-semibold"><span data-i18n="adFeatTitle">Funktionen und Modi</span><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="h-4 w-4 shrink-0 transition-transform group-open/box:rotate-180"><path d="M5 7.5l5 5 5-5"/></svg></summary>
+        <div class="space-y-3 border-t border-stone-200 dark:border-stone-700 p-4">
         <p class="max-w-3xl text-sm text-stone-600 dark:text-stone-300" data-i18n="adIntro">Hier legst du fest, in welchen Modi eine Funktion erscheint.</p>
         <!-- One collapsible box per feature group (FEATURE_GROUPS in lib/features.ts). -->
         <div id="feature-groups" class="space-y-3"></div>
@@ -22,11 +24,14 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
           <button id="features-reset" type="button" data-i18n="adReset" class={`${btn} bg-white dark:bg-stone-800 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700`}>Alles auf Standard</button>
           <span id="features-status" role="status" class="text-sm text-stone-600 dark:text-stone-300"></span>
         </div>
-      </section>
+        </div>
+      </details>
 
-      <section class="space-y-3">
-        <h2 class="text-lg font-semibold" data-i18n="adUsersTitle">Zugänge</h2>
-        <ul id="user-list" class="divide-y divide-stone-100 dark:divide-stone-700 rounded-xl bg-white dark:bg-stone-800 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700"></ul>
+      <details data-box="users" open class="group/box rounded-xl bg-white dark:bg-stone-800 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+        <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-lg font-semibold"><span data-i18n="adUsersTitle">Zugänge</span><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="h-4 w-4 shrink-0 transition-transform group-open/box:rotate-180"><path d="M5 7.5l5 5 5-5"/></svg></summary>
+        <div class="space-y-3 border-t border-stone-200 dark:border-stone-700 p-4">
+
+          <div class="overflow-x-auto rounded-lg ring-1 ring-stone-200 dark:ring-stone-700"><table class="w-full min-w-[40rem] text-sm"><thead id="user-head" class="text-left text-xs uppercase tracking-wide text-stone-500 dark:text-stone-400"></thead><tbody id="user-list" class="divide-y divide-stone-100 dark:divide-stone-700"></tbody></table></div>
         <form id="user-add" class="space-y-2 rounded-xl bg-white dark:bg-stone-800 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
           <p class="text-sm font-semibold" data-i18n="adAddUser">Zugang anlegen</p>
           <label class="block text-xs font-medium"><span data-i18n="acName">Name</span>
@@ -46,10 +51,14 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
           <button type="submit" data-i18n="adAddUser" class={`${btn} bg-green-700 text-white hover:bg-green-800`}>Zugang anlegen</button>
           <p id="user-status" role="status" class="text-sm text-stone-600 dark:text-stone-300"></p>
         </form>
+        </div>
+      </details>
 
         <div id="admin-extra" class="space-y-4"></div>
 
-        <h2 class="pt-2 text-lg font-semibold" data-i18n="adInvTitle">Einladungen</h2>
+      <details data-box="invites" open class="group/box rounded-xl bg-white dark:bg-stone-800 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+        <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-lg font-semibold"><span data-i18n="adInvTitle">Einladungen</span><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="h-4 w-4 shrink-0 transition-transform group-open/box:rotate-180"><path d="M5 7.5l5 5 5-5"/></svg></summary>
+        <div class="space-y-3 border-t border-stone-200 dark:border-stone-700 p-4">
         <form id="invite-form" class="space-y-2 rounded-xl bg-white dark:bg-stone-800 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
           <p class="text-xs text-stone-600 dark:text-stone-300" data-i18n="adInvIntro">Ein Link oder QR-Code für genau eine Person.</p>
           <label class="block text-xs font-medium"><span data-i18n="adInvLabel">Für wen? (optional)</span>
@@ -74,8 +83,9 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
           <canvas id="invite-qr" class="rounded-md bg-white p-2" width="220" height="220"></canvas>
         </div>
         <ul id="invite-list" class="divide-y divide-stone-100 dark:divide-stone-700 rounded-xl bg-white dark:bg-stone-800 text-sm shadow-sm ring-1 ring-stone-200 dark:ring-stone-700"></ul>
-      </section>
-      <section id="beispiele-admin" class="space-y-3 xl:col-span-3"></section>
+        </div>
+      </details>
+      <section id="beispiele-admin" class="space-y-3"></section>
     </div>
   </article>
 
@@ -97,6 +107,18 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
     const rows = document.getElementById('feature-groups')!;
     /** Groups the admin folded away (kept on this device). */
     const CLOSED_KEY = 'pdk-admin-closed-groups';
+    // The big boxes (features, accounts, invitations, plugin sections) fold too, remembered per device.
+    const BOX_KEY = 'pdk-admin-closed-boxes';
+    let closedBoxes = new Set<string>();
+    try { closedBoxes = new Set(JSON.parse(localStorage.getItem(BOX_KEY) || '[]')); } catch { /* ignore */ }
+    document.addEventListener('toggle', e => {
+      const box = e.target as HTMLDetailsElement;
+      const key = box.dataset?.box;
+      if (!key) return;
+      if (box.open) closedBoxes.delete(key); else closedBoxes.add(key);
+      try { localStorage.setItem(BOX_KEY, JSON.stringify([...closedBoxes])); } catch { /* ignore */ }
+    }, true);
+    document.querySelectorAll<HTMLDetailsElement>('details[data-box]').forEach(d => { d.open = !closedBoxes.has(d.dataset.box!); });
     let closedGroups = new Set<string>();
     try { closedGroups = new Set(JSON.parse(localStorage.getItem(CLOSED_KEY) || '[]')); } catch { /* ignore */ }
     const status = document.getElementById('features-status')!;
@@ -260,30 +282,35 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
 
     // ── Accounts ─────────────────────────────────────────────────────────
     const userList = document.getElementById('user-list')!;
+    const userHead = document.getElementById('user-head')!;
+    /** Columns that modules add to the account table (e.g. the beta test): `load` runs before each redraw. */
+    const userColumns: { header: string; load?: () => Promise<void>; cell: (name: string) => string }[] = [];
     const userStatus = document.getElementById('user-status')!;
     type User = { name: string; role: 'expert' | 'team' | 'admin'; created: string | null; comment?: string };
 
     async function loadUsers() {
       const res = await api('GET', '/api/admin/users');
       const users = (res.ok ? res.data.users : []) as User[];
+      await Promise.all(userColumns.map(c => c.load?.().catch(() => { /* a plugin column stays empty */ })));
+      const th = (s: string) => `<th class="px-3 py-2 font-semibold">${escapeHtml(s)}</th>`;
+      userHead.innerHTML = `<tr class="border-b border-stone-200 dark:border-stone-700">${[t('acName'), t('adRole'), t('adCreated'), ...userColumns.map(c => c.header), t('adSetPassword'), t('adComment'), ''].map(th).join('')}</tr>`;
       userList.innerHTML = users.map((u, i) => `
-        <li class="space-y-2 p-3 text-sm" data-name="${escapeHtml(u.name)}">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <span class="font-medium">${escapeHtml(u.name)}</span>
-            <span class="text-xs text-stone-500 dark:text-stone-400">${u.created ? `${t('adSince')} ${escapeHtml(u.created.slice(0, 10))}` : ''}</span>
-          </div>
-          <div class="flex flex-wrap items-center gap-2">
+        <tr data-name="${escapeHtml(u.name)}" class="align-top">
+          <td class="px-3 py-2 font-medium">${escapeHtml(u.name)}</td>
+          <td class="px-3 py-2">
             <select data-act="role" aria-label="${escapeHtml(`${u.name}: ${t('adRole')}`)}" class="rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2 py-1 text-xs">
               <option value="expert" ${u.role === 'expert' ? 'selected' : ''}>${escapeHtml(t('adRoleExpert'))}</option>
               <option value="team" ${u.role === 'team' ? 'selected' : ''}>${escapeHtml(t('adRoleTeam'))}</option>
               <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>${escapeHtml(t('adRoleAdmin'))}</option>
-            </select>
-            <input data-act="pw" id="pw-${i}" type="password" minlength="10" autocomplete="new-password" placeholder="${escapeHtml(t('adSetPassword'))}" aria-label="${escapeHtml(`${u.name}: ${t('adSetPassword')}`)}" class="w-36 rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2 py-1 text-xs" />
-            <button type="button" data-act="pw-save" class="rounded-md bg-stone-100 dark:bg-stone-700 px-2 py-1 text-xs font-medium ring-1 ring-stone-300 dark:ring-stone-600">${escapeHtml(t('adSave'))}</button>
-            <button type="button" data-act="remove" class="ml-auto rounded-md px-2 py-1 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30">${escapeHtml(t('adRemove'))}</button>
-          </div>
-          <input data-act="comment" maxlength="300" value="${escapeHtml(u.comment ?? '')}" placeholder="${escapeHtml(t('adComment'))}" aria-label="${escapeHtml(`${u.name}: ${t('adComment')}`)}" class="block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2 py-1 text-xs" />
-        </li>`).join('');
+            </select></td>
+          <td class="px-3 py-2 text-xs text-stone-500 dark:text-stone-400 whitespace-nowrap">${u.created ? escapeHtml(u.created.slice(0, 10)) : ''}</td>
+          ${userColumns.map(c => `<td class="px-3 py-2 text-xs">${c.cell(u.name)}</td>`).join('')}
+          <td class="px-3 py-2 whitespace-nowrap">
+            <input data-act="pw" id="pw-${i}" type="password" minlength="10" autocomplete="new-password" placeholder="${escapeHtml(t('adSetPassword'))}" aria-label="${escapeHtml(`${u.name}: ${t('adSetPassword')}`)}" class="w-32 rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2 py-1 text-xs" />
+            <button type="button" data-act="pw-save" class="rounded-md bg-stone-100 dark:bg-stone-700 px-2 py-1 text-xs font-medium ring-1 ring-stone-300 dark:ring-stone-600">${escapeHtml(t('adSave'))}</button></td>
+          <td class="px-3 py-2"><input data-act="comment" maxlength="300" value="${escapeHtml(u.comment ?? '')}" placeholder="${escapeHtml(t('adComment'))}" aria-label="${escapeHtml(`${u.name}: ${t('adComment')}`)}" class="w-44 rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2 py-1 text-xs" /></td>
+          <td class="px-3 py-2 text-right"><button type="button" data-act="remove" class="rounded-md px-2 py-1 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30">${escapeHtml(t('adRemove'))}</button></td>
+        </tr>`).join('');
     }
 
     async function userAction(res: { ok: boolean; data: Record<string, unknown> }) {
@@ -340,13 +367,20 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
     const inviteExtras: (() => Promise<Record<string, unknown> | null> | Record<string, unknown> | null)[] = [];
     providePageApi('admin', {
       addSection(featureId, title) {
-        const section = document.createElement('section');
-        section.dataset.feature = featureId;
-        section.className = 'space-y-2';
-        section.innerHTML = '<h2 class="pt-2 text-lg font-semibold"></h2><div class="space-y-2"></div>';
-        section.querySelector('h2')!.textContent = title;
-        document.getElementById('admin-extra')!.appendChild(section);
-        return section.querySelector('div')!;
+        const key = `section-${featureId}`;
+        const box = document.createElement('details');
+        box.dataset.box = key;
+        box.dataset.feature = featureId;
+        box.open = !closedBoxes.has(key);
+        box.className = 'group/box rounded-xl bg-white dark:bg-stone-800 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700';
+        box.innerHTML = '<summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-lg font-semibold"><span></span><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="h-4 w-4 shrink-0 transition-transform group-open/box:rotate-180"><path d="M5 7.5l5 5 5-5"/></svg></summary><div class="space-y-3 border-t border-stone-200 dark:border-stone-700 p-4"></div>';
+        box.querySelector('span')!.textContent = title;
+        document.getElementById('admin-extra')!.appendChild(box);
+        return box.querySelector('div')!;
+      },
+      addUserColumn(_featureId, header, cell, load) {
+        userColumns.push({ header, cell, load });
+        void loadUsers();
       },
       addInviteExtra(featureId, build) {
         const box = document.createElement('div');
