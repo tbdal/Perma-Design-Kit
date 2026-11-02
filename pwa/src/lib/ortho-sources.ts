@@ -142,7 +142,8 @@ export const ORTHO_SOURCES: OrthoSource[] = [
     // Commercial, not an official survey: the token stays on the server (nginx adds it, see the /geo/ortho/mb location),
     // worldwide, but last in the list: it only applies where no official photo above covers the place (the second choice before the coarse Sentinel-2).
     id: 'mb', region: { de: 'Satellit (fein)', en: 'Satellite (fine)' }, resolutionCm: 50, minZoom: 12, maxZoom: 19,
-    url: 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.jpg90',
+    // Styles API (the Raster Tiles API v4 answers 429 for this account); 256 px JPEG, 600 requests a minute per token
+    url: 'https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/256/{z}/{x}/{y}',
     attributionHtml: '<a href="https://www.mapbox.com/about/maps/" target="_blank" rel="noopener">© Mapbox</a> <a href="https://www.openstreetmap.org/about/" target="_blank" rel="noopener">© OpenStreetMap</a> <a href="https://www.maxar.com/" target="_blank" rel="noopener">© Maxar</a>',
     coverage: [[[-180,-85],[180,-85],[180,85],[-180,85]]],
     feature: 'basemap-mapbox',

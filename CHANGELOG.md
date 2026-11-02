@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Mapbox-Satellit: Styles-Schnittstelle 2026-11-02
+- [x] **Mapbox-Kacheln über die Styles-Schnittstelle** (`styles/v1/mapbox/satellite-v9/tiles/256`) statt der Raster-Tiles-Schnittstelle, die für das Konto mit 429 abgelehnt wurde; 600 Anfragen je Minute und Token, Kacheln bis 12 h im nginx-Cache #bugs #prüfen (Werkstatt #477)
+
 ## Admin-Seite: Beispiele und Tour-Vorschau als Tabellen 2026-11-02
 - [x] **/admin/: „Beispiel-Polykulturen“ und „Tour-Vorschau“ sind einklappbare Tabellen**; zur Tour-Vorschau gibt es Vorschläge auf Deutsch und Englisch (Knopf „Vorschlag“ je Zeile oder für alle leeren Felder; sichtbar wird erst, was gespeichert ist) #minor #prüfen
 
