@@ -244,7 +244,8 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
     <dialog id="welcome-modal" aria-labelledby="welcome-title">
       <button id="welcome-close" type="button" data-i18n-aria-label="closeBtn" aria-label="Schließen" class="w-close">×</button>
       <div class="w-body">
-        <div class="w-sky"><div class="w-wordmark" aria-label="Perma Design Kit">PERMA<br>DESIGN<br>KIT</div></div>
+        <div class="w-sky"><div class="w-wordmark" aria-label="Perma Design Kit">PERMA<br>DESIGN<br>KIT</div>
+          <button id="welcome-beta-jump" type="button" class="w-beta-jump" data-i18n="welcomeBetaJump">Interesse an erweiterten Funktionen und Teilnahme am Beta-Test?</button></div>
         <div class="w-content">
           <header class="w-welcome">
             <h2 id="welcome-title" data-i18n="welcomeTitle">Willkommen im Perma Design Kit</h2>
@@ -288,6 +289,15 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
               <h3 data-i18n="navCalendar">Kalender</h3>
               <p data-i18n="welcomeStepCalendar">Behalte das Gartenjahr im Blick: Lege fest, wann du aussäst, pflanzt, pflegst und erntest.</p>
             </div>
+          </section>
+
+          <!-- Beta test: the text is always there (the button top right scrolls to it); the tiles come from the server (names of private features stay out of this build) and only show when someone wrote them -->
+          <section id="welcome-beta" class="w-beta">
+            <h3 data-i18n="welcomeBetaTitle">Interesse an erweiterten Funktionen und Teilnahme am Beta-Test?</h3>
+            <p id="welcome-beta-text" data-i18n="welcomeBetaText">Im Beta-Test bekommst du Funktionen, die noch nicht öffentlich sind, und sagst uns, was dir auffällt. Der Zugang ist ein Geschenk, ohne Werbung und ohne Abo. Wir brauchen deine Meinung.</p>
+            <p id="welcome-beta-examples" hidden data-i18n="welcomeBetaExamples">Zum Beispiel:</p>
+            <div id="welcome-beta-items" class="w-beta-items"></div>
+            <a id="welcome-beta-join" href="/beta/" class="w-btn w-ghost" data-i18n="welcomeBetaJoin">Beim Beta-Test mitmachen</a>
           </section>
         </div>
       </div>
@@ -427,17 +437,7 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
         return r.width > 0 && r.height > 0;
       };
 
-      /** The beta test's news for the last tour step: the private server lists what is on in the beta mode (names stay out of this build). */
-      type BetaItem = { id: string; title: string; text: string; bild?: string };
-      async function betaPreview(): Promise<BetaItem[]> {
-        try {
-          const res = await fetch(`/api/beta/vorschau?lang=${getLang()}`, { cache: 'no-store', signal: AbortSignal.timeout(2500) });
-          return res.ok ? ((await res.json()).items ?? []) as BetaItem[] : [];
-        } catch { return []; } // offline or no server: the step simply does not appear
-      }
-
-      async function runTour() {
-        const beta = await betaPreview();
+      function runTour() {
         const block = document.getElementById('tour-block')!;
         const spot = document.getElementById('tour-spot')!;
         const card = document.getElementById('tour-card')!;
@@ -464,11 +464,8 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
           if (main) return { el: box && visible(box) ? box : main, title: s.title, text: s.text, link: s.link };
           const fb = s.fallback ? Array.from(document.querySelectorAll(s.fallback)).find(visible) : null;
           return fb ? { el: fb, title: s.title, text: s.fallbackText ?? s.text, link: s.link } : null;
-        }).filter((s): s is { el: HTMLElement; title: string; text: string; link: TourStep['link']; beta?: BetaItem[] } => !!s);
+        }).filter((s): s is { el: HTMLElement; title: string; text: string; link: TourStep['link'] } => !!s);
         if (dummy) dummy.hidden = true;
-        // Last: "Neu im Beta-Test" — only with something to show.
-        const betaStep = beta.length ? document.querySelector<HTMLElement>('#mode-toggle') : null;
-        if (betaStep && visible(betaStep)) steps.push({ el: betaStep, title: 'tourBetaTitle', text: 'tourBetaText', link: undefined, beta: beta.slice(0, 4) });
         if (steps.length === 0) return;
         let idx = 0;
         const place = () => {
@@ -489,28 +486,6 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
           document.getElementById('tour-title')!.textContent = tt(cur.title);
           const textEl = document.getElementById('tour-text')!;
           textEl.textContent = tt(cur.text);
-          if (cur.beta) {
-            const inBeta = currentMode() === 'expert';
-            textEl.textContent = tt(inBeta ? 'tourBetaTextIn' : 'tourBetaText');
-            const grid = document.createElement('div');
-            grid.className = 'mt-2 grid grid-cols-2 gap-2';
-            for (const item of cur.beta) {
-              const tile = document.createElement('div');
-              tile.className = 'rounded-lg ring-1 ring-stone-200 dark:ring-stone-700 p-1.5 text-xs';
-              if (item.bild) { const img = document.createElement('img'); img.src = item.bild; img.alt = ''; img.loading = 'lazy'; img.className = 'mb-1 h-16 w-full rounded object-cover'; tile.append(img); }
-              const h = document.createElement('p'); h.className = 'font-semibold'; h.textContent = item.title;
-              const p = document.createElement('p'); p.className = 'text-stone-600 dark:text-stone-300'; p.textContent = item.text;
-              tile.append(h, p);
-              grid.append(tile);
-            }
-            textEl.append(grid);
-            if (!inBeta) {
-              const a = document.createElement('a');
-              a.href = '/beta/'; a.className = 'mt-2 inline-block rounded-md bg-green-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-800';
-              a.textContent = tt('tourBetaJoin');
-              textEl.append(a);
-            }
-          }
           if (cur.link) {
             const a = document.createElement('a');
             a.href = tt(cur.link.href); a.target = '_blank'; a.rel = 'noopener';
@@ -544,8 +519,38 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
         show();
       }
 
+
+      /** The beta block of the welcome page: in beta mode only with news (up to four tiles from the private server), otherwise always, tiles when there are some. */
+      async function fillBeta() {
+        const box = document.getElementById('welcome-beta')!;
+        const jump = document.getElementById('welcome-beta-jump')!;
+        const inBeta = currentMode() === 'expert';
+        let items: { title: string; text: string; bild?: string }[] = [];
+        try {
+          const res = await fetch(`/api/beta/vorschau?lang=${getLang()}`, { cache: 'no-store', signal: AbortSignal.timeout(2500) });
+          items = res.ok ? (await res.json()).items ?? [] : [];
+        } catch { /* offline or no server: no tiles */ }
+        jump.hidden = box.hidden = inBeta && !items.length;
+        if (inBeta) {
+          document.getElementById('welcome-beta-text')!.textContent = tt('welcomeBetaTextIn');
+          jump.hidden = true;
+          document.getElementById('welcome-beta-join')!.hidden = true;
+        }
+        document.getElementById('welcome-beta-examples')!.hidden = !items.length || inBeta;
+        document.getElementById('welcome-beta-items')!.replaceChildren(...items.slice(0, 4).map(item => {
+          const tile = document.createElement('div');
+          tile.className = 'w-beta-item';
+          if (item.bild) { const img = document.createElement('img'); img.src = item.bild; img.alt = ''; img.loading = 'lazy'; tile.append(img); }
+          const h = document.createElement('h4'); h.textContent = item.title;
+          const p = document.createElement('p'); p.textContent = item.text;
+          tile.append(h, p);
+          return tile;
+        }));
+      }
+      document.getElementById('welcome-beta-jump')?.addEventListener('click', () => document.getElementById('welcome-beta')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
       const modal = document.getElementById('welcome-modal') as HTMLDialogElement | null;
       if (modal) {
+        void fillBeta();
         const startTour = () => { markSeen(); modal.close(); runTour(); };
         document.getElementById('welcome-next')?.addEventListener('click', startTour);
         document.getElementById('welcome-skip')?.addEventListener('click', () => { markSeen(); modal.close(); });

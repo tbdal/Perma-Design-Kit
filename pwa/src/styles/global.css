@@ -411,6 +411,16 @@ details[data-panel] > summary::-webkit-details-marker { display: none; }
   background: rgb(246 245 230 / 0.8); color: #1f2710; font: 400 1.5rem/1 var(--w-body);
 }
 .w-close:hover { background: #f6f5e6; }
+/* in the sky banner (scrolls away with it): top right, left of the close button; on a phone at the bottom of the banner, clear of the wordmark */
+.w-sky { position: relative; }
+.w-beta-jump {
+  position: absolute; top: 0.6rem; right: 3.3rem; max-width: min(24rem, calc(100% - 13rem)); min-height: 2.25rem;
+  padding: 0.3rem 0.9rem; border-radius: 999px; border: 0; cursor: pointer; text-align: left;
+  background: var(--w-btn); color: var(--w-btn-ink); font: 600 0.8rem/1.2 var(--w-body);
+}
+.w-beta-jump:hover { background: var(--w-btn-hover); }
+.w-beta-jump[hidden] { display: none; }
+@media (max-width: 640px) { #welcome-modal .w-sky { height: calc(var(--trees) * 1.55 + 2.4rem); } .w-beta-jump { top: auto; bottom: 0.6rem; left: 0.9rem; right: 3.3rem; max-width: none; } }
 
 .w-sky {
   --trees: 150px;
@@ -445,6 +455,15 @@ details[data-panel] > summary::-webkit-details-marker { display: none; }
 .w-support a { color: var(--w-btn); text-decoration: underline; text-underline-offset: 3px; }
 .w-support a:hover { text-decoration-thickness: 2px; }
 
+.w-beta { display: grid; gap: 0.7rem; border-top: 2px solid var(--w-ink); padding-top: 0.9rem; }
+.w-beta h3 { font-size: 1.02rem; line-height: 1.15; }
+.w-beta > p { font-size: 0.92rem; color: var(--w-muted); }
+.w-beta-items { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.7rem; }
+.w-beta-item { min-width: 0; border: 1px solid var(--w-ink); border-radius: 0.5rem; padding: 0.6rem; display: grid; gap: 0.25rem; align-content: start; }
+.w-beta-item img { width: 100%; height: 5rem; object-fit: cover; border-radius: 0.3rem; }
+.w-beta-item h4 { font-size: 0.92rem; font-weight: 700; line-height: 1.15; }
+.w-beta-item p { font-size: 0.85rem; color: var(--w-muted); }
+.w-beta .w-btn { justify-self: start; }
 .w-steps { display: grid; grid-template-columns: repeat(2, 1fr); gap: clamp(0.9rem, 2.5cqw, 1.6rem); }
 .w-step { display: grid; gap: 0.35rem; align-content: start; min-width: 0; border-top: 2px solid var(--w-ink); padding-top: 0.75rem; }
 .w-step h3 { font-size: 1.02rem; line-height: 1.15; }
@@ -464,7 +483,7 @@ details[data-panel] > summary::-webkit-details-marker { display: none; }
 
 @media (max-width: 760px) {
   #welcome-modal { width: calc(100vw - 1.5rem); }
-  .w-pics, .w-vision, .w-steps { grid-template-columns: 1fr; }
+  .w-pics, .w-vision, .w-steps, .w-beta-items { grid-template-columns: 1fr; }
   .w-lead, .w-vision > div, .w-support { grid-column: auto; grid-row: auto; }
   .w-pics figure:first-child img { aspect-ratio: 3 / 2; }
   .w-btn { flex: 1 1 100%; }
