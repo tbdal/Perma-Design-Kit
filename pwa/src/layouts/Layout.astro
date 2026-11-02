@@ -245,7 +245,7 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
       <button id="welcome-close" type="button" data-i18n-aria-label="closeBtn" aria-label="Schließen" class="w-close">×</button>
       <div class="w-body">
         <div class="w-sky"><div class="w-wordmark" aria-label="Perma Design Kit">PERMA<br>DESIGN<br>KIT</div>
-          <button id="welcome-beta-jump" type="button" class="w-beta-jump" data-i18n="welcomeBetaJump">Interesse an erweiterten Funktionen und Teilnahme am Beta-Test?</button></div>
+          <button id="welcome-beta-jump" type="button" class="w-beta-jump"><span class="w-beta-spark" aria-hidden="true">✦</span><span data-i18n="welcomeBetaJump">Interesse an erweiterten Funktionen und Teilnahme am Beta-Test?</span><span class="w-beta-arrow" aria-hidden="true">↓</span></button></div>
         <div class="w-content">
           <header class="w-welcome">
             <h2 id="welcome-title" data-i18n="welcomeTitle">Willkommen im Perma Design Kit</h2>
@@ -291,13 +291,24 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
             </div>
           </section>
 
-          <!-- Beta test: the text is always there (the button top right scrolls to it); the tiles come from the server (names of private features stay out of this build) and only show when someone wrote them -->
+          <!-- Beta test: always there (the button top right scrolls to it), set apart in colour from the four areas above; the tiles come from the server (names of private features stay out of this build) and only show when someone wrote them -->
           <section id="welcome-beta" class="w-beta">
-            <h3 data-i18n="welcomeBetaTitle">Interesse an erweiterten Funktionen und Teilnahme am Beta-Test?</h3>
-            <p id="welcome-beta-text" data-i18n="welcomeBetaText">Im Beta-Test bekommst du Funktionen, die noch nicht öffentlich sind, und sagst uns, was dir auffällt. Der Zugang ist ein Geschenk, ohne Werbung und ohne Abo. Wir brauchen deine Meinung.</p>
-            <p id="welcome-beta-examples" hidden data-i18n="welcomeBetaExamples">Zum Beispiel:</p>
+            <h3><span class="w-beta-spark" aria-hidden="true">✦</span> <span data-i18n="welcomeBetaTitle">Interesse an erweiterten Funktionen und Teilnahme am Beta-Test?</span></h3>
+            <div id="welcome-beta-pitch" class="w-beta-pitch">
+              <p data-i18n="welcomeBetaIntro">Wir tüfteln gerade Einiges aus und das Werkzeug hat schon viele neue Funktionen, die aktuell noch nicht öffentlich sind – und getestet werden möchten!</p>
+              <p class="w-beta-also" data-i18n="welcomeBetaAlso">Darunter:</p>
+              <ul>
+                <li><strong data-i18n="welcomeBetaL1a">Baumbiographien und Aufgaben</strong> <span data-i18n="welcomeBetaL1b">– Führe für jeden Baum eine Zeitachse mit Bonitur, Ernte, Schnitt, Pflege und Fotos.</span></li>
+                <li data-i18n="welcomeBetaL2">Bessere Integration in (Q)GIS</li>
+                <li data-i18n="welcomeBetaL3">Gemeinsam im Team an Plänen arbeiten und freigeben</li>
+                <li data-i18n="welcomeBetaL4">Ein professionalisierter digitaler Waldgartenplaner inkl. Ebenenfunktionen, Trachtlückenanalyse, Windschutz, Wasserablaufanalyse, …</li>
+              </ul>
+              <p><span data-i18n="welcomeBetaGo">Wenn du Interesse hast, all die neuen Funktionen im Rahmen eines Beta-Tests auszuprobieren, dann geht’s hier lang:</span> <a id="welcome-beta-join" href="/beta/" class="w-beta-cta" data-i18n="welcomeBetaJoin">Beta-Test</a></p>
+              <p data-i18n="welcomeBetaFeedback">Wir freuen uns über dein Feedback und deine Unterstützung auf der Entwicklungsreise und über deinen Rat, wo sich das Werkzeug hinentwickeln darf! Vielleicht hast du ja sogar Lust mitzuwirken und Teil des Teams zu werden?</p>
+            </div>
+            <p id="welcome-beta-text" hidden></p>
+            <p id="welcome-beta-examples" hidden data-i18n="welcomeBetaExamples">Ein Blick hinein:</p>
             <div id="welcome-beta-items" class="w-beta-items"></div>
-            <a id="welcome-beta-join" href="/beta/" class="w-btn w-ghost" data-i18n="welcomeBetaJoin">Beim Beta-Test mitmachen</a>
           </section>
         </div>
       </div>
@@ -532,9 +543,11 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
         } catch { /* offline or no server: no tiles */ }
         jump.hidden = box.hidden = inBeta && !items.length;
         if (inBeta) {
-          document.getElementById('welcome-beta-text')!.textContent = tt('welcomeBetaTextIn');
+          const line = document.getElementById('welcome-beta-text')!;
+          line.textContent = tt('welcomeBetaTextIn');
+          line.hidden = false;
+          document.getElementById('welcome-beta-pitch')!.hidden = true;
           jump.hidden = true;
-          document.getElementById('welcome-beta-join')!.hidden = true;
         }
         document.getElementById('welcome-beta-examples')!.hidden = !items.length || inBeta;
         document.getElementById('welcome-beta-items')!.replaceChildren(...items.slice(0, 4).map(item => {

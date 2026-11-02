@@ -172,6 +172,8 @@ export interface View3DOptions {
    *  the section the 2D view showed — so the perspective carries over. */
   fit?: { minX: number; minY: number; maxX: number; maxY: number } | null;
   latLon: { lat: number; lon: number };
+  /** Opacity of the map under the plan (the "Deckkraft" slider, 0.1–1, default 1): below 1 the meadow shows through the map tiles. */
+  mapOpacity?: number;
   rotationDeg: number;
   /** Elevation grid (terrain.ts); null = flat ground. */
   terrain?: ElevationGrid | null;
@@ -342,7 +344,8 @@ function buildGroundMesh(widthM: number, heightM: number, ground: GroundFn = FLA
   const pos = geom.attributes.position as THREE.BufferAttribute;
   for (let i = 0; i < pos.count; i++) pos.setY(i, ground(pos.getX(i), pos.getZ(i)));
   geom.computeVertexNormals();
-  const mesh = new THREE.Mesh(geom, new THREE.MeshStandardMaterial({ color: 0xc9dba4, roughness: 1, side: THREE.DoubleSide }));
+  // polygonOffset: under see-through map tiles (opacity < 1) the lawn lies right below them and must not flicker against them
+  const mesh = new THREE.Mesh(geom, new THREE.MeshStandardMaterial({ color: 0xc9dba4, roughness: 1, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 2 }));
   mesh.receiveShadow = true;
   return mesh;
 }
@@ -478,7 +481,9 @@ export function createGardenPlan3DView(
   let disposed = false; // late tile loads, timers and flights of a closed view must not render
   let oldTileGroup: THREE.Group | null = null;
   let tileKey = '', tileGen = 0; // tileGen: bumped by setTerrain, so no tile with the old heights is taken over
-  if (layoutSrc) lawn.visible = false; // the map/terrain tiles are the ground inside the plan too
+  const mapOpacity = Math.min(1, Math.max(0.1, opts.mapOpacity ?? 1));
+  const seeThrough = !!layoutSrc && mapOpacity < 1;
+  if (layoutSrc && !seeThrough) lawn.visible = false; // the map/terrain tiles are the ground inside the plan too (see-through map: the lawn shows under it)
 
   // Ground outside the fine grid: coarser terrain tiles at the map's zoom,
   // blended into the fine grid over its outer margin so the plan area keeps
@@ -682,6 +687,7 @@ export function createGardenPlan3DView(
         }
       }
       const mat = new THREE.MeshStandardMaterial({ roughness: 1, color: tileSrc ? 0xffffff : 0xb5c98f });
+      if (tileSrc && seeThrough) { mat.transparent = true; mat.opacity = mapOpacity; }
       const mesh = new THREE.Mesh(g, mat);
       mesh.position.set(mx, 0, mz);
       mesh.receiveShadow = true;
@@ -1818,7 +1824,7 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
       lawn.geometry.dispose();
       (lawn.material as THREE.Material).dispose();
       lawn = buildGroundMesh(plan.areaWidthM, plan.areaHeightM, ground, terrain?.cellM);
-      lawn.visible = !layoutSrc;
+      lawn.visible = !layoutSrc || seeThrough;
       scene.add(lawn);
       meadow.position.y = groundMin - 0.3;
       lowestY = groundMin;
