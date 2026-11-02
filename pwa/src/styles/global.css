@@ -449,7 +449,7 @@ details[data-panel] > summary::-webkit-details-marker { display: none; }
 .w-pics figure { margin: 0; display: grid; gap: 0.55rem; min-width: 0; }
 .w-pics img { display: block; width: 100%; height: auto; object-fit: cover; border-radius: 14px; background: var(--w-card); }
 .w-pics figure:first-child img { aspect-ratio: 10 / 9; }
-.w-pics figure:last-child img { aspect-ratio: 3 / 2; }
+.w-pics figure:last-child img { aspect-ratio: 1400 / 1026; } /* the whole app window of the screenshot, not cropped */
 .w-pics figcaption { font-size: 0.84rem; color: var(--w-muted); }
 
 .w-vision { display: grid; grid-template-columns: 1.1fr 1fr; gap: clamp(1rem, 3cqw, 2rem); align-items: start; text-align: right; }
@@ -476,7 +476,6 @@ details[data-panel] > summary::-webkit-details-marker { display: none; }
 .w-beta-pitch ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.45rem; }
 .w-beta-pitch li { position: relative; padding-left: 1.5rem; color: #f6f5e6; }
 .w-beta-pitch li::before { content: '✦'; position: absolute; left: 0; top: 0; color: #f7b733; }
-.w-beta-pitch li strong { color: #ffe566; }
 .w-beta-cta {
   display: inline-block; padding: 0.2rem 0.9rem; border-radius: 999px; font-weight: 800; text-decoration: none; white-space: nowrap;
   background: linear-gradient(135deg, #ffe566 0%, #f7b733 100%); color: #2b1d00; box-shadow: 0 3px 10px rgb(0 0 0 / 0.25);

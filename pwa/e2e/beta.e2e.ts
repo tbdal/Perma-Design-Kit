@@ -95,5 +95,4 @@ test('welcome page: without news the text and the button stay, only the tiles ar
   await expect(page.locator('#welcome-beta')).toBeVisible();
   await expect(page.locator('#welcome-beta-jump')).toBeVisible();
   await expect(page.locator('#welcome-beta .w-beta-item')).toHaveCount(0);
-  await expect(page.locator('#welcome-beta-examples')).toBeHidden();
 });

@@ -258,7 +258,7 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
               <figcaption data-i18n="welcomeCap1">Baumscheiben auf einem ausgelegten Gartenplan. Jede Scheibe ist eine Pflanze mit ihren Eigenschaften.</figcaption>
             </figure>
             <figure>
-              <img src="/einfuehrung-3d.jpg" width="984" height="656" loading="lazy" decoding="async" alt="Waldgartenplan in der 3D-Ansicht: eine Reihe Bäume auf einer gezeichneten Fläche im Gelände" data-i18n-alt="welcomeAlt2">
+              <img src="/einfuehrung-dartington.jpg" width="1400" height="1026" loading="lazy" decoding="async" alt="Der Waldgartenplan mit dem Vorbild-Garten Dartington in 3D: Bäume, Gebäude und Höhenlinien, rechts die Ebenen-Leiste" data-i18n-alt="welcomeAlt2">
               <figcaption data-i18n="welcomeCap2">Der Waldgartenplan in 3D: Fläche zeichnen, Pflanzen setzen, den Garten über die Jahre wachsen sehen.</figcaption>
             </figure>
           </section>
@@ -298,7 +298,7 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
               <p data-i18n="welcomeBetaIntro">Wir tüfteln gerade Einiges aus und das Werkzeug hat schon viele neue Funktionen, die aktuell noch nicht öffentlich sind – und getestet werden möchten!</p>
               <p class="w-beta-also" data-i18n="welcomeBetaAlso">Darunter:</p>
               <ul>
-                <li><strong data-i18n="welcomeBetaL1a">Baumbiographien und Aufgaben</strong> <span data-i18n="welcomeBetaL1b">– Führe für jeden Baum eine Zeitachse mit Bonitur, Ernte, Schnitt, Pflege und Fotos.</span></li>
+                <li data-i18n="welcomeBetaL1">Baumbiographien und Aufgaben – Führe für jeden Baum eine Zeitachse mit Bonitur, Ernte, Schnitt, Pflege und Fotos.</li>
                 <li data-i18n="welcomeBetaL2">Bessere Integration in (Q)GIS</li>
                 <li data-i18n="welcomeBetaL3">Gemeinsam im Team an Plänen arbeiten und freigeben</li>
                 <li data-i18n="welcomeBetaL4">Ein professionalisierter digitaler Waldgartenplaner inkl. Ebenenfunktionen, Trachtlückenanalyse, Windschutz, Wasserablaufanalyse, …</li>
@@ -307,7 +307,6 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
               <p data-i18n="welcomeBetaFeedback">Wir freuen uns über dein Feedback und deine Unterstützung auf der Entwicklungsreise und über deinen Rat, wo sich das Werkzeug hinentwickeln darf! Vielleicht hast du ja sogar Lust mitzuwirken und Teil des Teams zu werden?</p>
             </div>
             <p id="welcome-beta-text" hidden></p>
-            <p id="welcome-beta-examples" hidden data-i18n="welcomeBetaExamples">Ein Blick hinein:</p>
             <div id="welcome-beta-items" class="w-beta-items"></div>
           </section>
         </div>
@@ -549,7 +548,6 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
           document.getElementById('welcome-beta-pitch')!.hidden = true;
           jump.hidden = true;
         }
-        document.getElementById('welcome-beta-examples')!.hidden = !items.length || inBeta;
         document.getElementById('welcome-beta-items')!.replaceChildren(...items.slice(0, 4).map(item => {
           const tile = document.createElement('div');
           tile.className = 'w-beta-item';
