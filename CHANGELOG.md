@@ -4,6 +4,12 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Filter „Plan“ nach Konzept, Flächen in der Ebenenliste 2026-11-03
+- [x] **Filter „Plan“ wie im Konzept 435**: der ganze Bereich ist zunächst eine Zeile (Plan, Zahlen, Hinweis „n nicht in deiner Liste“), Aufklappen zeigt Im Plan / Nicht im Plan nach Wuchsform; fehlende Pflanzen stehen einzeln mit „übernehmen“ und gesammelt unter „Alle übernehmen …“, mit Namensabgleich (Groß-/Kleinschreibung, Umlaute, Anführungszeichen, botanischer Name) und Tippfehler-Toleranz (1–2 Buchstaben, bei kurzen Namen 1); nur exakte Treffer sind vorausgewählt, nichts wird von selbst verknüpft #minor #prüfen
+- [x] **Ebenenliste: Flächen sind verschiebbar** (Griff ziehen ändert die Reihenfolge der Flächen) und **Flächenfarbe per Auswahlmenü** (die bisherigen Farben der Flächen plus eigene Farbe) #minor #prüfen
+- [x] **Dateiablage: Name öffnet die Datei im Browser (PDF, Bild, Text) oder lädt sie herunter; Ordner als ZIP** #minor #prüfen
+- [x] **Pflanzen-Notizen werden nicht mehr automatisch zu Aufgaben**; das Notizfeld der Pflanze bleibt sichtbar, Aufgaben nur ausdrücklich #minor #prüfen
+
 ## Dateiablage, Flächen in 3D 2026-11-03
 - [x] **Entwicklung → Dateien**: einfache Dateiablage fürs Team auf dem Server (Ordner, Upload per Knopf oder Ziehen, Bildvorschau, Download); Gelöschtes wird in einen versteckten, nicht erreichbaren Ordner `.recycled/` verschoben #minor #prüfen
 - [x] **Flächen in 3D liegen nicht mehr teilweise unter dem Kartenhintergrund** (an Hängen, am Rand des Höhenrasters): die Fläche folgt der höheren von Raster und Kartenkacheln (Werkstatt #482) #bugs #prüfen
