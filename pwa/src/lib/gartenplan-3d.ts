@@ -340,7 +340,7 @@ function buildAreaObject(area: GardenPlanArea, index: number, selected: boolean,
   return group;
 }
 
-function buildGroundMesh(widthM: number, heightM: number, ground: GroundFn = FLAT, cellM = 1e9): THREE.Mesh {
+function buildGroundMesh(widthM: number, heightM: number, ground: GroundFn = FLAT, cellM = 1e9, underTiles = false): THREE.Mesh {
   const sx = Math.max(1, Math.min(96, Math.round(widthM / cellM))), sy = Math.max(1, Math.min(96, Math.round(heightM / cellM)));
   const geom = new THREE.PlaneGeometry(widthM, heightM, sx, sy);
   geom.rotateX(-Math.PI / 2);
@@ -348,9 +348,12 @@ function buildGroundMesh(widthM: number, heightM: number, ground: GroundFn = FLA
   const pos = geom.attributes.position as THREE.BufferAttribute;
   for (let i = 0; i < pos.count; i++) pos.setY(i, ground(pos.getX(i), pos.getZ(i)));
   geom.computeVertexNormals();
-  // polygonOffset: under see-through map tiles (opacity < 1) the lawn lies right below them and must not flicker against them
-  const mesh = new THREE.Mesh(geom, new THREE.MeshStandardMaterial({ color: 0xc9dba4, roughness: 1, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 2 }));
+  const mesh = new THREE.Mesh(geom, new THREE.MeshStandardMaterial({ color: 0xc9dba4, roughness: 1, side: THREE.DoubleSide }));
   mesh.receiveShadow = true;
+  // Under see-through map tiles the lawn is only their backing: it follows every furrow of a fine terrain model while the
+  // tiles run straight between vertices metres apart, so it poked through them in patches (Werkstatt #488; polygonOffset
+  // does nothing with the log depth buffer). Drawn last of the opaque objects without writing depth, the tiles always cover it.
+  if (underTiles) { mesh.material.depthWrite = false; mesh.renderOrder = 1; }
   return mesh;
 }
 
@@ -464,8 +467,6 @@ export function createGardenPlan3DView(
   meadow.receiveShadow = true;
   scene.add(meadow);
 
-  let lawn = buildGroundMesh(plan.areaWidthM, plan.areaHeightM, ground, terrain?.cellM);
-  scene.add(lawn);
 
   // ── Map background on the ground (OSM / coarse satellite). Reloaded for
   // the visible area after every camera move, so zooming out shows the
@@ -488,7 +489,10 @@ export function createGardenPlan3DView(
   let tileKey = '', tileGen = 0; // tileGen: bumped by setTerrain, so no tile with the old heights is taken over
   const mapOpacity = Math.min(1, Math.max(0.1, opts.mapOpacity ?? 1));
   const seeThrough = !!layoutSrc && mapOpacity < 1;
-  if (layoutSrc && !seeThrough) lawn.visible = false; // the map/terrain tiles are the ground inside the plan too (see-through map: the lawn shows under it)
+  // The map/terrain tiles are the ground inside the plan too (see-through map: the lawn shows under it).
+  let lawn = buildGroundMesh(plan.areaWidthM, plan.areaHeightM, ground, terrain?.cellM, seeThrough);
+  lawn.visible = !layoutSrc || seeThrough;
+  scene.add(lawn);
 
   // Ground outside the fine grid: coarser terrain tiles at the map's zoom,
   // blended into the fine grid over its outer margin so the plan area keeps
@@ -1842,7 +1846,7 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
       scene.remove(lawn);
       lawn.geometry.dispose();
       (lawn.material as THREE.Material).dispose();
-      lawn = buildGroundMesh(plan.areaWidthM, plan.areaHeightM, ground, terrain?.cellM);
+      lawn = buildGroundMesh(plan.areaWidthM, plan.areaHeightM, ground, terrain?.cellM, seeThrough);
       lawn.visible = !layoutSrc || seeThrough;
       scene.add(lawn);
       meadow.position.y = groundMin - 0.3;
