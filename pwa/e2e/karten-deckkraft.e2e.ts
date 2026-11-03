@@ -43,7 +43,8 @@ test('map opacity in 3D: the ground map turns see-through, the lawn shows under 
       const g = c.getContext('2d')!; g.drawImage(img, 0, 0);
       const d = g.getImageData(0, 0, c.width, c.height).data;
       let red = 0, n = 0;
-      for (let i = 0; i < d.length; i += 4 * 17) { n++; if (d[i] > 150 && d[i + 1] < 90 && d[i + 2] < 90) red++; }
+      // red dominance, not brightness: the sun (time of day) darkens the ground
+      for (let i = 0; i < d.length; i += 4 * 17) { n++; if (d[i] > 60 && d[i + 1] < d[i] * 0.3 && d[i + 2] < d[i] * 0.3) red++; }
       return red / n;
     }, buf.toString('base64'));
   };
