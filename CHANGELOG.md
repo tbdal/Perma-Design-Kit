@@ -4,6 +4,10 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Dateiablage, Flächen in 3D 2026-11-03
+- [x] **Entwicklung → Dateien**: einfache Dateiablage fürs Team auf dem Server (Ordner, Upload per Knopf oder Ziehen, Bildvorschau, Download); Gelöschtes wird in einen versteckten, nicht erreichbaren Ordner `.recycled/` verschoben #minor #prüfen
+- [x] **Flächen in 3D liegen nicht mehr teilweise unter dem Kartenhintergrund** (an Hängen, am Rand des Höhenrasters): die Fläche folgt der höheren von Raster und Kartenkacheln (Werkstatt #482) #bugs #prüfen
+
 ## /example zeigt die Vorbilder 2026-11-03
 - [x] **/example und /beispiel zeigen das Beispielprojekt und die Vorbilder Dartington und Garden Cottage** (Lizenz geklärt) mit Quellenlinks und „Im Waldgartenplan öffnen“; die Pläne liegen als `public/vorbilder/*.txt` öffentlich, ein Test im privaten Repo meldet, wenn sie von den internen Daten abweichen #minor #prüfen
 - [x] **Test Karten-Deckkraft in 3D unabhängig von der Tageszeit** (maß Helligkeit statt Rot-Anteil, scheiterte bei tiefer Sonne) #bugs

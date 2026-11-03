@@ -498,6 +498,10 @@ export function createGardenPlan3DView(
   // removing it the blend band showed as a step in a square around the plan.
   // Median difference along the inner edge of the band, per tile zoom.
   const coarseOffset = new Map<number, number>();
+  // Area sheets lie on whatever is higher: the fine grid or the ground tiles (coarser heights, blended over the grid's margin and
+  // beyond it) — else, on slopes near or outside the grid, part of a sheet sank under the map (Werkstatt #482).
+  let sheetTz = -1;
+  const sheetGround: GroundFn = (x, z) => (sheetTz >= 0 && fine ? Math.max(ground(x, z), groundWide(x, z, sheetTz)) : ground(x, z));
   function offsetFor(tz: number): number {
     const hit = coarseOffset.get(tz);
     if (hit !== undefined || !geo || !fine) return hit ?? 0;
@@ -623,6 +627,7 @@ export function createGardenPlan3DView(
 
   function buildTiles(tiles: PlanTile[], tz: number) {
     if (!geo || !layoutSrc) return;
+    if (tz !== sheetTz) { sheetTz = tz; rebuildAreas(); } // the tiles' heights are known now: sheets follow them
     // The last complete tile set stays (slightly lowered) until the new one is complete; an unfinished one in
     // between is dropped — except for the tiles the new set takes over.
     const backdrop = oldTileGroup ?? tileGroup;
@@ -934,7 +939,7 @@ export function createGardenPlan3DView(
     }
     areasGroup.clear();
     handlesGroup.clear();
-    (plan.areas ?? []).forEach((area, i) => opts.hidden?.(area.id) || areasGroup.add(buildAreaObject(area, i, area.id === selectedAreaId, labelH, ground, drapeCell, drapeLift)));
+    (plan.areas ?? []).forEach((area, i) => opts.hidden?.(area.id) || areasGroup.add(buildAreaObject(area, i, area.id === selectedAreaId, labelH, sheetGround, drapeCell, drapeLift)));
     const sel = (plan.areas ?? []).find(a => a.id === selectedAreaId);
     sel?.points.forEach((p, i) => {
       // Invisible, larger pick sphere around a small visible knob.
@@ -1280,7 +1285,7 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
         mat?.map?.dispose();
         mat?.dispose();
       });
-      areasGroup.add(buildAreaObject({ ...area, points: vertexDrag.points }, idx, true, labelH, ground, drapeCell, drapeLift));
+      areasGroup.add(buildAreaObject({ ...area, points: vertexDrag.points }, idx, true, labelH, sheetGround, drapeCell, drapeLift));
     }
     const handle = handlesGroup.children.find(h => h.userData.vertexIndex === vertexDrag!.index);
     handle?.position.set(hit.x, handleR / 2 + ground(hit.x, hit.z), hit.z);
