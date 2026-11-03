@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Flächen in 3D auf der höchsten Stelle ringsum 2026-11-04
+- [x] **Flächen in 3D sinken auf Hängen mit feinem Höhenmodell nicht mehr stellenweise unter den Boden**: die Folie folgt dem höchsten Punkt im Umkreis von 1,5 m (Werkstatt #488, Fortsetzung von #482) #bugs #prüfen
+
 ## Filter „Plan“ nach Konzept, Flächen in der Ebenenliste 2026-11-03
 - [x] **Filter „Plan“ wie im Konzept 435**: der ganze Bereich ist zunächst eine Zeile (Plan, Zahlen, Hinweis „n nicht in deiner Liste“), Aufklappen zeigt Im Plan / Nicht im Plan nach Wuchsform; fehlende Pflanzen stehen einzeln mit „übernehmen“ und gesammelt unter „Alle übernehmen …“, mit Namensabgleich (Groß-/Kleinschreibung, Umlaute, Anführungszeichen, botanischer Name) und Tippfehler-Toleranz (1–2 Buchstaben, bei kurzen Namen 1); nur exakte Treffer sind vorausgewählt, nichts wird von selbst verknüpft #minor #prüfen
 - [x] **Ebenenliste: Flächen sind verschiebbar** (Griff ziehen ändert die Reihenfolge der Flächen) und **Flächenfarbe per Auswahlmenü** (die bisherigen Farben der Flächen plus eigene Farbe) #minor #prüfen

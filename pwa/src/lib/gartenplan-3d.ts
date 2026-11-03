@@ -501,7 +501,12 @@ export function createGardenPlan3DView(
   // Area sheets lie on whatever is higher: the fine grid or the ground tiles (coarser heights, blended over the grid's margin and
   // beyond it) — else, on slopes near or outside the grid, part of a sheet sank under the map (Werkstatt #482).
   let sheetTz = -1;
-  const sheetGround: GroundFn = (x, z) => (sheetTz >= 0 && fine ? Math.max(ground(x, z), groundWide(x, z, sheetTz)) : ground(x, z));
+  const sheetBase: GroundFn = (x, z) => (sheetTz >= 0 && fine ? Math.max(ground(x, z), groundWide(x, z, sheetTz)) : ground(x, z));
+  // The tile mesh runs straight between its vertices (a few metres apart) while a fine model has furrows and ridges
+  // in between: a sheet follows the highest point around, so ridges do not cut through it (Werkstatt #488).
+  const sheetGround: GroundFn = (x, z) => (terrain
+    ? Math.max(sheetBase(x, z), sheetBase(x + 1.5, z), sheetBase(x - 1.5, z), sheetBase(x, z + 1.5), sheetBase(x, z - 1.5))
+    : sheetBase(x, z));
   function offsetFor(tz: number): number {
     const hit = coarseOffset.get(tz);
     if (hit !== undefined || !geo || !fine) return hit ?? 0;
