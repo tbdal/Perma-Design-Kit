@@ -476,7 +476,8 @@ import Layout from '../layouts/Layout.astro';
   import { crawfordPlants } from '../lib/sample-data-crawford';
   import { importFromCSV, buildCSV, buildCSVTemplate } from '../lib/csv';
   import { applyFilters, emptyFilters, sortPlants, allGroups, type ListFilters, type SortField } from '../lib/plant-list';
-  import { getAllGardenPlans } from '../lib/db';
+  import { getAllGardenPlans, saveGardenPlan } from '../lib/db';
+  import { matchPlants, tidyName } from '../lib/plant-match';
   import { planUsage, splitByPlan, habitGroup, HABIT_GROUPS, type PlanUse } from '../lib/plan-usage';
   import type { GardenPlan } from '../lib/types';
   import { completenessPercent, badgeDefs, plantBadgesHtml, groupPillsHtml, dotHtml, type BadgeDef } from '../lib/plant-detail';
@@ -1930,18 +1931,70 @@ import Layout from '../layouts/Layout.astro';
       const n = items.reduce((a, p) => a + (use(p)?.count ?? 0), 0);
       return det(`${side}-${h}`, t(`planHabit_${h}`), side === 'in' ? `${t('planSpecies', { n: items.length })} · ${t('planPlaced', { n })}` : t('planSpecies', { n: items.length }), items.map(row).join(''), 'ml-3 border-t border-stone-100 dark:border-stone-700');
     }).join('');
-    const missingRow = missingAll.length
-      ? `<a href="/gartenplan/?plan=${encodeURIComponent(plan.id)}" class="ml-3 block border-t border-stone-100 dark:border-stone-700 py-1.5 text-xs text-amber-800 dark:text-amber-300 hover:underline">${escapeHtml(t('planMissing', { n: missingAll.reduce((a, m) => a + m.count, 0) }))}</a>` : '';
+    const labelOf = (plantId: string) => (plan.placements.find(pl => pl.plantId === plantId && pl.notes?.trim())?.notes.trim().split('\n')[0].slice(0, 60)) || t('planUnknownPlant');
+    const missingRow = missingAll.map(m => `<div class="ml-3 flex items-center justify-between gap-3 border-t border-dashed border-stone-200 dark:border-stone-700 py-1.5 text-sm"><span class="min-w-0 truncate">${escapeHtml(labelOf(m.plantId))} <span class="rounded-full bg-amber-100 px-2 py-px text-xs text-amber-900 dark:bg-amber-900/40 dark:text-amber-200">${escapeHtml(t('planNotInList'))}</span> <span class="text-xs tabular-nums text-stone-500">${escapeHtml(t('planPlacedN', { n: m.count }))}</span></span><button type="button" data-adopt="${escapeHtml(m.plantId)}" class="shrink-0 rounded-md px-2 py-0.5 text-xs font-semibold text-green-800 ring-1 ring-green-700 hover:bg-green-50 dark:text-green-300 dark:ring-green-600 dark:hover:bg-green-900/30">${escapeHtml(t('planAdopt'))}</button></div>`).join('');
     listEl.className = 'rounded-xl bg-white dark:bg-stone-800 px-4 py-2 text-sm shadow-sm ring-1 ring-stone-200 dark:ring-stone-700';
-    listEl.innerHTML = `
-      <p class="py-1 text-xs tabular-nums text-stone-500 dark:text-stone-400">${escapeHtml(t('planSummary', { in: inPlan.length, out: notInPlan.length, placed, planted }))}</p>
+    const nums = t('planSummary', { in: inPlan.length, out: notInPlan.length, placed, planted });
+    const chip = missingAll.length ? ` <span class="rounded-full bg-amber-100 px-2 py-px text-xs font-normal text-amber-900 dark:bg-amber-900/40 dark:text-amber-200">${escapeHtml(t('planNotInListN', { n: missingAll.length }))}</span>` : '';
+    const allBar = missingAll.length ? `<div class="flex flex-wrap items-center gap-2 py-1.5"><span class="text-xs text-amber-900 dark:text-amber-200">${escapeHtml(t('planMissingBar', { n: missingAll.length }))}</span><button type="button" data-adopt="*" class="rounded-md px-2 py-0.5 text-xs font-semibold text-green-800 ring-1 ring-green-700 hover:bg-green-50 dark:text-green-300 dark:ring-green-600 dark:hover:bg-green-900/30">${escapeHtml(t('planAdoptAll'))}</button></div>` : '';
+    listEl.innerHTML = `<details data-plan-group="root"${planOpen.has('root') ? ' open' : ''}><summary class="cursor-pointer select-none py-1.5 text-sm"><span class="font-semibold text-stone-700 dark:text-stone-200">${escapeHtml(t('planLabel', { name: plan.name || '–' }))}</span> <span class="text-xs tabular-nums text-stone-500 dark:text-stone-400">${escapeHtml(nums)}</span>${chip}</summary>
+      ${allBar}
       ${det('in', t('planInPlan'), t('planSpecies', { n: inPlan.length }), byHabit('in', inPlan) + missingRow, 'border-t border-stone-200 dark:border-stone-700')}
-      ${det('out', t('planNotInPlan'), t('planSpecies', { n: notInPlan.length }), byHabit('out', notInPlan), 'border-t border-stone-200 dark:border-stone-700')}`;
+      ${det('out', t('planNotInPlan'), t('planSpecies', { n: notInPlan.length }), byHabit('out', notInPlan), 'border-t border-stone-200 dark:border-stone-700')}</details>`;
+    listEl.querySelectorAll<HTMLButtonElement>('[data-adopt]').forEach(b => b.addEventListener('click', () => void openAdopt(plan, b.dataset.adopt === '*' ? missingAll.map(m => m.plantId) : [b.dataset.adopt!], labelOf)));
     listEl.querySelectorAll<HTMLDetailsElement>('[data-plan-group]').forEach(d => d.addEventListener('toggle', () => {
       if (d.open) planOpen.add(d.dataset.planGroup!); else planOpen.delete(d.dataset.planGroup!);
       try { localStorage.setItem(PLAN_OPEN_KEY, JSON.stringify([...planOpen])); } catch {}
     }));
     // .btn-edit: the delegated click handler on listEl.
+  }
+
+  /** "Übernehmen": for plants a plan uses that are not in the own list — link to a plant of the list (exact name preselected,
+   *  typos only suggested), create a new one under the same id, or leave for later. Nothing is linked on its own. */
+  async function openAdopt(plan: GardenPlan, plantIds: string[], labelOf: (id: string) => string) {
+    const dlg = document.createElement('dialog');
+    dlg.className = 'm-auto w-full max-w-xl rounded-2xl bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-100 p-5 shadow-2xl backdrop:bg-black/40';
+    const sel = 'w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2 py-1 text-sm';
+    const rows = plantIds.map(id => {
+      const name = labelOf(id), count = plan.placements.filter(pl => pl.plantId === id).length;
+      const ms = matchPlants(name, cachedPlants);
+      const choice = ms[0]?.kind === 'exact' ? `link:${ms[0].plant.id}` : ms.length ? 'later' : 'new';
+      const opts = [`<option value="new">${escapeHtml(t('adoptNew'))}</option>`,
+        ...ms.map(m => `<option value="link:${escapeHtml(m.plant.id)}">${escapeHtml(t('adoptLink', { name: displayName(m.plant) + (m.plant.varietyName ? ` (${m.plant.varietyName})` : '') }))}${m.kind === 'similar' ? escapeHtml(t('adoptSimilar', { n: m.dist })) : ''}</option>`),
+        `<option value="later">${escapeHtml(t('adoptLater'))}</option>`];
+      return `<div class="space-y-1 border-t border-stone-200 dark:border-stone-700 py-2" data-adopt-row="${escapeHtml(id)}"><div class="text-sm"><input data-adopt-name class="w-48 max-w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2 py-0.5 font-medium" value="${escapeHtml(name)}" aria-label="${escapeHtml(t('adoptName'))}" /> <span class="text-xs text-stone-500">${escapeHtml(t('planPlacedN', { n: count }))}</span></div>
+        <select data-adopt-choice class="${sel}">${opts.join('').replace(`value="${choice}"`, `value="${choice}" selected`)}</select></div>`;
+    }).join('');
+    dlg.innerHTML = `<h2 class="text-lg font-semibold">${escapeHtml(t('adoptTitle'))}</h2><p class="text-xs text-stone-500 dark:text-stone-400">${escapeHtml(t('adoptHint'))}</p><div class="max-h-[60vh] overflow-y-auto">${rows}</div>
+      <div class="mt-3 flex justify-end gap-2"><button type="button" data-adopt-cancel class="rounded-md px-3 py-1 text-sm ring-1 ring-stone-300 dark:ring-stone-600">${escapeHtml(t('adoptCancel'))}</button><button type="button" data-adopt-ok class="rounded-md bg-green-700 px-3 py-1 text-sm font-semibold text-white hover:bg-green-800">${escapeHtml(t('adoptOk'))}</button></div>`;
+    document.body.append(dlg);
+    const close = () => { dlg.close(); dlg.remove(); };
+    dlg.querySelector('[data-adopt-cancel]')!.addEventListener('click', close);
+    dlg.addEventListener('cancel', () => dlg.remove());
+    dlg.querySelector('[data-adopt-ok]')!.addEventListener('click', async () => {
+      const links = new Map<string, { to: string; name: string }>();
+      for (const rowEl of dlg.querySelectorAll<HTMLElement>('[data-adopt-row]')) {
+        const id = rowEl.dataset.adoptRow!, v = rowEl.querySelector<HTMLSelectElement>('[data-adopt-choice]')!.value;
+        const name = rowEl.querySelector<HTMLInputElement>('[data-adopt-name]')!.value.trim();
+        if (v === 'new') { const np = createEmptyPlant(); np.id = id; np.commonName = name || t('planUnknownPlant'); await savePlant(np); }
+        else if (v.startsWith('link:')) links.set(id, { to: v.slice(5), name });
+      }
+      if (links.size) {
+        for (const pl of plan.placements) {
+          const l = links.get(pl.plantId);
+          if (!l) continue;
+          const target = cachedPlants.find(p => p.id === l.to);
+          // a name that differs from the plant it now points to stays as a note
+          if (l.name && target && tidyName(l.name) !== tidyName(displayName(target)) && !pl.notes.includes(l.name)) pl.notes = [pl.notes, l.name].filter(Boolean).join('\n');
+          pl.plantId = l.to;
+        }
+        plan.updatedAt = new Date().toISOString();
+        await saveGardenPlan(plan);
+      }
+      close();
+      void renderList();
+    });
+    dlg.showModal();
   }
 
   document.getElementById('btn-print-from-plan')!.addEventListener('click', async () => {

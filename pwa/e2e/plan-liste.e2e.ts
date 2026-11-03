@@ -26,14 +26,27 @@ test('plants show their plans; the Plan filter arranges the list; a chip opens t
   await page.selectOption('#filter-plan', 'gs');
   await expect(page.locator('#plant-list')).toContainText('Im Plan 2 · nicht im Plan');
   await expect(page.locator('#plant-list')).toContainText('4 gesetzt · 1 gepflanzt');
+  // everything is one closed line at first: numbers and the "not in your list" chip are in it
+  await expect(page.locator('[data-plan-group="root"]')).not.toHaveAttribute('open', '');
+  await expect(page.locator('[data-plan-group="root"] > summary')).toContainText('1 nicht in deiner Liste');
+  await page.locator('[data-plan-group="root"] > summary').click();
   const inPlan = page.locator('[data-plan-group="in"]');
   await expect(inPlan).not.toHaveAttribute('open', '');
   await inPlan.locator(':scope > summary').click();
   await page.locator('[data-plan-group="in-tree"] > summary').click();
-  await expect(inPlan).toContainText('1× gesetzt, aber nicht in deiner Liste');
+  await expect(inPlan).toContainText('Unbekannte Pflanze');
+  await expect(inPlan).toContainText('nicht in deiner Liste');
   // the open groups are remembered
   await page.reload();
   await expect(page.locator('[data-plan-group="in"]')).toHaveAttribute('open', '');
+
+  // "übernehmen": the plant of the plan without an entry in the list is created under its own id
+  await page.locator('[data-adopt]').first().click();
+  await expect(page.locator('dialog[open] [data-adopt-choice]')).toHaveValue('new');
+  await page.locator('dialog[open] [data-adopt-name]').fill('Esskastanie');
+  await page.locator('[data-adopt-ok]').click();
+  await expect(page.locator('[data-adopt]')).toHaveCount(0);
+  expect(await withDb<string[]>(page, `return (await all('plants')).filter(p => p.id === 'imp-weg').map(p => p.commonName);`)).toEqual(['Esskastanie']);
 
   await page.locator(`[data-plan-group="in-tree"] [data-id="${ids.apple}"] a`).click();
   await expect(page).toHaveURL(/\/gartenplan\/\?plan=gs$/);
