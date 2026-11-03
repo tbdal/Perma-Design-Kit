@@ -98,6 +98,8 @@ export interface GartenplanApi {
   setViewInset(px: { left?: number; right?: number; top?: number; bottom?: number }): void;
   /** Centers the 2D view on a plan point (metres); `widthM` = visible width, else the zoom stays. No effect in 3D. */
   centerOn(xM: number, yM: number, widthM?: number): void;
+  /** Brings these placements into view, zooming only when needed (off the section, or just a speck); 3D flies there. */
+  fitPlacements(ids: string[]): void;
   /** Where a plan point appears on screen in the 3D view (client coordinates); null in 2D or behind the camera. */
   projectToScreen(xM: number, yM: number): { x: number; y: number } | null;
   /** The canvas height (px) comes from `fn`, asked again on every window resize; null = back to the stored or automatic height. */

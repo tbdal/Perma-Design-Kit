@@ -5325,6 +5325,23 @@ import Layout from '../layouts/Layout.astro';
       if (!dx && !dy) return;
       flyPlanView({ ...planView, x: planView.x + dx, y: planView.y + dy });
     },
+    fitPlacements(ids) {
+      if (!editing) return;
+      const want = new Set(ids);
+      const pts = editing.placements.filter(p => want.has(p.id));
+      if (!pts.length) return;
+      const x0 = Math.min(...pts.map(p => p.xM)), x1 = Math.max(...pts.map(p => p.xM));
+      const y0 = Math.min(...pts.map(p => p.yM)), y1 = Math.max(...pts.map(p => p.yM));
+      const span = Math.max(x1 - x0, y1 - y0), cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+      if (view3d && !plan3dContainer.hidden) { view3d.flyTo(cx, cy, Math.max(span * 1.6, 30)); return; }
+      if (!planView.w) return;
+      // Left alone when everything is inside the section with some room and not just a speck on it.
+      const v = viewRectM(), mx = (v.maxX - v.minX) * 0.1, my = (v.maxY - v.minY) * 0.1;
+      if (x0 >= v.minX + mx && x1 <= v.maxX - mx && y0 >= v.minY + my && y1 <= v.maxY - my && span >= (v.maxX - v.minX) * 0.06) return;
+      const asp = canvasAspect();
+      const w = Math.max(span * 1.8, 25, (y1 - y0) * 1.8 / asp) * U, h = w * asp;
+      flyPlanView({ x: cx * U - w / 2, y: cy * U - h / 2, w, h });
+    },
     placePlantAt(plantId, xM, yM) {
       if (!editing || !plantsById.has(plantId) || xM < 0 || yM < 0 || xM > editing.areaWidthM || yM > editing.areaHeightM) return null;
       const placement = newPlacement(plantId, Math.round(xM * 100) / 100, Math.round(yM * 100) / 100);
