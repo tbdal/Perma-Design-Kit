@@ -195,6 +195,39 @@ function dropOlder<T extends { id: string; updatedAt: string }>(incoming: T[], l
   return { keep, kept: incoming.length - keep.length };
 }
 
+export interface BackupDiff {
+  /** Only in the backup: will be added. */
+  added: string[];
+  /** In both, different, and the backup will win. */
+  replaced: string[];
+  /** In both, different, and the local one stays (edited here after the backup; only with keepNewer). */
+  kept: string[];
+}
+
+type Rec = { id: string; updatedAt?: string; name?: string; commonName?: string; latinName?: string };
+
+/** What reading `incoming` would do to the `local` records (same rules as applyBackup). */
+export function diffRecords(incoming: Rec[], local: Rec[], keepNewer: boolean): BackupDiff {
+  const mine = new Map(local.map(r => [r.id, r]));
+  const out: BackupDiff = { added: [], replaced: [], kept: [] };
+  for (const r of incoming) {
+    const l = mine.get(r.id);
+    const label = r.name || r.commonName || r.latinName || r.id;
+    if (!l) out.added.push(label);
+    else if (JSON.stringify(l) === JSON.stringify(r)) continue;
+    else if (keepNewer && (l.updatedAt || '') > (r.updatedAt || '')) out.kept.push(label);
+    else out.replaced.push(label);
+  }
+  return out;
+}
+
+/** Plants, polycultures and plans of a backup compared with this device. */
+export async function diffBackup(b: ParsedBackup, keepNewer: boolean): Promise<BackupDiff> {
+  const [p, c, g] = await Promise.all([getAllPlants(), getAllPolycultures(), getAllGardenPlans()]);
+  const parts = [diffRecords(b.plants, p, keepNewer), diffRecords(b.polycultures, c, keepNewer), diffRecords(b.gardenPlans, g, keepNewer)];
+  return { added: parts.flatMap(x => x.added), replaced: parts.flatMap(x => x.replaced), kept: parts.flatMap(x => x.kept) };
+}
+
 /** Writes a parsed backup into the app. This merges: records with the same id
  *  are replaced, everything else on the device stays. Settings are replaced
  *  if the backup carries any. With `keepNewer` (WebDAV/Gist pulls) a plant,

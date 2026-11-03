@@ -17,3 +17,16 @@ test('feedback button opens "Fehler melden" and "Idee einreichen" for the curren
   await page.screenshot({ path: 'test-results/feedback-idea.png', fullPage: true });
   void errors;
 });
+
+test('feedback "Stelle markieren": click a spot, say what, the report page arrives filled in', async ({ page, errors }) => {
+  await stubNetwork(page);
+  await page.goto('/kalender');
+  await page.locator('#feedback-fab summary').click();
+  await page.click('#feedback-pick');
+  await page.locator('h1').first().click(); // the spot
+  await page.locator('dialog textarea').fill('Überschrift passt nicht');
+  await page.getByRole('button', { name: 'Weiter zu den Details' }).click();
+  await expect(page).toHaveURL(/\/fehler-melden\/\?from=%2Fkalender%2F&what=/);
+  await expect(page.locator('#rp-what')).toHaveValue(/^Überschrift passt nicht\n\nStelle: h1\./);
+  void errors;
+});

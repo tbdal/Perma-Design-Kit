@@ -153,6 +153,8 @@ export interface GardenPlan3DView {
   /** New elevation grid (null = flat) in place: camera, renderer and sun stay, ground, buildings, plants,
    *  areas and overlays follow. false = not possible (plugin layers drew on the old ground): rebuild the view. */
   setTerrain(terrain: ElevationGrid | null): boolean;
+  /** Vertical exaggeration of the terrain (1 = true to scale); same false as setTerrain. */
+  setExaggeration(factor: number): boolean;
   /** New building footprints in place (empty = none). */
   setBuildings(buildings: NonNullable<View3DOptions['buildings']>): void;
   dispose(): void;
@@ -177,6 +179,8 @@ export interface View3DOptions {
   rotationDeg: number;
   /** Elevation grid (terrain.ts); null = flat ground. */
   terrain?: ElevationGrid | null;
+  /** Vertical exaggeration of the terrain heights; default 1. */
+  exaggeration?: number;
   /** Called once when an aerial-photo tile failed and a fallback was used. */
   onTileFallback?: () => void;
   /** Called whenever ground tiles start or finish loading. */
@@ -375,6 +379,7 @@ export function createGardenPlan3DView(
   // Terrain: heights relative to the plan centre, so the camera, sun path
   // and everything else keep working around y = 0. setTerrain() swaps it in place.
   let terrain = null as ElevationGrid | null, baseH = 0, ground: GroundFn = FLAT, groundMin = 0;
+  let exag = Math.max(1, opts.exaggeration ?? 1); // vertical exaggeration of the terrain heights (flat land becomes visible)
   // `fine` = extent of the fine grid; blendM = band over which it blends into the coarser tiles around it.
   let fine = null as { minX: number; minY: number; maxX: number; maxY: number } | null, blendM = 1;
   // drapeCell/drapeLift: how finely and how high sheets lie on the ground. On terrain the ground tiles
@@ -384,8 +389,8 @@ export function createGardenPlan3DView(
   function useTerrain(t: ElevationGrid | null) {
     terrain = t;
     baseH = t ? sampleGrid(t, cx, cz) : 0;
-    ground = t ? (x, z) => sampleGrid(t, x, z) - baseH : FLAT;
-    groundMin = t ? gridRange(t).min - baseH : 0;
+    ground = t ? (x, z) => (sampleGrid(t, x, z) - baseH) * exag : FLAT;
+    groundMin = t ? (gridRange(t).min - baseH) * exag : 0;
     fine = t ? { minX: t.minX, minY: t.minY, maxX: t.minX + (t.nx - 1) * t.cellM, maxY: t.minY + (t.ny - 1) * t.cellM } : null;
     blendM = fine ? Math.max(10, Math.min(40, (fine.maxX - fine.minX) * 0.15)) : 1;
     drapeCell = t ? Math.max(0.5, t.cellM / 2) : 1e9;
@@ -503,7 +508,7 @@ export function createGardenPlan3DView(
       for (const [x, z] of [[x0 + (x1 - x0) * f, z0], [x0 + (x1 - x0) * f, z1], [x0, z0 + (z1 - z0) * f], [x1, z0 + (z1 - z0) * f]]) {
         const ll = planToLatLon({ xM: x, yM: z }, geo);
         const e = terrainTiles.elevation(ll.lat, ll.lon, tz);
-        if (e !== null) d.push(ground(x, z) - (e - baseH));
+        if (e !== null) d.push(ground(x, z) - (e - baseH) * exag);
       }
     }
     d.sort((a, b) => a - b);
@@ -518,7 +523,7 @@ export function createGardenPlan3DView(
     const ll = latLon ?? planToLatLon({ xM: x, yM: z }, geo);
     const e = terrainTiles.elevation(ll.lat, ll.lon, tz);
     if (e === null) return ground(x, z);
-    const coarse = e - baseH + offsetFor(tz);
+    const coarse = (e - baseH) * exag + offsetFor(tz);
     if (inside <= 0) return coarse;
     const w = inside / blendM;
     return ground(x, z) * w + coarse * (1 - w);
@@ -1816,6 +1821,10 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
       requestRender();
     },
     tileStatus,
+    setExaggeration(f) {
+      exag = Math.max(1, f);
+      return terrain ? view.setTerrain(terrain) : true;
+    },
     setTerrain(t) {
       if (opts.layers?.length) return false;
       useTerrain(t);

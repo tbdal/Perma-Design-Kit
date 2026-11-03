@@ -67,6 +67,11 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
     let refPath = '';
     try { if (document.referrer && new URL(document.referrer).origin === location.origin) refPath = new URL(document.referrer).pathname; } catch {}
     page.value = from || refPath || '/';
+    // Feedback → "Stelle markieren": the popup's text and the marked spot arrive here.
+    {
+      const q = new URLSearchParams(location.search), spot = q.get('spot');
+      what.value = [q.get('what'), spot && `${getLang() === 'de' ? 'Stelle' : 'Spot'}: ${spot}`].filter(Boolean).join('\n\n');
+    }
     const env = environmentLine();
     document.getElementById('rp-env')!.textContent = env;
 

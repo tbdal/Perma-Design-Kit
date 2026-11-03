@@ -4,6 +4,11 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Feedback mit Markierung, Überhöhung, Sync-Unterschiede 2026-11-03
+- [x] **Feedback → „Stelle markieren“**: die Stelle auf der Seite anklicken, in einem Popup sagen, was nicht stimmt; „Weiter zu den Details“ öffnet „Fehler melden“ mit Seite, Text und der markierten Stelle schon eingetragen (Werkstatt #478) #minor #prüfen
+- [x] **Gartenplan 3D: Überhöhung einstellbar** (1×–10×, neben dem Linienabstand der Höhenlinien), damit auch flaches Gelände sichtbar wird; Boden, Pflanzen, Gebäude und Höhenlinien folgen (Werkstatt #448) #minor #prüfen
+- [x] **Backup/Sync einlesen zeigt die Unterschiede**: vor dem Zusammenführen steht, was neu dazukommt, was ersetzt wird und was bleibt, weil hier neuer bearbeitet (nach Namen); das Zusammenführen selbst gab es schon (Werkstatt #449) #minor #prüfen
+
 ## Willkommensseite: Dartington-Bild 2026-11-02
 - [x] **Willkommensseite: rechtes Bild ist jetzt der Waldgartenplan mit dem Vorbild Dartington in 3D** (nur die Karte mit der Werkzeugleiste links, gleich hoch wie das linke Bild); „Baumbiographien und Aufgaben“ im Beta-Text wie die anderen Punkte, die Zeile „Ein Blick hinein“ entfällt #minor #prüfen
 

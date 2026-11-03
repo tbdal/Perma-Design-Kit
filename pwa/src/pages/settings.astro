@@ -323,7 +323,7 @@ import Layout from '../layouts/Layout.astro';
   import { geoCacheUsage } from '../lib/geo-cache';
   import { aerialTotals, orthoRegion } from '../lib/aerial-usage';
   import {
-    buildBackup, buildBackupJson, parseBackup, backupIsEmpty, applyBackup, rememberBackupAt, rememberPulled, isAutoSyncEnabled,
+    buildBackup, buildBackupJson, parseBackup, backupIsEmpty, applyBackup, diffBackup, rememberBackupAt, rememberPulled, isAutoSyncEnabled,
     webdavPush, webdavPull, gistPush, gistPull, getSyncProblem, clearSyncProblem, forgetSyncState, syncProviderLabel, SYNC_PROBLEM_EVENT,
     GIST_FILENAME, type WebdavCreds,
   } from '../lib/sync';
@@ -646,7 +646,12 @@ import Layout from '../layouts/Layout.astro';
       gardenPlanPart: backup.gardenPlans.length ? t('restoreGardenPlanPart', { n: backup.gardenPlans.length }) : '',
       varietyPart: backup.varietyLists.length ? t('restoreVarietyPart', { n: backup.varietyLists.length }) : '',
     };
-    if (!confirm(t('restoreConfirm', { ...parts, settingsPart: backup.settings ? t('restoreSettingsPart') : '' }))) return null;
+    // What differs from this device, by name (first eight each), so a conflict can be judged before merging.
+    const diff = await diffBackup(backup, keepNewer).catch(() => null);
+    const list = (names: string[]) => names.slice(0, 8).join(', ') + (names.length > 8 ? ` … (+${names.length - 8})` : '');
+    const diffText = diff ? [['restoreDiffAdded', diff.added], ['restoreDiffReplaced', diff.replaced], ['restoreDiffKept', diff.kept]]
+      .filter(([, names]) => names.length).map(([key, names]) => t(key as 'restoreDiffAdded', { list: list(names as string[]) })).join('\n') : '';
+    if (!confirm(t('restoreConfirm', { ...parts, settingsPart: backup.settings ? t('restoreSettingsPart') : '' }) + (diffText ? `\n\n${diffText}` : ''))) return null;
     showToast(t('restoreRunning'));
     const { keptLocal } = await applyBackup(backup, { keepNewer });
     if (backup.settings) {

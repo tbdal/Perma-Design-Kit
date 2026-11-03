@@ -92,6 +92,10 @@ import Layout from '../layouts/Layout.astro';
           <option value="" data-i18n="contourStepAuto">automatisch</option>
           <option value="100">100 m</option><option value="50">50 m</option><option value="20">20 m</option><option value="10">10 m</option><option value="5">5 m</option><option value="2">2 m</option><option value="1">1 m</option>
         </select></label>
+      <label data-feature="terrain" id="exag-label" class="inline-flex items-center gap-1.5 text-xs" data-i18n-title="exaggerationTitle" title="Höhen in der 3D-Ansicht verstärken, damit auch flaches Gelände sichtbar wird"><span data-i18n="exaggeration">Überhöhung</span>
+        <select id="g-exag" class="rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs">
+          <option value="1">1×</option><option value="2">2×</option><option value="3">3×</option><option value="5">5×</option><option value="10">10×</option>
+        </select></label>
       <label data-feature="zones" class="inline-flex items-center gap-1.5" data-i18n-title="mapZonesTitle" title="Permakultur-Zonen um das Haus und Sektoren (Sonne, Wind, Kaltluft)"><input id="g-zones" type="checkbox" class="accent-amber-600" /> <span data-i18n="mapZones">Zonen &amp; Sektoren</span></label>
       <span id="map-status" class="text-stone-500 dark:text-stone-400"></span>
       <span data-feature="terrain" id="terrain-info" class="text-stone-600 dark:text-stone-300"></span>
@@ -1854,6 +1858,7 @@ import Layout from '../layouts/Layout.astro';
       mapOpacity: geo?.opacity,
       rotationDeg: geo?.rotationDeg ?? 0,
       terrain: geo ? terrain : null,
+      exaggeration: Number(exagSel.value) || 1,
       buildings: showBuildings() ? buildings : [],
       layers: pluginLayers.filter(l => featureOn(l.featureId)).map(l => l.layer),
       hidden: hiddenByPlugin,
@@ -3805,6 +3810,13 @@ import Layout from '../layouts/Layout.astro';
     renderContours();
   });
 
+  const exagSel = document.getElementById('g-exag') as HTMLSelectElement;
+  try { exagSel.value = localStorage.getItem('pgd-exag') ?? '1'; } catch {}
+  exagSel.addEventListener('change', () => {
+    try { localStorage.setItem('pgd-exag', exagSel.value); } catch {}
+    if (!plan3dContainer.hidden && !view3d?.setExaggeration(Number(exagSel.value))) btnView3d.click();
+  });
+
   async function loadTerrain() {
     void loadClimate();
     const plan = editing;
@@ -3890,6 +3902,7 @@ import Layout from '../layouts/Layout.astro';
   function renderContours() {
     const layer = planSvg.querySelector('#contour-layer');
     document.getElementById('contour-step-label')!.hidden = !terrain || !editing?.geo;
+    document.getElementById('exag-label')!.hidden = !terrain || !editing?.geo;
     const hide = !terrain || !contoursInput.checked || !editing?.geo || !featureOn('terrain');
     if (hide) view3d?.setContours(null);
     if (!layer) return;

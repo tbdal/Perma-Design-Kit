@@ -48,6 +48,8 @@ export const gartenplanDict: Dict = {
   mapBgOrthoNone: { de: 'Luftbild (hier keins — Satellit grob)', en: 'Aerial photo (none here — coarse satellite)' },
   mapBgOrthoGeneric: { de: 'Luftbild (amtlich)', en: 'Aerial photo (official)' },
   contourStep: { de: 'Linienabstand', en: 'Line spacing' },
+  exaggeration: { de: 'Überhöhung', en: 'Exaggeration' },
+  exaggerationTitle: { de: 'Höhen in der 3D-Ansicht verstärken, damit auch flaches Gelände sichtbar wird', en: 'Exaggerate heights in the 3D view so that even flat land shows' },
   contourStepAuto: { de: 'automatisch', en: 'automatic' },
   mapContours: { de: 'Höhenlinien', en: 'Contours' },
   undoTitle: { de: 'Rückgängig (Strg+Z)', en: 'Undo (Ctrl+Z)' },

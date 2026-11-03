@@ -18,6 +18,8 @@ export const layoutDict: Dict = {
   feedbackIntro: { de: 'Was sollen wir wissen?', en: 'What should we know?' },
   feedbackBug: { de: 'Fehler melden', en: 'Report a problem' },
   feedbackBugHint: { de: 'Etwas geht nicht oder sieht falsch aus', en: 'Something doesn’t work or looks wrong' },
+  feedbackPick: { de: 'Stelle markieren', en: 'Mark the spot' },
+  feedbackPickHint: { de: 'Anklicken, wo es nicht stimmt', en: 'Click where it’s wrong' },
   feedbackIdea: { de: 'Idee einreichen', en: 'Suggest an idea' },
   feedbackIdeaHint: { de: 'Was fehlt, was wäre besser?', en: 'What’s missing, what would be better?' },
   persistBannerText: { de: 'Deine Pflanzen und Pläne liegen nur in diesem Browser. Damit er sie bei Speichermangel nicht löscht, bitte ihn um dauerhaften Speicher – manche Browser fragen dann nach.', en: 'Your plants and plans live only in this browser. So it doesn’t delete them when space runs low, ask it for persistent storage – some browsers will then ask you.' },
