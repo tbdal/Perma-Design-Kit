@@ -41,12 +41,18 @@ test('share link with view: recipient imports, start plan opens in 3D with the s
   await ctx.close();
 });
 
-test('/example forwards to the stored example project', async ({ page, errors }) => {
+test('/example lists the example project and the public Vorbilder, each opens as a share import', async ({ page, errors }) => {
   await stubNetwork(page);
   await page.goto('/example');
+  await expect(page.locator('article[data-vorbild]')).toHaveCount(2);
+  await page.click('#ex-open');
   await expect(page).toHaveURL(/\/teilen\/\?beispiel=1#d=/);
   await expect(page.locator('#sh-title')).toHaveText('Beispielprojekt');
   await expect(page.locator('#sh-summary')).toContainText('Waldgartenpläne');
+  await page.goto('/beispiel');
+  await page.click('[data-open="dartington"]');
+  await expect(page).toHaveURL(/\/teilen\/#d=/);
+  await expect(page.locator('#sh-summary')).toContainText('1 Waldgartenpläne');
   void errors;
 });
 

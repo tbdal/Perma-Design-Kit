@@ -4,6 +4,10 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## /example zeigt die Vorbilder 2026-11-03
+- [x] **/example und /beispiel zeigen das Beispielprojekt und die Vorbilder Dartington und Garden Cottage** (Lizenz geklärt) mit Quellenlinks und „Im Waldgartenplan öffnen“; die Pläne liegen als `public/vorbilder/*.txt` öffentlich, ein Test im privaten Repo meldet, wenn sie von den internen Daten abweichen #minor #prüfen
+- [x] **Test Karten-Deckkraft in 3D unabhängig von der Tageszeit** (maß Helligkeit statt Rot-Anteil, scheiterte bei tiefer Sonne) #bugs
+
 ## Feedback mit Markierung, Überhöhung, Sync-Unterschiede 2026-11-03
 - [x] **Feedback → „Stelle markieren“**: die Stelle auf der Seite anklicken, in einem Popup sagen, was nicht stimmt; „Weiter zu den Details“ öffnet „Fehler melden“ mit Seite, Text und der markierten Stelle schon eingetragen (Werkstatt #478) #minor #prüfen
 - [x] **Gartenplan 3D: Überhöhung einstellbar** (1×–10×, neben dem Linienabstand der Höhenlinien), damit auch flaches Gelände sichtbar wird; Boden, Pflanzen, Gebäude und Höhenlinien folgen (Werkstatt #448) #minor #prüfen
