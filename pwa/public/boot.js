@@ -125,14 +125,17 @@ try { performance.setResourceTimingBufferSize(3000); } catch (_) {}
   }
 })();
 
-// /gartenplan/#neu (team mode): the new layout is built by a module that loads
+// /gartenplan/#neu (team and expert mode): the new layout is built by a module that loads
 // after the page, so the regular layout used to show first and then jump. Keep
 // the planner hidden until the module has set up its layout (it removes
 // `pdk-layout-pending`); a timeout lifts it if the module never comes.
 (function () {
   try {
-    if (!/^\/gartenplan\/?$/.test(location.pathname) || location.hash !== '#neu') return;
-    if (localStorage.getItem('pdk-mode') !== 'team') return;
+    // No fragment: the module makes the new layout the default unless "Planer (alt)" was chosen in this tab.
+    var neu = location.hash === '#neu' || (!location.hash && sessionStorage.getItem('pdk-planer-alt') !== '1');
+    if (!/^\/gartenplan\/?$/.test(location.pathname) || !neu) return;
+    var mode = localStorage.getItem('pdk-mode');
+    if (mode !== 'team' && mode !== 'expert') return;
     var root = document.documentElement;
     root.classList.add('pdk-layout-pending');
     var sheet = new CSSStyleSheet();

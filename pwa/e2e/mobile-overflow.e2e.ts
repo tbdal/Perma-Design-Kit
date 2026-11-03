@@ -14,8 +14,9 @@ const HAS_EXPERT = existsSync(new URL('../dist/x', import.meta.url));
 
 /** "<mode> <page>@<width>" → reason. Filled from the first run against main (2026-10-30). */
 const KNOWN: Record<string, string> = Object.fromEntries((['simple', 'classic', 'team'] as const).flatMap(m => [
-  [`${m} plan-editor@360`, 'phase B toolbar + years slider do not wrap (issue #6.1)'],
-  [`${m} plan-editor@375`, 'phase B toolbar + years slider do not wrap (issue #6.1)'],
+  // team opens the new planner by default, which fits
+  ...(m === 'team' ? [] : [[`${m} plan-editor@360`, 'phase B toolbar + years slider do not wrap (issue #6.1)'],
+    [`${m} plan-editor@375`, 'phase B toolbar + years slider do not wrap (issue #6.1)']] as [string, string][]),
   [`${m} plants-cards@360`, 'cards toolbar output-format row does not wrap (issue #6.2)'],
   [`${m} plants-baumscheibe@360`, 'cards toolbar output-format row does not wrap (issue #6.2)'],
 ]));
