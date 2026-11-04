@@ -1,0 +1,70 @@
+---
+import Layout from '../layouts/Layout.astro';
+// Public variety list of the 7L tree nursery (only species and variety names). The data comes from the
+// account's project in the server storage: refresh with `node src/expert/scripts/7l-export.mjs`, then deploy.
+import data from '../data/7l-sorten.json';
+
+const rows = data.sorten;
+const arten = [...new Map(rows.map(r => [r.art, rows.filter(x => x.art === r.art).length])).entries()];
+const stand = new Date(data.stand).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+<Layout title="7L Baumschule — Sortenliste" wide>
+  <article id="l7-root" class="space-y-4 text-stone-800 dark:text-stone-100">
+    <div>
+      <h1 class="text-2xl font-bold">Sortenliste 7L Baumschule</h1>
+      <p class="mt-1 max-w-3xl text-sm text-stone-600 dark:text-stone-300">{rows.length} Sorten von {arten.length} Obstarten, Stand {stand}. Nach Art auswählen oder im Namen suchen.</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-1.5">
+      <button type="button" data-l7-art="" aria-pressed="true" class="l7-chip">Alle ({rows.length})</button>
+      {arten.map(([art, n]) => <button type="button" data-l7-art={art} aria-pressed="false" class="l7-chip">{art} ({n})</button>)}
+    </div>
+    <label class="flex max-w-md items-center gap-2 text-sm">Suchen
+      <input type="search" id="l7-q" placeholder="Sorte oder Art …" class="min-w-0 flex-1 rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm" />
+    </label>
+    <p id="l7-count" class="text-xs text-stone-500 dark:text-stone-400" aria-live="polite">{rows.length} Sorten</p>
+    <div class="overflow-x-auto rounded-xl bg-white dark:bg-stone-800 ring-1 ring-stone-200 dark:ring-stone-700">
+      <table class="w-full text-sm">
+        <thead class="bg-stone-50 dark:bg-stone-900/40 text-left text-xs text-stone-500 dark:text-stone-400">
+          <tr><th class="px-3 py-2">Art</th><th class="px-3 py-2">Sorte</th><th class="px-3 py-2">Botanisch</th></tr>
+        </thead>
+        <tbody id="l7-rows">
+          {rows.map(r => <tr data-art={r.art} data-q={`${r.art} ${r.sorte} ${r.latin}`.toLowerCase()} class="border-t border-stone-100 dark:border-stone-700">
+            <td class="px-3 py-1.5 text-stone-600 dark:text-stone-300">{r.art}</td><td class="px-3 py-1.5 font-medium">{r.sorte}</td><td class="px-3 py-1.5 italic text-stone-500 dark:text-stone-400">{r.latin}</td></tr>)}
+        </tbody>
+      </table>
+    </div>
+    <p id="l7-none" hidden class="text-sm text-stone-500">Keine Sorte gefunden.</p>
+  </article>
+  <style>
+    .l7-chip { border-radius: 9999px; padding: 0.25rem 0.75rem; font-size: 0.75rem; font-weight: 500; background: rgb(245 245 244); box-shadow: inset 0 0 0 1px rgb(214 211 209); }
+    :global(html.dark) .l7-chip { background: rgb(68 64 60); box-shadow: inset 0 0 0 1px rgb(87 83 78); }
+    .l7-chip[aria-pressed="true"] { background: rgb(21 128 61); color: white; box-shadow: none; }
+  </style>
+  <script>
+    const root = document.getElementById('l7-root')!;
+    const q = document.getElementById('l7-q') as HTMLInputElement;
+    const rows = [...document.querySelectorAll<HTMLTableRowElement>('#l7-rows tr')];
+    const count = document.getElementById('l7-count')!;
+    const none = document.getElementById('l7-none')!;
+    let art = '';
+    function apply() {
+      const words = q.value.toLowerCase().split(/\s+/).filter(Boolean);
+      let n = 0;
+      for (const r of rows) {
+        const show = (!art || r.dataset.art === art) && words.every(w => r.dataset.q!.includes(w));
+        r.hidden = !show;
+        if (show) n++;
+      }
+      count.textContent = `${n} Sorten`;
+      none.hidden = n > 0;
+    }
+    root.addEventListener('click', e => {
+      const b = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-l7-art]');
+      if (!b) return;
+      art = b.dataset.l7Art ?? '';
+      root.querySelectorAll('[data-l7-art]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+      apply();
+    });
+    q.addEventListener('input', apply);
+  </script>
+</Layout>
