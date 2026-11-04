@@ -15,6 +15,15 @@ test('/7l lists the nursery varieties and filters them', async ({ page }) => {
   expect(quitten).toBeLessThan(all);
   await expect(page.locator('#l7-count')).toHaveText(`${quitten} Sorten`);
   await page.click('[data-l7-art=""]');
+  // column filter and sorting, as on the Steckbriefe page
+  await page.fill('[data-l7-col="0"]', 'quitte');
+  await expect(page.locator('#l7-count')).toHaveText(`${quitten} Sorten`);
+  await page.fill('[data-l7-col="0"]', '');
+  await page.click('#l7-head [data-l7-sort="1"]');
+  await page.click('#l7-head [data-l7-sort="1"]');
+  await expect(page.locator('#l7-head [data-l7-sort="1"]')).toHaveAttribute('aria-sort', 'descending');
+  const firstTwo = await page.locator('#l7-rows tr td:nth-child(2)').evaluateAll(t => t.slice(0, 2).map(x => x.textContent!.trim()));
+  expect(firstTwo[0].localeCompare(firstTwo[1], 'de', { numeric: true })).toBeGreaterThanOrEqual(0);
   await page.fill('#l7-q', 'xyz-keine-sorte');
   await expect(page.locator('#l7-none')).toBeVisible();
 });
