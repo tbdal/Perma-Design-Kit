@@ -264,7 +264,9 @@ function buildBoundaryMesh(plan: GardenPlan, ground: GroundFn = FLAT, cellM = 1e
   // verified against the real triangulation output, not assumed — so a
   // one-sided material would randomly render the fill invisible from above
   // for some plans. DoubleSide is the robust fix, not winding-detection.
-  const mat = new THREE.MeshStandardMaterial({ color: 0x15803d, transparent: true, opacity: 0.15, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 });
+  // No depth written (like the area sheets): drawn before a see-through map tile it would hide the tile wherever it lies a
+  // hair above it, leaving bright patches of lawn in the outline (Werkstatt #496).
+  const mat = new THREE.MeshStandardMaterial({ color: 0x15803d, transparent: true, opacity: 0.15, side: THREE.DoubleSide, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 });
   const mesh = new THREE.Mesh(geom, mat);
   mesh.receiveShadow = true;
   return mesh;
@@ -488,7 +490,9 @@ export function createGardenPlan3DView(
   let oldTileGroup: THREE.Group | null = null;
   let tileKey = '', tileGen = 0; // tileGen: bumped by setTerrain, so no tile with the old heights is taken over
   const mapOpacity = Math.min(1, Math.max(0.1, opts.mapOpacity ?? 1));
-  const seeThrough = !!layoutSrc && mapOpacity < 1;
+  // Only a real map is see-through: without one the terrain tiles are plain opaque meadow, a lawn under them would only
+  // poke through between their vertices (Werkstatt #496).
+  const seeThrough = !!tileSrc && mapOpacity < 1;
   // The map/terrain tiles are the ground inside the plan too (see-through map: the lawn shows under it).
   let lawn = buildGroundMesh(plan.areaWidthM, plan.areaHeightM, ground, terrain?.cellM, seeThrough);
   lawn.visible = !layoutSrc || seeThrough;
@@ -761,7 +765,7 @@ export function createGardenPlan3DView(
     reportTiles();
     requestRender();
   }
-  let boundaryMesh = buildBoundaryMesh(plan, ground, drapeCell, drapeLift);
+  let boundaryMesh = buildBoundaryMesh(plan, sheetGround, drapeCell, drapeLift);
   scene.add(boundaryMesh);
 
   // Buildings: walls from the lowest ground point of the footprint (so slopes
@@ -1859,7 +1863,7 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
       scene.remove(boundaryMesh);
       boundaryMesh.geometry.dispose();
       (boundaryMesh.material as THREE.Material).dispose();
-      boundaryMesh = buildBoundaryMesh(plan, ground, drapeCell, drapeLift);
+      boundaryMesh = buildBoundaryMesh(plan, sheetGround, drapeCell, drapeLift);
       scene.add(boundaryMesh);
       buildBuildings();
       rebuildPlacements();
