@@ -148,8 +148,9 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
       }
     }
 
-    const modesOf = (d: FeatureDef, cfg: FeatureConfig): UiMode[] =>
-      (cfg[d.id] ?? [...d.modes]).filter(m => !d.private || LOGIN_MODES.includes(m));
+    // Same locks as modesFor() in features.ts: private only in login modes, a licence problem never in beta.
+    const settable = (d: FeatureDef, mode: UiMode) => (!d.private || LOGIN_MODES.includes(mode)) && !(d.licence?.problem && mode === 'expert');
+    const modesOf = (d: FeatureDef, cfg: FeatureConfig): UiMode[] => (cfg[d.id] ?? [...d.modes]).filter(m => settable(d, m));
     const same = (a: UiMode[], b: readonly UiMode[]) => a.length === b.length && a.every(m => b.includes(m));
 
     function changedCount() {
@@ -163,7 +164,6 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
 
     const groupOf = (d: FeatureDef) => d.group || 'other';
     const groupLabel = (g: string) => FEATURE_GROUPS[g]?.[lang] ?? g;
-    const settable = (d: FeatureDef, mode: UiMode) => !d.private || LOGIN_MODES.includes(mode);
 
     function setModes(def: FeatureDef, modes: UiMode[]) {
       modes = UI_MODES.filter(m => modes.includes(m) && settable(def, m));
