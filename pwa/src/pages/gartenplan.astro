@@ -2023,6 +2023,8 @@ import Layout from '../layouts/Layout.astro';
         const bg = await basemapSvgInline(plan, mPerPx);
         backgroundSvg = bg.svg;
         backgroundCredit = !bg.svg ? '' : basemapAttribution(plan).replace(/ · Übersicht:.*$/, '').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&');
+        // OSM tiles that replaced an aerial photo that was missing (data-fallback) need their own credit in the PDF.
+        if (bg.osm && !/OpenStreetMap/.test(backgroundCredit)) backgroundCredit += `${backgroundCredit ? ' · ' : ''}Ersatz: © OpenStreetMap`;
         if (bg.failed) showToast(t('pdfTilesFailed', { n: bg.failed, total: bg.total }));
       }
       await exportGardenPlanPDF(plan, plantsById, {

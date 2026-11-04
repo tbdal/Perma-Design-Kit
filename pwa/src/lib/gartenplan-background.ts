@@ -123,9 +123,9 @@ export function basemapSvg(plan: GardenPlan, view: PlanRect, screenMPerPx: numbe
  *  URL — needed for the PDF, because an SVG rasterized via <img> never loads
  *  external images. Tiles that can't be fetched (offline, no CORS) are left
  *  out; their number is returned. */
-export async function basemapSvgInline(plan: GardenPlan, mPerPx: number): Promise<{ svg: string; total: number; failed: number }> {
+export async function basemapSvgInline(plan: GardenPlan, mPerPx: number): Promise<{ svg: string; total: number; failed: number; osm: boolean }> {
   const raw = basemapSvg(plan, { minX: 0, minY: 0, maxX: plan.areaWidthM, maxY: plan.areaHeightM }, mPerPx);
-  if (!raw) return { svg: '', total: 0, failed: 0 };
+  if (!raw) return { svg: '', total: 0, failed: 0, osm: false };
   const decode = (s: string) => s.replace(/&amp;/g, '&');
   const toDataUrl = async (url: string) => {
     const res = await fetch(url, { mode: 'cors' });
@@ -141,16 +141,16 @@ export async function basemapSvgInline(plan: GardenPlan, mPerPx: number): Promis
   const tags = [...raw.matchAll(/<image href="([^"]+)"(?: data-fallback="([^"]+)")?([^>]*)\/>/g)];
   // EOX tiles (coarse satellite, also as fallback) are never embedded in the export: they may be handed on commercially.
   const eox = (u?: string) => !!u && u.includes('tiles.maps.eox.at');
-  if (tags.every(m => eox(m[1]))) return { svg: '', total: 0, failed: 0 };
-  let failed = 0;
+  if (tags.every(m => eox(m[1]))) return { svg: '', total: 0, failed: 0, osm: false };
+  let failed = 0, osm = false;
   const out = await Promise.all(tags.map(async m => {
     for (const u of [m[1], m[2]].filter(u => u && !eox(u)) as string[]) {
-      try { return `<image href="${await toDataUrl(decode(u))}"${m[3]}/>`; } catch { /* next */ }
+      try { const img = `<image href="${await toDataUrl(decode(u))}"${m[3]}/>`; if (u.includes('tile.openstreetmap.org')) osm = true; return img; } catch { /* next */ }
     }
     failed++;
     return '';
   }));
   let i = 0;
   const svg = raw.replace(/<image [^>]*\/>/g, () => out[i++] ?? '');
-  return { svg, total: tags.length, failed };
+  return { svg, total: tags.length, failed, osm };
 }
