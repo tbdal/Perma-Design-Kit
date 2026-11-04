@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { terrariumElevation, sampleGrid, slopeInfo, contourSegments, contourInterval, type ElevationGrid, gridRange, gridLayout } from '../src/lib/terrain';
+import { terrariumElevation, sampleGrid, slopeInfo, contourSegments, contourInterval, type ElevationGrid, gridRange, gridLayout, terrainTileRange } from '../src/lib/terrain';
 
 /** 21 × 21 grid, 1 m cells, a plane rising 0.1 m per metre towards +x (east). */
 function plane(ax: number, by: number, base = 500): ElevationGrid {
@@ -66,5 +66,14 @@ describe('gridLayout', () => {
     const g = gridLayout(rect, 4);
     expect(g).toEqual({ nx: 31, ny: 11, maxX: 110, maxY: 30 });   // y overshoots by 3 m instead of stretching the cells
     expect((g.maxX - rect.minX) / (g.nx - 1)).toBe((g.maxY - rect.minY) / (g.ny - 1));
+  });
+
+  it('uses finer tiles for small plans and coarser ones for big plans instead of failing', () => {
+    const geo = { lat: 52.1, lon: 11.6, rotationDeg: 0, basemap: 'none' as const, opacity: 1 };
+    const small = terrainTileRange(geo, { minX: -300, minY: -300, maxX: 600, maxY: 600 });
+    const big = terrainTileRange(geo, { minX: -2000, minY: -2000, maxX: 4000, maxY: 4000 });
+    expect(small.z).toBe(15);
+    expect(big.z).toBeLessThan(15);
+    for (const r of [small, big]) expect((r.tx1 - r.tx0 + 1) * (r.ty1 - r.ty0 + 1)).toBeLessThanOrEqual(16);
   });
 });

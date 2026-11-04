@@ -215,17 +215,23 @@ export function gridLayout(rect: PlanRect, cellM: number): { nx: number; ny: num
   return { nx, ny, maxX: rect.minX + (nx - 1) * cellM, maxY: rect.minY + (ny - 1) * cellM };
 }
 
-export async function fetchElevationGrid(geo: GardenPlanGeo, plotRect: PlanRect, cellM: number): Promise<ElevationGrid> {
-  const z = TERRAIN_MAX_ZOOM;
-  const { nx, ny, maxX, maxY } = gridLayout(plotRect, cellM);
-  const rect = { ...plotRect, maxX, maxY }; // tiles for the overshooting last row/column too
-  const corners = [
+/** Tile range for a rect: the finest zoom (≤ 15) that needs at most 16 tiles, so big plans get coarser tiles instead of no terrain. */
+export function terrainTileRange(geo: GardenPlanGeo, rect: PlanRect): { z: number; tx0: number; tx1: number; ty0: number; ty1: number } {
+  const ll = [
     planToLatLon({ xM: rect.minX, yM: rect.minY }, geo), planToLatLon({ xM: rect.maxX, yM: rect.minY }, geo),
     planToLatLon({ xM: rect.maxX, yM: rect.maxY }, geo), planToLatLon({ xM: rect.minX, yM: rect.maxY }, geo),
-  ].map(c => lonLatToTileFloat(c.lat, c.lon, z));
-  const tx0 = Math.floor(Math.min(...corners.map(c => c.x))), tx1 = Math.floor(Math.max(...corners.map(c => c.x)));
-  const ty0 = Math.floor(Math.min(...corners.map(c => c.y))), ty1 = Math.floor(Math.max(...corners.map(c => c.y)));
-  if ((tx1 - tx0 + 1) * (ty1 - ty0 + 1) > 16) throw new Error('terrain area too large');
+  ];
+  for (let z = TERRAIN_MAX_ZOOM; ; z--) {
+    const c = ll.map(p => lonLatToTileFloat(p.lat, p.lon, z));
+    const r = { z, tx0: Math.floor(Math.min(...c.map(q => q.x))), tx1: Math.floor(Math.max(...c.map(q => q.x))), ty0: Math.floor(Math.min(...c.map(q => q.y))), ty1: Math.floor(Math.max(...c.map(q => q.y))) };
+    if (z === 0 || (r.tx1 - r.tx0 + 1) * (r.ty1 - r.ty0 + 1) <= 16) return r;
+  }
+}
+
+export async function fetchElevationGrid(geo: GardenPlanGeo, plotRect: PlanRect, cellM: number): Promise<ElevationGrid> {
+  const { nx, ny, maxX, maxY } = gridLayout(plotRect, cellM);
+  const rect = { ...plotRect, maxX, maxY }; // tiles for the overshooting last row/column too
+  const { z, tx0, tx1, ty0, ty1 } = terrainTileRange(geo, rect);
 
   const tiles = new Map<string, ImageData>();
   const sources = new Set<string>();

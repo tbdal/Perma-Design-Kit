@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Höhenmodell bei großen Plänen 2026-11-04
+- [x] **Höhenlinien bei großen Plänen**: war das Gelände samt Umgebung größer als 16 Karten-Kacheln, brach das Laden mit „Höhendaten nicht verfügbar: AWS“ ab und die amtlichen Höhen kamen gar nicht dazu; jetzt nimmt es dafür gröbere Kacheln #bugs #prüfen
+
 ## Pflanzen in der Liste zeigen, Fläche oder Ebene 2026-11-04
 - [x] **Klick auf Pflanzen in der Ebenenliste**: die gewählten Pflanzen pulsieren kurz auf der Karte, die Ansicht fährt dorthin, wenn sie außerhalb oder nur ein Punkt sind (2D und 3D, auch bei mehreren) #minor #prüfen
 - [x] **Eine Pflanze liegt in einer Ebene oder in einer Fläche**: wer in eine Fläche verschoben wird, verlässt seine Ebenen; im Plan „7L Nordacker – Artenliste 2026“ sind die Pflanzen so aus den Ebenen herausgenommen (sie stehen in ihren Flächen) #minor #prüfen
