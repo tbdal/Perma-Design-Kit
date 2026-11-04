@@ -13,7 +13,10 @@
     var stored = localStorage.getItem('theme');
     var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     root.classList.toggle('dark', stored === 'dark' || (!stored && prefersDark));
-    if (localStorage.getItem('pdk-design') === 'standard') delete root.dataset.design;
+    var design = localStorage.getItem('pdk-design');
+    if (design === 'standard') delete root.dataset.design;
+    // A further design a module offers (its CSS comes with the module): set it before first paint, a plain word only.
+    else if (design && /^[a-z-]{1,20}$/.test(design)) root.dataset.design = design;
     // Contrast: 'more' / 'normal' chosen in the app, otherwise follow the OS.
     var contrast = localStorage.getItem('pdk-contrast');
     if (contrast === 'more' || (contrast !== 'normal' && window.matchMedia('(prefers-contrast: more)').matches)) {
