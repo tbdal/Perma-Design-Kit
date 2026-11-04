@@ -17,6 +17,14 @@ const containerMaxW = full ? 'max-w-none' : wide ? 'max-w-[1600px]' : 'max-w-6xl
 const barMaxW = 'max-w-[1600px]';
 // Default modes per feature for public/boot.js (hides panels before first paint).
 const featureDefaultsJson = JSON.stringify(featureDefaults());
+// The feedback menu: the same entries behind the Feedback button (bottom right) and the Beta shield (header); hrefs get ?from= in the script.
+const fbItems = [
+  { fb: 'bug', href: '/fehler-melden/', label: 'feedbackBug', de: 'Fehler melden', hint: 'feedbackBugHint', deHint: 'Etwas geht nicht oder sieht falsch aus' },
+  { fb: 'pick', href: '', label: 'feedbackPick', de: 'Stelle markieren', hint: 'feedbackPickHint', deHint: 'Anklicken, wo es nicht stimmt' },
+  { fb: 'idea', href: '/fehler-melden/?art=idee', label: 'feedbackIdea', de: 'Idee einreichen', hint: 'feedbackIdeaHint', deHint: 'Was fehlt, was wäre besser?' },
+  { fb: 'mail', href: 'mailto:info@permadesignkit.org', label: 'feedbackMail', de: 'Mail ans Team', hint: 'feedbackMailHint', deHint: 'info@permadesignkit.org' },
+];
+const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 dark:hover:bg-stone-800';
 ---
 <!doctype html>
 <html lang="de" class="h-full" data-design="horizont" data-feature-defaults={featureDefaultsJson}>
@@ -196,8 +204,16 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
             <svg id="theme-icon-light" class="h-4 w-4 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path stroke-linecap="round" d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
             <svg id="theme-icon-dark" class="h-4 w-4 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
           </button>
-          <!-- Beta shield (only in the beta mode): one click to the feedback form -->
-          <a id="beta-badge" hidden href="/fehler-melden/?beta=1" data-i18n-title="betaBadgeTitle" title="Beta-Test: Wir brauchen deine Meinung" class="rounded-md border border-amber-300/80 px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-amber-200 transition hover:bg-green-800 dark:hover:bg-green-900"><span data-i18n="betaBadge">Beta</span></a>
+          <!-- Beta shield (only in the beta mode): the same feedback menu as the Feedback button -->
+          <details id="beta-badge" hidden class="relative">
+            <summary data-i18n-title="betaBadgeTitle" title="Beta-Test: Wir brauchen deine Meinung" class="cursor-pointer list-none rounded-md border border-amber-300/80 px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-amber-200 transition hover:bg-green-800 dark:hover:bg-green-900 [&::-webkit-details-marker]:hidden"><span data-i18n="betaBadge">Beta</span></summary>
+            <div class="absolute right-0 top-full z-50 mt-2 w-64 rounded-xl bg-white dark:bg-stone-900 p-2 text-sm normal-case tracking-normal shadow-2xl ring-1 ring-stone-200 dark:ring-stone-700">
+              <p class="px-2 pb-1.5 pt-1 text-xs text-stone-500 dark:text-stone-400" data-i18n="feedbackIntro">Was sollen wir wissen?</p>
+              {fbItems.map(i => i.href
+          ? <a data-fb={i.fb} href={i.href} class={fbItem}><span class="font-semibold text-stone-800 dark:text-stone-100" data-i18n={i.label}>{i.de}</span><span class="block text-xs text-stone-500 dark:text-stone-400" data-i18n={i.hint}>{i.deHint}</span></a>
+          : <button data-fb={i.fb} type="button" class={fbItem}><span class="font-semibold text-stone-800 dark:text-stone-100" data-i18n={i.label}>{i.de}</span><span class="block text-xs text-stone-500 dark:text-stone-400" data-i18n={i.hint}>{i.deHint}</span></button>)}
+            </div>
+          </details>
           <!-- Account and settings: one button at the far right (name, settings, phone sign-in, sign in / out) -->
           <div class="relative">
             <button id="user-toggle" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="user-menu" data-i18n-aria-label="userMenuLabel" data-i18n-title="userMenuLabel" aria-label="Konto und Einstellungen" title="Konto und Einstellungen" class="ml-0.5 flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-green-100 ring-1 ring-green-300/60 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900">
@@ -231,7 +247,6 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
           <button type="button" id="open-welcome" data-i18n="footerIntro" class="hover:text-stone-700 dark:hover:text-stone-200 hover:underline">Einführung</button>
           <a href="/unterstuetzen" class="font-semibold hover:text-stone-700 dark:hover:text-stone-200 hover:underline"><span aria-hidden="true">💚</span> <span data-i18n="footerSupport">Unterstützen</span></a>
           <a href="/impressum" data-i18n="footerImprint" class="hover:text-stone-700 dark:hover:text-stone-200 hover:underline">Impressum</a>
-          <a href="/fehler-melden/" id="report-link" data-i18n="footerReport" class="hover:text-stone-700 dark:hover:text-stone-200 hover:underline">Fehler melden</a>
           <a href="https://github.com/tbdal/Perma-Design-Kit" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub" class="inline-flex items-center gap-1 hover:text-stone-700 dark:hover:text-stone-200 hover:underline">
             <svg class="h-4 w-4" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
             GitHub
@@ -398,9 +413,9 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
       </summary>
       <div class="absolute bottom-full right-0 mb-2 w-64 rounded-xl bg-white dark:bg-stone-900 p-2 text-sm shadow-2xl ring-1 ring-stone-200 dark:ring-stone-700">
         <p class="px-2 pb-1.5 pt-1 text-xs text-stone-500 dark:text-stone-400" data-i18n="feedbackIntro">Was sollen wir wissen?</p>
-        <a id="feedback-bug" href="/fehler-melden/" class="block rounded-lg px-2 py-2 hover:bg-stone-100 dark:hover:bg-stone-800"><span class="font-semibold text-stone-800 dark:text-stone-100" data-i18n="feedbackBug">Fehler melden</span><span class="block text-xs text-stone-500 dark:text-stone-400" data-i18n="feedbackBugHint">Etwas geht nicht oder sieht falsch aus</span></a>
-        <button id="feedback-pick" type="button" class="block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 dark:hover:bg-stone-800"><span class="font-semibold text-stone-800 dark:text-stone-100" data-i18n="feedbackPick">Stelle markieren</span><span class="block text-xs text-stone-500 dark:text-stone-400" data-i18n="feedbackPickHint">Anklicken, wo es nicht stimmt</span></button>
-        <a id="feedback-idea" href="/fehler-melden/?art=idee" class="block rounded-lg px-2 py-2 hover:bg-stone-100 dark:hover:bg-stone-800"><span class="font-semibold text-stone-800 dark:text-stone-100" data-i18n="feedbackIdea">Idee einreichen</span><span class="block text-xs text-stone-500 dark:text-stone-400" data-i18n="feedbackIdeaHint">Was fehlt, was wäre besser?</span></a>
+        {fbItems.map(i => i.href
+          ? <a id={`feedback-${i.fb}`} data-fb={i.fb} href={i.href} class={fbItem}><span class="font-semibold text-stone-800 dark:text-stone-100" data-i18n={i.label}>{i.de}</span><span class="block text-xs text-stone-500 dark:text-stone-400" data-i18n={i.hint}>{i.deHint}</span></a>
+          : <button id={`feedback-${i.fb}`} data-fb={i.fb} type="button" class={fbItem}><span class="font-semibold text-stone-800 dark:text-stone-100" data-i18n={i.label}>{i.de}</span><span class="block text-xs text-stone-500 dark:text-stone-400" data-i18n={i.hint}>{i.deHint}</span></button>)}
       </div>
     </details>
     <div id="ios-install-popup" hidden class="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-md rounded-xl bg-white dark:bg-stone-900 p-4 shadow-2xl ring-1 ring-stone-200 dark:ring-stone-700">
@@ -843,22 +858,22 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
         });
       }
 
-      // "Fehler melden" carries the current page (path + query, never the
+      // The feedback menus (Feedback button, Beta shield) carry the current page (path + query, never the
       // #fragment — a share link keeps a whole project there).
-      document.getElementById('report-link')?.setAttribute('href', `/fehler-melden/?from=${encodeURIComponent(location.pathname + location.search)}`);
       {
         const from = encodeURIComponent(location.pathname + location.search);
-        document.getElementById('feedback-bug')?.setAttribute('href', `/fehler-melden/?from=${from}`);
-        document.getElementById('feedback-idea')?.setAttribute('href', `/fehler-melden/?art=idee&from=${from}`);
+        document.querySelectorAll('[data-fb="bug"]').forEach(a => a.setAttribute('href', `/fehler-melden/?from=${from}`));
+        document.querySelectorAll('[data-fb="idea"]').forEach(a => a.setAttribute('href', `/fehler-melden/?art=idee&from=${from}`));
+        const menus = [...document.querySelectorAll<HTMLDetailsElement>('#feedback-fab, #beta-badge')];
         const fab = document.getElementById('feedback-fab') as HTMLDetailsElement | null;
         // Not on the report page itself; in the planner on phones the map and its bottom bar need the corner.
         if (fab && (location.pathname.startsWith('/fehler-melden') || (location.pathname.startsWith('/gartenplan') && matchMedia('(max-width: 639px)').matches))) fab.hidden = true;
-        document.getElementById('feedback-pick')?.addEventListener('click', () => {
-          if (fab) fab.open = false;
+        document.querySelectorAll('[data-fb="pick"]').forEach(b => b.addEventListener('click', () => {
+          menus.forEach(m => { m.open = false; });
           void import('../lib/feedback-pick').then(m => m.startPick());
-        });
-        document.addEventListener('click', e => { if (fab?.open && !fab.contains(e.target as Node)) fab.open = false; });
-        document.addEventListener('keydown', e => { if (e.key === 'Escape' && fab?.open) fab.open = false; });
+        }));
+        document.addEventListener('click', e => menus.forEach(m => { if (m.open && !m.contains(e.target as Node)) m.open = false; }));
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') menus.forEach(m => { m.open = false; }); });
       }
 
       // Highlight active top-nav link based on the current pathname.
@@ -1081,7 +1096,7 @@ const featureDefaultsJson = JSON.stringify(featureDefaults());
         const mode = currentMode();
         const auth = getAuth();
         document.getElementById('mode-current')!.textContent = t(MODE_LABEL[mode]);
-        (document.getElementById('beta-badge') as HTMLAnchorElement).hidden = mode !== 'expert';
+        document.getElementById('beta-badge')!.hidden = mode !== 'expert';
         menu.querySelectorAll<HTMLElement>('[data-mode-opt]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.modeOpt === mode)));
         document.getElementById('mode-expert-lock')!.toggleAttribute('hidden', !!auth);
         // Team: only offered to accounts that may use it.

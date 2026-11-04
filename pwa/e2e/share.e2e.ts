@@ -60,8 +60,9 @@ test('report page: carries the page, debug file has no credentials', async ({ pa
   await stubNetwork(page);
   await page.goto('/gartenplan');
   await page.evaluate(() => { localStorage.setItem('webdav-pass', 'geheim123'); localStorage.setItem('gist-token', 'ghp_secret'); });
-  await expect(page.locator('#report-link')).toHaveAttribute('href', /^\/fehler-melden\/\?from=%2Fgartenplan(%2F)?$/);
-  await page.click('#report-link');
+  await expect(page.locator('#feedback-bug')).toHaveAttribute('href', /^\/fehler-melden\/\?from=%2Fgartenplan(%2F)?$/);
+  await page.locator('#feedback-fab summary').click();
+  await page.click('#feedback-bug');
   await expect(page.locator('#rp-page')).toHaveValue(/^\/gartenplan\/?$/);
   await page.fill('#rp-what', 'Test');
   await page.check('#rp-project');

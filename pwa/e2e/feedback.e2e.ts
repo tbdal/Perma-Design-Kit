@@ -7,6 +7,8 @@ test('feedback button opens "Fehler melden" and "Idee einreichen" for the curren
   const fab = page.locator('#feedback-fab');
   await fab.locator('summary').click();
   await expect(page.locator('#feedback-idea')).toBeVisible();
+  await expect(page.locator('#feedback-mail')).toHaveAttribute('href', 'mailto:info@permadesignkit.org');
+  await expect(page.locator('footer a[href^="/fehler-melden"]')).toHaveCount(0);
   await page.screenshot({ path: 'test-results/feedback-open.png' });
   await page.click('#feedback-idea');
   await expect(page).toHaveURL(/\/fehler-melden\/\?art=idee&from=%2Fkalender/);

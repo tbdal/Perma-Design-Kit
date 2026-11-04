@@ -75,8 +75,9 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
     const env = environmentLine();
     document.getElementById('rp-env')!.textContent = env;
 
-    const beta = new URLSearchParams(location.search).get('beta') === '1'; // from the Beta shield in the header
-    if (beta && currentMode() === 'expert') document.getElementById('rp-beta')!.hidden = false;
+    // Beta mode: the report (bug or idea) can also go straight into the team's Werkstatt.
+    const beta = currentMode() === 'expert';
+    document.getElementById('rp-beta')!.hidden = !beta;
     const text = (): ReportText => ({ page: page.value.trim(), what: what.value.trim(), expected: expected.value.trim(), ...(idea ? { idea } : {}), ...(beta ? { beta } : {}) });
 
     const status = document.getElementById('rp-status')!;
@@ -101,10 +102,14 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
       const action = ((e as SubmitEvent).submitter as HTMLButtonElement | null)?.dataset.action;
       const de = getLang() === 'de';
       if (action === 'beta') {
-        // the Beta shield: straight into the team's task list, no mail address involved
+        // Straight into the team's task list, no mail address involved: each answer under its question
+        // as the form showed it, the debug file (bugs; with the project if ticked) attached to the entry.
         status.textContent = '…';
+        const label = (el: HTMLElement) => el.closest('label')!.querySelector('span')!.textContent!.trim();
+        const answers = [page, what, expected].filter(f => f.value.trim()).map(f => `**${label(f)}** ${f.value.trim()}`).join('\n\n');
         try {
-          const res = await fetch('/api/x/beta/feedback', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: [what.value.trim(), expected.value.trim()].filter(Boolean).join('\n\n'), page: page.value.trim() }) });
+          const debug = idea ? undefined : await buildDebugInfo(text(), withProject.checked);
+          const res = await fetch('/api/x/big/beta/feedback', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: answers, idea, debug }) });
           status.textContent = res.ok ? (de ? 'Danke! Deine Rückmeldung ist beim Team angekommen.' : 'Thank you! Your feedback reached the team.') : (de ? 'Das hat nicht geklappt. Bist du angemeldet?' : 'That did not work. Are you logged in?');
           if (res.ok) { what.value = ''; expected.value = ''; }
         } catch { status.textContent = de ? 'Der Server ist gerade nicht erreichbar.' : 'The server can’t be reached right now.'; }
@@ -114,16 +119,18 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
       status.textContent = '…';
       if (!idea) { try { file = await makeFile(); } catch (err) { failed(err); } }
       else status.textContent = '';
+      // A link can't attach the file: the text names it, so it isn't forgotten.
+      const envF = file ? `${env}\n${de ? 'Debug-Datei (heruntergeladen, bitte anhängen)' : 'Debug file (downloaded, please attach)'}: ${file.name}` : env;
       if (action === 'mail') {
         const share = { files: file ? [file] : [] };
         if (file && navigator.canShare?.(share)) {
           try { await navigator.share({ ...share, title: `[${page.value.trim()}] PDK`, text: `${REPORT_MAIL}\n\n${what.value.trim()}\n\n${env}` }); status.textContent = file.name; return; } catch (err) { if ((err as Error).name === 'AbortError') return; }
         }
         if (file) download(file);
-        location.href = mailtoUrl(text(), env, de);
+        location.href = mailtoUrl(text(), envF, de);
       } else {
         if (file) download(file);
-        if (!window.open(issueUrl(text(), env), '_blank', 'noopener')) location.href = issueUrl(text(), env);
+        if (!window.open(issueUrl(text(), envF), '_blank', 'noopener')) location.href = issueUrl(text(), envF);
       }
     });
   </script>
