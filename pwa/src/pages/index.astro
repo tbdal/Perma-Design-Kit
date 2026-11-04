@@ -472,6 +472,7 @@ import Layout from '../layouts/Layout.astro';
   import { showUndoToast } from '../lib/undo-toast';
   import { displayName } from '../lib/plant-name';
   import { createEmptyPlant, type PlantData, type DataSource, sourceLabel, SOURCE_COLOR } from '../lib/types';
+  import { normalizePlant } from '../lib/plant-normalize';
   import { samplePlants } from '../lib/sample-data';
   import { crawfordPlants } from '../lib/sample-data-crawford';
   import { importFromCSV, buildCSV, buildCSVTemplate } from '../lib/csv';
@@ -1451,6 +1452,9 @@ import Layout from '../layouts/Layout.astro';
     document.getElementById(slot)!.appendChild(b);
     return b;
   };
+  /** Plants of modules (setExtraPlants), per feature: names and records for placed plants missing from the list. */
+  const extraPlants = new Map<string, Map<string, PlantData>>();
+  const extraPlant = (id: string) => { for (const m of extraPlants.values()) { const p = m.get(id); if (p) return p; } return undefined; };
   providePageApi('pflanzen', {
     getPlants: () => cachedPlants,
     getEditingPlant: () => editingPlant,
@@ -1475,6 +1479,7 @@ import Layout from '../layouts/Layout.astro';
       return b;
     },
     holdLeave: (p) => { leaveHolds.push(p); },
+    setExtraPlants: (featureId, plants) => { extraPlants.set(featureId, new Map(plants.map(p => [p.id, p]))); renderList(); },
     addDataMenuButton: (featureId, label, onClick) => {
       const b = slotButton('data-menu-extra', featureId, label, 'block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700');
       b.addEventListener('click', () => onClick());
@@ -1931,7 +1936,9 @@ import Layout from '../layouts/Layout.astro';
       const n = items.reduce((a, p) => a + (use(p)?.count ?? 0), 0);
       return det(`${side}-${h}`, t(`planHabit_${h}`), side === 'in' ? `${t('planSpecies', { n: items.length })} · ${t('planPlaced', { n })}` : t('planSpecies', { n: items.length }), items.map(row).join(''), 'ml-3 border-t border-stone-100 dark:border-stone-700');
     }).join('');
-    const labelOf = (plantId: string) => (plan.placements.find(pl => pl.plantId === plantId && pl.notes?.trim())?.notes.trim().split('\n')[0].slice(0, 60)) || t('planUnknownPlant');
+    // The plant's own name where a module knows it (shared plan), else the first placement note (Werkstatt #489).
+    const known = (p: PlantData | undefined) => p && (displayName(p) || p.latinName) ? `${displayName(p) || p.latinName}${p.varietyName ? ` (${p.varietyName})` : ''}` : '';
+    const labelOf = (plantId: string) => known(extraPlant(plantId)) || (plan.placements.find(pl => pl.plantId === plantId && pl.notes?.trim())?.notes.trim().split('\n')[0].slice(0, 60)) || t('planUnknownPlant');
     const missingRow = missingAll.map(m => `<div class="ml-3 flex items-center justify-between gap-3 border-t border-dashed border-stone-200 dark:border-stone-700 py-1.5 text-sm"><span class="min-w-0 truncate">${escapeHtml(labelOf(m.plantId))} <span class="rounded-full bg-amber-100 px-2 py-px text-xs text-amber-900 dark:bg-amber-900/40 dark:text-amber-200">${escapeHtml(t('planNotInList'))}</span> <span class="text-xs tabular-nums text-stone-500">${escapeHtml(t('planPlacedN', { n: m.count }))}</span></span><button type="button" data-adopt="${escapeHtml(m.plantId)}" class="shrink-0 rounded-md px-2 py-0.5 text-xs font-semibold text-green-800 ring-1 ring-green-700 hover:bg-green-50 dark:text-green-300 dark:ring-green-600 dark:hover:bg-green-900/30">${escapeHtml(t('planAdopt'))}</button></div>`).join('');
     listEl.className = 'rounded-xl bg-white dark:bg-stone-800 px-4 py-2 text-sm shadow-sm ring-1 ring-stone-200 dark:ring-stone-700';
     const nums = t('planSummary', { in: inPlan.length, out: notInPlan.length, placed, planted });
@@ -1976,7 +1983,13 @@ import Layout from '../layouts/Layout.astro';
       for (const rowEl of dlg.querySelectorAll<HTMLElement>('[data-adopt-row]')) {
         const id = rowEl.dataset.adoptRow!, v = rowEl.querySelector<HTMLSelectElement>('[data-adopt-choice]')!.value;
         const name = rowEl.querySelector<HTMLInputElement>('[data-adopt-name]')!.value.trim();
-        if (v === 'new') { const np = createEmptyPlant(); np.id = id; np.commonName = name || t('planUnknownPlant'); await savePlant(np); }
+        if (v === 'new') {
+          // the record the shared plan brought along, else an empty plant with the name
+          const np = normalizePlant(extraPlant(id)) ?? createEmptyPlant();
+          np.id = id;
+          if (name && name !== labelOf(id)) np.commonName = name; else if (!np.commonName && !np.latinName) np.commonName = name || t('planUnknownPlant');
+          await savePlant(np);
+        }
         else if (v.startsWith('link:')) links.set(id, { to: v.slice(5), name });
       }
       if (links.size) {

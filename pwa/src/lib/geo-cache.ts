@@ -121,8 +121,8 @@ export async function refreshGeoData(): Promise<void> {
 /** "Load this layer again": drops only the given groups' entries (the rest stays cached), then as refreshGeoData(). */
 export async function refreshGeoGroups(groups: GeoGroup[]): Promise<void> {
   const cache = await open();
-  try {
-    for (const req of cache ? await cache.keys() : []) {
+  if (cache) try {
+    for (const req of await cache.keys()) {
       if (groups.includes(geoGroup(decodeURIComponent(new URL(req.url).pathname.replace('/__geo-cache__/', ''))))) await cache.delete(req);
     }
   } catch { /* best effort */ }
