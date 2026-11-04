@@ -63,7 +63,7 @@ export const layoutDict: Dict = {
   fontSize130: { de: 'Schrift sehr groß (130 %)', en: 'Largest text (130%)' },
   displayHelp: { de: '„System“ folgt der Einstellung „Kontrast erhöhen“ deines Geräts. Gilt nur für dieses Gerät.', en: '“System” follows your device’s “increase contrast” setting. Applies to this device only.' },
 
-  footerHelp: { de: 'Hilfe', en: 'Help' },
+  footerHelp: { de: 'Anleitung', en: 'Guide' },
   footerNewsletter: { de: 'Newsletter', en: 'Newsletter' },
   footerSupport: { de: 'Unterstützen', en: 'Support' },
   footerPrivacy: { de: 'Datenschutz', en: 'Privacy' },
