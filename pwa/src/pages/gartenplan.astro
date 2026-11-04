@@ -629,7 +629,7 @@ import Layout from '../layouts/Layout.astro';
   import type { Scene3DLayer, Contours3D } from '../lib/gartenplan-3d';
   import { BOOL_FIELDS } from '../lib/plant-fields';
   import { orthoFor } from '../lib/ortho-sources';
-  import { dgmFor, refineWithDgm } from '../lib/dgm';
+  import { dgmFor, officialHeightsWanted, refineWithDgm } from '../lib/dgm';
   import { fetchElevationGrid, sampleGrid, gridRange, slopeInfo, contourSegments, contourInterval, TERRAIN_ATTRIBUTION, type ElevationGrid } from '../lib/terrain';
   import { plantDetailHtml } from '../lib/plant-detail';
   import { compatScore } from '../lib/compat';
@@ -3846,7 +3846,7 @@ import Layout from '../layouts/Layout.astro';
     const m = Math.max(BUILDINGS_MARGIN_M + 10, Math.min(maxDim, 1000));
     // With an official 1 m model (dgm.ts) the grid gets finer and is refined
     // with its heights; elsewhere the Terrain Tiles alone (≈ 25–30 m data).
-    const dgm = dgmFor(geo.lat, geo.lon);
+    const dgm = officialHeightsWanted() ? dgmFor(geo.lat, geo.lon) : null;
     const span = maxDim + 2 * m;
     try {
       let grid = await fetchElevationGrid(geo, { minX: -m, minY: -m, maxX: plan.areaWidthM + m, maxY: plan.areaHeightM + m }, Math.max(span / 800, Math.min(4, Math.max(1, span / (dgm ? 300 : 100)))));

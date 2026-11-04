@@ -62,6 +62,12 @@ function inRing(lon: number, lat: number, ring: [number, number][]): boolean {
   return inside;
 }
 
+/** Height source chosen in the planner's layer info (per device): 'aws' = always the Terrain Tiles, never the official model. */
+export const HEIGHT_SOURCE_KEY = 'pdk-hoehen-quelle';
+export function officialHeightsWanted(): boolean {
+  try { return localStorage.getItem(HEIGHT_SOURCE_KEY) !== 'aws'; } catch { return true; }
+}
+
 /** The 1 m terrain model covering a location, or null. */
 export function dgmFor(lat: number, lon: number): DgmSource | null {
   // Bremen lies inside the Niedersachsen outline but isn't in its model.

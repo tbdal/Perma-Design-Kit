@@ -118,6 +118,17 @@ export async function refreshGeoData(): Promise<void> {
   try { sessionStorage.setItem(REFRESH_KEY, String(Date.now())); } catch { /* ignore */ }
 }
 
+/** "Load this layer again": drops only the given groups' entries (the rest stays cached), then as refreshGeoData(). */
+export async function refreshGeoGroups(groups: GeoGroup[]): Promise<void> {
+  const cache = await open();
+  try {
+    for (const req of cache ? await cache.keys() : []) {
+      if (groups.includes(geoGroup(decodeURIComponent(new URL(req.url).pathname.replace('/__geo-cache__/', ''))))) await cache.delete(req);
+    }
+  } catch { /* best effort */ }
+  try { sessionStorage.setItem(REFRESH_KEY, String(Date.now())); } catch { /* ignore */ }
+}
+
 export function geoRefreshing(): boolean {
   try { const t = Number(sessionStorage.getItem(REFRESH_KEY)); return t > 0 && Date.now() - t < REFRESH_MS; } catch { return false; }
 }
