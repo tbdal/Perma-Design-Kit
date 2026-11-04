@@ -2021,7 +2021,7 @@ import Layout from '../layouts/Layout.astro';
         const mPerPx = scale ? scale / 1000 / 6 : plan.areaWidthM / 2000;
         const bg = await basemapSvgInline(plan, mPerPx);
         backgroundSvg = bg.svg;
-        backgroundCredit = basemapAttribution(plan).replace(/<[^>]+>/g, '').replace(/&amp;/g, '&');
+        backgroundCredit = !bg.svg ? '' : basemapAttribution(plan).replace(/ · Übersicht:.*$/, '').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&');
         if (bg.failed) showToast(t('pdfTilesFailed', { n: bg.failed, total: bg.total }));
       }
       await exportGardenPlanPDF(plan, plantsById, {

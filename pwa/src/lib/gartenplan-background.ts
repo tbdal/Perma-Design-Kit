@@ -25,12 +25,12 @@ export const OSM_TILES: TileSource = {
 };
 
 /** Sentinel-2 cloudless 2016 (10 m) — coarse context layer, shown only in the
- *  location dialog, never under the plan. Data CC BY 4.0; EOX's hosted WMTS is
- *  free for non-commercial use only. */
+ *  location dialog, never under the plan. EOX marks the 2016 layer (s2cloudless_3857)
+ *  CC BY 4.0 in its WMTS capabilities (2018+ is CC BY-NC-SA). Not used in the PDF export (basemapSvgInline). */
 export const S2_TILES: TileSource = {
   url: 'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/{z}/{y}/{x}.jpg',
   maxZoom: 14,
-  attributionHtml: '<a href="https://s2maps.eu" target="_blank" rel="noopener">Sentinel-2 cloudless – s2maps.eu</a> by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2016 &amp; 2017)',
+  attributionHtml: '<a href="https://s2maps.eu" target="_blank" rel="noopener">Sentinel-2 cloudless – s2maps.eu</a> by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2016), <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>',
 };
 
 const HALF_WORLD = 20037508.342789244;
@@ -138,9 +138,12 @@ export async function basemapSvgInline(plan: GardenPlan, mPerPx: number): Promis
     });
   };
   const tags = [...raw.matchAll(/<image href="([^"]+)"(?: data-fallback="([^"]+)")?([^>]*)\/>/g)];
+  // EOX tiles (coarse satellite, also as fallback) are never embedded in the export: they may be handed on commercially.
+  const eox = (u?: string) => !!u && u.includes('tiles.maps.eox.at');
+  if (tags.every(m => eox(m[1]))) return { svg: '', total: 0, failed: 0 };
   let failed = 0;
   const out = await Promise.all(tags.map(async m => {
-    for (const u of [m[1], m[2]].filter(Boolean) as string[]) {
+    for (const u of [m[1], m[2]].filter(u => u && !eox(u)) as string[]) {
       try { return `<image href="${await toDataUrl(decode(u))}"${m[3]}/>`; } catch { /* next */ }
     }
     failed++;
