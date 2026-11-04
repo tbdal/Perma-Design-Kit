@@ -10,8 +10,11 @@ import { cachedFetch, DAY_MS } from './geo-cache';
 // queried as WCS 2.0 GetCoverage (float32 GeoTIFF) straight from the
 // browser (CORS checked 2026-10-04). Where one covers the garden, its heights
 // replace the coarse Terrain Tiles in the elevation grid; outside its area
-// (nodata) the coarse value stays. Other states only offer downloads or
-// closed services so far (Bayern: paid WCS; Sachsen: 403). Sachsen-Anhalt has no
+// (nodata) the coarse value stays. Other states only offer downloads, coloured
+// pictures or paid services so far (checked 2026-11-04, Werkstatt #494): Bayern and
+// Saarland charge for their WCS; Sachsen's WMS gives colours only; Hamburg only a
+// coloured WMS; Schleswig-Holstein, Thüringen, Bremen and Rheinland-Pfalz only
+// downloads. Sachsen-Anhalt has no
 // DGM1 WCS, but its DGM1 WMS (ArcGIS) hands out the raw heights as a float32
 // GeoTIFF (FORMAT=image/tiff), so it is asked as WMS GetMap (`wmsLayer`).
 
@@ -35,6 +38,7 @@ const DLZERO = A('https://www.govdata.de/dl-de/zero-2-0', 'dl-de/zero-2-0');
 const CCBY = A('https://creativecommons.org/licenses/by/4.0/', 'CC BY 4.0');
 
 const LVERMGEO_ST = A('https://www.lvermgeo.sachsen-anhalt.de', 'LVermGeo ST');
+const GEOBASIS_MV = A('https://www.laiv-mv.de/Geoinformation/Geobasisdaten/Gelaendemodelle/', 'GeoBasis-DE/M-V');
 
 export const DGM_SOURCES: DgmSource[] = [
   { id: 'st', region: { de: 'Sachsen-Anhalt', en: 'Saxony-Anhalt' }, url: 'https://www.geodatenportal.sachsen-anhalt.de/wss/service/ST_LVermGeo_DGM1_WMS_OpenData/guest', coverageId: '', wmsLayer: 'DGM1', crs: 25832, axes: ['x', 'y'], scaling: true, resolutionM: 1,
@@ -49,6 +53,9 @@ export const DGM_SOURCES: DgmSource[] = [
     attributionHtml: `Gelände: © ${A('https://hvbg.hessen.de', 'HVBG')}, ${DLZERO}`, coverage: 'he' },
   { id: 'ni', region: { de: 'Niedersachsen', en: 'Lower Saxony' }, url: 'https://opendata.geoservices.lgln.niedersachsen.de/dgm_wcs', coverageId: 'ni_dgm1', crs: 25832, axes: ['x', 'y'], scaling: true, resolutionM: 1,
     attributionHtml: `Gelände: © ${A('https://www.lgln.niedersachsen.de', 'LGLN')} ({YEAR}), ${CCBY}`, coverage: 'ni' },
+  // MapServer WCS (float32 GeoTIFF, CORS *); the service asks for "© GeoBasis-DE/M-V <year of the last delivery>".
+  { id: 'mv', region: { de: 'Mecklenburg-Vorpommern', en: 'Mecklenburg-Western Pomerania' }, url: 'https://www.geodaten-mv.de/dienste/dgm_wcs', coverageId: 'mv_dgm', crs: 25833, axes: ['x', 'y'], scaling: true, resolutionM: 1,
+    attributionHtml: `Gelände: © ${GEOBASIS_MV} {YEAR}`, coverage: 'mv' },
   { id: 'nl', region: { de: 'Niederlande (AHN)', en: 'Netherlands (AHN)' }, url: 'https://service.pdok.nl/rws/ahn/wcs/v1_0', coverageId: 'dtm_05m', crs: 4326, axes: ['Long', 'Lat'], scaling: true, resolutionM: 0.5,
     attributionHtml: `Gelände: AHN, ${A('https://www.pdok.nl', 'Rijkswaterstaat/PDOK')}, CC0`, coverage: 'nl' },
 ];
