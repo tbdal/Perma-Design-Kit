@@ -1,7 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
-// Public variety list of the 7L tree nursery (only species and variety names). The data comes from the
-// account's project in the server storage: refresh with `node src/expert/scripts/7l-export.mjs`, then deploy.
+// Variety list of the 7L tree nursery. Public: species and variety names (src/data/7l-sorten.json, refreshed
+// with `node src/expert/scripts/7l-export.mjs`). With the list's password, POST /api/beta/7l adds ripening
+// times and the profile fields – those stay off the public page (several profile sources are not free).
 import data from '../data/7l-sorten.json';
 
 const rows = data.sorten;
@@ -14,17 +15,23 @@ const stand = new Date(data.stand).toLocaleDateString('de-DE', { day: 'numeric',
       <h1 class="text-2xl font-bold">Sortenliste 7L Baumschule</h1>
       <p class="mt-1 max-w-3xl text-sm text-stone-600 dark:text-stone-300">{rows.length} Sorten von {arten.length} Obstarten, Stand {stand}. Nach Art auswählen oder im Namen suchen.</p>
     </div>
+    <form id="l7-login" class="flex max-w-xl flex-wrap items-center gap-2 rounded-lg bg-stone-100 dark:bg-stone-800 p-3 text-sm ring-1 ring-stone-200 dark:ring-stone-700">
+      <label for="l7-pw" class="font-medium">Alle Infos (Reifezeiten, Steckbrief) mit Passwort:</label>
+      <input id="l7-pw" type="password" autocomplete="current-password" required class="min-w-0 flex-1 rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5" />
+      <button type="submit" class="rounded-md bg-green-700 px-3 py-1.5 font-medium text-white hover:bg-green-800">Anzeigen</button>
+      <p id="l7-msg" class="w-full text-xs text-red-700 dark:text-red-300" aria-live="polite"></p>
+    </form>
     <div class="flex flex-wrap items-center gap-1.5">
       <button type="button" data-l7-art="" aria-pressed="true" class="l7-chip">Alle ({rows.length})</button>
       {arten.map(([art, n]) => <button type="button" data-l7-art={art} aria-pressed="false" class="l7-chip">{art} ({n})</button>)}
     </div>
     <label class="flex max-w-md items-center gap-2 text-sm">Suchen
-      <input type="search" id="l7-q" placeholder="Sorte oder Art …" class="min-w-0 flex-1 rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm" />
+      <input type="search" id="l7-q" placeholder="Sorte, Art, Geschmack …" class="min-w-0 flex-1 rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm" />
     </label>
     <p id="l7-count" class="text-xs text-stone-500 dark:text-stone-400" aria-live="polite">{rows.length} Sorten</p>
     <div class="overflow-x-auto rounded-xl bg-white dark:bg-stone-800 ring-1 ring-stone-200 dark:ring-stone-700">
       <table class="w-full text-sm">
-        <thead class="bg-stone-50 dark:bg-stone-900/40 text-left text-xs text-stone-500 dark:text-stone-400">
+        <thead id="l7-head" class="bg-stone-50 dark:bg-stone-900/40 text-left text-xs text-stone-500 dark:text-stone-400">
           <tr><th class="px-3 py-2">Art</th><th class="px-3 py-2">Sorte</th><th class="px-3 py-2">Botanisch</th></tr>
         </thead>
         <tbody id="l7-rows">
@@ -41,16 +48,23 @@ const stand = new Date(data.stand).toLocaleDateString('de-DE', { day: 'numeric',
     .l7-chip[aria-pressed="true"] { background: rgb(21 128 61); color: white; box-shadow: none; }
   </style>
   <script>
+    import { escapeHtml } from '../lib/html';
+
+    interface FullRow { art: string; latin: string; sorte: string; pick: string; eat: string; keep: string; fields: [string, string][] }
+    const KEY = 'pdk-7l-pw'; // for this tab only: a reload keeps the full list
     const root = document.getElementById('l7-root')!;
     const q = document.getElementById('l7-q') as HTMLInputElement;
-    const rows = [...document.querySelectorAll<HTMLTableRowElement>('#l7-rows tr')];
+    const body = document.getElementById('l7-rows')!;
     const count = document.getElementById('l7-count')!;
     const none = document.getElementById('l7-none')!;
+    const form = document.getElementById('l7-login') as HTMLFormElement;
+    const pw = document.getElementById('l7-pw') as HTMLInputElement;
+    const msg = document.getElementById('l7-msg')!;
     let art = '';
     function apply() {
       const words = q.value.toLowerCase().split(/\s+/).filter(Boolean);
       let n = 0;
-      for (const r of rows) {
+      for (const r of body.querySelectorAll<HTMLTableRowElement>(':scope > tr')) {
         const show = (!art || r.dataset.art === art) && words.every(w => r.dataset.q!.includes(w));
         r.hidden = !show;
         if (show) n++;
@@ -58,6 +72,34 @@ const stand = new Date(data.stand).toLocaleDateString('de-DE', { day: 'numeric',
       count.textContent = `${n} Sorten`;
       none.hidden = n > 0;
     }
+    function showFull(rows: FullRow[]) {
+      const td = 'px-3 py-1.5 align-top';
+      document.getElementById('l7-head')!.innerHTML = '<tr><th class="px-3 py-2">Art</th><th class="px-3 py-2">Sorte</th><th class="px-3 py-2">Pflückreife</th><th class="px-3 py-2">Genussreife</th><th class="px-3 py-2">Lagerung</th><th class="px-3 py-2">Steckbrief</th></tr>';
+      body.innerHTML = rows.map(r => `<tr data-art="${escapeHtml(r.art)}" data-q="${escapeHtml(`${r.art} ${r.sorte} ${r.latin} ${r.fields.map(f => f[1]).join(' ')}`.toLowerCase())}" class="border-t border-stone-100 dark:border-stone-700">
+        <td class="${td} text-stone-600 dark:text-stone-300">${escapeHtml(r.art)}</td>
+        <td class="${td} font-medium">${escapeHtml(r.sorte)}<div class="text-xs font-normal italic text-stone-500">${escapeHtml(r.latin)}</div></td>
+        <td class="${td}">${escapeHtml(r.pick)}</td><td class="${td}">${escapeHtml(r.eat || (r.pick ? 'wie Pflückreife' : ''))}</td><td class="${td}">${escapeHtml(r.keep)}</td>
+        <td class="${td}">${r.fields.length ? `<details><summary class="cursor-pointer text-green-800 dark:text-green-300">${r.fields.length} Angaben</summary>
+          <dl class="mt-1 grid max-w-xl grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-xs">${r.fields.map(([k, v]) => `<dt class="text-stone-500">${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd>`).join('')}</dl></details>` : ''}</td></tr>`).join('');
+      form.hidden = true;
+      apply();
+    }
+    async function load(passwort: string, quiet = false) {
+      msg.textContent = quiet ? '' : 'Lade …';
+      try {
+        const r = await fetch('/api/beta/7l', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ passwort }) });
+        if (r.ok) {
+          try { sessionStorage.setItem(KEY, passwort); } catch { /* private window */ }
+          showFull((await r.json()).sorten);
+          return;
+        }
+        try { sessionStorage.removeItem(KEY); } catch { /* private window */ }
+        if (!quiet) msg.textContent = r.status === 403 ? 'Das Passwort stimmt nicht.' : r.status === 429 ? 'Zu viele Versuche – bitte in 15 Minuten noch einmal.' : 'Die volle Liste ist gerade nicht verfügbar.';
+      } catch {
+        if (!quiet) msg.textContent = 'Keine Verbindung zum Server.';
+      }
+    }
+    form.addEventListener('submit', e => { e.preventDefault(); void load(pw.value); });
     root.addEventListener('click', e => {
       const b = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-l7-art]');
       if (!b) return;
@@ -66,5 +108,8 @@ const stand = new Date(data.stand).toLocaleDateString('de-DE', { day: 'numeric',
       apply();
     });
     q.addEventListener('input', apply);
+    let saved: string | null = null;
+    try { saved = sessionStorage.getItem(KEY); } catch { /* private window */ }
+    if (saved) void load(saved, true);
   </script>
 </Layout>
