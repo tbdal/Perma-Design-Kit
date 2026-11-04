@@ -67,3 +67,10 @@ describe('CSV export/import', () => {
     expect(importFromCSV('Lateinisch,Deutsch,Essbar\r\n"","",1\r\n"A","",0')).toHaveLength(1);
   });
 });
+
+describe('CSV pasted from a spreadsheet', () => {
+  it('reads tab-separated cells (Excel, LibreOffice), quoted line breaks included', () => {
+    const rows = parseCSV('Lateinisch\tDeutsch\tNotizen\nMalus domestica\tApfel, Kultur\t"zwei\nZeilen"\n');
+    expect(rows).toEqual([{ Lateinisch: 'Malus domestica', Deutsch: 'Apfel, Kultur', Notizen: 'zwei\nZeilen' }]);
+  });
+});

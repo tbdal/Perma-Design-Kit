@@ -92,7 +92,9 @@ export function parseCSV(input: string): Record<string, string>[] {
   const textIn = input.replace(/^﻿/, '');
   const firstLine = textIn.slice(0, textIn.search(/\r?\n|$/));
   // PowerShell's -UseCulture writes ';' on German systems.
-  const delimiter = firstLine.split(';').length > firstLine.split(',').length ? ';' : ',';
+  // Tabs: cells copied from Excel / LibreOffice / Google Sheets.
+  const count = (d: string) => firstLine.split(d).length;
+  const delimiter = count('\t') > Math.max(count(';'), count(',')) ? '\t' : count(';') > count(',') ? ';' : ',';
 
   const records: string[][] = [];
   let record: string[] = [];
