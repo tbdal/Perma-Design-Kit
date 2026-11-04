@@ -1,7 +1,7 @@
 import type { GardenPlan, GardenPlanGeo } from './types';
 import { tilesForRect, type PlanRect } from './gartenplan-geo';
 import { SVG_UNITS_PER_METER } from './gartenplan-render';
-import { orthoFor, type OrthoSource } from './ortho-sources';
+import { orthoFor, ORTHO_SOURCES, type OrthoSource } from './ortho-sources';
 
 // Map tile sources. Kept in one place so swapping a provider (e.g. the EOX
 // satellite layer once its license for production use is settled, see
@@ -78,6 +78,7 @@ export function sourceForGeo(geo: GardenPlanGeo | null | undefined): TileSource 
     const o = orthoFor(geo.lat, geo.lon);
     return o ? orthoTiles(o) : S2_TILES;
   }
+  if (geo.basemap === 'mapbox') { const mb = ORTHO_SOURCES.find(s => s.id === 'mb'); return mb ? orthoTiles(mb) : S2_TILES; }
   return geo.basemap === 'sat' ? S2_TILES : OSM_TILES;
 }
 

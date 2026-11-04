@@ -70,6 +70,7 @@ import Layout from '../layouts/Layout.astro';
           <option value="osm" data-i18n="mapBgOsm">Karte (OpenStreetMap)</option>
           <option data-feature="basemap-extra" value="ortho" id="g-basemap-ortho">Luftbild (amtlich)</option>
           <option data-feature="basemap-extra" value="sat" data-i18n="mapBgSat">Satellit (grob, 10 m)</option>
+          <option data-feature="basemap-mapbox" value="mapbox" data-i18n="mapBgMapbox">Satellit (fein, Mapbox)</option>
         </select>
       </label>
       <label data-feature="basemap-extra" class="inline-flex items-center gap-1.5">
@@ -1461,7 +1462,7 @@ import Layout from '../layouts/Layout.astro';
   fBasemap.addEventListener('change', () => {
     if (!editing?.geo) return;
     const v = fBasemap.value;
-    editing.geo.basemap = v === 'none' || v === 'sat' || v === 'ortho' ? v : 'osm';
+    editing.geo.basemap = v === 'none' || v === 'sat' || v === 'ortho' || v === 'mapbox' ? v : 'osm';
     refreshBasemaps();
     if (!plan3dContainer.hidden) btnView3d.click(); // rebuild 3D ground, camera kept
     scheduleAutosave();

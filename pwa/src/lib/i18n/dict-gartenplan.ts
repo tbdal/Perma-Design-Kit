@@ -43,6 +43,7 @@ export const gartenplanDict: Dict = {
   mapBarBackground: { de: 'Hintergrund', en: 'Background' },
   mapBgNone: { de: 'Kein', en: 'None' },
   mapBgOsm: { de: 'Karte (OpenStreetMap)', en: 'Map (OpenStreetMap)' },
+  mapBgMapbox: { de: 'Satellit (fein, Mapbox)', en: 'Satellite (fine, Mapbox)' },
   mapBgSat: { de: 'Satellit (grob, 10 m)', en: 'Satellite (coarse, 10 m)' },
   mapBgOrtho: { de: 'Luftbild {region} ({cm} cm)', en: 'Aerial photo {region} ({cm} cm)' },
   mapBgOrthoNone: { de: 'Luftbild (hier keins — Satellit grob)', en: 'Aerial photo (none here — coarse satellite)' },
