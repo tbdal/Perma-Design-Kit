@@ -56,7 +56,8 @@ export const FALLBACK_ATTRIBUTION = 'Ersatz: ' + OSM_TILES.attributionHtml;
 
 /** The aerial photo tile URL through our own server cache (/geo/ortho/<id>/…, see the nginx
  *  config): the survey offices send no caching headers, so every visit loaded every tile again. */
-export function orthoProxyUrl(o: Pick<OrthoSource, 'id' | 'url'>): string {
+export function orthoProxyUrl(o: Pick<OrthoSource, 'id' | 'url' | 'direct'>): string {
+  if (o.direct) return o.url;
   const m = /^https:\/\/[^/]+(\/.*)$/.exec(o.url);
   return m ? `/geo/ortho/${o.id}${m[1]}` : o.url;
 }
@@ -123,7 +124,10 @@ export function basemapSvg(plan: GardenPlan, view: PlanRect, screenMPerPx: numbe
  *  URL — needed for the PDF, because an SVG rasterized via <img> never loads
  *  external images. Tiles that can't be fetched (offline, no CORS) are left
  *  out; their number is returned. */
-export async function basemapSvgInline(plan: GardenPlan, mPerPx: number): Promise<{ svg: string; total: number; failed: number; osm: boolean }> {
+export async function basemapSvgInline(plan: GardenPlan, mPerPx: number): Promise<{ svg: string; total: number; failed: number; osm: boolean; mapboxReplaced?: boolean }> {
+  // Mapbox may not be printed (Product Terms 1.7: print rights only for Mapbox Streets): the PDF gets the OSM map instead.
+  const mapboxReplaced = !!plan.geo && !!sourceForGeo(plan.geo)?.url.includes('api.mapbox.com');
+  if (mapboxReplaced) plan = { ...plan, geo: { ...plan.geo!, basemap: 'osm' } };
   const raw = basemapSvg(plan, { minX: 0, minY: 0, maxX: plan.areaWidthM, maxY: plan.areaHeightM }, mPerPx);
   if (!raw) return { svg: '', total: 0, failed: 0, osm: false };
   const decode = (s: string) => s.replace(/&amp;/g, '&');
@@ -152,5 +156,5 @@ export async function basemapSvgInline(plan: GardenPlan, mPerPx: number): Promis
   }));
   let i = 0;
   const svg = raw.replace(/<image [^>]*\/>/g, () => out[i++] ?? '');
-  return { svg, total: tags.length, failed, osm };
+  return { svg, total: tags.length, failed, osm, mapboxReplaced };
 }

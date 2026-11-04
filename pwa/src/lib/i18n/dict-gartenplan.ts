@@ -157,6 +157,7 @@ export const gartenplanDict: Dict = {
   pdfFits: { de: 'Plan {w} × {h} m passt aufs Blatt. Mit Maßstabsleiste und Nordpfeil – zum Abstecken in Originalgröße drucken.', en: 'Plan {w} × {h} m fits the page. With scale bar – print at actual size for staking out.' },
   pdfTooBigPaper: { de: 'Passt in diesem Maßstab nicht aufs Blatt – mit {paper} geht es.', en: 'Does not fit at this scale – {paper} works.' },
   pdfTooBigScale: { de: 'Passt in diesem Maßstab auf kein Blatt bis A2 – kleineren Maßstab (z. B. 1:200) wählen.', en: 'Does not fit any paper up to A2 at this scale – choose a smaller scale (e.g. 1:200).' },
+  pdfMapboxReplaced: { de: 'Mapbox-Satellitenbilder dürfen nicht gedruckt werden – das PDF zeigt stattdessen die OpenStreetMap-Karte.', en: 'Mapbox satellite imagery may not be printed – the PDF shows the OpenStreetMap map instead.' },
   pdfTilesFailed: { de: '{n} von {total} Kartenkacheln ließen sich nicht laden – der Hintergrund hat Lücken.', en: '{n} of {total} map tiles could not be loaded – the background has gaps.' },
   gpsTool: { de: 'Feldmodus: eigene Position (GPS)', en: 'Field mode: own position (GPS)' },
   gpsCenter: { de: 'Mich zeigen', en: 'Show me' },

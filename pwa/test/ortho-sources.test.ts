@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { orthoFor, ORTHO_SOURCES } from '../src/lib/ortho-sources';
-import { tileUrl, sourceForGeo, S2_TILES, OSM_TILES } from '../src/lib/gartenplan-background';
+import { tileUrl, sourceForGeo, S2_TILES, OSM_TILES, orthoProxyUrl } from '../src/lib/gartenplan-background';
 
 describe('orthophoto sources', () => {
   it('picks the service of the state / country a garden lies in', () => {
@@ -30,6 +30,11 @@ describe('orthophoto sources', () => {
     expect(orthoFor(50.4437, -3.7, () => false)).toBeNull();
     expect(orthoFor(48.8566, 2.3522, () => true)?.id).toBe('mb'); // Paris: no official photo
     expect(orthoFor(48.1372, 11.5756, () => true)?.id).toBe('by'); // the official photo wins where it exists
+    // Mapbox terms: straight from api.mapbox.com, never through our cache, with logo and "Improve this map"
+    const mb = ORTHO_SOURCES.find(o => o.id === 'mb')!;
+    expect(orthoProxyUrl(mb)).toMatch(/^https:\/\/api\.mapbox\.com\/.*\?access_token=/);
+    expect(mb.attributionHtml).toContain('mapbox-logo.svg');
+    expect(mb.attributionHtml).toContain('https://www.mapbox.com/map-feedback/');
   });
 
   it('has an attribution and coverage for every source', () => {
@@ -58,7 +63,7 @@ describe('aerial photos through the own cache', () => {
   it('turns each service URL into /geo/ortho/<id>/<path and query>', async () => {
     const { orthoProxyUrl } = await import('../src/lib/gartenplan-background');
     const { ORTHO_SOURCES } = await import('../src/lib/ortho-sources');
-    for (const o of ORTHO_SOURCES) expect(orthoProxyUrl(o)).toMatch(new RegExp(`^/geo/ortho/${o.id}/`));
+    for (const o of ORTHO_SOURCES.filter(o => !o.direct)) expect(orthoProxyUrl(o)).toMatch(new RegExp(`^/geo/ortho/${o.id}/`));
     expect(orthoProxyUrl({ id: 'ch', url: 'https://wmts.geo.admin.ch/1.0.0/x/{z}/{x}/{y}.jpeg' })).toBe('/geo/ortho/ch/1.0.0/x/{z}/{x}/{y}.jpeg');
   });
 });
@@ -68,7 +73,7 @@ describe('nginx cache knows every aerial photo service', () => {
     const { readFileSync } = await import('node:fs');
     const conf = readFileSync(new URL('../server/nginx/permadesignkit.org.conf', import.meta.url), 'utf8');
     const { ORTHO_SOURCES } = await import('../src/lib/ortho-sources');
-    for (const o of ORTHO_SOURCES) {
+    for (const o of ORTHO_SOURCES.filter(o => !o.direct)) {
       const host = new URL(o.url.replace(/\{[a-z]+\}/g, '0')).host;
       expect(conf).toMatch(new RegExp(`\\n\\s+${o.id} ${host.replace(/\./g, '\\.')};`));
     }
@@ -78,7 +83,7 @@ describe('nginx cache knows every aerial photo service', () => {
     const { readFileSync } = await import('node:fs');
     const conf = readFileSync(new URL('../server/nginx/permadesignkit.org.conf', import.meta.url), 'utf8');
     const { ORTHO_SOURCES } = await import('../src/lib/ortho-sources');
-    for (const o of ORTHO_SOURCES) {
+    for (const o of ORTHO_SOURCES.filter(o => !o.direct)) {
       const host = new URL(o.url.replace(/\{[a-z]+\}/g, '0')).host;
       expect(conf).toContain(`upstream pdk_ortho_${o.id} { zone pdk_ortho_${o.id} 64k; resolver 127.0.0.53 valid=300s; server ${host}:443 resolve; keepalive 8; }`);
     }
