@@ -11,22 +11,35 @@
 // Dynamic/JS-rendered markup (template strings built in a render function):
 // call t('key') directly — build a bound t via createT(...dicts) once per
 // page and use it inside those template strings.
+//
+// Spanish: a third interface language on top of the two base languages. Dict
+// entries may carry `es` (added per dict file with addEs()); without it the
+// English text is shown. Code that branches by language itself (getLang(),
+// Record<Lang, …>, module texts) keeps seeing the base language 'en' when
+// Spanish is chosen — getUiLang() tells the chosen one.
 export type Lang = 'de' | 'en';
+export type UiLang = Lang | 'es';
 
-export type Dict = Record<string, { de: string; en: string }>;
+export type Dict = Record<string, { de: string; en: string; es?: string }>;
 
 const STORAGE_KEY = 'pgd-lang';
 
-export function getLang(): Lang {
+/** The interface language as chosen: 'de', 'en' or 'es'. */
+export function getUiLang(): UiLang {
   try {
     const v = localStorage.getItem(STORAGE_KEY);
-    return v === 'en' ? 'en' : 'de';
+    return v === 'en' || v === 'es' ? v : 'de';
   } catch {
     return 'de';
   }
 }
 
-export function setLang(lang: Lang): void {
+/** The base language for code and texts that exist only in German and English (Spanish → English). */
+export function getLang(): Lang {
+  return getUiLang() === 'de' ? 'de' : 'en';
+}
+
+export function setLang(lang: UiLang): void {
   try {
     localStorage.setItem(STORAGE_KEY, lang);
   } catch {
@@ -34,19 +47,29 @@ export function setLang(lang: Lang): void {
   }
 }
 
+/** Adds Spanish texts to a dict (keys it does not have are ignored). */
+export function addEs(dict: Dict, es: Record<string, string>): void {
+  for (const [k, v] of Object.entries(es)) if (dict[k]) dict[k].es = v;
+}
+
 function mergeDicts(dicts: Dict[]): Dict {
   return Object.assign({}, ...dicts);
+}
+
+/** The text of an entry in the chosen language (Spanish falls back to English). */
+function textOf(entry: Dict[string], ui: UiLang): string {
+  return ui === 'es' ? entry.es ?? entry.en : entry[ui];
 }
 
 /** Builds a t(key, vars?) bound to the current language and the given
  *  dictionaries (later dicts win on key collision). Unknown keys return the
  *  key itself so a missing translation is visible rather than silently blank. */
 export function createT(...dicts: Dict[]): (key: string, vars?: Record<string, string | number>) => string {
-  const lang = getLang();
+  const ui = getUiLang();
   const merged = mergeDicts(dicts);
   return (key, vars) => {
     const entry = merged[key];
-    let str = entry ? entry[lang] : key;
+    let str = entry ? textOf(entry, ui) : key;
     if (vars) {
       for (const [k, v] of Object.entries(vars)) str = str.split(`{${k}}`).join(String(v));
     }
@@ -67,25 +90,26 @@ export function createT(...dicts: Dict[]): (key: string, vars?: Record<string, s
  *  Layout's nav/footer text, since those keys live in a different dict). */
 export function applyStaticI18n(...dicts: Dict[]): void {
   const merged = mergeDicts(dicts);
-  const lang = getLang();
+  const ui = getUiLang();
+  const text = (key: string | undefined) => (key && merged[key] ? textOf(merged[key], ui) : null);
   document.querySelectorAll<HTMLElement>('[data-i18n]').forEach(el => {
-    const key = el.dataset.i18n;
-    if (key && merged[key]) el.textContent = merged[key][lang];
+    const v = text(el.dataset.i18n);
+    if (v != null) el.textContent = v;
   });
   document.querySelectorAll<HTMLElement>('[data-i18n-title]').forEach(el => {
-    const key = el.dataset.i18nTitle;
-    if (key && merged[key]) el.title = merged[key][lang];
+    const v = text(el.dataset.i18nTitle);
+    if (v != null) el.title = v;
   });
   document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[data-i18n-placeholder]').forEach(el => {
-    const key = el.dataset.i18nPlaceholder;
-    if (key && merged[key]) el.placeholder = merged[key][lang];
+    const v = text(el.dataset.i18nPlaceholder);
+    if (v != null) el.placeholder = v;
   });
   document.querySelectorAll<HTMLElement>('[data-i18n-alt]').forEach(el => {
-    const key = el.dataset.i18nAlt;
-    if (key && merged[key]) el.setAttribute('alt', merged[key][lang]);
+    const v = text(el.dataset.i18nAlt);
+    if (v != null) el.setAttribute('alt', v);
   });
   document.querySelectorAll<HTMLElement>('[data-i18n-aria-label]').forEach(el => {
-    const key = el.dataset.i18nAriaLabel;
-    if (key && merged[key]) el.setAttribute('aria-label', merged[key][lang]);
+    const v = text(el.dataset.i18nAriaLabel);
+    if (v != null) el.setAttribute('aria-label', v);
   });
 }

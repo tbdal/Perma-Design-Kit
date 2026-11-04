@@ -1,4 +1,5 @@
-import type { Dict } from './core';
+import { addEs, type Dict } from './core';
+import { es as esTexts } from './es/index';
 
 export const indexDict: Dict = {
   // ── Search hero ──────────────────────────────────────────────────────
@@ -304,3 +305,5 @@ export const indexDict: Dict = {
   alertNoCsvPlants: { de: 'Keine Pflanzen in der CSV gefunden.', en: 'No plants found in the CSV.' },
   enrichSourcesStatus: { de: 'Lade Daten…', en: 'Loading data…' },
 };
+
+addEs(indexDict, esTexts);

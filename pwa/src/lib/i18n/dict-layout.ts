@@ -1,4 +1,5 @@
-import type { Dict } from './core';
+import { addEs, type Dict } from './core';
+import { es as esTexts } from './es/layout';
 
 export const layoutDict: Dict = {
   installBannerText: { de: 'Perma Design Kit auf den Startbildschirm legen?', en: 'Add Perma Design Kit to your home screen?' },
@@ -184,3 +185,5 @@ export const layoutDict: Dict = {
   internNote: { de: 'Diese Seite ist nur nach Anmeldung im passenden Modus sichtbar.', en: 'This page is only visible after logging in, in the matching mode.' },
   modeLoggedInAs: { de: 'Angemeldet als {name}', en: 'Logged in as {name}' },
 };
+
+addEs(layoutDict, esTexts);

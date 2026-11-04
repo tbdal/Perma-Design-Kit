@@ -509,7 +509,7 @@ import Layout from '../layouts/Layout.astro';
     const geoNames: Record<string, string> = { terrain: t('stoTerrain'), dgm: t('stoDgm'), climate: t('stoClimate'), osm: t('stoOsm'), forest: t('stoForest') };
     const geoRows = Object.entries(geo).map(([k, v]) => row(geoNames[k], fmtBytes(v.bytes), `${v.count} ${t('stoEntries')}`)).join('');
     const local = [d.indexedDB != null ? row(t('stoIndexedDb'), fmtBytes(d.indexedDB), t('stoIndexedDbNote')) : '', d.caches != null ? row(t('stoCaches'), fmtBytes(d.caches), t('stoCachesNote')) : ''].join('');
-    const lang = (document.documentElement.lang || 'de').startsWith('en') ? 'en' : 'de';
+    const lang = (document.documentElement.lang || 'de').startsWith('de') ? 'de' : 'en';
     const aerial = Object.entries(aerialTotals()).sort((a, b) => b[1].bytes - a[1].bytes).map(([id, u]) => row(orthoRegion(id, lang), `≈ ${fmtBytes(u.bytes)}`, `${u.tiles} ${t('stoTiles')}`)).join('');
     body.innerHTML = table(t('stoLocal'), local) + table(t('stoGeo'), geoRows)
       + table(t('stoAerial'), aerial) + `<p class="text-[11px] text-stone-500 dark:text-stone-400">${escapeHtml(t('stoAerialNote'))}</p>`;

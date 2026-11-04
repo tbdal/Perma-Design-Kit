@@ -1,4 +1,5 @@
-import type { Dict } from './core';
+import { addEs, type Dict } from './core';
+import { es as esTexts } from './es/polykulturen';
 
 export const polyculturesDict: Dict = {
   pageTitle: { de: 'Polykulturen', en: 'Polycultures' },
@@ -82,3 +83,5 @@ export const polyculturesDict: Dict = {
   roleFruitProducer: { de: 'Obst/Beere', en: 'Fruit/berry' },
   roleOther: { de: 'Sonstiges', en: 'Other' },
 };
+
+addEs(polyculturesDict, esTexts);

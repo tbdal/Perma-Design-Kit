@@ -1,4 +1,5 @@
-import type { Dict } from './core';
+import { addEs, type Dict } from './core';
+import { es as esTexts } from './es/share';
 
 // "Projekt als Link teilen" dialog (src/lib/share-dialog.ts), opened from the plan and polyculture pages.
 export const shareDict: Dict = {
@@ -24,3 +25,5 @@ export const shareDict: Dict = {
   shareOpen: { de: '🔗 Teilen…', en: '🔗 Share…' },
   shareOpenTitle: { de: 'Projekt als Link teilen', en: 'Share project as link' },
 };
+
+addEs(shareDict, esTexts);

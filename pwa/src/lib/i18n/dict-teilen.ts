@@ -1,4 +1,5 @@
-import type { Dict } from './core';
+import { addEs, type Dict } from './core';
+import { es as esTexts } from './es/teilen';
 
 export const teilenDict: Dict = {
   shTitle: { de: 'Geteiltes Projekt', en: 'Shared project' },
@@ -37,3 +38,5 @@ export const teilenDict: Dict = {
   shEnrichAborted: { de: 'Abgebrochen – den Rest kannst du später auf der Pflanzenseite nachladen.', en: 'Stopped – you can load the rest later on the plant page.' },
   shFailed: { de: 'Übernehmen fehlgeschlagen: {msg}', en: 'Import failed: {msg}' },
 };
+
+addEs(teilenDict, esTexts);
