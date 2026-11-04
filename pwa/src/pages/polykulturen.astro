@@ -121,7 +121,7 @@ import Layout from '../layouts/Layout.astro';
   import { polycultureUsage } from '../lib/plan-usage';
   import { autoFillRoles } from '../lib/polyculture-autofill';
   import type { GardenPlan } from '../lib/types';
-  import { polycultureFromGroup, allGroups } from '../lib/polyculture-from-group';
+  import { polycultureFromGroup, allGroups, roleFor } from '../lib/polyculture-from-group';
   import { createT, applyStaticI18n } from '../lib/i18n/core';
   import { shareDict } from '../lib/i18n/dict-share';
   import { polyculturesDict } from '../lib/i18n/dict-polykulturen';
@@ -194,6 +194,14 @@ import Layout from '../layouts/Layout.astro';
       return box.querySelector('div')!;
     },
     addCardExtra(_featureId, fn) { cardExtras.push(fn); renderList(); },
+    addMember(plantId) {
+      const plant = plantsById.get(plantId);
+      if (!editing || !plant || editing.members.some(m => m.plantId === plantId)) return false;
+      editing.members.push({ plantId, role: roleFor(plant), notes: '' });
+      renderMembers();
+      renderSuggestions();
+      return true;
+    },
   });
 
   function showToast(msg: string) {
