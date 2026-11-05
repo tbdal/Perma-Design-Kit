@@ -697,10 +697,12 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
       import { getContrast, setContrast, applyContrast, getFontSize, setFontSize, applyFontSize, type ContrastPref, type FontSizePref } from '../lib/settings';
       import { layoutDict } from '../lib/i18n/dict-layout';
       import { installBrokenImageCleanup } from '../lib/html';
+      import { installImageZoom } from '../lib/image-zoom';
 
       const t = createT(layoutDict);
       applyStaticI18n(layoutDict);
       installBrokenImageCleanup();
+      installImageZoom(t('closeBtn'));
 
       // ── Language switcher ────────────────────────────────────────────────
       // Display options menu ("Aa"): contrast + text size, applied at once.
