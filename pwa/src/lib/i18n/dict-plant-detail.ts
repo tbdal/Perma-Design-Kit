@@ -1,4 +1,5 @@
-import type { Dict } from './core';
+import { addEs, type Dict } from './core';
+import { es as esTexts } from './es/plant-detail';
 import { fieldLabelDict } from '../plant-fields';
 
 /** Labels shared by anything that renders plant detail info — the plant
@@ -11,3 +12,5 @@ export const plantDetailDict: Dict = {
   thPhenology: { de: 'Blüte/Frucht', en: 'Bloom/Fruit' },
   ...fieldLabelDict,
 };
+
+addEs(plantDetailDict, esTexts);

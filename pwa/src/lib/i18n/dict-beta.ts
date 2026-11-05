@@ -1,4 +1,5 @@
-import type { Dict } from './core';
+import { addEs, type Dict } from './core';
+import { es as esTexts } from './es/beta';
 
 // /beta/ — signup for the beta test, confirmation, unsubscribe and the two surveys.
 export const betaDict: Dict = {
@@ -63,3 +64,5 @@ export const betaDict: Dict = {
   btSurveyDone: { de: 'Danke! Deine Antworten sind angekommen.', en: 'Thank you! Your answers arrived.' },
   btSurveyInvalid: { de: 'Dieser Umfragelink ist ungültig.', en: 'This survey link is invalid.' },
 };
+
+addEs(betaDict, esTexts);

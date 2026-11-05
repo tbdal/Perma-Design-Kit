@@ -1,4 +1,5 @@
-import type { Dict } from './core';
+import { addEs, type Dict } from './core';
+import { es as esTexts } from './es/unterstuetzen';
 
 export const unterstuetzenDict: Dict = {
   suTitle: { de: 'Das Perma Design Kit unterstützen', en: 'Support the Perma Design Kit' },
@@ -33,3 +34,5 @@ export const unterstuetzenDict: Dict = {
   suReport: { de: 'Fehler melden', en: 'Report a problem' },
   suThanks: { de: 'Danke, dass du dabei bist.', en: 'Thank you for being part of this.' },
 };
+
+addEs(unterstuetzenDict, esTexts);

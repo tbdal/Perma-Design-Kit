@@ -1,4 +1,5 @@
-import type { Dict } from './core';
+import { addEs, type Dict } from './core';
+import { es as esTexts } from './es/search';
 
 // Plant search (hero on the plant page and on the garden plan page), see lib/plant-search-ui.ts.
 export const searchDict: Dict = {
@@ -23,3 +24,5 @@ export const searchDict: Dict = {
   searchHeroPlan: { de: 'Pflanze für deinen Waldgarten finden', en: 'Find a plant for your forest garden' },
   searchAddedArmed: { de: '„{name}“ ist in deiner Sammlung – zum Setzen in die Karte klicken.', en: '“{name}” is in your collection – click the map to place it.' },
 };
+
+addEs(searchDict, esTexts);

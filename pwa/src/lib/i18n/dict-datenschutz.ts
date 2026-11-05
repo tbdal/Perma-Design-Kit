@@ -1,4 +1,5 @@
-import type { Dict } from './core';
+import { addEs, type Dict } from './core';
+import { es as esTexts } from './es/datenschutz';
 
 export const datenschutzDict: Dict = {
   dsTitle: { de: 'Datenschutz­erklärung', en: 'Privacy Policy' },
@@ -164,3 +165,5 @@ export const datenschutzDict: Dict = {
   dsRightsBody2a: { de: 'Bei Fragen zum Datenschutz wende dich an die im', en: 'For privacy questions, please contact the address given in the' },
   dsRightsBody2b: { de: ' genannte Adresse.', en: '.' },
 };
+
+addEs(datenschutzDict, esTexts);

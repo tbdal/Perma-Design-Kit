@@ -1,4 +1,5 @@
-import type { Dict } from './core';
+import { addEs, type Dict } from './core';
+import { es as esTexts } from './es/impressum';
 
 export const impressumDict: Dict = {
   imTitle: { de: 'Impressum', en: 'Legal Notice' },
@@ -49,3 +50,5 @@ export const impressumDict: Dict = {
     en: 'Forest garden plan map background: © OpenStreetMap contributors (ODbL), address search via Nominatim. Satellite layer: Sentinel-2 cloudless – s2maps.eu by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2016), CC BY 4.0. Elevation: Terrain Tiles (Mapzen/Tilezen, provided via AWS Open Data) from SRTM (NASA), EU-DEM (produced using Copernicus data, funded by the EU) and national terrain models, among others. Aerial photos: Bayerische Vermessungsverwaltung (CC BY 4.0), LGL-BW, GeoBasis-DE/LGB and Geoportal Berlin, LVermGeoRP, LVermGeo ST, LVGL Saarland, GeoSN (each dl-de/by-2-0), Geobasis NRW (dl-de/zero-2-0), HVBG, LGLN, GeoBasis-DE/M-V, GeoBasis-DE/LVermGeo SH, GDI-Th, Landesamt GeoInformation Bremen (each CC BY 4.0 or free), LGV Hamburg (dl-de/by-2-0), basemap.at (CC BY 4.0), swisstopo, Kadaster/Beeldmateriaal.nl (PDOK, CC BY 4.0) — the respective credit is shown on the map. Terrain models (1 m): Geobasis NRW (dl-de/zero-2-0), GeoBasis-DE/LGB (dl-de/by-2-0), LGL-BW (dl-de/by-2-0), HVBG (dl-de/zero-2-0), LGLN (CC BY 4.0), AHN/Rijkswaterstaat (PDOK, CC0).',
   },
 };
+
+addEs(impressumDict, esTexts);

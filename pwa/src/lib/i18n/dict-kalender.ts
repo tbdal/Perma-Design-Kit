@@ -1,4 +1,5 @@
-import type { Dict } from './core';
+import { addEs, type Dict } from './core';
+import { es as esTexts } from './es/kalender';
 
 export const kalenderDict: Dict = {
   infoToggle: { de: 'ℹ️ Wie funktioniert das?', en: 'ℹ️ How does it work?' },
@@ -55,3 +56,5 @@ export const kalenderDict: Dict = {
   countAll: { de: '{count} Pflanzen', en: '{count} plants' },
   countFiltered: { de: '{filtered} / {total} Pflanzen', en: '{filtered} / {total} plants' },
 };
+
+addEs(kalenderDict, esTexts);

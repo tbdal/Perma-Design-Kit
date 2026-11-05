@@ -1069,7 +1069,7 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <style is:global>
-  html[lang='en'] .hilfe .lang-de, html:not([lang='en']) .hilfe .lang-en { display: none; }
+  html:is([lang='en'],[lang='es']) .hilfe .lang-de, html:not([lang='en'],[lang='es']) .hilfe .lang-en { display: none; }
 
   .hilfe {
     --h-fg: #1f2a22; --h-muted: #5d6b61; --h-line: #d9ded3; --h-card: #ffffff;
@@ -1181,7 +1181,7 @@ import Layout from '../layouts/Layout.astro';
 <script>
   // Links use the German ids; in English the same chapter has the prefix "en-".
   // A target inside folded chapters is unfolded before scrolling to it.
-  const en = document.documentElement.lang === 'en';
+  const en = document.documentElement.lang !== 'de';
   function reveal(): void {
     const id = decodeURIComponent(location.hash.slice(1));
     if (!id) return;

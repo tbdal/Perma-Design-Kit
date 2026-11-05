@@ -1,4 +1,5 @@
-import type { Dict } from './core';
+import { addEs, type Dict } from './core';
+import { es as esTexts } from './es/gartenplan';
 
 export const gartenplanDict: Dict = {
   // ── List view ──────────────────────────────────────────────────────────
@@ -509,3 +510,5 @@ export const gartenplanDict: Dict = {
   guideTipDone: { de: 'Alle Schichten belegt. Mit dem Regler „Jahre seit Projektbeginn“ siehst du, wie dein Garten wächst.', en: 'All layers filled. The “years since project start” slider shows how your garden grows.' },
   expertBadge: { de: 'Beta-Test', en: 'Beta test' },
 };
+
+addEs(gartenplanDict, esTexts);

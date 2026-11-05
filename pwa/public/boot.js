@@ -9,7 +9,8 @@
 (function () {
   try {
     var root = document.documentElement;
-    root.lang = localStorage.getItem('pgd-lang') === 'en' ? 'en' : 'de';
+    var uiLang = localStorage.getItem('pgd-lang');
+    root.lang = uiLang === 'en' || uiLang === 'es' ? uiLang : 'de';
     var stored = localStorage.getItem('theme');
     var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     root.classList.toggle('dark', stored === 'dark' || (!stored && prefersDark));

@@ -1,4 +1,5 @@
-import type { Dict } from './core';
+import { addEs, type Dict } from './core';
+import { es as esTexts } from './es/report';
 
 export const reportDict: Dict = {
   rpTitle: { de: 'Fehler melden', en: 'Report a problem' },
@@ -24,3 +25,5 @@ export const reportDict: Dict = {
   rpMail: { de: 'Per E-Mail senden', en: 'Send by e-mail' },
   rpGithubNote: { de: 'GitHub braucht ein kostenloses Konto; Meldungen dort sind öffentlich. Ohne Konto: E-Mail an info@permadesignkit.org.', en: 'GitHub needs a free account; reports there are public. No account: e-mail info@permadesignkit.org.' },
 };
+
+addEs(reportDict, esTexts);

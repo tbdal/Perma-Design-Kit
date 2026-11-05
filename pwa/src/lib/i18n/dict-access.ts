@@ -1,4 +1,5 @@
-import type { Dict } from './core';
+import { addEs, type Dict } from './core';
+import { es as esTexts } from './es/access';
 
 // /anmelden/ (login for expert mode) and /admin/ (feature table, accounts).
 export const accessDict: Dict = {
@@ -96,3 +97,5 @@ export const accessDict: Dict = {
   acInvPasswordHint: { de: 'mindestens 10 Zeichen', en: 'at least 10 characters' },
   adErr_generic: { de: 'Das ging nicht ({error}).', en: 'That didn’t work ({error}).' },
 };
+
+addEs(accessDict, esTexts);

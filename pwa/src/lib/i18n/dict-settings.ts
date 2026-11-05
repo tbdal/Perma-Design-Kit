@@ -1,4 +1,5 @@
-import type { Dict } from './core';
+import { addEs, type Dict } from './core';
+import { es as esTexts } from './es/settings';
 
 export const settingsDict: Dict = {
   pageTitle: { de: 'Einstellungen', en: 'Settings' },
@@ -220,3 +221,5 @@ export const settingsDict: Dict = {
   persistUnsupported: { de: 'vom Browser nicht unterstützt', en: 'not supported by this browser' },
   persistRequestDenied: { de: 'Der Browser hat abgelehnt oder entscheidet selbst. Regelmäßige Backups schützen deine Daten.', en: 'The browser declined or decides on its own. Regular backups keep your data safe.' },
 };
+
+addEs(settingsDict, esTexts);
