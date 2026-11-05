@@ -355,7 +355,9 @@ function buildGroundMesh(widthM: number, heightM: number, ground: GroundFn = FLA
   // Under see-through map tiles the lawn is only their backing: it follows every furrow of a fine terrain model while the
   // tiles run straight between vertices metres apart, so it poked through them in patches (Werkstatt #488; polygonOffset
   // does nothing with the log depth buffer). Drawn last of the opaque objects without writing depth, the tiles always cover it.
-  if (underTiles) { mesh.material.depthWrite = false; mesh.renderOrder = 1; }
+  // It takes no shadow either: the tiles above carry it, a second one on the lawn's own heights shone through them
+  // offset, as if under the surface (Werkstatt #523).
+  if (underTiles) { mesh.material.depthWrite = false; mesh.renderOrder = 1; mesh.receiveShadow = false; }
   return mesh;
 }
 
@@ -493,6 +495,7 @@ export function createGardenPlan3DView(
   // Only a real map is see-through: without one the terrain tiles are plain opaque meadow, a lawn under them would only
   // poke through between their vertices (Werkstatt #496).
   const seeThrough = !!tileSrc && mapOpacity < 1;
+  if (seeThrough) meadow.receiveShadow = false; // seen through the map tiles: only they show the shadows (Werkstatt #523)
   // The map/terrain tiles are the ground inside the plan too (see-through map: the lawn shows under it).
   let lawn = buildGroundMesh(plan.areaWidthM, plan.areaHeightM, ground, terrain?.cellM, seeThrough);
   lawn.visible = !layoutSrc || seeThrough;
