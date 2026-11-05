@@ -15,5 +15,9 @@ test('language menu: Español switches the pages to Spanish', async ({ page }) =
   await page.goto('/gartenplan');
   await expect(page.locator('body')).toContainText('Plan de bosque comestible');
   await page.goto('/hilfe');
-  await expect(page.locator('.hilfe .lang-en').first()).toBeVisible(); // help: English until it is translated
+  await expect(page.locator('.hilfe .lang-es')).toBeVisible();
+  await expect(page.locator('.hilfe .lang-en')).toBeHidden();
+  await expect(page.locator('.hilfe .lang-es h1')).toContainText('Diseñar bosques comestibles');
+  await page.goto('/hilfe#gartenplan'); // plain ids lead to the Spanish chapter
+  await expect(page.locator('#es-gartenplan')).toHaveAttribute('open', '');
 });

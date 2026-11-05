@@ -1,9 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
 // The help page holds long, richly formatted text, so each language is one block
-// (.lang-de / .lang-en) chosen by <html lang> (set by boot.js before first paint)
+// (.lang-de / .lang-en / .lang-es) chosen by <html lang> (set by boot.js before first paint)
 // instead of one dictionary key per sentence. Ids in the English block carry
-// the prefix "en-"; links use the plain ids and the script below maps them.
+// the prefix "en-", in the Spanish block "es-"; links use the plain ids and the script below maps them.
 // Pictures live in public/hilfe/; a click opens them full size.
 ---
 <Layout title="Perma Design Kit — Anleitung">
@@ -455,9 +455,9 @@ import Layout from '../layouts/Layout.astro';
             <dt>Edible Forest Gardens</dt><dd>Artenliste „Species Toolkit“ (Lally Luck Farm), als Tabelle auf unserem Server.</dd>
             <dt>Karten</dt><dd>OpenStreetMap, amtliche Luftbilder und Geländemodelle der Landesvermessungen, Sentinel-2 (EOX). Die jeweilige Quelle steht im Plan unten rechts.</dd>
           </dl>
+          <p class="small">Haben mehrere Quellen einen Wert, gewinnt die höher eingestufte (Standard: PFAF, dann Edible Forest Gardens, dann Wikidata; änderbar in den <a href="/settings">Einstellungen</a>). Selbst eingetragene Werte werden nie überschrieben. Gespeichert wird die Endgröße der ausgewachsenen Pflanze; Spannen in Fuß rechnet das Programm über ihre Mitte um (25–35 ft → 9,1 m).</p>
           <h3 id="bildrechte">Bildrechte</h3>
           <p>Alle Bilder und Bildschirmfotos auf dieser Seite: Perma Design Kit und Permagruen, Lizenz <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a>.</p>
-          <p class="small">Haben mehrere Quellen einen Wert, gewinnt die höher eingestufte (Standard: PFAF, dann Edible Forest Gardens, dann Wikidata; änderbar in den <a href="/settings">Einstellungen</a>). Selbst eingetragene Werte werden nie überschrieben. Gespeichert wird die Endgröße der ausgewachsenen Pflanze; Spannen in Fuß rechnet das Programm über ihre Mitte um (25–35 ft → 9,1 m).</p>
         </div>
       </details>
 
@@ -983,9 +983,9 @@ import Layout from '../layouts/Layout.astro';
             <dt>Edible Forest Gardens</dt><dd>“Species Toolkit” species list (Lally Luck Farm), hosted as a table on our server.</dd>
             <dt>Maps</dt><dd>OpenStreetMap, official aerial photos and terrain models of the survey offices, Sentinel-2 (EOX). The source in use is shown at the bottom right of the plan.</dd>
           </dl>
+          <p class="small">When several sources have a value, the higher-ranked one wins (default: PFAF, then Edible Forest Gardens, then Wikidata; changeable in the <a href="/settings">settings</a>). Values you enter yourself are never overwritten. The final size of the mature plant is stored; ranges in feet are converted via their middle (25–35 ft → 9.1 m).</p>
           <h3 id="en-bildrechte">Image rights</h3>
           <p>All pictures and screenshots on this page: Perma Design Kit and Permagruen, licence <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a>.</p>
-          <p class="small">When several sources have a value, the higher-ranked one wins (default: PFAF, then Edible Forest Gardens, then Wikidata; changeable in the <a href="/settings">settings</a>). Values you enter yourself are never overwritten. The final size of the mature plant is stored; ranges in feet are converted via their middle (25–35 ft → 9.1 m).</p>
         </div>
       </details>
 
@@ -1069,11 +1069,538 @@ import Layout from '../layouts/Layout.astro';
         </div>
       </details>
     </div>
+
+    <!-- ═════════════════════════════ ESPAÑOL ═════════════════════════════ -->
+    <div class="lang-es">
+      <header>
+        <p class="eyebrow">Guía &amp; documentación</p>
+        <h1>Diseñar bosques comestibles con el Perma&nbsp;Design&nbsp;Kit</h1>
+        <p class="lead">Una herramienta digital de planificación para sistemas permanentes de plantas útiles – una herramienta de diseño para planificar bosques comestibles sobre el terreno.</p>
+      </header>
+
+      <section aria-labelledby="es-so-planst-du" class="intro">
+        <h2 id="es-so-planst-du">Así se planifica</h2>
+        <figure class="hero">
+          <a href="/hilfe/planspiel.jpg" target="_blank" rel="noopener"><img src="/hilfe/planspiel.jpg" width="1400" height="927" decoding="async" alt="Sobre un suelo de madera está pegado con cinta de carrocero el contorno de un jardín. Dentro hay muchas fichas de copa redondas y de colores, cajas como edificios y al lado un tablero de información y abanicos de papel para los sectores." /></a>
+          <figcaption>La primera versión de la herramienta en acción: mapa base de cinta de carrocero, fichas de copa a escala 1:50, cajas como edificios, tablero de información y sectores.</figcaption>
+        </figure>
+        <div class="ways">
+          <div class="way">
+            <h3>En el suelo</h3>
+            <ol>
+              <li><b>Conoce tu objetivo y tu terreno.</b> Ten claro qué quieres conseguir. Observa el sol, el viento, el agua, el suelo y el entorno; investiga y anota los factores del lugar.</li>
+              <li><b>Lista de plantas.</b> Importa una lista existente o busca las especies deseadas en <i>Plantas</i> y deja que la aplicación complete los datos.</li>
+              <li><b>Imprimir fichas de copa.</b> En la vista de fichas imprime el PDF a escala (1:50), recórtalas y adáptalas.</li>
+              <li><b>Hacer el mapa base.</b> Traslada el contorno del terreno a la misma escala a cualquier superficie y coloca al lado, bien visibles, los datos del lugar.</li>
+              <li><b>Colocar y mover.</b> Por estratos: primero los árboles, luego los arbustos, después las herbáceas y al final las trepadoras. Fotografía los borradores y sigue mejorando hasta que cada planta tenga un buen sitio.</li>
+            </ol>
+          </div>
+          <div class="way">
+            <h3>En el plan de bosque comestible</h3>
+            <ol>
+              <li><b>Dibujar la superficie.</b> Busca una dirección y rodea el jardín en el mapa. El tamaño, la orientación al norte y el terreno se obtienen de ello.</li>
+              <li><b>Colocar plantas.</b> Elige una planta y toca la superficie – una a una, en hilera o como policultivo completo.</li>
+              <li><b>Dejar crecer y revisar.</b> Deja crecer el jardín con el control de años en 2D o 3D, revisa el soleamiento y cierra los huecos en las funciones.</li>
+            </ol>
+            <figure>
+              <a href="/hilfe/waldgartenplan-en.jpg" target="_blank" rel="noopener"><img src="/hilfe/waldgartenplan-en.jpg" width="1400" height="971" loading="lazy" decoding="async" alt="Captura de pantalla del plan de bosque comestible con el ejemplo de Dartington en 3D: árboles y arbustos en la superficie, detrás edificios y bosque, a la izquierda la barra de herramientas, a la derecha las capas, abajo el control de años y la posición del sol." /></a>
+              <figcaption>La misma idea en pantalla: el jardín de ejemplo de Dartington en 3D con terreno, edificios y bosque.</figcaption>
+            </figure>
+          </div>
+        </div>
+        <p class="bridge"><b>Combinar ambos:</b> colocar y debatir juntos en el suelo, luego trasladar el resultado al plan de bosque comestible, dejarlo crecer allí, imprimirlo y compartirlo. Tus datos se quedan en tu dispositivo.</p>
+      </section>
+
+
+      <details class="part" id="es-idee">
+        <summary><span class="num">1</span><span><span class="title">Idea &amp; concepto</span><span class="hint">Por qué fichas de copa sobre un mapa base</span></span></summary>
+        <div class="part-body">
+          <p>El Perma Design Kit nació de la búsqueda de una forma flexible de planificar bosques comestibles de varios estratos. Los planos dibujados son rígidos y cuesta cambiarlos. En pantalla es más fácil, pero se pierden la sensación de espacio y la planificación en común. De ahí la idea de unir ambos mundos: fichas de copa que caracterizan una planta y sus rasgos se colocan sobre un mapa base del terreno, trazado antes a una escala tangible – de forma lúdica y en equipo. Cada ficha lleva los datos clave sobre el nicho ecológico de la planta, así que al colocarla tienes presente lo que necesita y lo que aporta.</p>
+          <p>El núcleo es el <b>juego de fichas de copa</b>, cada una con el diámetro de copa de la planta adulta a la escala elegida. El software permite crear e imprimir un juego así a cualquier escala.</p>
+          <p>Más abajo encontrarás <a href="#analog">cómo usar el software para ello</a> y <a href="#software">qué más ofrece</a>.</p>
+        </div>
+      </details>
+
+      <details class="part" id="es-anwendung">
+        <summary><span class="num">2</span><span><span class="title">Usos</span><span class="hint">Diseño del terreno, planificar en común, educación</span></span></summary>
+        <div class="part-body">
+          <div class="split">
+            <div>
+              <h3>Diseño del terreno</h3>
+              <p>El Perma Design Kit es una ayuda visual para el diseño del terreno, más exactamente para colocar elementos (plantas) de forma concreta. Contribuye a un mejor diseño en el sentido de situar los elementos lo mejor posible unos respecto a otros («saber qué va dónde»). El software genera las fichas de copa analógicas para imprimir; el diseño del terreno también puede hacerse de forma digital en el <a href="#gartenplan">plan de bosque comestible</a>.</p>
+              <p>En ambos casos es una herramienta que funciona también en grupo y permite planificar juntos terrenos compartidos.</p>
+            </div>
+            <figure>
+              <a href="/hilfe/gemeinschaftsgarten.jpg" target="_blank" rel="noopener"><img src="/hilfe/gemeinschaftsgarten.jpg" width="1400" height="1400" loading="lazy" decoding="async" alt="Dos personas arrodilladas en el suelo colocan fichas de copa redondas y de colores sobre un plano largo hecho de tiras de papel, a su lado un portátil." /></a>
+              <figcaption>Planificando un bosque comestible comunitario.</figcaption>
+            </figure>
+          </div>
+          <h3>Educación</h3>
+          <p>El Perma Design Kit también sirve como material didáctico para todos los enfoques de uso de la tierra con árboles. Transmite de forma lúdica principios del diseño del terreno y entrena la imaginación para las redes dinámicas de relaciones en el espacio y el tiempo que caracterizan a los sistemas permanentes.</p>
+          <p>Crear y editar listas de plantas enseña de paso conocimientos especializados sobre nichos ecológicos. Crear y personalizar un juego de fichas de copa a escala tiene un efecto de aprendizaje especialmente fuerte.</p>
+        </div>
+      </details>
+
+      <details class="part" id="es-analog">
+        <summary><span class="num">3</span><span><span class="title">La herramienta analógica</span><span class="hint">Análisis del lugar, mapa base, leer e imprimir fichas de copa, colocar plantas</span></span></summary>
+        <div class="part-body">
+          <p>Así funciona la herramienta como ayuda analógica para el diseño del terreno – los cinco pasos están arriba en <a href="#so-planst-du">Así se planifica</a>, aquí en detalle.</p>
+
+          <details class="sub" id="es-standort"><summary>Del análisis del lugar al mapa base</summary><div class="sub-body">
+            <p>Normalmente se trabaja en un terreno concreto que se conoce más o menos bien.</p>
+            <h4>Reunir datos del lugar</h4>
+            <p>La observación en el lugar y la investigación dan una colección de datos sobre las <b>condiciones y el entorno</b> del terreno: clima general y microclima, historia de uso, suelos, plantas y animales existentes y mucho más.</p>
+            <p>Los métodos de análisis de la permacultura, como el <b>análisis de sectores</b>, abren otras perspectivas sobre esos datos. Muestran las influencias que actúan desde fuera sobre el terreno: el recorrido del sol a lo largo del año, el viento, el ruido, las vistas hacia dentro y hacia fuera. En entornos residenciales también es útil la <b>zonificación</b>, que divide el terreno según la frecuencia y la intensidad de uso.</p>
+            <figure class="narrow">
+              <a href="/hilfe/sektoren.jpg" target="_blank" rel="noopener"><img src="/hilfe/sektoren.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="Abanicos de papel de colores con rótulos como vista, ruido del tráfico, vecinos y ruido." /></a>
+              <figcaption>Datos de sectores hechos visibles de forma sencilla.</figcaption>
+            </figure>
+            <h4>Hacer el mapa base</h4>
+            <ul>
+              <li>Toma el contorno del terreno de tus propios planos, de mapas catastrales públicos o de planos a escala de arquitectos y dibuja el terreno a la escala de las fichas impresas (1:50 por defecto). Igual que en los planos dibujados, una escala exacta importa para encontrar las distancias de plantación adecuadas.</li>
+              <li>Hay muchas maneras de hacerlo: trazarlo en un arenero, pegarlo en el suelo con cinta de carrocero, dibujarlo con tiza en una pared o en una superficie grande – pizarras magnéticas, tableros de corcho, carteles grandes, cajas de muebles o rollos de papel pintado.</li>
+              <li>Las estructuras del entorno, como edificios y setos, pueden representarse con objetos, p. ej. cajas. Con una fuente de luz móvil su sombra se vuelve tangible.</li>
+              <li>Para tener siempre presentes las condiciones del lugar, los resultados del análisis se muestran de forma simplificada – como hoja informativa o, como aquí, como «tablero de información».</li>
+            </ul>
+            <div class="figs">
+              <figure>
+                <a href="/hilfe/grundkarte.jpg" target="_blank" rel="noopener"><img src="/hilfe/grundkarte.jpg" width="1400" height="927" loading="lazy" decoding="async" alt="El contorno de un terreno pegado con cinta de carrocero sobre un suelo de madera, dentro dos bloques de madera como edificios y un tablero de información." /></a>
+                <figcaption>El mapa base pegado en el suelo con cinta de carrocero.</figcaption>
+              </figure>
+              <figure>
+                <a href="/hilfe/infoboard.jpg" target="_blank" rel="noopener"><img src="/hilfe/infoboard.jpg" width="1400" height="927" loading="lazy" decoding="async" alt="Tablero de madera con un disco solar giratorio, flecha del norte, flecha del viento y escalas de color para la precipitación y la zona de rusticidad." /></a>
+                <figcaption>Los factores clave del lugar de un vistazo: recorrido del sol, precipitación anual, tipo de suelo, viento dominante, zona de rusticidad.</figcaption>
+              </figure>
+            </div>
+            <figure class="narrow">
+              <a href="/hilfe/szenario.jpg" target="_blank" rel="noopener"><img src="/hilfe/szenario.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="Barra informativa «Escenario C: huerto familiar entre campos» con superficie de 200 × 50 m, flecha del norte, 800 mm de precipitación y zona USDA 6, debajo una breve descripción." /></a>
+              <figcaption>Una visión general aproximada como base para un escenario del terreno.</figcaption>
+            </figure>
+          </div></details>
+
+          <details class="sub" id="es-baumscheibe"><summary>De la lista de plantas al juego de fichas de copa</summary><div class="sub-body">
+            <p>Todas las vistas de fichas buscan mostrar el <b>nicho ecológico</b> de una planta, para que su colocación se base en la mejor información posible. La información clave está en el anverso: nombres, dimensiones, necesidades y tolerancias, usos y funciones. El reverso queda libre para más notas.</p>
+            <div class="split">
+              <figure>
+                <a href="/hilfe/baumscheibe.jpg" target="_blank" rel="noopener"><img src="/hilfe/baumscheibe.jpg" width="1400" height="1427" loading="lazy" decoding="async" alt="Ficha de copa de la falsa acacia (Robinia pseudoacacia): arriba nombre y valoración, debajo altura 25 m, copa 15 m, rusticidad 4–9, abajo campos de colores para funciones y usos, alrededor los anillos de los meses." /></a>
+                <figcaption>Una ficha de copa, con la falsa acacia como ejemplo.</figcaption>
+              </figure>
+              <div>
+                <h4>La ficha de copa en detalle</h4>
+                <dl>
+                  <dt>Arriba del todo</dt><dd>La <b>valoración</b> como planta útil, debajo, en el campo blanco, el <b>nombre botánico y el común</b>. El símbolo de la izquierda indica el <b>estrato</b>.</dd>
+                  <dt>Banda gris</dt><dd>Los datos más importantes para colocarla (ver abajo).</dd>
+                  <dt>Mitad inferior</dt><dd>Los dos círculos interiores muestran las <b>funciones</b> en el ecosistema, el exterior los <b>rendimientos</b> para las personas, sobre todo productos (ver <a href="#platzieren">Colocar las plantas</a>).</dd>
+                  <dt>Anillos</dt><dd>Fuera la <b>época de floración</b>, dentro la <b>época de maduración y cosecha</b>, cada uno en sentido antihorario de enero a diciembre.</dd>
+                </dl>
+              </div>
+            </div>
+            <h4>La banda gris</h4>
+            <dl>
+              <dt>Crecimiento</dt><dd>lento – moderado – rápido</dd>
+              <dt>Altura</dt><dd>altura máxima de la planta adulta</dd>
+              <dt>Diámetro de copa</dt><dd>diámetro de la copa adulta, o extensión en las herbáceas perennes</dd>
+              <dt>pH del suelo</dt><dd>ácido a neutro, neutro, neutro a alcalino</dd>
+              <dt>Rusticidad</dt><dd>zona USDA</dd>
+              <dt>Luz</dt><dd>la preferencia (óptimo) de la planta, de pleno sol a media sombra y sombra total</dd>
+              <dt>Agua</dt><dd>necesidad de agua combinada con el drenaje o la capacidad de retención del suelo (bien drenado, húmedo, encharcado)</dd>
+              <dt>Suelo <span class="soon">pronto</span></dt><dd>arena – limo – franco – centro. Si se muestran los cuatro símbolos, la planta se adapta a cualquier suelo.</dd>
+            </dl>
+            <h4>Imprimir el juego</h4>
+            <p>En la vista de fichas, en <code>PDF (a escala)</code>. Cada disco recibe el ancho de copa a la escala elegida, distribuido en A4, A3 o A2.</p>
+            <div class="split">
+              <dl>
+                <dt>Escala 1:50</dt><dd>El valor por defecto. Cubre terrenos medianos a grandes y el juego sigue siendo manejable. Copa de 4 m = disco de 8 cm.</dd>
+                <dt>Tamaño mín. 4 cm</dt><dd>Los discos más pequeños no se imprimen porque apenas se podrían leer. La aplicación indica cuáles faltan.</dd>
+                <dt>Fijo 6 cm + anillo</dt><dd>Cada círculo de información mide 6 cm, el anillo exterior muestra el tamaño real de la copa.</dd>
+              </dl>
+              <figure>
+                <a href="/hilfe/baumscheiben-druck-en.jpg" target="_blank" rel="noopener"><img src="/hilfe/baumscheiben-druck-en.jpg" width="1051" height="725" loading="lazy" decoding="async" alt="Captura de pantalla de la vista de fichas con el menú «PDF (a escala)» abierto: escala 1:50, papel A4, tamaño mínimo 4 cm y la opción «disco fijo de 6 cm + anillo a escala»." /></a>
+                <figcaption>Ajustes del PDF a escala.</figcaption>
+              </figure>
+            </div>
+            <h4>Hacerlas tuyas</h4>
+            <p>Imprime en color o en escala de grises sobre papel o lámina y recorta los círculos. Merece la pena adaptar las impresiones a tu situación y a tu forma de ver: el papel de color o colorearlas hace que los discos se distingan fácilmente, y el reverso tiene sitio para más información.</p>
+          </div></details>
+
+          <details class="sub" id="es-platzieren"><summary>Del borrador del terreno al plan de plantación</summary><div class="sub-body">
+            <h4>Colocar las plantas</h4>
+            <p>Dónde va exactamente una planta depende sobre todo de las condiciones del lugar y de los rasgos de la planta. Por eso esta información debería estar siempre presente.</p>
+            <p>La forma más sencilla de mostrar el <b>análisis del lugar</b> es una hoja con los datos clave. En el otro extremo está un «tablero de información» que muestra el norte y el recorrido del sol, además de la precipitación, el viento dominante, la zona de rusticidad y el tipo de suelo. En nuestras latitudes la luz es el factor limitante para sistemas productivos en todos los estratos – por eso el recorrido del sol es la información más importante para situar cada planta.</p>
+            <p>Los <b>rasgos de las plantas</b> que importan para colocarlas están en las fichas de copa. Sus funciones están codificadas por colores, así que las condiciones básicas para un policultivo se ven rápidamente – <b>diseño de policultivos por colores</b>:</p>
+            <div class="tip"><b>Receta básica</b>Cada color aparece al menos una vez en un parche, mejor dos. Eso sienta la base. Con algo de apilamiento de funciones y redundancia dentro del parche vas rápidamente por buen camino (ver <a href="#polykulturen">Policultivos &amp; gremios</a>).</div>
+            <figure>
+              <a href="/hilfe/legende-en.jpg" target="_blank" rel="noopener"><img src="/hilfe/legende-en.jpg" width="1400" height="1720" loading="lazy" decoding="async" alt="Gráfico explicativo «información de la planta» (en alemán): una ficha de copa con todos los campos rotulados, debajo la leyenda de colores de las funciones para el ecosistema y los usos para las personas." /></a>
+              <figcaption>Leyenda de la información de la planta, funciones y usos (en alemán).</figcaption>
+            </figure>
+            <h4>Documentación</h4>
+            <p>Con el juego analógico, las fotos son la mejor manera de registrar los borradores. Nombres de archivo claros y coherentes mantienen los resultados en orden. Si quieres seguir desarrollando los borradores de forma profesional, trasládalos al <a href="#gartenplan">plan de bosque comestible</a> digital, que ofrece funciones parecidas a un sistema de información geográfica (SIG).</p>
+          </div></details>
+
+          <details class="sub" id="es-grenzen"><summary>Límites actuales</summary><div class="sub-body">
+            <h4>Legibilidad de las fichas</h4>
+            <p>A la escala por defecto de 1:50 solo se ven bien las leñosas y las herbáceas perennes lo bastante grandes (a partir de aprox. 1 m de diámetro); en círculos más pequeños los datos están al límite de la legibilidad. Se está probando una variante con abreviaturas en lugar de símbolos que puede ayudar (<code>Ajustes → Vista → Abreviaturas</code> en lugar de puntos de color).</p>
+            <p>Las primeras fases de la plantación se ven muy bien a la escala por defecto: los estratos de árboles y arbustos suelen plantarse primero, los estratos herbáceos siguen en años posteriores.</p>
+            <h4>Representar gremios</h4>
+            <p>Si todas las funciones del ecosistema están cubiertas para todas las plantas solo puede valorarse de forma limitada por ahora. Para policultivos sueltos hay una solución provisional: formas recortadas de manera irregular que representan grupos de plantas herbáceas. Su información puede mostrarse fuera del plano, p. ej. con la vista en tiras.</p>
+            <div class="figs">
+              <figure>
+                <a href="/hilfe/gilden.jpg" target="_blank" rel="noopener"><img src="/hilfe/gilden.jpg" width="1400" height="927" loading="lazy" decoding="async" alt="Ficha de copa del moral negro sobre un gran cartón, al lado dos recortes verdes irregulares para plantas polinizadoras y plantas que confunden con su aroma." /></a>
+                <figcaption>Formas recortadas para los gremios de un policultivo.</figcaption>
+              </figure>
+              <figure>
+                <a href="/hilfe/kraeuterschicht.jpg" target="_blank" rel="noopener"><img src="/hilfe/kraeuterschicht.jpg" width="875" height="628" loading="lazy" decoding="async" alt="Ficha turquesa irregular «parche del estrato herbáceo» con una lista de hierbas y puntos de colores para sus funciones." /></a>
+                <figcaption>Una ficha para el estrato herbáceo de un parche.</figcaption>
+              </figure>
+            </div>
+            <p>Sin embargo, un gremio no es lo mismo que un policultivo, porque sus miembros no se limitan a un parche. El gremio de polinizadores, por ejemplo, suele estar formado por plantas con flor repartidas por todo el bosque comestible. Por ahora intentamos abarcar esta complejidad con las funciones digitales <i>Policultivos</i> y <i>Plan de bosque comestible</i> (ver <a href="#polykulturen">Policultivos &amp; gremios</a>).</p>
+          </div></details>
+        </div>
+      </details>
+
+      <details class="part" id="es-software">
+        <summary><span class="num">4</span><span><span class="title">El software: permadesignkit.org</span><span class="hint">Plantas, calendario, policultivos, plan de bosque comestible, copias de seguridad, atajos, perspectivas</span></span></summary>
+        <div class="part-body">
+          <p>Más allá del juego físico de fichas de copa, el software ofrece herramientas potentes, sobre todo para la fase de diseño de un proceso de diseño.</p>
+          <h3>Notas técnicas</h3>
+          <p>El Perma Design Kit funciona <b>en el navegador</b>. Reúne datos de bases de datos públicas (sobre todo PFAF y Wikidata) y los prepara para distintas vistas. Todos los datos importados y tus propias entradas se guardan solo en el navegador y nunca salen de tu ordenador – hasta que se borre el almacenamiento del navegador. Cómo hacer copias de seguridad se describe en <a href="#daten">Copia de seguridad, compartir, uso sin conexión</a>.</p>
+          <p>La herramienta debería funcionar en todos los navegadores habituales y en dispositivos móviles. Si no es así, <a href="/fehler-melden/">informa de un error</a>.</p>
+          <div class="warn"><b>Atención</b>Los datos de las plantas proceden de fuentes ajenas y no siempre son completos ni correctos. Compruébalos, sobre todo para decisiones importantes.</div>
+          <h3>Estructura &amp; uso</h3>
+          <p>En tu primera visita un recorrido explica lo básico. El menú de arriba contiene las páginas:</p>
+          <dl>
+            <dt>Plantas</dt><dd>reunir los datos del nicho y mostrarlos gráficamente en distintas vistas</dd>
+            <dt>Calendario</dt><dd>calendarios de floración y cosecha</dd>
+            <dt>Policultivos</dt><dd>componer comunidades funcionales de plantas</dd>
+            <dt>Plan de bosque comestible</dt><dd>distribuir una lista de plantas sobre el terreno real (en desarrollo)</dd>
+          </dl>
+          <figure>
+            <a href="/hilfe/pflanzenkacheln-en.jpg" target="_blank" rel="noopener"><img src="/hilfe/pflanzenkacheln-en.jpg" width="1400" height="815" loading="lazy" decoding="async" alt="Captura de pantalla de la página Plantas en vista de mosaico: arriba el menú, debajo filtros y mosaicos de plantas con fotos, nombres e insignias de colores para los usos." /></a>
+            <figcaption>La página <i>Plantas</i> en vista de mosaico.</figcaption>
+          </figure>
+
+          <details class="sub" id="es-pflanzen"><summary>Plantas</summary><div class="sub-body">
+            <p>El núcleo de la aplicación: los datos reunidos sobre los nichos ecológicos de las plantas, filtrables y ordenables en varias vistas.</p>
+            <h4>a) Empezar una lista de plantas desde cero</h4>
+            <ol>
+              <li><b>Añadir una planta.</b> El campo de búsqueda encuentra plantas en las fuentes. Ahí mismo indicas el número de ejemplares. Con <code>+ Nueva planta</code> introduces todo a mano.</li>
+              <li><b>Dejar que se completen los datos.</b> Los datos que faltan vienen de PFAF, Edible Forest Gardens y Wikidata (ver <a href="#quellen">fuentes de datos</a>).</li>
+              <li><b>Corregir y editar.</b> Cambia cualquier valor en el diálogo de edición. La etiqueta de fuente pasa entonces a <b>M</b> de manual, y ese valor nunca se sobrescribe.</li>
+            </ol>
+            <div class="tip"><b>Consejo</b>La búsqueda funciona mejor con el nombre botánico; los nombres comunes no siempre son inequívocos.</div>
+            <p>Es importante adaptar los datos de las plantas a tu propia situación: necesitas <b>tamaños</b> propios para variedades, distintos portainjertos o árboles viejos ya existentes. Lo mismo ocurre cuando el tamaño depende del manejo, p. ej. árboles en monte bajo (tilo para hojas de ensalada, avellano para varas, sauce para cestería). Las variedades también suelen tener otras <b>épocas de floración y maduración</b>.</p>
+            <h4>b) Usar listas existentes</h4>
+            <p>Lee listas de plantas ya hechas en CSV o JSON mediante el menú <code>Datos</code>. Allí hay una lista de ejemplo, «Plantas para jardines pequeños» (42 especies). Exporta tablas de Excel como CSV e impórtalas aquí.</p>
+            <h4>Vistas</h4>
+            <p>Cada vista tiene el botón <code>Datos</code>: completar datos, importar y exportar listas, crear vistas de impresión. La fila de filtros ordena y filtra las plantas.</p>
+            <figure class="narrow">
+              <img src="/hilfe/menue-en.jpg" width="448" height="101" loading="lazy" decoding="async" alt="Cabecera «Pflanzenkacheln» (mosaico de plantas) con el selector de vista para mosaico, lista y fichas." />
+            </figure>
+            <dl>
+              <dt>Mosaico</dt><dd>Vista general ordenable y filtrable con imagen, franja de color según el uso principal y barra de completitud.</dd>
+              <dt>Lista</dt><dd>Tabla ordenable y filtrable. Selecciona varias plantas y complétalas, bórralas, expórtalas o imprímelas juntas.</dd>
+              <dt>Fichas de copa</dt><dd>Otra vista junto al mosaico. Los botones de impresión crean las fichas de copa a escala como PDF.</dd>
+            </dl>
+            <h4>Símbolos en la lista de plantas</h4>
+            <ul class="legend">
+              <li><b>Insignias rellenas:</b> el uso de la planta (comestible, medicinal, material …).</li>
+              <li><b>Etiquetas con borde:</b> de dónde procede un valor, p. ej. PFAF.</li>
+              <li><b>Franja de color a la izquierda:</b> uso principal en este orden:
+                <span class="swatches"><span><i class="sw" style="background:#fbbf24"></i>comestible/culinaria</span><span><i class="sw" style="background:#fb7185"></i>medicinal</span><span><i class="sw" style="background:#84cc16"></i>fijadora de nitrógeno</span><span><i class="sw" style="background:#2dd4bf"></i>cobertura del suelo</span><span><i class="sw" style="background:#22d3ee"></i>planta para insectos</span></span></li>
+              <li><b>Completitud de datos:</b> verde a partir del 80 %, amarillo a partir del 50 %, rojo por debajo.</li>
+            </ul>
+            <h4>Editar</h4>
+            <p>Abre cualquier planta para editarla con el botón del <code>lápiz</code>, para rellenar los datos que faltan y adaptarla a tu jardín.</p>
+          </div></details>
+
+          <details class="sub" id="es-kalender"><summary>Calendario</summary><div class="sub-body">
+            <p>Épocas de floración y cosecha como calendario, ordenable e imprimible como PDF.</p>
+            <figure>
+              <a href="/hilfe/kalender-en.jpg" target="_blank" rel="noopener"><img src="/hilfe/kalender-en.jpg" width="1400" height="850" loading="lazy" decoding="async" alt="Captura de pantalla del calendario de floración y cosecha: arriba un resumen mensual con barras, debajo la floración y la cosecha de cada planta como barras de colores a lo largo de los doce meses." /></a>
+              <figcaption>Calendario de floración y cosecha.</figcaption>
+            </figure>
+          </div></details>
+
+          <details class="sub" id="es-polykulturen-app"><summary>Policultivos</summary><div class="sub-body">
+            <p>Esta herramienta propone compañeras de plantación con necesidades y tolerancias parecidas de luz, agua y pH del suelo. Los policultivos guardados pueden colocarse como unidad en el plan de bosque comestible. <span class="soon">primer borrador, en desarrollo</span></p>
+            <h4>Crear policultivos</h4>
+            <ol>
+              <li>Elige una especie ancla, a menudo un elemento central como un árbol frutal.</li>
+              <li>Añade miembros y cubre cada función al menos dos veces: compañera, cobertura del suelo, fijadora de nitrógeno, acumuladora de minerales, planta para insectos o aromática, fruta o baya (ver <a href="#polykulturen">principios de diseño de policultivos</a>).</li>
+              <li>El panel de sugerencias de la derecha muestra plantas adecuadas de tu lista y otras propuestas – cuanto más alto el número, mejor encajan luz, agua y pH.</li>
+              <li>Guardar.</li>
+            </ol>
+            <p>Otra opción: crea un <b>grupo</b> en el diálogo de edición de una planta y conviértelo en policultivo con <code>Crear a partir de un grupo…</code>. Hay policultivos de ejemplo ya hechos en el menú de la página y en las <a href="#literatur">fuentes</a>.</p>
+          </div></details>
+
+          <details class="sub" id="es-gartenplan"><summary>Plan de bosque comestible</summary><div class="sub-body">
+            <p>La alternativa digital al juego de fichas de copa. Aquí es donde más desarrollo falta todavía: una herramienta digital tiene que ser, al final, lo bastante compleja para la planificación profesional y compatible con aplicaciones SIG.</p>
+            <div class="beta">
+              <b>Prueba beta</b>
+              <p>Estamos trabajando en bastantes cosas. La herramienta ya tiene muchas funciones nuevas que aún no son públicas y quieren ser probadas, entre ellas:</p>
+              <ul>
+                <li>biografías de árboles y tareas: una línea de tiempo para cada árbol con valoraciones, cosecha, poda, cuidados y fotos</li>
+                <li>mejor integración con (Q)GIS</li>
+                <li>trabajar en planes juntos como equipo y compartirlos</li>
+                <li>un planificador profesional de bosques comestibles con capas, análisis de huecos de cosecha, cortavientos, flujo del agua y más</li>
+              </ul>
+              <p>Si quieres probar las nuevas funciones en la <a href="/beta/">prueba beta</a>: esperamos tus comentarios, tu apoyo y tus consejos sobre hacia dónde debe ir la herramienta. ¿Quizá incluso te apetece colaborar y formar parte del equipo?</p>
+            </div>
+            <p>Arriba a la derecha eliges cuán completa es la <b>interfaz</b>. <b>Sencilla</b> te guía por el plan en tres pasos y muestra cinco estratos por llenar – suficiente para la mayoría de los jardines. <b>Clásica</b> muestra todas las herramientas con un conjunto de funciones profesional. Puedes cambiar en cualquier momento; solo cambia la interfaz, no los datos del plan. Independientemente de eso, cada plan puede verse en <b>2D o 3D</b>.</p>
+            <h4>Crear un plano del terreno y colocar plantas</h4>
+            <ul>
+              <li><code>+ Nuevo plan de bosque comestible</code>, busca una dirección o elige <i>Mi ubicación</i> y haz clic en las esquinas del terreno. El tamaño, la orientación al norte y el terreno se obtienen de ello. Sin ubicación obtienes una cuadrícula simple.</li>
+              <li><i>Dibujar superficie</i> para partes como bancales, estanque y caminos.</li>
+              <li><b>Colocar plantas:</b> elige una planta y haz clic en la superficie – una a una, en hilera con una distancia fija o como policultivo completo (<i>Policultivo como paquete</i> coloca a la vez el ancla y los miembros).</li>
+              <li>Arrastra las plantas para moverlas, selecciona varias a la vez con el <i>lazo</i>. Arrastrar sobre suelo vacío desplaza el mapa.</li>
+              <li>El control <i>Años desde el inicio del proyecto</i> (0–80) muestra el tamaño estimado de la copa en cada año. Las plantas de crecimiento rápido son adultas tras unos 6 años, las medianas tras 15 y las lentas tras 30. Por ahora la forma de crecimiento y el porte se muestran de forma estándar sencilla.</li>
+            </ul>
+            <h4>Mapa, foto aérea, terreno</h4>
+            <p>El fondo procede de datos públicos: OpenStreetMap, fotos aéreas oficiales (8–40 cm, en 13 estados federados alemanes, Austria, Suiza y los Países Bajos) o una imagen de satélite gruesa. El relieve procede de modelos oficiales de 1 m donde los hay. Los edificios en un radio de unos 150 m aparecen en 3D y proyectan sombra.</p>
+            <h4>Análisis</h4>
+            <dl>
+              <dt>Funciones</dt><dd>Gremios eficaces para todo el sistema: dónde actúan las siete funciones del ecosistema y dónde faltan, con sugerencias de tu colección y <i>Plantar aquí</i>.</dd>
+              <dt>Soleamiento</dt><dd>Horas de sol al día con la sombra de copas de árboles, terreno y edificios: sol a partir de 6 h, media sombra 3–6 h, sombra por debajo de 3 h.</dd>
+              <dt>Avisos</dt><dd>(experimental) Posibles conflictos por plantas del mismo estrato demasiado juntas y necesidades de luz no cubiertas, en ambos casos para plantas adultas.</dd>
+            </dl>
+            <h4>Herramientas y salida</h4>
+            <div class="cols">
+              <ul>
+                <li>varios modos de selección</li>
+                <li>medir</li>
+                <li>guardar una imagen</li>
+                <li>dibujar superficies y contornos</li>
+                <li>datos GPS</li>
+              </ul>
+              <ul>
+                <li>lista de plantas con cantidades y precios (CSV, PDF)</li>
+                <li>calendario solo para este plan</li>
+                <li>exportación a PDF</li>
+                <li>GeoJSON para QGIS</li>
+                <li>enlace para compartir</li>
+              </ul>
+            </div>
+          </div></details>
+
+          <details class="sub" id="es-daten"><summary>Copia de seguridad, compartir, uso sin conexión</summary><div class="sub-body">
+            <dl>
+              <dt>Copia de seguridad</dt><dd><code>Ajustes → Datos</code>: guarda todos los datos como archivo JSON, también para llevarlos a otro dispositivo. Puede hacerse automáticamente mediante WebDAV o Gist.</dd>
+              <dt>Exportar</dt><dd>Todas las plantas o las seleccionadas como CSV o JSON.</dd>
+              <dt>Enlace para compartir</dt><dd>Plantas, policultivos y planes se empaquetan comprimidos en el enlace. No se guarda nada en el servidor.</dd>
+              <dt>Instalar la aplicación</dt><dd>Android/Chrome: aviso «Instalar aplicación». iOS: icono de compartir → «Añadir a pantalla de inicio». Tras la primera visita todo funciona sin conexión salvo la búsqueda, las fuentes de datos y el mapa.</dd>
+            </dl>
+            <div class="warn"><b>Importante en iPhone y iPad</b>La aplicación de la pantalla de inicio tiene su propio almacenamiento, vacío. Haz primero una copia de seguridad en el navegador y léela en la aplicación. En una pestaña de Safari, iOS puede borrar los datos tras 7 días sin visita.</div>
+          </div></details>
+
+          <details class="sub" id="es-shortcuts"><summary>Atajos de teclado</summary><div class="sub-body">
+            <div class="tablewrap"><table>
+              <tbody>
+                <tr><td><kbd>/</kbd></td><td>Ir a la búsqueda</td></tr>
+                <tr><td><kbd>Esc</kbd></td><td>Cerrar el diálogo abierto</td></tr>
+                <tr><td><kbd>f</kbd></td><td>Filtrar la lista por nombre</td></tr>
+                <tr><td><kbd>n</kbd></td><td>Nueva planta</td></tr>
+                <tr><td><kbd>g</kbd> <kbd>l</kbd> <kbd>c</kbd></td><td>Cambiar de vista: mosaico, lista, fichas</td></tr>
+                <tr><td><kbd>Mayús</kbd> + clic</td><td>Seleccionar un rango en la lista</td></tr>
+                <tr><td><kbd>Alt</kbd> + <kbd>1</kbd>…<kbd>9</kbd></td><td>Elementos del menú por orden</td></tr>
+                <tr><td><kbd>?</kbd></td><td>Todos los atajos de la página actual</td></tr>
+              </tbody>
+            </table></div>
+            <p><b>En el plan de bosque comestible:</b> <kbd>2</kbd>/<kbd>3</kbd> para 2D/3D, <kbd>H</kbd> <kbd>V</kbd> <kbd>L</kbd> <kbd>M</kbd> para desplazar, seleccionar, lazo, medir, <kbd>F</kbd> <kbd>R</kbd> <kbd>U</kbd> para superficie, hilera, contorno, <kbd>I</kbd>/<kbd>O</kbd> para los años, <kbd>J</kbd>/<kbd>K</kbd> para el sol.</p>
+          </div></details>
+
+          <details class="sub" id="es-ausblick"><summary>Perspectivas &amp; participar</summary><div class="sub-body">
+            <h4>Desarrollo previsto</h4>
+            <p>Hay muchas más funciones previstas o ya en prueba:</p>
+            <ul>
+              <li>listas de plantas según el objetivo de diseño: sistemas de producción de alimentos, agroforestería compleja, cultivo para la salud y más</li>
+              <li>mostrar distintas fases de sucesión en el plan</li>
+              <li>policultivos y gremios: fijar criterios propios para las sugerencias y mostrar gremios en el espacio</li>
+              <li>usos y funciones intercambiables</li>
+              <li>archivos vectoriales para cortar con láser fichas de copa en madera, MDF o plástico</li>
+            </ul>
+            <h4>Participar &amp; apoyar</h4>
+            <ul>
+              <li>Usa la herramienta y danos tu opinión, informa de errores en <a href="/fehler-melden/">informar de un error</a></li>
+              <li>Crea listas de plantas y policultivos para compartir</li>
+              <li>Aporta ideas y código en GitHub</li>
+              <li>Ayuda a cubrir los costes del servidor y del dominio en <a href="/unterstuetzen/">apoyar</a></li>
+              <li>Prueba funciones aún no publicadas en la <a href="/beta/">prueba beta</a></li>
+            </ul>
+          </div></details>
+        </div>
+      </details>
+
+      <details class="part" id="es-hintergrund">
+        <summary><span class="num">5</span><span><span class="title">Contexto</span><span class="hint">Proceso de diseño, bosques comestibles, policultivos &amp; gremios</span></span></summary>
+        <div class="part-body">
+          <p>Para la mayoría de las personas la herramienta funciona mejor en su forma simplificada. Pero está pensada para ir mucho más lejos y permite mucho más detalle y personalización, de modo que también es posible la planificación profesional. Aquí solo damos una breve introducción; para profundizar, mira las <a href="#literatur">fuentes</a> más abajo.</p>
+          <p>En general queremos responder a la pregunta de cómo puede organizarse nuestro uso de la tierra en armonía con la naturaleza. Para ello nos basamos sobre todo en la ecología y las ciencias naturales, aplicadas en el espíritu de la ética y los principios de diseño de la permacultura. Lo más importante es observar e imitar la naturaleza – de ella aprendemos a «cultivar como el bosque».</p>
+
+          <details class="sub" id="es-designprozess"><summary>Proceso de diseño</summary><div class="sub-body">
+            <p>Un buen diseño es más probable si se sigue un proceso de diseño. Esta secuencia lógica de fases garantiza que sepamos lo máximo posible sobre el terreno antes de que empiece el diseño propiamente dicho. Cuanto mejor fundamentado esté el diseño del terreno, más exitosa y productiva será la ejecución. Y cuanto más tiempo nos dejemos guiar por el proceso, mejor será el diseño gracias a bucles repetidos de evaluación y mejora.</p>
+            <figure>
+              <a href="/hilfe/designprozess.jpg" target="_blank" rel="noopener"><img src="/hilfe/designprozess.jpg" width="622" height="455" loading="lazy" decoding="async" alt="Diagrama de colores de un proceso de diseño para bosques comestibles con las fases observación, análisis, diseño, ejecución y manejo en torno a una espiral." /></a>
+              <figcaption>Un proceso de diseño para bosques comestibles.</figcaption>
+            </figure>
+          </div></details>
+
+          <details class="sub" id="es-waldgaerten"><summary>Bosques comestibles</summary><div class="sub-body">
+            <p>A diferencia del cultivo intensivo de anuales, los sistemas permanentes de varios estratos exigen un pensamiento más complejo y holístico. Solo en lo espacial pasamos del bancal de hortalizas, casi bidimensional, a la tercera dimensión. Pero la mayor diferencia es la cuarta dimensión: el tiempo. Los bosques son los ecosistemas más eficientes que podemos crear y modelar, así que nuestro objetivo suele ser la <b>etapa clímax de la sucesión natural</b>. Lo que al ritmo de la naturaleza puede llevar un milenio puede acelerarse mucho con intervenciones informadas por la ecología.</p>
+            <p>Ayuda mucho «adelantar» el tiempo mentalmente e imaginar etapas posteriores de la sucesión – pensar en tiempo del mundo en lugar de en tiempo humano. Con algo de práctica se desarrolla una <b>imaginación sucesional</b> que abre la perspectiva temporal y permite decidir mejor dónde van los árboles y arbustos. En el plan de bosque comestible ayuda a ello el control de años.</p>
+            <p>Para diseñar bosques comestibles y sistemas agroforestales complejos partimos de las obras de referencia consolidadas: «Creating a Forest Garden» de Martin Crawford y los dos volúmenes de «Edible Forest Gardens» de Dave Jacke y Eric Toensmeier (ver <a href="#literatur">fuentes</a>).</p>
+          </div></details>
+
+          <details class="sub" id="es-polykulturen"><summary>Policultivos &amp; gremios</summary><div class="sub-body">
+            <p>A grandes rasgos, un bosque comestible es un conjunto de policultivos: los caminos suelen dividir el terreno en <i>parches</i> delimitados en los que crecen comunidades de plantas de varios estratos. Idealmente cubren las funciones del ecosistema que su éxito requiere – medido por los rendimientos para los que se diseñan. Un árbol frutal sufre menos estrés en una comunidad, porque esta lo apoya y protege con polinización, control de plagas, nutrientes y cobertura del suelo.</p>
+            <div class="def"><b>Policultivo</b>Un policultivo se define por el espacio físico: un grupo de plantas sobre todo perennes en una superficie claramente delimitada (<i>parche</i>), dispuestas de modo que sus interacciones muestren la menor competencia y la mayor cooperación posibles.</div>
+            <p>Cuando conoces los nichos ecológicos de las plantas, puedes disponerlas teniendo en cuenta los factores del lugar para que den los <b>rendimientos</b> que deseas.</p>
+            <figure>
+              <a href="/hilfe/nutzen-en.jpg" target="_blank" rel="noopener"><img src="/hilfe/nutzen-en.jpg" width="1231" height="415" loading="lazy" decoding="async" alt="Símbolos de los usos para las personas: partes comestibles, medicinal, culinario, leña, materiales, jabón, tintes, estético; debajo fruto, hojas, verdura, flores, semillas, frutos secos, bulbos, raíces, hongos, aceites." /></a>
+              <figcaption>Usos para las personas.</figcaption>
+            </figure>
+            <p>El diseño de policultivos exitosos sigue estos <b>principios de diseño</b>:</p>
+            <dl>
+              <dt>Ubicación relativa</dt><dd>Sitúa los elementos unos respecto a otros de forma que la competencia sea baja y se favorezca la cooperación.</dd>
+              <dt>Apilamiento de funciones</dt><dd>Cada elemento cumple tantas funciones como sea posible y así crea muchas relaciones.</dd>
+              <dt>Redundancia</dt><dd>Cada función la cumplen varios elementos, de modo que queda asegurada para el policultivo.</dd>
+            </dl>
+            <p>También ayuda siempre tener en cuenta los principios de la <b>permacultura</b>: diseñar de los patrones a los detalles, usar y valorar la diversidad, integrar en lugar de segregar (ver Holmgren en las <a href="#literatur">fuentes</a>).</p>
+            <p>Además de sus usos para nosotros, los policultivos también deberían aportar importantes <b>funciones para el ecosistema</b>.</p>
+            <figure>
+              <a href="/hilfe/funktionen-en.jpg" target="_blank" rel="noopener"><img src="/hilfe/funktionen-en.jpg" width="1222" height="269" loading="lazy" decoding="async" alt="Símbolos de las funciones para el ecosistema: fijadora de nitrógeno (N+), acumuladora de minerales (DA), cortavientos, alimento y refugio para insectos y pequeños animales, cobertura del suelo, control de plagas." /></a>
+              <figcaption>Funciones para el ecosistema.</figcaption>
+            </figure>
+            <p>Agrupar las plantas por funciones y mirar las relaciones entre ellas añade una segunda perspectiva: la del ecosistema en su conjunto. Para abarcar esta complejidad es útil el trabajo de Dave Jacke y Eric Toensmeier. Precisan el término <b>gremio</b> para hacer visibles los efectos a lo largo del sistema.</p>
+            <div class="def"><b>Gremio</b>A diferencia de los policultivos, los gremios no pueden limitarse a la superficie de un policultivo; representan funciones a lo largo del sistema y, por tanto, su estructura «social». Un gremio se define por el tipo de relaciones entre los elementos, p. ej. un gremio para cortavientos, polinización o cobertura del suelo. De ahí se deduce que <b>no todos los gremios son policultivos</b> y que <b>para ser eficaz, un policultivo debe contener varios gremios</b>.</div>
+            <p class="small">Estos conceptos se presentan aquí de forma simplificada; más en las charlas de Dave Jacke y en «Edible Forest Gardens» (ver <a href="#literatur">fuentes</a>).</p>
+          </div></details>
+
+          <details class="sub" id="es-beispiele"><summary>Ejemplos de policultivos</summary><div class="sub-body">
+            <p>Ya se puede hablar de policultivo cuando en el cultivo intensivo se planta más de un estrato. Estos <b>cultivos asociados</b> («companion planting», «interplanting») pueden beneficiarse mutuamente, pero no crean relaciones complejas.</p>
+            <p>Estas solo surgen cuando se suman plantas leñosas, normalmente como elemento central. Entonces se habla a menudo de <b>gremios de frutales</b>: árboles frutales con un sotobosque de plantas que los apoyan.</p>
+            <p>Más allá de eso, son posibles todo tipo de combinaciones de leñosas y herbáceas para <b>objetivos de diseño especiales</b> – el único límite real es la imaginación. Un ejemplo típico es un seto cortavientos; también la protección frente a miradas o ruido puede ser el rendimiento deseado. Los policultivos pueden servir de abono verde para bancales intensivos vecinos, ofrecer usos culinarios cerca de la cocina, proporcionar materiales naturales para artesanía y mucho más.</p>
+          </div></details>
+        </div>
+      </details>
+
+      <details class="part" id="es-literatur">
+        <summary><span class="num">6</span><span><span class="title">Fuentes</span><span class="hint">Libros, charlas, fuentes de datos</span></span></summary>
+        <div class="part-body">
+          <h3>Lecturas básicas y complementarias</h3>
+          <ul class="refs">
+            <li>Balkep: The Polyculture Project<br><small><a href="https://www.thepolycultureproject.com/" rel="noopener">thepolycultureproject.com</a></small></li>
+            <li>Crawford, Martin (2010): <i>Creating a Forest Garden</i>. Green Books<br><small>En alemán: <i>Einen Waldgarten erschaffen</i> (2022), OLV</small></li>
+            <li>Jacke, Dave &amp; Toensmeier, Eric (2005): <i>Edible Forest Gardens</i>, vol. 1 y 2. Chelsea Green</li>
+            <li>Jacke, Dave: Reframing and Deepening into Guilds and Polycultures (FFFG1)<br><small><a href="https://www.agroforestry.co.uk/symposium/" rel="noopener">Symposium – The Agroforestry Research Trust</a></small></li>
+            <li>Jacke, Dave: Gardening Like a Forest – Applied Ecological Design for Homesteads<br><small><a href="https://www.youtube.com/watch?v=IL4VCbgCGD4" rel="noopener">YouTube</a></small></li>
+            <li>Jacke, Dave: Ecosystem Mimicry (charla)<br><small><a href="https://www.youtube.com/watch?v=oOx06AEJVa0" rel="noopener">YouTube</a></small></li>
+            <li>Hemenway, Toby (2009): <i>Gaia's Garden: A Guide to Home-Scale Permaculture</i>. Chelsea Green (capítulo 9)</li>
+            <li>Holmgren, David: La esencia de la permacultura (edición alemana)<br><small><a href="https://holmgren.com.au/downloads/Essence_of_Pc_DE.pdf" rel="noopener">PDF</a></small></li>
+            <li>Müller, Jörn: Ein Designprozess für Waldgärten (un proceso de diseño para bosques comestibles), charla en alemán<br><small><a href="https://www.youtube.com/watch?v=5Y307puQaHo" rel="noopener">YouTube</a></small></li>
+            <li>Müller, Jörn: Pop goes the canopy – a forest garden design tool<br><small><a href="https://www.agroforestry.co.uk/presentations-2023/" rel="noopener">Agroforestry Research Trust, presentaciones 2023</a></small></li>
+            <li>Müller, Jörn: policultivo para producir alimentos en condiciones secas (en alemán)<br><small><a href="https://permakultur-plattform.de/blog/polykultur-fur-den-nahrungsertrag-unter-trockenen-bedingungen/" rel="noopener">Permakultur-Plattform</a></small></li>
+            <li>Müller, Jörn: policultivo para producir alimentos en condiciones de sombra (en alemán)<br><small><a href="https://permakultur-plattform.de/blog/polykultur-fuer-den-nahrungsertrag-schattig/" rel="noopener">Permakultur-Plattform</a></small></li>
+            <li>Toensmeier, Eric: Guidelines for Perennial Polyculture Design<br><small><a href="https://www.permaculturenews.org/2016/01/15/guidelines-for-perennial-polyculture-design/" rel="noopener">permaculturenews.org</a></small></li>
+            <li>Código fuente del software<br><small><a href="https://github.com/js32/Perma-Guild-Forge" rel="noopener">github.com/js32/Perma-Guild-Forge</a></small></li>
+          </ul>
+          <h3 id="es-quellen">Fuentes de datos</h3>
+          <dl>
+            <dt>Plants For A Future</dt><dd><a href="https://pfaf.org" rel="noopener">pfaf.org</a> – la base de datos también sirve para una búsqueda detallada de plantas útiles.</dd>
+            <dt>Wikidata</dt><dd><a href="https://www.wikidata.org" rel="noopener">wikidata.org</a> – nombres, imágenes, taxonomía.</dd>
+            <dt>Edible Forest Gardens</dt><dd>Lista de especies «Species Toolkit» (Lally Luck Farm), alojada como tabla en nuestro servidor.</dd>
+            <dt>Mapas</dt><dd>OpenStreetMap, fotos aéreas oficiales y modelos del terreno de los institutos cartográficos, Sentinel-2 (EOX). La fuente utilizada aparece abajo a la derecha en el plan.</dd>
+          </dl>
+          <p class="small">Si varias fuentes tienen un valor, gana la de mayor prioridad (por defecto: PFAF, luego Edible Forest Gardens, luego Wikidata; se puede cambiar en los <a href="/settings">ajustes</a>). Los valores que introduces tú nunca se sobrescriben. Se guarda el tamaño final de la planta adulta; los rangos en pies se convierten por su punto medio (25–35 ft → 9,1 m).</p>
+          <h3 id="es-bildrechte">Derechos de las imágenes</h3>
+          <p>Todas las imágenes y capturas de pantalla de esta página: Perma Design Kit y Permagruen, licencia <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.es" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a>.</p>
+        </div>
+      </details>
+
+      <details class="part" id="es-projekt">
+        <summary><span class="num">7</span><span><span class="title">El proyecto</span><span class="hint">Quién está detrás, de dónde viene la idea, hacia dónde va</span></span></summary>
+        <div class="part-body">
+          <p>El Perma Design Kit es una herramienta libre para planificar bosques comestibles y otros sistemas permanentes de plantas útiles. El software hace un análisis de nicho: reúne datos sobre el nicho ecológico de una planta a partir de fuentes abiertas y los presenta de distintas maneras. Además de fichas informativas y fichas de copa para colocar, muestra las plantas en listas filtrables y calendarios. Como paso siguiente se crean planes de plantación en 2D y 3D. Todo funciona en el navegador, sin cuenta, y los datos se quedan en tu dispositivo.</p>
+          <p><b>Nuestra motivación:</b> ayudar a las personas a crear bosques comestibles y otros sistemas duraderos de uso de la tierra. Para ello sopesamos nuestra huella ecológica frente a nuestra «huella de la mano» (lo que aportamos). De ahí surge un pragmatismo que, para nosotros, también justifica usar IA para programar.</p>
+          <p>El Perma Design Kit quiere formar parte de un cambio cultural – hacia una economía del regalo y otra forma de relacionarse con la naturaleza. Es una herramienta libre que pertenece a todas las personas: regalada y transmitida, no vendida.</p>
+
+          <details class="sub" id="es-vision"><summary>Visión</summary><div class="sub-body">
+            <p>Formar parte de un cambio cultural – hacia una economía del regalo y una relación cuidadosa con la naturaleza. Para ello ponemos a disposición una herramienta que contribuye a ese cambio.</p>
+            <p><b>La herramienta para ello:</b> las personas planifican policultivos y bosques comestibles según las funciones ecológicas, los usos y el lugar de las plantas – desde la ficha de la planta, pasando por el plan de bosque comestible, hasta la plantación al aire libre. Debe ayudar allí donde se planifica y se planta: en el escritorio, en el campo y en grupos, asociaciones y municipios.</p>
+            <p><b>Economía del regalo:</b> vemos el kit como un regalo, no como una mercancía. Lo transmitimos como semillas o esquejes – sin pedir un precio ni nada a cambio – y confiamos en que vuelva lo que sostiene el proyecto: apoyo, conocimiento, datos de plantas, traducciones, planes y ejemplos compartidos. Esto enlaza con la tercera ética de la permacultura, el reparto justo de los excedentes (fair share), y con la creciente cultura de los bienes comunes.</p>
+          </div></details>
+
+          <details class="sub" id="es-werte"><summary>Valores</summary><div class="sub-body">
+            <p>Siete valores sostienen el proyecto; cada uno tiene una consecuencia con la que puede comprobarse en el día a día.</p>
+            <div class="values">
+              <div class="value"><h4>Bien común</h4><p>La herramienta sigue siendo libre y completa para todas las personas. Lo que se financia con apoyos beneficia a todas.</p><p class="proof">Cada versión pasa a MIT al cabo de dos años (ver <a href="#lizenz">licencia</a>).</p></div>
+              <div class="value"><h4>Regalar <span class="soon">propuesta</span></h4><p>Transmitimos herramienta, planes y conocimiento sin pedir nada a cambio, e invitamos a todas las personas a devolver lo que puedan.</p><p class="proof">El apoyo nunca es una condición; el conocimiento, los datos de plantas, las traducciones y los ejemplos compartidos también cuentan como devolución.</p></div>
+              <div class="value"><h4>Sin ánimo comercial</h4><p>El dinero viene de personas y entidades que quieren el bien común – no de vender la herramienta.</p><p class="proof">Sin publicidad, sin venta de datos, sin funciones de pago, sin cuenta obligatoria.</p></div>
+              <div class="value"><h4>Soberanía digital &amp; privacidad</h4><p>Por defecto, los datos se quedan con quienes los usan. Todo vive primero en el navegador; el almacenamiento en el servidor, compartir y sincronizar son opcionales. Lo que el servidor solo convierte (QGIS, PFAF) no lo guarda.</p><p class="proof">Un rasgo distintivo frente a las aplicaciones de planificación comerciales.</p></div>
+              <div class="value"><h4>Transparencia</h4><p>Hacer públicos los costes, mostrar el origen de cada valor de las plantas, mantener los datos de plantas como conjunto de datos abierto.</p><p class="proof">Fuente por campo (PFAF, EFG, Wikidata, manual); está prevista una página «Lo que cuesta el proyecto».</p></div>
+              <div class="value"><h4>Utilizable por todas las personas, accesible</h4><p>Una herramienta para un bien común tiene que poder usarse sin conocimientos previos, sin ratón y en varios idiomas.</p><p class="proof">Modo sencillo, teclado, contraste, alemán, inglés y español, más idiomas gracias a la comunidad.</p></div>
+              <div class="value"><h4>Respeto por las fuentes y las autorías</h4><p>Datos de terceros solo con permiso claro; las autorías se mencionan.</p><p class="proof">NaturaDB sigue desactivada (licencia y robots.txt sin aclarar); Sebastian Schucht y Jens Steger figuran en el README y en NOTICE.</p></div>
+            </div>
+          </div></details>
+
+          <details class="sub" id="es-lizenz"><summary>Licencia: Fair Source (FSL-1.1-MIT)</summary><div class="sub-body">
+            <p>Desde el 4 de octubre de 2026 el Perma Design Kit está licenciado bajo la Functional Source License 1.1 con MIT como licencia futura. Los licenciantes son Andreas Linder y Jörn Müller.</p>
+            <h4>Qué permite</h4>
+            <ul>
+              <li>Usar, copiar, modificar y distribuir el código – para cualquier fin excepto una oferta comercial competidora (ofrecer la herramienta o algo muy parecido a cambio de dinero).</li>
+              <li>Expresamente permitido: uso interno, educación e investigación, asesoramiento, gestionar una instancia propia gratuita.</li>
+              <li>Las fichas de plantas, los PDF y los planes de jardín que alguien crea con la aplicación le pertenecen – también para fines comerciales.</li>
+              <li>Cada versión pasa automáticamente a MIT dos años después de su publicación.</li>
+              <li>Las versiones anteriores al cambio y el código PowerShell en <code>legacy/</code> siguen siendo MIT.</li>
+            </ul>
+            <h4>Por qué esta licencia</h4>
+            <ul>
+              <li>Protege el bien común de que alguien tome la herramienta libre y la venda contra nosotros como producto de pago.</li>
+              <li>Permite todo lo que contribuye al cambio cultural: aprender, asesorar, planificar – asociaciones y municipios pueden gestionarla por su cuenta.</li>
+              <li>Al cabo de dos años cada versión pasa a ser totalmente libre (MIT). La protección solo cubre el desarrollo más reciente; el conocimiento queda abierto para siempre.</li>
+              <li>No vende nada: no hay negocio de licencias. Eso encaja con una futura entidad sin ánimo de lucro.</li>
+            </ul>
+          </div></details>
+
+          <details class="sub" id="es-ziele"><summary>Objetivos</summary><div class="sub-body">
+            <p class="small">A 1 de noviembre de 2026</p>
+            <ol class="timeline">
+              <li><b>Ahora</b><span>(semanas) Prueba beta y comentarios de más personas. Presentación en el congreso FFFG26. Financiar el proyecto: definir una entidad que reciba los apoyos. Corregir errores, una prueba de rendimiento con cada despliegue.</span></li>
+              <li><b>Después</b><span>(1–2 meses) Comprobar la utilidad con las personas que lo usan y elaborar una hoja de ruta para seguir desarrollándolo.</span></li>
+              <li><b>Más adelante</b><span>(a partir de 3 meses) Desarrollar ideas de la lista del taller.</span></li>
+            </ol>
+            <p><b>Difundirlo</b> – allí donde se planifican bosques comestibles: proyectos de ejemplo y modelos compartidos, redes de permacultura y agroforestería, agricultura sostenida por la comunidad, charlas (p. ej. FFFG26), boletín, fichas de plantas públicas.</p>
+          </div></details>
+
+          <details class="sub" id="es-worte"><summary>Palabras que usamos</summary><div class="sub-body">
+            <p>El lenguaje determina cómo se vive el proyecto. Estas palabras encajan con la imagen de una economía del regalo (la lista se escribió para el uso en alemán):</p>
+            <ul class="words">
+              <li><s>producto, oferta</s><b>herramienta, bien común</b><span>Pertenece a todas las personas y no se comercia con ella.</span></li>
+              <li><s>clientes, usuarios</s><b>jardineras y jardineros, comunidad, colaboradores</b><span>Las personas forman parte del proyecto, no son compradoras.</span></li>
+              <li><s>vender, ofrecer</s><b>regalar, transmitir, compartir</b><span>Para lo que da el proyecto. Al dinero que entra no lo llamamos «regalo» (delicado a efectos fiscales).</span></li>
+              <li><s>donación, pago</s><b>aportación, apoyo</b><span>Devolver de forma voluntaria sin contrapartida; «donación» solo cuando exista una entidad sin ánimo de lucro.</span></li>
+              <li><s>precio, tarifa</s><b>aportación según tus posibilidades</b><span>Para talleres y cursos.</span></li>
+              <li><s>socio protector</s><b>también: cosostenedores, círculo de apoyo</b><span>Personas que sostienen el bien común.</span></li>
+              <li><s>crecimiento, alcance</s><b>difundir, transmitir, sembrar</b><span>La herramienta se propaga como una semilla.</span></li>
+            </ul>
+            <p>Más palabras adecuadas: regalo, abundancia en lugar de escasez, reciprocidad, cultura de la aportación, commoning, compartir excedentes, esquejes, intercambio de semillas.</p>
+          </div></details>
+
+          <h3>Cómo surgió la herramienta</h3>
+          <ol class="timeline">
+            <li><b>2023</b><span>Jörn Müller presenta la herramienta en el simposio internacional de bosques comestibles con el título «Pop goes the canopy – a forest garden design multitool». Surgió de su asesoramiento a bosques comestibles en terrenos comunitarios y del desarrollo de cursos.</span></li>
+            <li><b>2024/25</b><span>Sebastian Schucht contacta con Jörn; de su colaboración nace una primera versión como script de PowerShell que genera fichas de copa a escala.</span></li>
+            <li><b>2025/26</b><span>Andi Linder asume el desarrollo, Sebastian lo deja.</span></li>
+            <li><b>2026</b><span>Jens Steger impulsa el desarrollo con IA y más ideas sobre arquitectura, usabilidad y servidor. El resultado es una aplicación web con policultivos, calendarios y el plan de bosque comestible.</span></li>
+          </ol>
+          <p class="small">Fotos y gráficos de esta página: de la documentación del proyecto de Jörn Müller (permagrün).</p>
+        </div>
+      </details>
+    </div>
   </article>
 </Layout>
 
 <style is:global>
-  html:is([lang='en'],[lang='es']) .hilfe .lang-de, html:not([lang='en'],[lang='es']) .hilfe .lang-en { display: none; }
+  html:is([lang='en'],[lang='es']) .hilfe .lang-de, html:not([lang='en']) .hilfe .lang-en, html:not([lang='es']) .hilfe .lang-es { display: none; }
 
   .hilfe {
     --h-fg: #1f2a22; --h-muted: #5d6b61; --h-line: #d9ded3; --h-card: #ffffff;
@@ -1182,13 +1709,14 @@ import Layout from '../layouts/Layout.astro';
 </style>
 
 <script>
-  // Links use the German ids; in English the same chapter has the prefix "en-".
+  // Links use the German ids; in English the same chapter has the prefix "en-", in Spanish "es-".
   // A target inside folded chapters is unfolded before scrolling to it.
-  const en = document.documentElement.lang !== 'de';
+  const lang = document.documentElement.lang;
+  const prefix = lang === 'es' ? 'es-' : lang === 'de' ? '' : 'en-';
   function reveal(): void {
     const id = decodeURIComponent(location.hash.slice(1));
     if (!id) return;
-    const el = document.getElementById(en && !id.startsWith('en-') ? `en-${id}` : id) ?? document.getElementById(id);
+    const el = document.getElementById(prefix && !/^(en|es)-/.test(id) ? `${prefix}${id}` : id) ?? document.getElementById(id);
     if (!el) return;
     if (el instanceof HTMLDetailsElement) el.open = true;
     for (let d = el.parentElement?.closest('details'); d; d = d.parentElement?.closest('details')) d.open = true;
