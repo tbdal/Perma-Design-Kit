@@ -320,10 +320,18 @@ async function handleBeta(req, res, url) {
   return expertServer.handlePublic(req, res, url, { ip: clientIp(req) });
 }
 
+// /api/v1/: token-based access for scripts (Authorization: Bearer …), checked by the module. No cookie,
+// so no origin check: a foreign page cannot make the browser send a token.
+async function handleTokenApi(req, res, url) {
+  if (!expertServer?.handleApi) { res.writeHead(404, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }); return res.end('{"error":"not-found"}'); }
+  return expertServer.handleApi(req, res, url, { ip: clientIp(req) });
+}
+
 async function handleRequest(req, res) {
   const url = new URL(req.url, `http://${req.headers.host}`);
   if (url.pathname.startsWith('/api/beta/')) return handleBeta(req, res, url);
   if (url.pathname.startsWith('/api/x/')) return handleExpert(req, res, url);
+  if (url.pathname === '/api/v1' || url.pathname.startsWith('/api/v1/')) return handleTokenApi(req, res, url);
   if (await handleBeispiele(req, res, url)) return;
   if (await handleAuth(req, res, url, clientIp(req))) return;
   const origin = req.headers.origin || null;
