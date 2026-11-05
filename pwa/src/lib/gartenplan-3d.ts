@@ -669,8 +669,9 @@ export function createGardenPlan3DView(
       const seg = terrain ? Math.max(1, Math.min(48 >> Math.min(3, Math.max(0, topZ - q.z - 1)), Math.round(q.sizeM / terrain.cellM))) : 1;
       // On terrain a ring of extra vertices hangs from the edge as a skirt: where a fine tile meets a coarser one
       // their edges follow the ground differently, and the gap would show the sky.
-      const ring = terrain ? 1 : 0, n = seg + 2 * ring;
-      const side = q.sizeM * 1.002;
+      // See-through map: no skirt and no overlap, both would show through the tiles as edges and lines (Werkstatt #496).
+      const ring = terrain && !seeThrough ? 1 : 0, n = seg + 2 * ring;
+      const side = seeThrough ? q.sizeM : q.sizeM * 1.002;
       const g = new THREE.PlaneGeometry(side, side, n, n);
       g.rotateX(-Math.PI / 2);
       const mx = q.eM + q.sizeM / 2, mz = q.sM + q.sizeM / 2;
@@ -702,7 +703,7 @@ export function createGardenPlan3DView(
         // Normals while the skirt still lies flat at the edge (its faces have no area then), then let it hang.
         g.computeVertexNormals();
         const nrm = g.attributes.normal as THREE.BufferAttribute, skirt = 1 + step / 2;
-        for (let iy = 0; iy <= n; iy++) for (let ix = 0; ix <= n; ix++) {
+        if (ring) for (let iy = 0; iy <= n; iy++) for (let ix = 0; ix <= n; ix++) {
           if (ix > 0 && ix < n && iy > 0 && iy < n) continue;
           const i = iy * (n + 1) + ix, j = (clamp(iy) + ring) * (n + 1) + clamp(ix) + ring;
           pos.setY(i, pos.getY(i) - skirt);
