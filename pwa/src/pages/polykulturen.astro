@@ -125,6 +125,8 @@ import Layout from '../layouts/Layout.astro';
   import { createT, applyStaticI18n } from '../lib/i18n/core';
   import { shareDict } from '../lib/i18n/dict-share';
   import { polyculturesDict } from '../lib/i18n/dict-polykulturen';
+  import { registerCommands } from '../lib/command-palette';
+  import { layoutDict } from '../lib/i18n/dict-layout';
 
   const t = createT(polyculturesDict);
   applyStaticI18n(polyculturesDict, shareDict);
@@ -253,6 +255,10 @@ import Layout from '../layouts/Layout.astro';
   }
 
   // ── Editor ─────────────────────────────────────────────────────────────
+  // Strg+O: every polyculture opens in the editor.
+  const tLayout = createT(layoutDict);
+  registerCommands(() => polycultures.map(g => ({ label: g.name, group: tLayout('cmdkGPoly'), run: () => openEditor(g.id) })));
+
   function openEditor(id: string | null) {
     editing = id ? (polycultures.find(g => g.id === id) ?? createEmptyPolyculture()) : createEmptyPolyculture();
     fName.value = editing.name;

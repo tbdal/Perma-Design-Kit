@@ -646,6 +646,8 @@ import Layout from '../layouts/Layout.astro';
   import { initPlantSearchUi } from '../lib/plant-search-ui';
   import { gartenplanDict } from '../lib/i18n/dict-gartenplan';
   import { plantDetailDict } from '../lib/i18n/dict-plant-detail';
+  import { registerCommands } from '../lib/command-palette';
+  import { layoutDict } from '../lib/i18n/dict-layout';
 
   const t = createT(gartenplanDict, plantDetailDict);
   applyStaticI18n(gartenplanDict, plantDetailDict, searchDict, shareDict);
@@ -1236,6 +1238,12 @@ import Layout from '../layouts/Layout.astro';
     plans = await getAllGardenPlans();
     if (!editing) renderList();
   });
+
+  // Strg+O: every plan opens (an open one is closed first, as with "back").
+  const tLayout = createT(layoutDict);
+  registerCommands(() => plans.map(p => ({
+    label: p.name || p.id, group: tLayout('cmdkGPlan'), run: () => { if (editing?.id === p.id) return; if (editing) closeEditor(); openEditor(p.id); },
+  })));
 
   function closeEditor() {
     finishPick(null);

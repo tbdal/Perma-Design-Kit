@@ -500,6 +500,8 @@ import Layout from '../layouts/Layout.astro';
   import { providePageApi } from '../lib/expert-api';
   import { searchDict } from '../lib/i18n/dict-search';
   import { plantDetailDict } from '../lib/i18n/dict-plant-detail';
+  import { registerCommands } from '../lib/command-palette';
+  import { layoutDict } from '../lib/i18n/dict-layout';
 
   const t = createT(indexDict, plantDetailDict, searchDict);
   applyStaticI18n(indexDict, plantDetailDict, searchDict);
@@ -1411,6 +1413,13 @@ import Layout from '../layouts/Layout.astro';
   // ── Dialog ────────────────────────────────────────────────────────────────────
 
   /** Opens the editor for a stored plant; false if there is none with this id. */
+  // Strg+O: every plant of the list opens in the editor.
+  const tLayout = createT(layoutDict);
+  registerCommands(() => cachedPlants.map(p => ({
+    label: p.latinName && p.latinName !== displayName(p) ? `${displayName(p)} (${p.latinName})` : displayName(p),
+    group: tLayout('cmdkGPlant'), keywords: p.varietyName ?? '', run: () => { openEditor(p.id); },
+  })));
+
   function openEditor(id: string): boolean {
     const plant = cachedPlants.find(p => p.id === id);
     if (!plant) return false;
