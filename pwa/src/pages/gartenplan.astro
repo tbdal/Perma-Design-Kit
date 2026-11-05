@@ -96,7 +96,7 @@ import Layout from '../layouts/Layout.astro';
       <label data-feature="terrain" id="exag-label" class="inline-flex items-center gap-1.5 text-xs" data-i18n-title="exaggerationTitle" title="Höhen in der 3D-Ansicht verstärken, damit auch flaches Gelände sichtbar wird"><span data-i18n="exaggeration">Überhöhung</span>
         <select id="g-exag" class="rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs">
           <option value="1">1×</option><option value="2">2×</option><option value="3">3×</option><option value="5">5×</option><option value="10">10×</option>
-        </select></label>
+        </select><span id="exag-why" class="text-stone-500 dark:text-stone-400"></span></label>
       <label data-feature="zones" class="inline-flex items-center gap-1.5" data-i18n-title="mapZonesTitle" title="Permakultur-Zonen um das Haus und Sektoren (Sonne, Wind, Kaltluft)"><input id="g-zones" type="checkbox" class="accent-amber-600" /> <span data-i18n="mapZones">Zonen &amp; Sektoren</span></label>
       <span id="map-status" class="text-stone-500 dark:text-stone-400"></span>
       <span data-feature="terrain" id="terrain-info" class="text-stone-600 dark:text-stone-300"></span>
@@ -3871,6 +3871,7 @@ import Layout from '../layouts/Layout.astro';
       terrainInfo.textContent = t('terrainUnavailable');
       terrainInfo.dataset.failed = '1';
       contoursToggle.hidden = true;
+      renderContours();
       return;
     }
     doneLoading();
@@ -3906,7 +3907,11 @@ import Layout from '../layouts/Layout.astro';
   function renderContours() {
     const layer = planSvg.querySelector('#contour-layer');
     document.getElementById('contour-step-label')!.hidden = !terrain || !editing?.geo;
-    document.getElementById('exag-label')!.hidden = !terrain || !editing?.geo;
+    // Überhöhung stays visible; without a location or heights it is greyed out and says what is missing.
+    const exagWhy = !editing?.geo ? t('exagNoGeo') : terrain ? '' : document.getElementById('terrain-info')!.dataset.failed ? t('exagNoTerrain') : t('exagLoading');
+    document.getElementById('exag-label')!.classList.toggle('opacity-50', !!exagWhy);
+    (document.getElementById('g-exag') as HTMLSelectElement).disabled = !!exagWhy;
+    document.getElementById('exag-why')!.textContent = exagWhy && `(${exagWhy})`;
     const hide = !terrain || !contoursInput.checked || !editing?.geo || !featureOn('terrain');
     if (hide) view3d?.setContours(null);
     if (!layer) return;
