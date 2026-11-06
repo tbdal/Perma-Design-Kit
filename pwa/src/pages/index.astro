@@ -2115,17 +2115,24 @@ import Layout from '../layouts/Layout.astro';
   //  ?edit=<id>                 opens that plant in the editor;
   //  ?new=1[&from=<id>][&latin=…&common=…&variety=…&group=…]
   //                             opens the editor for a new plant, prefilled from a template plant and/or the values;
-  //  &return=<path>             goes back there when the editor closes (saved or cancelled).
+  //  &return=<path>             goes back there when the editor closes (saved or cancelled);
+  //  &focus=fruitMonths         scrolls the form to the Fruchtmonate.
+  // In the frame "pdk-edit" (another page shows the form over itself, e.g. Steckbriefe) only the
+  // dialog is visible (html.pdk-embed in global.css); opening and closing are told to that page.
+  const embedded = window.name === 'pdk-edit' && window.parent !== window;
+  const tellParent = (type: 'pdk-edit-open' | 'pdk-edit-closed') => { if (embedded) window.parent.postMessage({ type }, location.origin); };
+  if (embedded) document.documentElement.classList.add('pdk-embed');
   void renderList().then(() => {
     const url = new URL(location.href);
     const q = url.searchParams;
     const id = q.get('edit');
     const isNew = q.get('new') === '1';
-    if (!id && !isNew) return;
+    if (!id && !isNew) { tellParent('pdk-edit-closed'); return; }
     const back = q.get('return') ?? '';
+    const focus = q.get('focus') ?? '';
     const read = (k: string) => (q.get(k) ?? '').trim();
     const vals = { from: read('from'), latin: read('latin'), common: read('common'), variety: read('variety'), group: read('group') };
-    for (const k of ['edit', 'new', 'from', 'latin', 'common', 'variety', 'group', 'return']) q.delete(k);
+    for (const k of ['edit', 'new', 'from', 'latin', 'common', 'variety', 'group', 'return', 'focus']) q.delete(k);
     history.replaceState(history.state, '', url);
     let opened = false;
     if (id) opened = openEditor(id);
@@ -2146,6 +2153,22 @@ import Layout from '../layouts/Layout.astro';
       dialog.showModal();
       notifyEditorOpen();
       opened = true;
+    }
+    if (opened && focus === 'fruitMonths') {
+      // Sections above it fill in a moment later (modules, pictures): scroll again until the user scrolls or types.
+      const go = () => dialog.querySelector('legend[data-field="fruitMonths"]')?.closest('fieldset')?.scrollIntoView({ block: 'start' });
+      const timers = [0, 150, 400, 800, 1500].map(ms => setTimeout(go, ms));
+      const stop = () => timers.forEach(clearTimeout);
+      for (const ev of ['wheel', 'touchstart', 'keydown', 'pointerdown']) dialog.addEventListener(ev, stop, { once: true, passive: true });
+    }
+    if (embedded) {
+      if (!opened) { tellParent('pdk-edit-closed'); return; }
+      tellParent('pdk-edit-open');
+      dialog.addEventListener('close', async () => {
+        await Promise.allSettled(leaveHolds);
+        tellParent('pdk-edit-closed');
+      }, { once: true });
+      return;
     }
     // Only paths on this site, never another origin.
     if (opened && /^\/(?!\/)/.test(back)) {

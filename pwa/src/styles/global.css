@@ -518,3 +518,8 @@ details[data-panel] > summary::-webkit-details-marker { display: none; }
 @media (prefers-reduced-motion: no-preference) {
   .w-btn, .w-close { transition: background-color .15s, color .15s; }
 }
+
+/* The plant page inside the frame "pdk-edit" (index.astro): only its dialogs show, the page that opened it stays visible behind. */
+html.pdk-embed, html.pdk-embed body { background: transparent !important; }
+html.pdk-embed body > * { visibility: hidden; }
+html.pdk-embed dialog { visibility: visible; }

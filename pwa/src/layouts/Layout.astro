@@ -771,6 +771,8 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
         const banner = document.getElementById('stale-banner');
         let reloadOnReturn = false;
         onForeignChange(() => {
+          // The page's own editor frame (Steckbriefe: the plant form over the page) saved; the page reloads its data itself.
+          if (document.querySelector('iframe[name="pdk-edit"]')) return;
           if (staleAction(document.hidden, !!document.querySelector('dialog[open]')) === 'reload-on-return') reloadOnReturn = true;
           else if (banner) banner.hidden = false;
         });
