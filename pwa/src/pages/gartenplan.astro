@@ -2469,6 +2469,11 @@ import Layout from '../layouts/Layout.astro';
   // Zoom level each marker was last drawn at: pan/zoom redraws only the visible
   // markers whose stroke/label size is out of date (see rescaleUi).
   const markerPpu = new WeakMap<SVGGElement, number>();
+  /** Writes an attribute only when it changes: markers are redrawn several times on opening (labels, zoom),
+   *  and with 2000 plants the unchanged writes alone took seconds on a phone. */
+  function setAttr(el: Element | null, name: string, v: string) {
+    if (el && el.getAttribute(name) !== v) el.setAttribute(name, v);
+  }
   function updateMarkerShape(group: SVGGElement, placement: GardenPlanPlacement, p: PlantData | undefined) {
     const years = editing!.yearsSincePlanting;
     const planted = isPlanted(placement, years);
@@ -2481,24 +2486,24 @@ import Layout from '../layouts/Layout.astro';
     const single = selectedPlacementId === placement.id;
     const selected = single || multiSel.has(placement.id);
     const blob = group.querySelector('.marker-blob') as SVGPathElement;
-    blob.setAttribute('d', blobPathD(radiusU, placement.id, style.lobes, style.wobble));
-    blob.setAttribute('fill', style.fill);
+    setAttr(blob, 'd', blobPathD(radiusU, placement.id, style.lobes, style.wobble));
+    setAttr(blob, 'fill', style.fill);
     const hot = !selected && hoverWarnIds.includes(placement.id);
     const warned = !selected && warnedIds.has(placement.id);
-    blob.setAttribute('stroke', selected ? '#facc15' : hot || warned ? '#dc2626' : style.stroke);
+    setAttr(blob, 'stroke', selected ? '#facc15' : hot || warned ? '#dc2626' : style.stroke);
     // Like a map: the name shrinks with the plant on screen (max 13 px) and
     // disappears below ~7 px, so zoomed-out plans don't drown in labels.
     // The selected plant always keeps its name.
     const ppu = pxPerUnit();
     markerPpu.set(group, ppu);
     const rPx = radiusU * ppu;
-    blob.setAttribute('stroke-width', String((selected ? 2.5 : hot ? 3.5 : warned ? 2.5 : 1.2) / ppu));
-    blob.setAttribute('stroke-dasharray', !planted ? `${3 / ppu} ${3 / ppu}` : warned && !hot ? `${5 / ppu} ${3 / ppu}` : '');
+    setAttr(blob, 'stroke-width', String((selected ? 2.5 : hot ? 3.5 : warned ? 2.5 : 1.2) / ppu));
+    setAttr(blob, 'stroke-dasharray', !planted ? `${3 / ppu} ${3 / ppu}` : warned && !hot ? `${5 / ppu} ${3 / ppu}` : '');
     // Trees see-through (setTreeOpacity of a plugin): only the crown's fill, the outline and name stay.
-    if (!planted) blob.setAttribute('fill-opacity', '0.15');
-    else if (layer === 'tree' && treeOpacity < 1) blob.setAttribute('fill-opacity', String(Math.round(treeOpacity * 100) / 100));
+    if (!planted) setAttr(blob, 'fill-opacity', '0.15');
+    else if (layer === 'tree' && treeOpacity < 1) setAttr(blob, 'fill-opacity', String(Math.round(treeOpacity * 100) / 100));
     else blob.removeAttribute('fill-opacity');
-    group.querySelector('.marker-dot')?.setAttribute('r', String(Math.min(3, Math.max(1, rPx * 0.25)) / ppu));
+    setAttr(group.querySelector('.marker-dot'), 'r', String(Math.min(3, Math.max(1, rPx * 0.25)) / ppu));
     // Plugins may hide a plant's name or make it bigger/smaller (setLabelStyle).
     const ls = labelStyleFor(placement.id);
     const scale = ls?.scale ?? 1;
@@ -2510,10 +2515,11 @@ import Layout from '../layouts/Layout.astro';
     const label = group.querySelector('.marker-label') as SVGTextElement;
     const f = fontPx / ppu;
     label.style.display = single || (!ls?.hidden && fontPx >= 7) ? '' : 'none';
-    label.setAttribute('y', String(radiusU + f * 1.05));
-    label.setAttribute('font-size', String(f));
-    label.setAttribute('stroke-width', String(f * 0.25));
-    label.textContent = p ? nameWithVariety(p) : '?';
+    setAttr(label, 'y', String(radiusU + f * 1.05));
+    setAttr(label, 'font-size', String(f));
+    setAttr(label, 'stroke-width', String(f * 0.25));
+    const text = p ? nameWithVariety(p) : '?';
+    if (label.textContent !== text) label.textContent = text;
   }
 
   // Plan rect the grid's meter numbers were drawn for (the view plus half of it on every side, see planGridHtml).
@@ -2952,9 +2958,11 @@ import Layout from '../layouts/Layout.astro';
 
   // ── Status "loading …" at the bottom right of the plan ──
   const loadItems = new Map<string, string>();
+  let warnTimer: ReturnType<typeof setTimeout> | null = null;
   const loadEl = document.getElementById('plan-loading')!;
   function setLoad(key: string, label: string | null) {
     if (label) loadItems.set(key, label); else loadItems.delete(key);
+    if (!loadItems.size && warnTimer) scheduleWarnings(); // the hints held back for the map data
     loadEl.hidden = !loadItems.size;
     (loadEl.querySelector('[data-loading-text]') as HTMLElement).textContent = loadItems.size ? `${t('loadingLead')} ${[...loadItems.values()].join(' · ')}` : '';
   }
@@ -4981,18 +4989,21 @@ import Layout from '../layouts/Layout.astro';
     if (tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'TEXTAREA')) return;
     setWarnPin(null);
   });
-  let warnTimer: ReturnType<typeof setTimeout> | null = null;
   function scheduleWarnings() {
     if (warnTimer) clearTimeout(warnTimer);
-    warnTimer = setTimeout(renderWarnings, 600);
+    // While terrain, buildings, forest … still arrive, each would redo all hints (seconds on a phone with a
+    // big plan) and hold up the next: wait for the last one (setLoad), at most a few seconds per arrival.
+    warnTimer = setTimeout(renderWarnings, loadItems.size ? 5000 : 600);
   }
   document.getElementById('warn-ignored-reset')!.addEventListener('click', () => { if (editing) { saveIgnored(editing.id, new Set()); renderWarnings(); } });
   function renderWarnings() {
     warnTimer = null;
     if (!editing || phaseB.classList.contains('hidden')) return;
     const plan = editing;
+    // By id: a find() per hint made big plans (2000 plants) quadratic.
+    const byId = new Map(plan.placements.map(p => [p.id, p]));
     const name = (id: string) => {
-      const pl = plan.placements.find(p => p.id === id);
+      const pl = byId.get(id);
       const p = pl ? plantsById.get(pl.plantId) : undefined;
       return p ? displayName(p) : '—';
     };
@@ -5000,7 +5011,8 @@ import Layout from '../layouts/Layout.astro';
     const { scene } = sunContext();
     const grown = { ...scene, occluders: [...grownOccluders(plan, plantsById, scene.groundZ), ...buildingOccluders(scene.groundZ), ...pluginOccluders(scene.groundZ)] };
     const shade = shadeWarnings(plan, plantsById, grown, seasonSamples());
-    const fmt1 = (v: number) => new Intl.NumberFormat(lang, { maximumFractionDigits: 1 }).format(v);
+    const nf1 = new Intl.NumberFormat(lang, { maximumFractionDigits: 1 });
+    const fmt1 = (v: number) => nf1.format(v);
     // Site climate: per plant (all its placements), not per placement.
     const climate = currentClimate();
     const climateItems: { ids: string[]; text: string }[] = [];
@@ -5026,11 +5038,11 @@ import Layout from '../layouts/Layout.astro';
     const neighbors = neighborHints(plan, plantsById);
     // Full-grown crown of a placement (the hints look 30 years ahead).
     const crown = (id: string): WarnMark[] => {
-      const pl = plan.placements.find(p => p.id === id);
+      const pl = byId.get(id);
       const p = pl ? plantsById.get(pl.plantId) : undefined;
       return pl ? [{ xM: pl.xM, yM: pl.yM, rM: p ? displayRadiusM(p, WARN_YEARS) : 0.5, kind: 'crown' }] : [];
     };
-    const at = (id: string) => plan.placements.find(p => p.id === id);
+    const at = (id: string) => byId.get(id);
     const item = (key: string, ids: string[], text: string, marks: WarnMark[], tone: 'bad' | 'good' = 'bad'): WarnItem => ({ key, ids, text, marks, tone });
     let items: WarnItem[] = [
       ...neighbors.bad.map(w => item(`nb:${w.source}:${w.target}`, [w.source, w.target], t('warnBadNeighbor', {
