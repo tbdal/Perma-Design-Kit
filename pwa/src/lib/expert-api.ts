@@ -54,6 +54,11 @@ export interface GartenplanApi {
   plantsById(): Map<string, PlantData>;
   /** Shows (label) or removes (null) a "loading …" item in the status at the bottom right of the plan (buildings, forest, …). `key` identifies the item. */
   setLoadStatus(key: string, label: string | null): void;
+  /** How long the open plan took to load, per item since it was opened: 'plan' (first drawing), 'tiles' (map tiles of the view)
+   *  and every "loading …" item (topo, gebaeude, klima, wald …; `label` as shown). `ms` null = still loading; `atMs` = start after opening. */
+  loadTimes(): { key: string; label: string; atMs: number; ms: number | null }[];
+  /** Called when an entry of loadTimes() starts or ends. */
+  onLoadTimes(cb: () => void): void;
   /** Pans the 2D view just far enough that this plan point is in view with some room around it (zoom stays; no effect in 3D). */
   revealPoint(xM: number, yM: number): void;
   /** Trees (plants of the tree layer) drawn see-through in 2D and 3D: 1 = solid (default), 0 = invisible; null = back to solid. */

@@ -1344,6 +1344,7 @@ import Layout from '../layouts/Layout.astro';
         : '';
       tileProgress.textContent = text;
       tileProgress.hidden = !text;
+      if (st?.total) timeLoad('tiles', st.loading ? 'tiles' : null);
       planSvg.dataset.tilesLoading = String(st?.loading ?? 0);
     });
   }
@@ -2090,6 +2091,9 @@ import Layout from '../layouts/Layout.astro';
     if (savedView?.coverage !== undefined && [...coverageSelect.options].some(o => o.value === savedView.coverage)) {
       coverageSelect.value = savedView.coverage;
     }
+    loadTimes.clear();
+    loadT0 = performance.now();
+    timeLoad('plan', 'plan');
     renderAreasList();
     yearsInput.value = String(editing.yearsSincePlanting);
     yearsLabel.textContent = yearsText(editing);
@@ -2100,6 +2104,7 @@ import Layout from '../layouts/Layout.astro';
     fillPackageSelect();
     renderPlanSvg();
     if (savedView?.coverage !== undefined) scheduleCoverage();
+    timeLoad('plan', null);
     // A big plan on a phone opens in 2D (3D takes long there); one tap on 3D brings it back.
     const phoneBig = (editing?.placements.length ?? 0) > 150 && !!window.matchMedia?.('(pointer: coarse)').matches && Math.min(screen.width, screen.height) < 700;
     if (savedView?.mode === '3d' && plan3dContainer.hidden && !phoneBig) btnView3d.click();
@@ -2960,7 +2965,19 @@ import Layout from '../layouts/Layout.astro';
   const loadItems = new Map<string, string>();
   let warnTimer: ReturnType<typeof setTimeout> | null = null;
   const loadEl = document.getElementById('plan-loading')!;
+  // Load times of the open plan (the team's debug view, loadTimes() of the page API).
+  let loadT0 = 0;
+  const loadTimes = new Map<string, { label: string; atMs: number; ms: number | null }>();
+  const loadTimesListeners: (() => void)[] = [];
+  function timeLoad(key: string, label: string | null) {
+    const e = loadTimes.get(key), now = performance.now() - loadT0;
+    if (label && e?.ms !== null) loadTimes.set(key, { label, atMs: now, ms: null });
+    else if (!label && e && e.ms === null) e.ms = now - e.atMs;
+    else return;
+    for (const cb of loadTimesListeners) cb();
+  }
   function setLoad(key: string, label: string | null) {
+    timeLoad(key, label);
     if (label) loadItems.set(key, label); else loadItems.delete(key);
     if (!loadItems.size && warnTimer) scheduleWarnings(); // the hints held back for the map data
     loadEl.hidden = !loadItems.size;
@@ -5337,6 +5354,8 @@ import Layout from '../layouts/Layout.astro';
     },
     groundAt: (xM, yM) => (terrain && editing?.geo ? sampleGrid(terrain, xM, yM) : null),
     setLoadStatus(key, label) { setLoad(key, label); },
+    loadTimes: () => [...loadTimes].map(([key, e]) => ({ key, ...e })),
+    onLoadTimes: cb => { loadTimesListeners.push(cb); },
     setTreeOpacity(_featureId, opacity) {
       const next = opacity == null ? 1 : Math.min(1, Math.max(0, opacity));
       if (next === treeOpacity) return;
