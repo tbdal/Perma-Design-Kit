@@ -467,12 +467,14 @@ details[data-panel] > summary::-webkit-details-marker { display: none; }
   background: radial-gradient(120% 140% at 100% 0%, rgb(247 183 51 / 0.28) 0%, rgb(247 183 51 / 0) 55%), linear-gradient(145deg, #2a3d16 0%, #3f5e22 100%);
   box-shadow: 0 10px 28px rgb(31 39 16 / 0.28);
 }
-#welcome-modal .w-beta h3 { font-family: var(--w-display); font-weight: 400; font-size: clamp(1.25rem, 3.6cqw, 1.7rem); line-height: 1.12; color: #ffe566; }
+#welcome-modal .w-beta h3, #beta-intro h2 { font-family: var(--w-display); font-weight: 400; font-size: clamp(1.25rem, 3.6cqw, 1.7rem); line-height: 1.12; color: #ffe566; }
 .w-beta .w-beta-spark { color: #f7b733; }
-#welcome-beta { scroll-margin-top: 3.4rem; } /* the jump leaves room for the close button */
+#welcome-beta { scroll-margin-top: 3.4rem; }
+#beta-intro { margin-top: 0; } #beta-intro h2 { font-family: 'Archivo Black', 'Archivo', system-ui, sans-serif; text-wrap: balance; } /* outside the modal its font variables are not set */
+#signup-form { scroll-margin-top: 4rem; } /* the jump leaves room for the close button */
 .w-beta-pitch { display: grid; gap: 0.7rem; font-size: 0.97rem; }
 .w-beta-pitch p { color: #eef0d6; }
-#welcome-modal .w-beta-pitch p.w-beta-also { font-weight: 700; color: #ffe566; margin-bottom: -0.3rem; }
+:is(#welcome-modal, #beta-intro) .w-beta-pitch p.w-beta-also { font-weight: 700; color: #ffe566; margin-bottom: -0.3rem; }
 .w-beta-pitch ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.45rem; }
 .w-beta-pitch li { position: relative; padding-left: 1.5rem; color: #f6f5e6; }
 .w-beta-pitch li::before { content: '✦'; position: absolute; left: 0; top: 0; color: #f7b733; }

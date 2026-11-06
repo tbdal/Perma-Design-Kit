@@ -1,4 +1,5 @@
 ---
+import BetaPitch from './BetaPitch.astro';
 import '../styles/global.css';
 import { featureDefaults } from '../lib/features';
 interface Props {
@@ -312,19 +313,7 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
 
           <!-- Beta test: always there (the button top right scrolls to it), set apart in colour from the four areas above; the tiles come from the server (names of private features stay out of this build) and only show when someone wrote them -->
           <section id="welcome-beta" class="w-beta">
-            <h3><span class="w-beta-spark" aria-hidden="true">✦</span> <span data-i18n="welcomeBetaTitle">Interesse an erweiterten Funktionen und Teilnahme am Beta-Test?</span></h3>
-            <div id="welcome-beta-pitch" class="w-beta-pitch">
-              <p data-i18n="welcomeBetaIntro">Wir tüfteln gerade Einiges aus und das Werkzeug hat schon viele neue Funktionen, die aktuell noch nicht öffentlich sind – und getestet werden möchten!</p>
-              <p class="w-beta-also" data-i18n="welcomeBetaAlso">Darunter:</p>
-              <ul>
-                <li data-i18n="welcomeBetaL1">Baumbiographien und Aufgaben – Führe für jeden Baum eine Zeitachse mit Bonitur, Ernte, Schnitt, Pflege und Fotos.</li>
-                <li data-i18n="welcomeBetaL2">Bessere Integration in (Q)GIS</li>
-                <li data-i18n="welcomeBetaL3">Gemeinsam im Team an Plänen arbeiten und freigeben</li>
-                <li data-i18n="welcomeBetaL4">Ein professionalisierter digitaler Waldgartenplaner inkl. Ebenenfunktionen, Trachtlückenanalyse, Windschutz, Wasserablaufanalyse, …</li>
-              </ul>
-              <p><span data-i18n="welcomeBetaGo">Wenn du Interesse hast, all die neuen Funktionen im Rahmen eines Beta-Tests auszuprobieren, dann geht’s hier lang:</span> <a id="welcome-beta-join" href="/beta/" class="w-beta-cta" data-i18n="welcomeBetaJoin">Beta-Test</a></p>
-              <p data-i18n="welcomeBetaFeedback">Wir freuen uns über dein Feedback und deine Unterstützung auf der Entwicklungsreise und über deinen Rat, wo sich das Werkzeug hinentwickeln darf! Vielleicht hast du ja sogar Lust mitzuwirken und Teil des Teams zu werden?</p>
-            </div>
+            <BetaPitch heading="h3" href="/beta/" pitchId="welcome-beta-pitch" joinId="welcome-beta-join" />
             <p id="welcome-beta-text" hidden></p>
             <div id="welcome-beta-items" class="w-beta-items"></div>
           </section>

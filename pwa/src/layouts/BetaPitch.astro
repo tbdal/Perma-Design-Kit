@@ -1,0 +1,18 @@
+---
+// The beta pitch (title, intro, list, link, feedback wish): shared by the welcome page and /beta/, texts in dict-layout.ts.
+interface Props { heading: 'h2' | 'h3'; href: string; pitchId?: string; joinId?: string }
+const { heading: H, href, pitchId, joinId } = Astro.props;
+---
+<H><span class="w-beta-spark" aria-hidden="true">✦</span> <span data-i18n="welcomeBetaTitle">Interesse an erweiterten Funktionen und Teilnahme am Beta-Test?</span></H>
+<div id={pitchId} class="w-beta-pitch">
+  <p data-i18n="welcomeBetaIntro">Wir tüfteln gerade Einiges aus und das Werkzeug hat schon viele neue Funktionen, die aktuell noch nicht öffentlich sind – und getestet werden möchten!</p>
+  <p class="w-beta-also" data-i18n="welcomeBetaAlso">Darunter:</p>
+  <ul>
+    <li data-i18n="welcomeBetaL1">Baumbiographien und Aufgaben – Führe für jeden Baum eine Zeitachse mit Bonitur, Ernte, Schnitt, Pflege und Fotos.</li>
+    <li data-i18n="welcomeBetaL2">Bessere Integration in (Q)GIS</li>
+    <li data-i18n="welcomeBetaL3">Gemeinsam im Team an Plänen arbeiten und freigeben</li>
+    <li data-i18n="welcomeBetaL4">Ein professionalisierter digitaler Waldgartenplaner inkl. Ebenenfunktionen, Trachtlückenanalyse, Windschutz, Wasserablaufanalyse, …</li>
+  </ul>
+  <p><span data-i18n="welcomeBetaGo">Wenn du Interesse hast, all die neuen Funktionen im Rahmen eines Beta-Tests auszuprobieren, dann geht’s hier lang:</span> <a id={joinId} href={href} class="w-beta-cta" data-i18n="welcomeBetaJoin">Beta-Test</a></p>
+  <p data-i18n="welcomeBetaFeedback">Wir freuen uns über dein Feedback und deine Unterstützung auf der Entwicklungsreise und über deinen Rat, wo sich das Werkzeug hinentwickeln darf! Vielleicht hast du ja sogar Lust mitzuwirken und Teil des Teams zu werden?</p>
+</div>

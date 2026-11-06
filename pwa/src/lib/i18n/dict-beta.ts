@@ -4,7 +4,6 @@ import { es as esTexts } from './es/beta';
 // /beta/ — signup for the beta test, confirmation, unsubscribe and the two surveys.
 export const betaDict: Dict = {
   btTitle: { de: 'Beta-Test', en: 'Beta test' },
-  btIntro: { de: 'Hilf mit, das Perma Design Kit besser zu machen: Im Beta-Test bekommst du Funktionen, die noch nicht öffentlich sind, und sagst uns, was dir auffällt. Wir brauchen deine Meinung.', en: 'Help make the Perma Design Kit better: in the beta test you get features that are not public yet and tell us what you notice. We need your opinion.' },
   btGift: { de: 'Der Zugang ist ein Geschenk, ohne Werbung, ohne Abo und ohne Gegenleistung. Rückmeldungen sind ein Wunsch, keine Bedingung.', en: 'The access is a gift, without advertising, without a subscription and without anything in return. Feedback is a wish, not a condition.' },
   btFull: { de: 'Im Moment sind alle Plätze vergeben. Du kommst auf die Warteliste und bekommst eine Mail, sobald ein Platz frei wird.', en: 'All places are taken at the moment. You will go on the waiting list and get a mail as soon as a place is free.' },
   btEmail: { de: 'Mailadresse', en: 'Mail address' },

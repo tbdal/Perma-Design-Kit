@@ -1,6 +1,6 @@
 // Spanish texts of dict-beta.ts.
 export const es: Record<string, string> = {
-  btTitle: 'Prueba beta', btIntro: 'Ayuda a mejorar Perma Design Kit: en la prueba beta recibes funciones que aún no son públicas y nos cuentas lo que notas. Necesitamos tu opinión.',
+  btTitle: 'Prueba beta',
   btGift: 'El acceso es un regalo, sin publicidad, sin suscripción y sin nada a cambio. Los comentarios son un deseo, no una condición.',
   btFull: 'Ahora mismo todas las plazas están ocupadas. Pasarás a la lista de espera y recibirás un correo en cuanto haya una plaza libre.',
   btEmail: 'Dirección de correo', btInterest: 'Pienso usarlo…', btInterestNone: 'sin respuesta (voluntario)', btInterestPrivat: 'de forma privada', btInterestBeruflich: 'profesionalmente (estudio, asesoría, cursos)', btInterestVerein: 'en una asociación o comunidad',
