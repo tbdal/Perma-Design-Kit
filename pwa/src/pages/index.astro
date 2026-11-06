@@ -1985,7 +1985,7 @@ import Layout from '../layouts/Layout.astro';
     const missingAll = splitByPlan(cachedPlants, plan).missing;
     const use = (p: PlantData) => usage.get(p.id)?.find(u => u.planId === plan.id);
     const placed = plan.placements.length;
-    const planted = plan.placements.filter(pl => pl.plantedYear).length;
+    const planted = plan.placements.filter(pl => pl.plantedYear && !pl.diedYear).length;
     const det = (key: string, summary: string, count: string, body: string, cls = '') =>
       `<details data-plan-group="${key}"${planOpen.has(key) ? ' open' : ''} class="${cls}"><summary class="flex cursor-pointer select-none items-baseline justify-between gap-3 py-1.5 font-semibold text-stone-700 dark:text-stone-200"><span>${escapeHtml(summary)}</span><span class="text-xs font-normal tabular-nums text-stone-500 dark:text-stone-400">${escapeHtml(count)}</span></summary>${body}</details>`;
     const row = (p: PlantData) => {

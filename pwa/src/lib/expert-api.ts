@@ -98,7 +98,7 @@ export interface GartenplanApi {
   /** Selects these placements (one, several or none), as a click or the lasso would; none also clears a selected area. */
   setSelection(placementIds: string[]): void;
   /** Changes fields of these placements (redrawn and saved like any plan edit); null removes the field. */
-  updatePlacements(placementIds: string[], patch: { plantedYear?: number | null }): void;
+  updatePlacements(placementIds: string[], patch: { plantedYear?: number | null; diedYear?: number | null; phaseYear?: number | null }): void;
   /** Room on the 2D canvas covered by floating panels (px, per side): fitting the whole plan keeps it clear. */
   setViewInset(px: { left?: number; right?: number; top?: number; bottom?: number }): void;
   /** Centers the 2D view on a plan point (metres); `widthM` = visible width, else the zoom stays. No effect in 3D. */

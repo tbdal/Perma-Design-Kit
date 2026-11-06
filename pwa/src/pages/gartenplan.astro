@@ -600,7 +600,7 @@ import Layout from '../layouts/Layout.astro';
   import { neighborHints } from '../lib/neighbors';
   import { wayTo, arrived } from '../lib/field-mode';
   import { latLonToPlan, maxTilesForScreen } from '../lib/gartenplan-geo';
-  import { ageAt, isPlanted, phaseLabel, phaseGroups, phaseOf, clampPhase, MAX_PHASE, MIN_PHASE } from '../lib/phases';
+  import { ageAt, isAlive, isPlanted, phaseLabel, phaseGroups, phaseOf, clampPhase, MAX_PHASE, MIN_PHASE } from '../lib/phases';
   import { analyzeWater, roofRainM3, type WaterAnalysis } from '../lib/water';
   import { planYield, careTasks, buildIcs, type CareTask } from '../lib/yield-care';
   import { DEFAULT_ZONE_RADII, ZONE_COLORS, bearingVector, wedgePath, solsticeSectors } from '../lib/zones-sectors';
@@ -2483,8 +2483,9 @@ import Layout from '../layouts/Layout.astro';
     const years = editing!.yearsSincePlanting;
     const planted = isPlanted(placement, years);
     const radiusM = p ? displayRadiusM(p, Math.max(0, ageAt(placement, years))) : 0.2;
-    // Later construction phase: only a faint dashed outline until it is planted.
-    group.style.opacity = planted ? '' : '0.35';
+    // Later construction phase: only a faint dashed outline until it is planted; a dead one greyed (#190).
+    const dead = !isAlive(placement, years, editing!.startYear);
+    group.style.opacity = dead ? '0.5' : planted ? '' : '0.35';
     const radiusU = radiusM * SVG_UNITS_PER_METER;
     const layer = p ? deriveLayer(p) : 'shrub';
     const style = LAYER_STYLE[layer];
@@ -2492,10 +2493,10 @@ import Layout from '../layouts/Layout.astro';
     const selected = single || multiSel.has(placement.id);
     const blob = group.querySelector('.marker-blob') as SVGPathElement;
     setAttr(blob, 'd', blobPathD(radiusU, placement.id, style.lobes, style.wobble));
-    setAttr(blob, 'fill', style.fill);
+    setAttr(blob, 'fill', dead ? '#a8a29e' : style.fill);
     const hot = !selected && hoverWarnIds.includes(placement.id);
     const warned = !selected && warnedIds.has(placement.id);
-    setAttr(blob, 'stroke', selected ? '#facc15' : hot || warned ? '#dc2626' : style.stroke);
+    setAttr(blob, 'stroke', selected ? '#facc15' : hot || warned ? '#dc2626' : dead ? '#78716c' : style.stroke);
     // Like a map: the name shrinks with the plant on screen (max 13 px) and
     // disappears below ~7 px, so zoomed-out plans don't drown in labels.
     // The selected plant always keeps its name.
@@ -5459,6 +5460,8 @@ import Layout from '../layouts/Layout.astro';
       for (const pl of editing.placements) {
         if (!set.has(pl.id)) continue;
         if ('plantedYear' in patch) { if (patch.plantedYear == null) delete pl.plantedYear; else pl.plantedYear = patch.plantedYear; }
+        if ('diedYear' in patch) { if (patch.diedYear == null) delete pl.diedYear; else pl.diedYear = patch.diedYear; }
+        if ('phaseYear' in patch) { const ph = clampPhase(patch.phaseYear); if (ph) pl.phaseYear = ph; else delete pl.phaseYear; }
       }
       renderPlanSvg();
       renderSelectedPanel();

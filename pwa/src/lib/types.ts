@@ -84,6 +84,8 @@ export interface GardenPlanPlacement {
   phaseYear?: number;
   /** Calendar year it was really planted outside; absent = only planned. */
   plantedYear?: number;
+  /** Calendar year it died or was removed (Werkstatt #190); greyed on the map, out of yield and care from then on. */
+  diedYear?: number;
   /** Set when placed as a polyculture package: the polyculture and the id shared by that package's placements. */
   polycultureId?: string;
   packageId?: string;

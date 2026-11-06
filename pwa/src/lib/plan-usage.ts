@@ -15,7 +15,7 @@ export function planUsage(plans: GardenPlan[]): Map<string, PlanUse[]> {
       let u = here.get(pl.plantId);
       if (!u) { u = { planId: plan.id, name: plan.name, count: 0, planted: 0 }; here.set(pl.plantId, u); }
       u.count++;
-      if (pl.plantedYear) u.planted++;
+      if (pl.plantedYear && !pl.diedYear) u.planted++;
     }
     for (const [id, u] of here) out.set(id, [...(out.get(id) ?? []), u]);
   }

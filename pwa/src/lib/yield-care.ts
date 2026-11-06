@@ -1,7 +1,7 @@
 import type { GardenPlan, PlantData } from './types';
 import { displayRadiusM } from './growth-model';
 import { deriveLayer } from './plant-layer';
-import { ageAt } from './phases';
+import { ageAt, isAlive } from './phases';
 
 // Rough yield estimate and care calendar for a garden plan.
 //
@@ -54,7 +54,8 @@ export interface YieldRow { plantId: string; count: number; kgEach: number; kgTo
 export function planYield(plan: GardenPlan, plantsById: Map<string, PlantData>, years: number): { rows: YieldRow[]; totalKg: number } {
   // Per placement at its own age (construction phases, lib/phases.ts).
   const byPlant = new Map<string, number[]>();
-  for (const pl of plan.placements) byPlant.set(pl.plantId, [...(byPlant.get(pl.plantId) ?? []), ageAt(pl, years)]);
+  // A dead placement (#190) bears nothing from its death on: counted as not yet planted.
+  for (const pl of plan.placements) byPlant.set(pl.plantId, [...(byPlant.get(pl.plantId) ?? []), isAlive(pl, years, plan.startYear) ? ageAt(pl, years) : -1]);
   const rows: YieldRow[] = [];
   for (const [plantId, ages] of byPlant) {
     const p = plantsById.get(plantId);

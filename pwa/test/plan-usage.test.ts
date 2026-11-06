@@ -46,6 +46,13 @@ describe('planUsage', () => {
     expect('plantedYear' in bad.placements[0]).toBe(false);
     expect('polycultureId' in bad.placements[0]).toBe(false);
   });
+
+  it('a dead plant (#190) keeps its years through normalizing and no longer counts as planted', () => {
+    const p = plan('g3', 'Tot', [pl('a', 'apfel', { plantedYear: 2020, diedYear: 2025 }), pl('b', 'apfel', { plantedYear: 2021 })]);
+    expect(normalizeGardenPlan(p)!.placements[0]).toMatchObject({ plantedYear: 2020, diedYear: 2025 });
+    expect('diedYear' in normalizeGardenPlan({ ...p, placements: [pl('c', 'apfel', { diedYear: 3000 })] })!.placements[0]).toBe(false);
+    expect(planUsage([p]).get('apfel')).toEqual([{ planId: 'g3', name: 'Tot', count: 2, planted: 1 }]);
+  });
 });
 
 describe('autoFillRoles', () => {

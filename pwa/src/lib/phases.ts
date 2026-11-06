@@ -18,6 +18,11 @@ export const ageAt = (pl: Pick<GardenPlanPlacement, 'phaseYear'>, years: number)
 
 export const isPlanted = (pl: Pick<GardenPlanPlacement, 'phaseYear'>, years: number) => ageAt(pl, years) >= 0;
 
+/** Still standing `years` after the start: not died (diedYear, a calendar year) by then. Without a start
+ *  year the plan's years cannot be matched to calendar years, so a dead plant counts as gone throughout. */
+export const isAlive = (pl: Pick<GardenPlanPlacement, 'diedYear'>, years: number, startYear?: number) =>
+  pl.diedYear == null || (startYear != null && years < pl.diedYear - startYear);
+
 /** "2027" with a start year, else "Start" / "+2" / "−3". */
 export function phaseLabel(plan: Pick<GardenPlan, 'startYear'>, phase: number, startWord = 'Start'): string {
   if (plan.startYear) return String(plan.startYear + phase);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ageAt, isPlanted, phaseLabel, phaseGroups, clampPhase } from '../src/lib/phases';
+import { ageAt, isAlive, isPlanted, phaseLabel, phaseGroups, clampPhase } from '../src/lib/phases';
 import { normalizeGardenPlan } from '../src/lib/plant-normalize';
 import { coverageGrid } from '../src/lib/function-coverage';
 import { planYield } from '../src/lib/yield-care';
@@ -58,6 +58,16 @@ describe('phases in the calculations', () => {
     // the late one (age 2) bears nothing yet: total equals one tree at age 8
     const one = planYield({ ...plan, placements: [pl('x')] }, byId, 8).totalKg;
     expect(r.totalKg).toBeCloseTo(one);
+  });
+  it('a dead placement (#190) bears nothing from the year it died; without a start year never', () => {
+    const plan = { ...createEmptyGardenPlan(), startYear: 2020, placements: [pl('x'), { ...pl('y'), diedYear: 2030 }] };
+    const one = planYield({ ...plan, placements: [pl('x')] }, byId, 12).totalKg;
+    expect(planYield(plan, byId, 9).totalKg).toBeCloseTo(2 * planYield({ ...plan, placements: [pl('x')] }, byId, 9).totalKg);
+    expect(planYield(plan, byId, 12).totalKg).toBeCloseTo(one);
+    expect(planYield({ ...plan, startYear: undefined }, byId, 9).totalKg).toBeCloseTo(planYield({ ...plan, placements: [pl('x')] }, byId, 9).totalKg);
+    expect(isAlive({ diedYear: 2030 }, 9, 2020)).toBe(true);
+    expect(isAlive({ diedYear: 2030 }, 10, 2020)).toBe(false);
+    expect(isAlive({}, 50)).toBe(true);
   });
 });
 
