@@ -282,6 +282,7 @@ export const indexDict: Dict = {
   autosaveFailed: { de: 'Speichern fehlgeschlagen', en: 'Saving failed' },
   btnCancel: { de: 'Abbrechen', en: 'Cancel' },
   btnCloseEditor: { de: 'Schließen', en: 'Close' },
+  btnDiscard: { de: 'Verwerfen', en: 'Discard' },
   btnSave: { de: 'Speichern', en: 'Save' },
 
   // ── Alerts / confirms ────────────────────────────────────────────────

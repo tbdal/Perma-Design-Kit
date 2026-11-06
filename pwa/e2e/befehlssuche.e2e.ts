@@ -43,3 +43,16 @@ test('Strg+O finds pages, menu items and plants and runs them', async ({ page, e
   await expect(page).toHaveURL(/kalender/);
   expect(errors).toEqual([]);
 });
+
+test('Esc in a search field leaves it, so the shortcuts work again', async ({ page }) => {
+  await stubNetwork(page);
+  await page.addInitScript(() => { try { localStorage.setItem('pdk-welcome-seen', '1'); localStorage.setItem('pdk-persist-later', String(Date.now())); } catch { /* ignore */ } });
+  await page.goto('/');
+  const search = page.locator('#plant-search');
+  await search.click();
+  await search.fill('apfel');
+  await page.keyboard.press('Escape');
+  await expect(search).not.toBeFocused();
+  await page.keyboard.press('Control+o');
+  await expect(page.locator('dialog.cmdk')).toBeVisible();
+});

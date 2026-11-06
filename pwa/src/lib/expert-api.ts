@@ -155,6 +155,9 @@ export interface PflanzenApi {
   addDataMenuButton(featureId: string, label: string, onClick: () => void): HTMLButtonElement;
   /** When the editor was opened with ?return=<path>, leaving waits for this (e.g. data saved along with the plant). */
   holdLeave(p: Promise<unknown>): void;
+  /** Opens a plant in the editor as preview (picture, "Verwerfen"/"Speichern" at the top, no autosave);
+   *  `isNew` = not in the list yet, stored only on "Speichern". Resolves with whether it was saved. */
+  openPreview(plant: PlantData, isNew: boolean): Promise<boolean>;
   /** Plants a module knows from elsewhere (e.g. shared plans): the plan view names placements whose plant is not in
    *  the list after them, and "übernehmen" takes the whole record. Replaces this feature's earlier set. */
   setExtraPlants(featureId: string, plants: PlantData[]): void;

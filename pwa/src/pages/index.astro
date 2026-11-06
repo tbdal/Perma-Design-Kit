@@ -291,6 +291,13 @@ import Layout from '../layouts/Layout.astro';
   <!-- Edit dialog -->
   <dialog id="plant-dialog" class="m-auto w-full max-w-2xl rounded-2xl bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-100 p-0 shadow-2xl backdrop:bg-black/40">
     <form id="plant-form" method="dialog" class="max-h-[85vh] overflow-y-auto p-6">
+      <!-- Preview (from the criteria search, or a plant taken over from a database): picture, discard and save at the top -->
+      <div id="editor-preview" hidden class="sticky -top-6 z-20 -mx-6 -mt-6 mb-4 flex items-center gap-3 border-b border-stone-200 dark:border-stone-700 bg-white/95 dark:bg-stone-900/95 px-6 py-3 backdrop-blur">
+        <img id="editor-preview-img" alt="" hidden class="h-20 w-28 shrink-0 rounded-lg object-cover ring-1 ring-stone-200 dark:ring-stone-700" />
+        <p id="editor-preview-name" class="min-w-0 flex-1 text-base font-semibold leading-snug"></p>
+        <button type="button" id="btn-preview-discard" data-i18n="btnDiscard" class="shrink-0 rounded-lg bg-red-700 px-3 py-1.5 text-sm font-medium text-white shadow hover:bg-red-800">Verwerfen</button>
+        <button type="submit" id="btn-preview-save" data-i18n="btnSave" class="shrink-0 rounded-lg bg-green-700 px-3 py-1.5 text-sm font-medium text-white shadow hover:bg-green-800">Speichern</button>
+      </div>
       <h2 id="dialog-title" data-i18n="dialogTitleEdit" class="mb-4 text-lg font-bold text-stone-800 dark:text-stone-100">Pflanze bearbeiten</h2>
       <input type="hidden" id="f-id" />
 
@@ -1420,6 +1427,44 @@ import Layout from '../layouts/Layout.astro';
     group: tLayout('cmdkGPlant'), keywords: p.varietyName ?? '', run: () => { openEditor(p.id); },
   })));
 
+  // ── Preview: the editor with picture, "Verwerfen" and "Speichern" at the top; nothing is stored until "Speichern" ──
+  let previewMode = false;
+  let previewSaved = false;
+  let previewDone: ((saved: boolean) => void) | null = null;
+  function showPreviewBar(p: PlantData) {
+    previewMode = true;
+    previewSaved = false;
+    const img = document.getElementById('editor-preview-img') as HTMLImageElement;
+    img.hidden = !p.imageUrl;
+    if (p.imageUrl) { img.src = imageSrc(p.imageUrl); img.alt = displayName(p); }
+    document.getElementById('editor-preview-name')!.textContent = displayName(p);
+    document.getElementById('editor-preview')!.hidden = false;
+  }
+  /** Opens a plant as preview: `isNew` = not in the list yet (taken over from a database), stored only on "Speichern". */
+  function openPreview(plant: PlantData, isNew: boolean): Promise<boolean> {
+    if (isNew) {
+      editingPlant = null;
+      newTemplate = plant; // its sources carry over
+      (document.getElementById('dialog-title') as HTMLElement).textContent = t('dialogTitleNew');
+      fillForm(plant);
+      document.getElementById('btn-cancel')!.textContent = t('btnCancel');
+      document.getElementById('btn-anchor-polyculture')!.classList.add('hidden');
+      dialog.showModal();
+      notifyEditorOpen();
+    } else if (!openEditor(plant.id)) return Promise.resolve(false);
+    showPreviewBar(plant);
+    form.scrollTop = 0;
+    return new Promise(res => { previewDone = res; });
+  }
+  document.getElementById('btn-preview-discard')!.addEventListener('click', () => dialog.close());
+  dialog.addEventListener('close', () => {
+    if (!previewMode) return;
+    previewMode = false;
+    document.getElementById('editor-preview')!.hidden = true;
+    const done = previewDone; previewDone = null;
+    done?.(previewSaved);
+  });
+
   function openEditor(id: string): boolean {
     const plant = cachedPlants.find(p => p.id === id);
     if (!plant) return false;
@@ -1488,6 +1533,7 @@ import Layout from '../layouts/Layout.astro';
       return b;
     },
     holdLeave: (p) => { leaveHolds.push(p); },
+    openPreview: (plant, isNew) => openPreview(plant, isNew),
     setExtraPlants: (featureId, plants) => { extraPlants.set(featureId, new Map(plants.map(p => [p.id, p]))); renderList(); },
     addDataMenuButton: (featureId, label, onClick) => {
       const b = slotButton('data-menu-extra', featureId, label, 'block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700');
@@ -1502,14 +1548,14 @@ import Layout from '../layouts/Layout.astro';
   dialog.addEventListener('pointerdown', e => { downOnBackdrop = e.target === dialog; });
   dialog.addEventListener('click', e => { if (e.target === dialog && downOnBackdrop) dialog.close(); downOnBackdrop = false; });
   dialog.addEventListener('close', () => { newTemplate = null; });
-  form.addEventListener('submit', async (e) => { e.preventDefault(); clearTimeout(autosaveTimer); await savePlant(readForm()); dialog.close(); renderList(); });
+  form.addEventListener('submit', async (e) => { e.preventDefault(); clearTimeout(autosaveTimer); await savePlant(readForm()); previewSaved = true; dialog.close(); renderList(); });
 
   // Autosave: an existing plant is stored a moment after the last change (a new one waits for "Speichern").
   const autosaveNote = Object.assign(document.createElement('span'), { className: 'mr-auto self-center text-xs text-stone-500 dark:text-stone-400' });
   document.getElementById('btn-cancel')!.before(autosaveNote);
   let autosaveTimer: ReturnType<typeof setTimeout> | undefined;
   const queueAutosave = () => {
-    if (!editingPlant) return;
+    if (!editingPlant || previewMode) return; // a preview is stored only on "Speichern" ("Verwerfen" leaves it as it was)
     clearTimeout(autosaveTimer);
     autosaveNote.textContent = '';
     autosaveTimer = setTimeout(async () => {
@@ -2132,10 +2178,15 @@ import Layout from '../layouts/Layout.astro';
     const focus = q.get('focus') ?? '';
     const read = (k: string) => (q.get(k) ?? '').trim();
     const vals = { from: read('from'), latin: read('latin'), common: read('common'), variety: read('variety'), group: read('group') };
-    for (const k of ['edit', 'new', 'from', 'latin', 'common', 'variety', 'group', 'return', 'focus']) q.delete(k);
+    const preview = q.get('preview') === '1';
+    for (const k of ['edit', 'new', 'from', 'latin', 'common', 'variety', 'group', 'return', 'focus', 'preview']) q.delete(k);
     history.replaceState(history.state, '', url);
     let opened = false;
-    if (id) opened = openEditor(id);
+    if (id) {
+      opened = openEditor(id);
+      const p = cachedPlants.find(x => x.id === id);
+      if (opened && preview && p) showPreviewBar(p);
+    }
     else {
       const tpl = cachedPlants.find(p => p.id === vals.from) ?? null;
       const empty = createEmptyPlant();

@@ -1168,6 +1168,9 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
           button.textContent = label;
           const panel = document.createElement('div');
           panel.hidden = true;
+          // ids + aria-controls: the Strg+O search offers the menu's entries (lib/command-palette.ts, menuToggle)
+          panel.id = `header-extra-${featureId}-menu`;
+          button.setAttribute('aria-controls', panel.id);
           panel.className = 'absolute right-0 z-50 mt-1 w-64 space-y-0.5 rounded-lg bg-white dark:bg-stone-800 p-2 text-sm text-stone-700 dark:text-stone-200 shadow-lg ring-1 ring-stone-200 dark:ring-stone-700';
           panel.addEventListener('click', e => {
             e.stopPropagation();

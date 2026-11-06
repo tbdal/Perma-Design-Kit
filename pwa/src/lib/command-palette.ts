@@ -153,7 +153,8 @@ export function installCommandPalette(t: T): void {
     }
     // Everything you can press, switch or choose.
     for (const el of document.querySelectorAll<HTMLElement>('button, a[href], summary, [role="button"], [role="menuitem"], input, select, textarea')) {
-      if (el.closest('header a[href], footer a[href]') === el) continue;
+      // header/footer links came as pages above; links inside a header menu (Entwicklung, Konto …) come here, under the menu's name
+      if (el.matches('header a[href], footer a[href]') && !el.closest('[id$="-menu"]')) continue;
       const names = offered(el, dlg);
       if (!names) continue;
       if (el instanceof HTMLSelectElement) {
@@ -231,6 +232,13 @@ export function installCommandPalette(t: T): void {
   });
   list.addEventListener('click', e => { const li = (e.target as HTMLElement).closest<HTMLElement>('[data-i]'); if (li) run(Number(li.dataset.i)); });
   dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+  // Esc in a text field outside a dialog (search, filter …) leaves the field, so the page's shortcuts work again.
+  document.addEventListener('keydown', e => {
+    const el = e.target as HTMLElement;
+    if (e.key !== 'Escape' || e.defaultPrevented || !(el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) || el.closest('dialog')) return;
+    if (el instanceof HTMLInputElement && ['checkbox', 'radio', 'button', 'submit', 'range', 'color', 'file'].includes(el.type)) return;
+    el.blur();
+  });
   document.addEventListener('keydown', e => {
     if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'o') {
       e.preventDefault(); // instead of the browser's "open file"
