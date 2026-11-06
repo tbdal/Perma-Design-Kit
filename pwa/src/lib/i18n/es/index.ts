@@ -61,7 +61,7 @@ export const es: Record<string, string> = {
   fieldImageUrl: 'URL de la imagen', fieldImageCredit: 'Crédito de la imagen (autor · licencia · fuente)', fieldsetUsage: 'Usos', lblScore: 'Puntuación', fieldsetEcosystem: 'Funciones', fieldsetSun: 'Sol', fieldsetWater: 'Agua', fieldsetGrowth: 'Crecimiento', fieldsetPh: 'pH del suelo',
   fieldFruitMonths: 'Meses de fruto', fieldFlowerMonths: 'Meses de floración',
   monthJan: 'Ene', monthFeb: 'Feb', monthMar: 'Mar', monthApr: 'Abr', monthMay: 'May', monthJun: 'Jun', monthJul: 'Jul', monthAug: 'Ago', monthSep: 'Sep', monthOct: 'Oct', monthNov: 'Nov', monthDec: 'Dic',
-  autosaved: '✓ guardado automáticamente', autosaveFailed: 'No se pudo guardar', btnCancel: 'Cancelar', btnCloseEditor: 'Cerrar', btnDiscard: 'Descartar', btnSave: 'Guardar', alertMissingLatinName: 'Falta el nombre latino.',
+  autosaved: '✓ guardado automáticamente', autosaveFailed: 'No se pudo guardar', btnCancel: 'Cancelar', btnCloseEditor: 'Cerrar', btnDiscard: 'Descartar', btnAddToMine: 'Añadir a mis plantas', btnSave: 'Guardar', alertMissingLatinName: 'Falta el nombre latino.',
   undoDeletedOne: '«{name}» eliminada', undoDeletedMany: '{n} plantas eliminadas', undoAction: 'Deshacer', undoClose: 'Descartar', undoRestoredOne: '«{name}» restaurada', undoRestoredMany: '{n} plantas restauradas',
   alertPdfError: 'Error de PDF: {error}', alertSamplesImported: '{n} plantas de ejemplo importadas{reset}.', alertFiltersReset: ' (filtros restablecidos)', alertSampleImportFailed: 'No se pudieron importar los datos de ejemplo: {error}',
   alertCrawfordImported: '{n} plantas (Crawford) importadas{reset}. Solo tienen el nombre latino: completa cada planta con «↻» o cárgalo todo de una vez con «Cargar todos los datos que faltan».',

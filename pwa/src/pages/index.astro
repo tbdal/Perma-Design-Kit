@@ -296,7 +296,7 @@ import Layout from '../layouts/Layout.astro';
         <img id="editor-preview-img" alt="" hidden class="h-20 w-28 shrink-0 rounded-lg object-cover ring-1 ring-stone-200 dark:ring-stone-700" />
         <p id="editor-preview-name" class="min-w-0 flex-1 text-base font-semibold leading-snug"></p>
         <button type="button" id="btn-preview-discard" data-i18n="btnDiscard" class="shrink-0 rounded-lg bg-red-700 px-3 py-1.5 text-sm font-medium text-white shadow hover:bg-red-800">Verwerfen</button>
-        <button type="submit" id="btn-preview-save" data-i18n="btnSave" class="shrink-0 rounded-lg bg-green-700 px-3 py-1.5 text-sm font-medium text-white shadow hover:bg-green-800">Speichern</button>
+        <button type="submit" id="btn-preview-save" class="shrink-0 rounded-lg bg-green-700 px-3 py-1.5 text-sm font-medium text-white shadow hover:bg-green-800">Speichern</button>
       </div>
       <h2 id="dialog-title" data-i18n="dialogTitleEdit" class="mb-4 text-lg font-bold text-stone-800 dark:text-stone-100">Pflanze bearbeiten</h2>
       <input type="hidden" id="f-id" />
@@ -1431,8 +1431,10 @@ import Layout from '../layouts/Layout.astro';
   let previewMode = false;
   let previewSaved = false;
   let previewDone: ((saved: boolean) => void) | null = null;
-  function showPreviewBar(p: PlantData) {
+  function showPreviewBar(p: PlantData, isNew = false) {
     previewMode = true;
+    // a plant from a database: "Zu meinen Pflanzen hinzufügen" instead of "Speichern"
+    document.getElementById('btn-preview-save')!.textContent = t(isNew ? 'btnAddToMine' : 'btnSave');
     previewSaved = false;
     const img = document.getElementById('editor-preview-img') as HTMLImageElement;
     img.hidden = !p.imageUrl;
@@ -1452,7 +1454,7 @@ import Layout from '../layouts/Layout.astro';
       dialog.showModal();
       notifyEditorOpen();
     } else if (!openEditor(plant.id)) return Promise.resolve(false);
-    showPreviewBar(plant);
+    showPreviewBar(plant, isNew);
     form.scrollTop = 0;
     return new Promise(res => { previewDone = res; });
   }

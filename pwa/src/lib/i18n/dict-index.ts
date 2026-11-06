@@ -283,6 +283,7 @@ export const indexDict: Dict = {
   btnCancel: { de: 'Abbrechen', en: 'Cancel' },
   btnCloseEditor: { de: 'Schließen', en: 'Close' },
   btnDiscard: { de: 'Verwerfen', en: 'Discard' },
+  btnAddToMine: { de: 'Zu meinen Pflanzen hinzufügen', en: 'Add to my plants' },
   btnSave: { de: 'Speichern', en: 'Save' },
 
   // ── Alerts / confirms ────────────────────────────────────────────────
