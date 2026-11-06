@@ -133,6 +133,8 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
           <!-- Menus added by expert modules (lib/expert-api.ts, LayoutApi.addHeaderMenu) -->
           <div id="header-extra" class="contents"></div>
           <!-- Visible sign-in for visitors without an account (hidden once logged in, kept in the Ansicht menu too) -->
+          <!-- Beta signup for visitors without an account (logged in, the Beta shield below takes over; too narrow below 390 px, the footer has it) -->
+          <a id="header-beta" href="/beta/" data-i18n-title="betaJoinTitle" title="Beta-Test: jetzt anmelden" class="max-[389px]:hidden rounded-md border border-amber-300/80 px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-amber-200 transition hover:bg-green-800 dark:hover:bg-green-900"><span data-i18n="betaBadge">Beta</span></a>
           <a id="header-login" href="/anmelden/" data-i18n="modeLogin" class="rounded-lg border border-green-300/60 px-2.5 py-1 text-sm font-semibold text-white transition hover:bg-green-800 dark:hover:bg-green-900">Anmelden</a>
           <!-- Ansicht: Einfach / Klassisch / Experte (src/lib/ui-mode.ts) -->
           <div class="relative">
@@ -247,6 +249,7 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
           <a href="/datenschutz" data-i18n="footerPrivacy" class="hover:text-stone-700 dark:hover:text-stone-200 hover:underline">Datenschutz</a>
           <button type="button" id="open-welcome" data-i18n="footerIntro" class="hover:text-stone-700 dark:hover:text-stone-200 hover:underline">Einführung</button>
           <a href="/unterstuetzen" class="font-semibold hover:text-stone-700 dark:hover:text-stone-200 hover:underline"><span aria-hidden="true">💚</span> <span data-i18n="footerSupport">Unterstützen</span></a>
+          <a href="/beta/" data-i18n="welcomeBetaJoin" class="hover:text-stone-700 dark:hover:text-stone-200 hover:underline">Beta-Test</a>
           <a href="/impressum" data-i18n="footerImprint" class="hover:text-stone-700 dark:hover:text-stone-200 hover:underline">Impressum</a>
           <a href="https://github.com/tbdal/Perma-Design-Kit" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub" class="inline-flex items-center gap-1 hover:text-stone-700 dark:hover:text-stone-200 hover:underline">
             <svg class="h-4 w-4" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
@@ -1113,6 +1116,7 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
         const headerLogin = document.getElementById('header-login') as HTMLAnchorElement;
         headerLogin.hidden = !!auth || /^\/anmelden\/?$/.test(location.pathname);
         headerLogin.href = loginHref();
+        document.getElementById('header-beta')!.hidden = !!auth || /^\/beta\/?$/.test(location.pathname);
         document.getElementById('mode-auth')!.hidden = !auth;
         document.getElementById('mode-auth-name')!.textContent = auth ? t('modeLoggedInAs', { name: auth.name }) : '';
         // the account button: initial when logged in, its menu by state

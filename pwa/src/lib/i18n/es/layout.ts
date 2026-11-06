@@ -185,6 +185,7 @@ export const es: Record<string, string> = {
   welcomeBetaFeedback: '¡Nos alegran tus comentarios y tu apoyo en este camino, y tus consejos sobre hacia dónde puede crecer la herramienta! ¿Quizá incluso te apetece colaborar y formar parte del equipo?',
   welcomeBetaJoin: 'Prueba beta',
   betaBadge: 'Beta',
+  betaJoinTitle: 'Prueba beta: apúntate ahora',
   betaBadgeTitle: 'Prueba beta: necesitamos tu opinión, deja tus comentarios',
   modeExpert: 'Prueba beta',
   modeExpertDesc: 'Clásica más funciones en prueba (requiere acceso)',

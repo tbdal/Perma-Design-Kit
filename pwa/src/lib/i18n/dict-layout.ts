@@ -194,6 +194,7 @@ export const layoutDict: Dict = {
   welcomeBetaFeedback: { de: 'Wir freuen uns über dein Feedback und deine Unterstützung auf der Entwicklungsreise und über deinen Rat, wo sich das Werkzeug hinentwickeln darf! Vielleicht hast du ja sogar Lust mitzuwirken und Teil des Teams zu werden?', en: 'We are happy about your feedback and support on this journey, and about your advice on where the tool may develop! Maybe you even feel like contributing and becoming part of the team?' },
   welcomeBetaJoin: { de: 'Beta-Test', en: 'Beta test' },
   betaBadge: { de: 'Beta', en: 'Beta' },
+  betaJoinTitle: { de: 'Beta-Test: jetzt anmelden', en: 'Beta test: sign up now' },
   betaBadgeTitle: { de: 'Beta-Test: Wir brauchen deine Meinung – Rückmeldung geben', en: 'Beta test: we need your opinion – give feedback' },
   modeExpert: { de: 'Beta-Test', en: 'Beta test' },
   modeExpertDesc: { de: 'Klassisch plus Funktionen in Erprobung (mit Zugang)', en: 'Classic plus features being tried out (needs access)' },
