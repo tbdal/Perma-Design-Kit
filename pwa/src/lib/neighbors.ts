@@ -59,14 +59,29 @@ export interface GoodNeighbor { kind: 'goodNeighbor'; target: string; helpers: {
 
 const fruiting = (p: PlantData) => p.eatable && ['tree', 'shrub'].includes(deriveLayer(p));
 
+/** Item indices (in their original order) whose x lies within `r` of `x`: items sorted by x once, then a binary
+ *  search – the pair loops below were quadratic, seconds with 2000 plants on a phone. */
+export function xIndex<T extends { pl: { xM: number } }>(items: T[]) {
+  const order = items.map((_, i) => i).sort((a, b) => items[a].pl.xM - items[b].pl.xM);
+  const xs = order.map(i => items[i].pl.xM);
+  const lower = (v: number) => { let lo = 0, hi = xs.length; while (lo < hi) { const m = (lo + hi) >> 1; if (xs[m] < v) lo = m + 1; else hi = m; } return lo; };
+  return (x: number, r: number): number[] => {
+    const out: number[] = [];
+    for (let k = lower(x - r); k < xs.length && xs[k] <= x + r; k++) out.push(order[k]);
+    return out.sort((a, b) => a - b);
+  };
+}
+
 export function neighborHints(plan: GardenPlan, plantsById: Map<string, PlantData>, years = 30): { bad: BadNeighbor[]; good: GoodNeighbor[] } {
   const items = plan.placements.flatMap(pl => { const p = plantsById.get(pl.plantId); return p ? [{ pl, p }] : []; });
+  const near = xIndex(items);
   const bad: BadNeighbor[] = [];
   const good: GoodNeighbor[] = [];
   for (const a of items) {
     const al = allelopathOf(a.p);
     if (!al) continue;
-    for (const b of items) {
+    for (const bi of near(a.pl.xM, al.radiusM)) {
+      const b = items[bi];
       if (a === b || b.p.id === a.p.id) continue;
       const hit = al.affects === 'juglone' ? jugloneSensitive(b.p) : !allelopathOf(b.p);
       if (!hit) continue;
@@ -78,7 +93,8 @@ export function neighborHints(plan: GardenPlan, plantsById: Map<string, PlantDat
     if (!fruiting(a.p)) continue;
     const reach = Math.max(2, displayRadiusM(a.p, years) * 1.5);
     const helpers: GoodNeighbor['helpers'] = [];
-    for (const b of items) {
+    for (const bi of near(a.pl.xM, reach)) {
+      const b = items[bi];
       if (a === b) continue;
       if (Math.hypot(a.pl.xM - b.pl.xM, a.pl.yM - b.pl.yM) > reach) continue;
       const role = b.p.nitrogenFix ? 'nitrogen' : b.p.mineralFix ? 'nutrients' : b.p.insects && b.p.id !== a.p.id ? 'insects' : null;

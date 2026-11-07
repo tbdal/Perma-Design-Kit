@@ -622,7 +622,7 @@ import Layout from '../layouts/Layout.astro';
   import { COVER_FUNCS, coverageGrid, coverageSummary, findGaps, suggestPlants, hasFunc, funcCount, influenceRadius, type CoverFunc } from '../lib/function-coverage';
   import { layoutPolyculture } from '../lib/polyculture-layout';
   import { shoppingRows, shoppingTotal, shoppingCsv, exportShoppingPDF, downloadText, type ShoppingLabels } from '../lib/plan-shopping';
-  import { crowdingWarnings, shadeWarnings, grownOccluders, WARN_YEARS } from '../lib/plan-warnings';
+  import { crowdingWarnings, shadeWarnings, grownOccluders, newShadeCache, WARN_YEARS } from '../lib/plan-warnings';
   import { fetchBuildings, BUILDINGS_ATTRIBUTION, type Building } from '../lib/osm-buildings';
   import { niceScale, scaleLabel } from '../lib/scale-bar';
   import { sunSamples, sunHoursAt, sunClass, planOccluders, planCells, SEASON_DATES, type SunScene, type SunSample, type SunClass, type Occluder } from '../lib/sun-hours';
@@ -4880,7 +4880,7 @@ import Layout from '../layouts/Layout.astro';
   }
   let terrainMaxZ: { grid: ElevationGrid; z: number } | null = null;
   let hoverSun: { key: string; at: number; scene: SunScene; samples: SunSample[]; maxHours: number } | null = null;
-  function sunContext(): { scene: SunScene } {
+  function sunContext(withPlants = true): { scene: SunScene } {
     const tg = terrain;
     const groundZ = tg ? (x: number, y: number) => sampleGrid(tg, x, y) : () => 0;
     if (tg && terrainMaxZ?.grid !== tg) terrainMaxZ = { grid: tg, z: gridRange(tg).max };
@@ -4888,7 +4888,7 @@ import Layout from '../layouts/Layout.astro';
       z: groundZ, minX: tg.minX, minY: tg.minY, maxX: tg.minX + (tg.nx - 1) * tg.cellM, maxY: tg.minY + (tg.ny - 1) * tg.cellM,
       maxZ: terrainMaxZ!.z, stepM: Math.max(1, tg.cellM),
     } : null;
-    const occluders = [...planOccluders(editing!, plantsById, editing!.yearsSincePlanting, groundZ), ...buildingOccluders(groundZ), ...pluginOccluders(groundZ)];
+    const occluders = withPlants ? [...planOccluders(editing!, plantsById, editing!.yearsSincePlanting, groundZ), ...buildingOccluders(groundZ), ...pluginOccluders(groundZ)] : [];
     return { scene: { occluders, groundZ, terrain: tr } };
   }
 
@@ -5085,6 +5085,11 @@ import Layout from '../layouts/Layout.astro';
     const t0w = performance.now();
     try { renderWarningsNow(); } finally { addTime('hints', performance.now() - t0w); }
   }
+  let lastWarnSig = '', lastWarnPlan: GardenPlan | null = null;
+  let shadeCache = newShadeCache(), shadeCachePlan: GardenPlan | null = null;
+  const terrainIds = new WeakMap<object, number>();
+  let terrainCount = 0;
+  const terrainSeq = (t: ElevationGrid | null) => { if (!t) return 0; let n = terrainIds.get(t); if (!n) terrainIds.set(t, n = ++terrainCount); return n; };
   function renderWarningsNow() {
     if (!editing) return;
     const plan = editing;
@@ -5095,10 +5100,21 @@ import Layout from '../layouts/Layout.astro';
       const p = pl ? plantsById.get(pl.plantId) : undefined;
       return p ? displayName(p) : '—';
     };
+    // Nothing the hints depend on changed (plan, plant data, terrain, buildings, plugins' shade, climate, ignored
+    // hints, language): keep what is shown (#hints only when something changed).
+    const { scene } = sunContext(false);
+    const extra = [...buildingOccluders(scene.groundZ), ...pluginOccluders(scene.groundZ)];
+    const used = new Set(plan.placements.map(pl => pl.plantId));
+    const plantSig = [...used].map(id => { const p = plantsById.get(id); return p ? `${id}:${p.heightM}:${p.widthM}:${p.growSpeedLow ? 1 : p.growSpeedHigh ? 3 : 2}:${+!!p.sunFull}${+!!p.sunMid}${+!!p.sunShadow}:${p.latinName}:${p.climateZone ?? ''}:${p.nitrogenFix ? 1 : 0}${p.mineralFix ? 1 : 0}${p.insects ? 1 : 0}${p.eatable ? 1 : 0}` : id; }).join(',');
+    const env = `${terrainSeq(terrain)}|${extra.length}:${extra.reduce((a, o) => a + (o.kind === 'prism' ? o.minX + o.maxY + o.z1 : o.x + o.y + o.r), 0).toFixed(1)}|${seasonCache?.key ?? ''}|${plan.startYear ?? ''}|${plantSig}`;
+    const sig = `${env}|${plan.placements.map(pl => `${pl.id}:${pl.plantId}:${pl.xM}:${pl.yM}:${pl.phaseYear ?? 0}:${pl.diedYear ?? ''}`).join(',')}|${currentClimate()?.zone ?? ''}|${[...loadIgnored(plan.id)].join(',')}|${warnShow}|${lang}`;
+    if (sig === lastWarnSig && plan === lastWarnPlan) { renderYield(); renderPhases(); return; }
+    lastWarnSig = sig; lastWarnPlan = plan;
     const crowd = crowdingWarnings(plan, plantsById);
-    const { scene } = sunContext();
-    const grown = { ...scene, occluders: [...grownOccluders(plan, plantsById, scene.groundZ), ...buildingOccluders(scene.groundZ), ...pluginOccluders(scene.groundZ)] };
-    const shade = shadeWarnings(plan, plantsById, grown, seasonSamples());
+    const grown = { ...scene, occluders: [...grownOccluders(plan, plantsById, scene.groundZ), ...extra] };
+    // Only the plants near what changed are counted again; the rest keep their sun hours.
+    if (shadeCachePlan !== plan) { shadeCache = newShadeCache(); shadeCachePlan = plan; }
+    const shade = shadeWarnings(plan, plantsById, grown, seasonSamples(), shadeCache, env);
     const nf1 = new Intl.NumberFormat(lang, { maximumFractionDigits: 1 });
     const fmt1 = (v: number) => nf1.format(v);
     // Site climate: per plant (all its placements), not per placement.
