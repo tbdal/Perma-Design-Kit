@@ -1,0 +1,113 @@
+---
+import Layout from '../layouts/Layout.astro';
+// Variety list of Ugas Obstbaumschule (7L tree nursery, Sieben Linden) for visitors: the table of the "Steckbriefe"
+// page of the account 7L-Baumschule (Pflanze, Sorte, Unterlage, Pflück-/Genussreife, Lagerfähigkeit), read only,
+// to filter and sort; no editor, no PDF, no notes or groups. Data: GET /api/beta/baumschule7l (expert server,
+// newest stored project of that account). Intro: the nursery's own text (Google Doc of 2026-11).
+---
+<Layout title="Ugas Obstbaumschule — Sortenliste" wide bare>
+  <article id="b7-root" class="space-y-4 text-stone-800 dark:text-stone-100">
+    <section class="max-w-3xl space-y-2 text-sm leading-relaxed text-stone-700 dark:text-stone-200">
+      <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-50">Obstbäume aus Ugas Obstbaumschule</h1>
+      <p>Detlef Uga Wolf baute von 1999 bis zu seinem Tod 2024 auf dem Gelände seiner Gärtnerei im Ökodorf Sieben Linden (Beetzendorf, Altmark, Sachsen-Anhalt) eine Obstbaumschule auf.</p>
+      <p>Er bestimmte Sorten, war aktiv im Pomologenverein und sammelte über viele Jahre alte Obstsorten, viele davon seltene und regionale Sorten, die er selbst veredelt hat.</p>
+      <h2 class="pt-1 font-semibold text-stone-900 dark:text-stone-50">Hintergrund &amp; Audio-Einblick</h2>
+      <p>Mehr über Ugas Arbeit, seine Philosophie und die Leidenschaft für die Sortenvielfalt erfahrt ihr in der Podcast-Folge:
+        <a class="b7-link" href="https://siebenlinden.org/de/folge-60-ugas-obstbaumschule-arbeitet-fuer-biologische-vielfalt/" target="_blank" rel="noopener noreferrer">Podcast: Folge 60 – Ugas Obstbaumschule arbeitet für biologische Vielfalt</a>
+        (alternativ auch auf <a class="b7-link" href="https://www.youtube.com/watch?v=phXsvXLwnWY" target="_blank" rel="noopener noreferrer">YouTube</a> anhörbar).
+        Seinem Leben und Wirken ist dieser <a class="b7-link" href="https://siebenlinden.org/de/uga-detlef-wolf-ist-gestorben/" target="_blank" rel="noopener noreferrer">Nachruf</a> gewidmet.</p>
+      <p>Für die nachfolgende Liste gilt: Begrenzte Stückzahl, teils Einzelexemplare, unterschiedliche Unterlagen (Wuchsstärken) und Alter. Alle Angaben ohne Gewähr, Verfügbarkeit solange Vorrat reicht. Da die Bäume noch nicht im Ertrag stehen, erfolgt der Verkauf ohne Gewährleistung auf Sortenechtheit nach Fruchtbild.</p>
+      <div class="rounded-lg bg-stone-100 dark:bg-stone-800 p-3 ring-1 ring-stone-200 dark:ring-stone-700">
+        <p><b>Verkaufstermine &amp; Abholung:</b> nach Absprache (nur Selbstabholer vor Ort in Sieben Linden, kein Versand).</p>
+        <p><b>Preise</b> pro Baum in der Regel zwischen 30 und 45 € (nach Alter und Größe).</p>
+        <p><b>Kontakt:</b> Tatjana Schubert, Sieben Linden 2, 38489 Beetzendorf · Telefon <a class="b7-link" href="tel:+493900090871">039000-90871</a> · Messenger <a class="b7-link" href="tel:+4915774681382">01577-4681382</a> · Mail <a class="b7-link" href="mailto:tatjanaschubert@web.de">tatjanaschubert@web.de</a></p>
+      </div>
+    </section>
+
+    <div id="b7-arten" class="flex flex-wrap items-center gap-1.5"></div>
+    <label class="flex max-w-md items-center gap-2 text-sm">Suchen
+      <input type="search" id="b7-q" placeholder="Sorte, Art, Unterlage …" class="min-w-0 flex-1 rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2.5 py-1.5 text-sm" />
+    </label>
+    <div id="b7-sortchips" class="-mx-4 flex items-center gap-1.5 overflow-x-auto px-4 pb-1 sm:hidden" role="group" aria-label="Sortieren"></div>
+    <p id="b7-count" class="text-xs text-stone-500 dark:text-stone-400" aria-live="polite">Lade die Sortenliste …</p>
+    <div class="hidden overflow-x-auto rounded-xl bg-white dark:bg-stone-800 ring-1 ring-stone-200 dark:ring-stone-700 sm:block">
+      <table class="w-full text-left text-sm">
+        <thead id="b7-head" class="bg-stone-50 dark:bg-stone-900/40 text-xs text-stone-500 dark:text-stone-400"></thead>
+        <tbody id="b7-rows"></tbody>
+      </table>
+    </div>
+    <ul id="b7-cards" class="space-y-2 sm:hidden"></ul>
+    <p id="b7-none" hidden class="text-sm text-stone-500">Keine Sorte gefunden.</p>
+  </article>
+  <style>
+    .b7-link { color: rgb(21 128 61); text-decoration: underline; text-underline-offset: 2px; }
+    :global(html.dark) .b7-link { color: rgb(74 222 128); }
+    :global(.b7-chip) { flex-shrink: 0; border-radius: 9999px; padding: 0.3rem 0.8rem; font-size: 0.8rem; background: rgb(255 255 255); box-shadow: inset 0 0 0 1px rgb(214 211 209); }
+    :global(html.dark .b7-chip) { background: rgb(41 37 36); box-shadow: inset 0 0 0 1px rgb(87 83 78); }
+    :global(.b7-chip[aria-pressed="true"]) { background: rgb(21 128 61); color: white; box-shadow: none; font-weight: 600; }
+  </style>
+  <script>
+    import { escapeHtml } from '../lib/html';
+    import { sortRows, filterRows, COLS, type B7Row, type B7Col } from '../lib/baumschule7l';
+
+    const $ = (id: string) => document.getElementById(id)!;
+    const q = $('b7-q') as HTMLInputElement;
+    let rows: B7Row[] = [];
+    let art = '';
+    let sort: { col: B7Col; dir: 1 | -1 } = { col: 'art', dir: 1 };
+    const colFilters: Partial<Record<B7Col, string>> = {};
+    const LABEL: Record<B7Col, string> = { art: 'Pflanze', sorte: 'Sorte', stock: 'Unterlage', pick: 'Pflückreife', eat: 'Genussreife', keep: 'Lagerfähigkeit' };
+    const eatText = (r: B7Row) => r.eat || (r.pick ? 'wie Pflückreife' : '');
+
+    function head() {
+      const arrow = (c: B7Col) => (sort.col === c ? (sort.dir === 1 ? ' ↑' : ' ↓') : '');
+      $('b7-head').innerHTML = `<tr>${COLS.map(c => `<th class="px-3 py-2" aria-sort="${sort.col === c ? (sort.dir === 1 ? 'ascending' : 'descending') : 'none'}"><button type="button" data-b7-sort="${c}" class="font-semibold uppercase">${LABEL[c]}${arrow(c)}</button></th>`).join('')}</tr>
+        <tr>${COLS.map(c => `<th class="px-3 pb-1.5 font-normal"><input type="search" data-b7-col="${c}" value="${escapeHtml(colFilters[c] ?? '')}" placeholder="Filter …" aria-label="Filter ${LABEL[c]}" class="w-full min-w-[5rem] rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-1.5 py-0.5 text-xs" /></th>`).join('')}</tr>`;
+      $('b7-sortchips').innerHTML = `<span class="shrink-0 text-xs text-stone-500">Sortieren</span>${COLS.map(c => `<button type="button" data-b7-sort="${c}" aria-pressed="${sort.col === c}" class="b7-chip">${LABEL[c]}${arrow(c)}</button>`).join('')}`;
+    }
+    function arten() {
+      const counts = new Map<string, number>();
+      for (const r of rows) counts.set(r.art, (counts.get(r.art) ?? 0) + 1);
+      $('b7-arten').innerHTML = `<button type="button" data-b7-art="" aria-pressed="${!art}" class="b7-chip">Alle (${rows.length})</button>`
+        + [...counts].sort((a, b) => a[0].localeCompare(b[0], 'de')).map(([a, n]) => `<button type="button" data-b7-art="${escapeHtml(a)}" aria-pressed="${art === a}" class="b7-chip">${escapeHtml(a)} (${n})</button>`).join('');
+    }
+    function draw() {
+      const shown = sortRows(filterRows(rows, { art, text: q.value, cols: colFilters }), sort.col, sort.dir);
+      const td = 'px-3 py-1.5 align-top';
+      $('b7-rows').innerHTML = shown.map(r => `<tr class="border-t border-stone-100 dark:border-stone-700">
+        <td class="${td} text-stone-600 dark:text-stone-300">${escapeHtml(r.art)}</td>
+        <td class="${td} font-medium">${escapeHtml(r.sorte)}</td>
+        <td class="${td}">${escapeHtml(r.stock)}</td><td class="${td}">${escapeHtml(r.pick)}</td>
+        <td class="${td}">${r.eat ? escapeHtml(r.eat) : r.pick ? '<span class="text-stone-400">wie Pflückreife</span>' : ''}</td><td class="${td}">${escapeHtml(r.keep)}</td></tr>`).join('');
+      const line = (k: string, v: string) => (v ? `<span class="whitespace-nowrap"><span class="text-stone-500">${k}</span> ${escapeHtml(v)}</span>` : '');
+      $('b7-cards').innerHTML = shown.map(r => `<li class="space-y-1 rounded-xl bg-white dark:bg-stone-800 p-3 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+        <p class="text-base font-semibold leading-snug">${escapeHtml(r.sorte)} <span class="block text-xs font-normal text-stone-500">${escapeHtml(r.art)}</span></p>
+        <div class="flex flex-wrap gap-x-3 gap-y-0.5 text-sm">${line('Unterlage', r.stock)}${line('Pflückreife', r.pick)}${line('Genussreife', eatText(r))}${line('Lagerfähigkeit', r.keep)}</div></li>`).join('');
+      $('b7-count').textContent = `${shown.length} Sorten`;
+      $('b7-none').hidden = shown.length > 0;
+    }
+    const root = $('b7-root');
+    root.addEventListener('click', e => {
+      const b = (e.target as HTMLElement).closest<HTMLElement>('[data-b7-art], [data-b7-sort]');
+      if (!b) return;
+      if (b.dataset.b7Art != null) { art = b.dataset.b7Art; arten(); }
+      else { const c = b.dataset.b7Sort as B7Col; sort = sort.col === c ? { col: c, dir: sort.dir === 1 ? -1 : 1 } : { col: c, dir: 1 }; head(); }
+      draw();
+    });
+    root.addEventListener('input', e => {
+      const el = e.target as HTMLInputElement;
+      if (el.dataset.b7Col) colFilters[el.dataset.b7Col as B7Col] = el.value;
+      if (el.dataset.b7Col || el === q) draw();
+    });
+    head();
+    fetch('/api/beta/baumschule7l')
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((d: { stand: string; sorten: B7Row[] }) => {
+        rows = d.sorten;
+        arten(); draw();
+        const stand = new Date(d.stand).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' });
+        $('b7-count').textContent += ` · Stand ${stand}`;
+      })
+      .catch(() => { $('b7-count').textContent = 'Die Sortenliste ist gerade nicht erreichbar – bitte später noch einmal versuchen.'; });
+  </script>
+</Layout>

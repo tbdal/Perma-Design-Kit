@@ -523,3 +523,7 @@ details[data-panel] > summary::-webkit-details-marker { display: none; }
 html.pdk-embed, html.pdk-embed body { background: transparent !important; }
 html.pdk-embed body > * { visibility: hidden; }
 html.pdk-embed dialog { visibility: visible; }
+
+/* Layout bare (pages for outside visitors, e.g. /baumschule7l): only the logo in the header, no menus, banners or feedback button. */
+html[data-bare] .site-header nav > :not(:first-child),
+html[data-bare] #feedback-fab, html[data-bare] #backup-reminder, html[data-bare] #beta-badge { display: none !important; }

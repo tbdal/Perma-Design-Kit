@@ -10,8 +10,10 @@ interface Props {
   wide?: boolean;
   /** No max width at all — the Gartenplan map grows with the window. */
   full?: boolean;
+  /** A page for outside visitors (e.g. /baumschule7l): the header shows only the logo (link to the start page), no menus, no feedback button. */
+  bare?: boolean;
 }
-const { title, wide = false, full = false } = Astro.props;
+const { title, wide = false, full = false, bare = false } = Astro.props;
 const containerMaxW = full ? 'max-w-none' : wide ? 'max-w-[1600px]' : 'max-w-6xl';
 // Header and footer always use the wide container, so the menu doesn't
 // shift sideways when switching between wide and narrow pages.
@@ -28,7 +30,7 @@ const fbItems = [
 const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 dark:hover:bg-stone-800';
 ---
 <!doctype html>
-<html lang="de" class="h-full" data-design="horizont" data-feature-defaults={featureDefaultsJson}>
+<html lang="de" class="h-full" data-design="horizont" data-feature-defaults={featureDefaultsJson} data-bare={bare ? '' : undefined}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -582,7 +584,7 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
         document.getElementById('open-welcome')?.addEventListener('click', open);
         let seen = false;
         try { seen = !!localStorage.getItem(WELCOME_KEY); } catch {}
-        const legal = /^\/(impressum|datenschutz|hilfe|anmelden|admin|beta)\/?$/.test(location.pathname);
+        const legal = /^\/(impressum|datenschutz|hilfe|anmelden|admin|beta)\/?$/.test(location.pathname) || document.documentElement.hasAttribute('data-bare');
         if (!seen && !legal) open();
       }
     </script>
