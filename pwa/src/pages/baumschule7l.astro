@@ -7,7 +7,7 @@ import Layout from '../layouts/Layout.astro';
 ---
 <Layout title="Ugas Obstbaumschule — Sortenliste" wide bare>
   <article id="b7-root" class="space-y-4 text-stone-800 dark:text-stone-100">
-    <section class="max-w-3xl space-y-2 text-sm leading-relaxed text-stone-700 dark:text-stone-200">
+    <section class="space-y-2 text-sm leading-relaxed text-stone-700 dark:text-stone-200">
       <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-50">Obstbäume aus Ugas Obstbaumschule</h1>
       <p>Detlef Uga Wolf baute von 1999 bis zu seinem Tod 2024 auf dem Gelände seiner Gärtnerei im Ökodorf Sieben Linden (Beetzendorf, Altmark, Sachsen-Anhalt) eine Obstbaumschule auf.</p>
       <p>Er bestimmte Sorten, war aktiv im Pomologenverein und sammelte über viele Jahre alte Obstsorten, viele davon seltene und regionale Sorten, die er selbst veredelt hat.</p>
@@ -40,11 +40,12 @@ import Layout from '../layouts/Layout.astro';
     <p id="b7-none" hidden class="text-sm text-stone-500">Keine Sorte gefunden.</p>
   </article>
   <style>
-    .b7-link { color: rgb(21 128 61); text-decoration: underline; text-underline-offset: 2px; }
-    :global(html.dark) .b7-link { color: rgb(74 222 128); }
-    :global(.b7-chip) { flex-shrink: 0; border-radius: 9999px; padding: 0.3rem 0.8rem; font-size: 0.8rem; background: rgb(255 255 255); box-shadow: inset 0 0 0 1px rgb(214 211 209); }
-    :global(html.dark .b7-chip) { background: rgb(41 37 36); box-shadow: inset 0 0 0 1px rgb(87 83 78); }
-    :global(.b7-chip[aria-pressed="true"]) { background: rgb(21 128 61); color: white; box-shadow: none; font-weight: 600; }
+    .b7-link { color: var(--color-green-700); text-decoration: underline; text-underline-offset: 2px; }
+    :global(html.dark) .b7-link { color: var(--color-green-300); }
+    :global(.b7-chip) { flex-shrink: 0; border-radius: 9999px; padding: 0.3rem 0.8rem; font-size: 0.8rem; background: var(--color-stone-100); box-shadow: inset 0 0 0 1px var(--color-stone-300); }
+    :global(html.dark .b7-chip) { background: var(--color-stone-800); box-shadow: inset 0 0 0 1px var(--color-stone-600); }
+    :global(.b7-chip[aria-pressed="true"]) { background: var(--color-green-800); color: white; box-shadow: none; font-weight: 600; }
+    :global(html.dark .b7-chip[aria-pressed="true"]) { background: var(--color-green-600); }
   </style>
   <script>
     import { escapeHtml } from '../lib/html';
