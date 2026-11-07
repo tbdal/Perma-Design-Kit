@@ -162,6 +162,8 @@ export interface PflanzenApi {
   addDataMenuButton(featureId: string, label: string, onClick: () => void): HTMLButtonElement;
   /** When the editor was opened with ?return=<path>, leaving waits for this (e.g. data saved along with the plant). */
   holdLeave(p: Promise<unknown>): void;
+  /** Called whenever the open plant is stored by the autosave (also when the editor closes right after a change). */
+  onAutosave(cb: () => Promise<unknown> | void): void;
   /** Opens a plant in the editor as preview (picture, "Verwerfen"/"Speichern" at the top, no autosave);
    *  `isNew` = not in the list yet, stored only on "Speichern". Resolves with whether it was saved. */
   openPreview(plant: PlantData, isNew: boolean): Promise<boolean>;

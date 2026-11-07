@@ -537,6 +537,8 @@ import Layout from '../layouts/Layout.astro';
   let newTemplate: PlantData | null = null;
   /** Saves that must finish before ?return= leaves the page (see PflanzenApi.holdLeave). */
   const leaveHolds: Promise<unknown>[] = [];
+  /** Modules that store something with the plant's autosave (onAutosave). */
+  const autosaveListeners: (() => Promise<unknown> | void)[] = [];
   const listChangeListeners: ((plants: PlantData[]) => void)[] = [];
   /** Variety texts from modules ("Boskoop auf M9"), by plant id; else the plain variety name. */
   const varietyLabels = new Map<string, Map<string, string>>();
@@ -1540,6 +1542,7 @@ import Layout from '../layouts/Layout.astro';
       return b;
     },
     holdLeave: (p) => { leaveHolds.push(p); },
+    onAutosave: cb => { autosaveListeners.push(cb); },
     openPreview: (plant, isNew) => openPreview(plant, isNew),
     setVarietyLabels: (featureId, labels) => {
       const before = JSON.stringify([...(varietyLabels.get(featureId) ?? [])]);
@@ -1560,26 +1563,32 @@ import Layout from '../layouts/Layout.astro';
   dialog.addEventListener('pointerdown', e => { downOnBackdrop = e.target === dialog; });
   dialog.addEventListener('click', e => { if (e.target === dialog && downOnBackdrop) dialog.close(); downOnBackdrop = false; });
   dialog.addEventListener('close', () => { newTemplate = null; });
-  form.addEventListener('submit', async (e) => { e.preventDefault(); clearTimeout(autosaveTimer); await savePlant(readForm()); previewSaved = true; dialog.close(); renderList(); });
+  form.addEventListener('submit', async (e) => { e.preventDefault(); clearTimeout(autosaveTimer); autosavePending = false; await savePlant(readForm()); previewSaved = true; dialog.close(); renderList(); });
 
   // Autosave: an existing plant is stored a moment after the last change (a new one waits for "Speichern").
   const autosaveNote = Object.assign(document.createElement('span'), { className: 'mr-auto self-center text-xs text-stone-500 dark:text-stone-400' });
   document.getElementById('btn-cancel')!.before(autosaveNote);
   let autosaveTimer: ReturnType<typeof setTimeout> | undefined;
+  let autosavePending = false;
+  /** Stores the plant and what modules keep with it (e.g. the Steckbrief). */
+  const autosaveNow = async () => {
+    autosavePending = false;
+    if (!editingPlant) return;
+    const p = readForm();
+    if (!p.latinName.trim()) return;
+    try {
+      await savePlant(p);
+      await Promise.all(autosaveListeners.map(cb => cb()));
+      autosaveNote.textContent = t('autosaved');
+      void renderList();
+    } catch { autosaveNote.textContent = t('autosaveFailed'); }
+  };
   const queueAutosave = () => {
     if (!editingPlant || previewMode) return; // a preview is stored only on "Speichern" ("Verwerfen" leaves it as it was)
     clearTimeout(autosaveTimer);
     autosaveNote.textContent = '';
-    autosaveTimer = setTimeout(async () => {
-      if (!editingPlant || !dialog.open) return;
-      const p = readForm();
-      if (!p.latinName.trim()) return;
-      try {
-        await savePlant(p);
-        autosaveNote.textContent = t('autosaved');
-        void renderList();
-      } catch { autosaveNote.textContent = t('autosaveFailed'); }
-    }, 900);
+    autosavePending = true;
+    autosaveTimer = setTimeout(() => { if (dialog.open) void autosaveNow(); }, 900);
   };
   // Issue 3: from the plant straight to a new polyculture with it as anchor (saved first, then on to the editor there).
   document.getElementById('btn-anchor-polyculture')!.addEventListener('click', async () => {
@@ -1591,7 +1600,12 @@ import Layout from '../layouts/Layout.astro';
   });
   form.addEventListener('input', queueAutosave);
   form.addEventListener('change', queueAutosave);
-  dialog.addEventListener('close', () => { clearTimeout(autosaveTimer); autosaveNote.textContent = ''; });
+  // Closed (✕, "Schließen", Esc, backdrop) right after a change: store it now instead of dropping it.
+  dialog.addEventListener('close', () => {
+    clearTimeout(autosaveTimer);
+    autosaveNote.textContent = '';
+    if (autosavePending) leaveHolds.push(autosaveNow());
+  });
 
   // ── View toggle + Bulk actions ────────────────────────────────────────────────
 
@@ -2228,6 +2242,7 @@ import Layout from '../layouts/Layout.astro';
       if (!opened) { tellParent('pdk-edit-closed'); return; }
       tellParent('pdk-edit-open');
       dialog.addEventListener('close', async () => {
+        await Promise.resolve(); // every close listener has added its hold by now
         await Promise.allSettled(leaveHolds);
         tellParent('pdk-edit-closed');
       }, { once: true });
@@ -2236,6 +2251,7 @@ import Layout from '../layouts/Layout.astro';
     // Only paths on this site, never another origin.
     if (opened && /^\/(?!\/)/.test(back)) {
       dialog.addEventListener('close', async () => {
+        await Promise.resolve(); // every close listener has added its hold by now
         await Promise.allSettled(leaveHolds);
         location.assign(back);
       }, { once: true });
