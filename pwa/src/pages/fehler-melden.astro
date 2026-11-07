@@ -29,7 +29,11 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
 
       <p class="text-xs text-stone-500 dark:text-stone-400" data-i18n="rpScreenshot">Ein Bildschirmfoto hilft oft: Windows Win+Umschalt+S, macOS Cmd+Umschalt+4, Android/iOS Ein-/Aus- und Leiser-Taste. Anhängen kannst du es in GitHub oder in der Mail.</p>
 
+      <label id="rp-shotbox" hidden class="block text-sm font-medium"><span data-i18n="rpShot">Bildschirmfoto anhängen (optional)</span>
+        <input type="file" id="rp-shot" accept="image/*" class="mt-1 block text-xs" />
+      </label>
       <div class="flex flex-wrap gap-2">
+        <button type="submit" id="rp-werkstatt" data-action="werkstatt" hidden data-i18n="rpWerkstatt" class={`${btn} bg-sky-700 text-white hover:bg-sky-800`}>Direkt in die Werkstatt</button>
         <button type="submit" id="rp-beta" data-action="beta" hidden data-i18n="rpBeta" class={`${btn} bg-amber-600 text-white hover:bg-amber-700`}>Direkt an das Beta-Team</button>
         <button type="submit" data-action="github" data-i18n="rpGithub" class={`${btn} bg-green-700 text-white hover:bg-green-800`}>Auf GitHub melden</button>
         <button type="submit" data-action="mail" data-i18n="rpMail" class={`${btn} bg-white dark:bg-stone-800 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700`}>Per E-Mail senden</button>
@@ -78,6 +82,10 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
     // Beta mode: the report (bug or idea) can also go straight into the team's Werkstatt.
     const beta = currentMode() === 'expert';
     document.getElementById('rp-beta')!.hidden = !beta;
+    // Team: straight into the Werkstatt, with the debug file and a screenshot if wanted (#556).
+    const team = currentMode() === 'team';
+    document.getElementById('rp-werkstatt')!.hidden = !team;
+    document.getElementById('rp-shotbox')!.hidden = !team;
     const text = (): ReportText => ({ page: page.value.trim(), what: what.value.trim(), expected: expected.value.trim(), ...(idea ? { idea } : {}), ...(beta ? { beta } : {}) });
 
     const status = document.getElementById('rp-status')!;
@@ -95,12 +103,49 @@ const btn = 'rounded-lg px-3.5 py-2 text-sm font-medium shadow-sm';
       try { download(await makeFile()); } catch (err) { failed(err); }
     });
 
+    /** A photo made small (≤ 1400 px, JPEG), as the Werkstatt keeps its pictures. */
+    async function shrinkJpeg(file: File): Promise<Blob> {
+      const bmp = await createImageBitmap(file);
+      const k = Math.min(1, 1400 / Math.max(bmp.width, bmp.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+      c.getContext('2d')!.drawImage(bmp, 0, 0, c.width, c.height);
+      return await new Promise<Blob>((res, rej) => c.toBlob(b => (b ? res(b) : rej(new Error('jpeg'))), 'image/jpeg', 0.82));
+    }
+
     // A link can't carry a file: the debug file is made on sending and either handed to the phone's
     // share sheet (mail app with attachment) or downloaded, ready to drag into the GitHub issue / mail.
     form.addEventListener('submit', async e => {
       e.preventDefault();
       const action = ((e as SubmitEvent).submitter as HTMLButtonElement | null)?.dataset.action;
       const de = getLang() === 'de';
+      if (action === 'werkstatt') {
+        status.textContent = '…';
+        const label = (el: HTMLElement) => el.closest('label')!.querySelector('span')!.textContent!.trim();
+        const answers = [page, what, expected].filter(f => f.value.trim()).map(f => `**${label(f)}** ${f.value.trim()}`).join('\n\n');
+        try {
+          const lines: string[] = [];
+          // screenshot: made small as JPEG (like the Werkstatt's own pictures) and stored with the entry
+          const shotFile = (document.getElementById('rp-shot') as HTMLInputElement).files?.[0];
+          if (shotFile) {
+            // a picture the browser can't read must not stop the report
+            const jpeg = await shrinkJpeg(shotFile).catch(() => null);
+            const r = jpeg ? await fetch('/api/x/big/entwicklung/bild', { method: 'PUT', credentials: 'same-origin', headers: { 'Content-Type': 'image/jpeg' }, body: jpeg }) : null;
+            if (r?.ok) lines.unshift(`![Screenshot](/api/x/big/entwicklung/bild?id=${(await r.json()).id})`);
+          }
+          if (!idea) {
+            const file = await makeFile();
+            const r = await fetch('/api/x/big/entwicklung/datei', { method: 'PUT', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-Filename': file.name }, body: file });
+            if (r.ok) lines.push(`Debug-Datei: [📎 ${file.name}](/api/x/big/entwicklung/datei?id=${(await r.json()).id})`);
+          }
+          const body = [lines[0]?.startsWith('![') ? lines.shift()! : '', answers, env, ...lines].filter(Boolean).join('\n\n');
+          const res = await fetch('/api/x/entwicklung/aufgaben', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: `${body} ${idea ? '#idee' : '#fehler'}` }) });
+          const nr = res.ok ? (await res.json()).task?.nr : null;
+          status.textContent = res.ok ? (de ? `In der Werkstatt als #${nr ?? '?'}.` : `In the Werkstatt as #${nr ?? '?'}.`) : (de ? 'Das hat nicht geklappt. Bist du im Team angemeldet?' : 'That did not work. Are you logged in as team?');
+          if (res.ok) { what.value = ''; expected.value = ''; }
+        } catch (err) { status.textContent = `${de ? 'Das hat nicht geklappt' : 'That did not work'}: ${err instanceof Error ? err.message : String(err)}`; }
+        return;
+      }
       if (action === 'beta') {
         // Straight into the team's task list, no mail address involved: each answer under its question
         // as the form showed it, the debug file (bugs; with the project if ticked) attached to the entry.

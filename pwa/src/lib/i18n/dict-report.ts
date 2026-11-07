@@ -21,6 +21,8 @@ export const reportDict: Dict = {
   rpDownload: { de: 'Debug-Datei herunterladen', en: 'Download debug file' },
   rpScreenshot: { de: 'Ein Bildschirmfoto hilft oft: Windows Win+Umschalt+S, macOS Cmd+Umschalt+4, Android/iOS Ein-/Aus- und Leiser-Taste. Anhängen kannst du es in GitHub oder in der Mail.', en: 'A screenshot often helps: Windows Win+Shift+S, macOS Cmd+Shift+4, Android/iOS power + volume down. Attach it in GitHub or in the e-mail.' },
   rpBeta: { de: 'Direkt an das Beta-Team', en: 'Straight to the beta team' },
+  rpWerkstatt: { de: 'Direkt in die Werkstatt', en: 'Straight into the Werkstatt' },
+  rpShot: { de: 'Bildschirmfoto anhängen (optional)', en: 'Attach a screenshot (optional)' },
   rpGithub: { de: 'Auf GitHub melden', en: 'Report on GitHub' },
   rpMail: { de: 'Per E-Mail senden', en: 'Send by e-mail' },
   rpGithubNote: { de: 'GitHub braucht ein kostenloses Konto; Meldungen dort sind öffentlich. Ohne Konto: E-Mail an info@permadesignkit.org.', en: 'GitHub needs a free account; reports there are public. No account: e-mail info@permadesignkit.org.' },
