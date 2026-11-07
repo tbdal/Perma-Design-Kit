@@ -48,7 +48,7 @@ import Layout from '../layouts/Layout.astro';
   </style>
   <script>
     import { escapeHtml } from '../lib/html';
-    import { sortRows, filterRows, COLS, type B7Row, type B7Col } from '../lib/baumschule7l';
+    import { sortRows, filterRows, countText, COLS, type B7Row, type B7Col } from '../lib/baumschule7l';
 
     const $ = (id: string) => document.getElementById(id)!;
     const q = $('b7-q') as HTMLInputElement;
@@ -66,10 +66,12 @@ import Layout from '../layouts/Layout.astro';
       $('b7-sortchips').innerHTML = `<span class="shrink-0 text-xs text-stone-500">Sortieren</span>${COLS.map(c => `<button type="button" data-b7-sort="${c}" aria-pressed="${sort.col === c}" class="b7-chip">${LABEL[c]}${arrow(c)}</button>`).join('')}`;
     }
     function arten() {
-      const counts = new Map<string, number>();
-      for (const r of rows) counts.set(r.art, (counts.get(r.art) ?? 0) + 1);
-      $('b7-arten').innerHTML = `<button type="button" data-b7-art="" aria-pressed="${!art}" class="b7-chip">Alle (${rows.length})</button>`
-        + [...counts].sort((a, b) => a[0].localeCompare(b[0], 'de')).map(([a, n]) => `<button type="button" data-b7-art="${escapeHtml(a)}" aria-pressed="${art === a}" class="b7-chip">${escapeHtml(a)} (${n})</button>`).join('');
+      // Number of varieties per species (a variety on several rootstocks counts once).
+      const sorten = new Map<string, Set<string>>();
+      for (const r of rows) sorten.set(r.art, (sorten.get(r.art) ?? new Set()).add(r.sorte.toLowerCase()));
+      const all = [...sorten.values()].reduce((n, s) => n + s.size, 0);
+      $('b7-arten').innerHTML = `<button type="button" data-b7-art="" aria-pressed="${!art}" class="b7-chip">Alle (${all})</button>`
+        + [...sorten].sort((a, b) => a[0].localeCompare(b[0], 'de')).map(([a, s]) => `<button type="button" data-b7-art="${escapeHtml(a)}" aria-pressed="${art === a}" class="b7-chip">${escapeHtml(a)} (${s.size})</button>`).join('');
     }
     function draw() {
       const shown = sortRows(filterRows(rows, { art, text: q.value, cols: colFilters }), sort.col, sort.dir);
@@ -83,7 +85,7 @@ import Layout from '../layouts/Layout.astro';
       $('b7-cards').innerHTML = shown.map(r => `<li class="space-y-1 rounded-xl bg-white dark:bg-stone-800 p-3 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
         <p class="text-base font-semibold leading-snug">${escapeHtml(r.sorte)} <span class="block text-xs font-normal text-stone-500">${escapeHtml(r.art)}</span></p>
         <div class="flex flex-wrap gap-x-3 gap-y-0.5 text-sm">${line('Unterlage', r.stock)}${line('Pflückreife', r.pick)}${line('Genussreife', eatText(r))}${line('Lagerfähigkeit', r.keep)}</div></li>`).join('');
-      $('b7-count').textContent = `${shown.length} Sorten`;
+      $('b7-count').textContent = countText(shown);
       $('b7-none').hidden = shown.length > 0;
     }
     const root = $('b7-root');

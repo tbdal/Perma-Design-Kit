@@ -24,6 +24,12 @@ function keyOf(r: B7Row, c: B7Col): string | number {
 }
 void MONTHS;
 
+/** "12 Sorten, 15 Pflanzen": a row is one tree (variety on one rootstock), a variety counts once per species. */
+export function countText(rows: B7Row[]): string {
+  const sorten = new Set(rows.map(r => `${r.art}|${r.sorte}`.toLowerCase())).size;
+  return `${sorten} ${sorten === 1 ? 'Sorte' : 'Sorten'}, ${rows.length} ${rows.length === 1 ? 'Pflanze' : 'Pflanzen'}`;
+}
+
 /** Species chip, search over all columns (every word somewhere), column filters (every word in that column). */
 export function filterRows(rows: B7Row[], f: { art: string; text: string; cols: Partial<Record<B7Col, string>> }): B7Row[] {
   const words = f.text.toLowerCase().split(/\s+/).filter(Boolean);
