@@ -300,6 +300,7 @@ import Layout from '../layouts/Layout.astro';
       </div>
       <h2 id="dialog-title" data-i18n="dialogTitleEdit" class="mb-4 text-lg font-bold text-stone-800 dark:text-stone-100">Pflanze bearbeiten</h2>
       <input type="hidden" id="f-id" />
+      <div id="editor-extra-top"></div>
 
       <div class="space-y-4">
         <!-- Grunddaten -->
@@ -537,6 +538,9 @@ import Layout from '../layouts/Layout.astro';
   /** Saves that must finish before ?return= leaves the page (see PflanzenApi.holdLeave). */
   const leaveHolds: Promise<unknown>[] = [];
   const listChangeListeners: ((plants: PlantData[]) => void)[] = [];
+  /** Variety texts from modules ("Boskoop auf M9"), by plant id; else the plain variety name. */
+  const varietyLabels = new Map<string, Map<string, string>>();
+  const varietyText = (p: PlantData) => { for (const m of varietyLabels.values()) { const l = m.get(p.id); if (l) return l; } return p.varietyName; };
   let cachedPlants: PlantData[] = [];
   // Where each plant stands, read from the garden plans on every render (lib/plan-usage.ts).
   let gardenPlans: GardenPlan[] = [];
@@ -1100,7 +1104,7 @@ import Layout from '../layouts/Layout.astro';
           <div data-tile-open class="flex-1 cursor-pointer pl-4 pr-3 pt-3 pb-1">
             <div class="mb-1 flex items-start justify-between gap-2">
               <div class="min-w-0">
-                <h3 class="truncate text-sm font-bold text-stone-800 dark:text-stone-100">${escapeHtml(displayName(p))}${p.varietyName ? ` <span class="font-normal text-stone-500 dark:text-stone-400">(${escapeHtml(p.varietyName)})</span>` : ''}</h3>
+                <h3 class="truncate text-sm font-bold text-stone-800 dark:text-stone-100">${escapeHtml(displayName(p))}${varietyText(p) ? ` <span class="font-normal text-stone-500 dark:text-stone-400">(${escapeHtml(varietyText(p))})</span>` : ''}</h3>
                 ${p.latinName ? `<p class="truncate text-xs italic text-stone-500 dark:text-stone-400">${escapeHtml(p.latinName)}</p>` : ''}
               </div>
               <div class="flex shrink-0 gap-1 sm:opacity-0 sm:transition sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
@@ -1242,7 +1246,7 @@ import Layout from '../layouts/Layout.astro';
                   <div class="flex items-center gap-1.5">
                     <div class="h-5 w-0.5 rounded-full ${accentColor(p)} shrink-0"></div>
                     <div class="min-w-[7.5rem]">
-                      <span class="font-medium text-stone-800 dark:text-stone-100">${escapeHtml(displayName(p))}</span>${p.varietyName ? ` <span class="text-stone-500 dark:text-stone-400">(${escapeHtml(p.varietyName)})</span>` : ''}
+                      <span class="font-medium text-stone-800 dark:text-stone-100">${escapeHtml(displayName(p))}</span>${varietyText(p) ? ` <span class="text-stone-500 dark:text-stone-400">(${escapeHtml(varietyText(p))})</span>` : ''}
                       <div class="text-xs italic text-stone-500 dark:text-stone-400">${escapeHtml(p.latinName)}</div>
                       ${planChipsHtml(p, 'mt-0.5')}
                     </div>
@@ -1518,10 +1522,11 @@ import Layout from '../layouts/Layout.astro';
     activeGroups: () => [...filters.groups],
     onEditorOpen: cb => { editorOpenListeners.push(cb); },
     onListChange: cb => { listChangeListeners.push(cb); },
-    addEditorSection(featureId) {
+    addEditorSection(featureId, opts) {
       const el = document.createElement('section');
       el.dataset.feature = featureId;
-      document.getElementById('editor-extra')!.appendChild(el);
+      if (opts?.top) el.className = 'mb-4 empty:hidden';
+      document.getElementById(opts?.top ? 'editor-extra-top' : 'editor-extra')!.appendChild(el);
       return el;
     },
     addEditorButton: (featureId, label, onClick) => {
@@ -1536,6 +1541,11 @@ import Layout from '../layouts/Layout.astro';
     },
     holdLeave: (p) => { leaveHolds.push(p); },
     openPreview: (plant, isNew) => openPreview(plant, isNew),
+    setVarietyLabels: (featureId, labels) => {
+      const before = JSON.stringify([...(varietyLabels.get(featureId) ?? [])]);
+      varietyLabels.set(featureId, labels);
+      if (JSON.stringify([...labels]) !== before) renderList(); // called from onListChange: redraw only on a change
+    },
     setExtraPlants: (featureId, plants) => { extraPlants.set(featureId, new Map(plants.map(p => [p.id, p]))); renderList(); },
     addDataMenuButton: (featureId, label, onClick) => {
       const b = slotButton('data-menu-extra', featureId, label, 'block w-full rounded-md px-3 py-2 text-left text-sm text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700');
@@ -1991,7 +2001,7 @@ import Layout from '../layouts/Layout.astro';
     const row = (p: PlantData) => {
       const u = use(p);
       return `<div data-id="${escapeHtml(p.id)}" class="flex items-center justify-between gap-3 border-t border-dashed border-stone-200 dark:border-stone-700 py-1.5 pl-3">
-        <button type="button" class="btn-edit min-w-0 truncate text-left text-sm text-stone-800 dark:text-stone-100 hover:underline">${escapeHtml(displayName(p))}${p.varietyName ? ` <span class="text-stone-500 dark:text-stone-400">(${escapeHtml(p.varietyName)})</span>` : ''} <i class="text-xs text-stone-500 dark:text-stone-400">${escapeHtml(p.latinName)}</i></button>
+        <button type="button" class="btn-edit min-w-0 truncate text-left text-sm text-stone-800 dark:text-stone-100 hover:underline">${escapeHtml(displayName(p))}${varietyText(p) ? ` <span class="text-stone-500 dark:text-stone-400">(${escapeHtml(varietyText(p))})</span>` : ''} <i class="text-xs text-stone-500 dark:text-stone-400">${escapeHtml(p.latinName)}</i></button>
         ${u ? `<a href="/gartenplan/?plan=${encodeURIComponent(plan.id)}&mark=${encodeURIComponent(p.id)}" title="${escapeHtml(t('planChipTitle'))}" class="shrink-0 text-xs tabular-nums text-sky-800 dark:text-sky-300 hover:underline">${escapeHtml(t('planPlantedOf', { n: u.count, planted: u.planted }))}</a>` : ''}
       </div>`;
     };

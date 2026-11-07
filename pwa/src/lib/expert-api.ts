@@ -150,8 +150,10 @@ export interface PflanzenApi {
   onEditorOpen(cb: (plant: PlantData | null) => void): void;
   /** Called after the list reloaded its plants from the database. */
   onListChange(cb: (plants: PlantData[]) => void): void;
-  /** A block in the editor dialog, above its buttons (hidden whenever the feature is off). */
-  addEditorSection(featureId: string): HTMLElement;
+  /** A block in the editor dialog, above its buttons, or with `top` above the first fields (hidden whenever the feature is off). */
+  addEditorSection(featureId: string, opts?: { top?: boolean }): HTMLElement;
+  /** Texts shown in place of the variety name in the list ("Boskoop auf M9"), by plant id; replaces this feature's earlier set. */
+  setVarietyLabels(featureId: string, labels: Map<string, string>): void;
   /** A button left of the editor's Cancel/Save. */
   addEditorButton(featureId: string, label: string, onClick: () => void): HTMLButtonElement;
   /** A button in the bulk bar; gets the selected plants. */
