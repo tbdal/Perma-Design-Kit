@@ -461,6 +461,43 @@ export function createGardenPlan3DView(
   sun.target.position.set(cx, 0, cz);
   scene.add(sun, sun.target);
 
+  // Sky as a gradient (deeper above, pale haze at the horizon, a glow towards the sun) instead of one flat
+  // colour: a dome that follows the camera and is drawn first, behind everything. Its colours follow `sky`
+  // (setSunTime turns it golden or dark) and the sun's direction.
+  const skyDome = new THREE.Mesh(
+    new THREE.SphereGeometry(1, 32, 16),
+    new THREE.ShaderMaterial({
+      side: THREE.BackSide, depthTest: false, depthWrite: false,
+      uniforms: { uSky: { value: sky }, uSun: { value: sunDir } },
+      vertexShader: 'varying vec3 vDir; void main() { vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+      fragmentShader: `uniform vec3 uSky; uniform vec3 uSun; varying vec3 vDir;
+        void main() {
+          float h = vDir.y;
+          vec3 zenith = uSky * vec3(0.72, 0.82, 0.98);           // deeper blue overhead
+          vec3 horizon = mix(uSky, vec3(1.0, 0.98, 0.94), 0.55);  // pale haze along the horizon
+          vec3 col = mix(horizon, zenith, smoothstep(0.0, 0.55, pow(clamp(h, 0.0, 1.0), 0.7)));
+          float s = max(dot(normalize(vDir), normalize(uSun)), 0.0);
+          col += vec3(1.0, 0.86, 0.62) * pow(s, 24.0) * 0.35 * (1.0 - clamp(h, 0.0, 1.0) * 0.6); // glow around the sun
+          if (h < 0.0) col = mix(horizon, horizon * 0.9, clamp(-h * 4.0, 0.0, 1.0));            // below: a little darker haze
+          gl_FragColor = vec4(col, 1.0);
+        }`,
+    }),
+  );
+  skyDome.renderOrder = -1000;
+  skyDome.frustumCulled = false;
+  // Haze: the far ground fades into the horizon colour, so there is no hard edge between meadow and sky.
+  // Its distance grows with the camera's height (close up only far away things fade).
+  const haze = new THREE.Fog(0xffffff, 100, 1000);
+  const HAZE_WHITE = new THREE.Color(1.0, 0.98, 0.94);
+  scene.fog = haze;
+  skyDome.onBeforeRender = (_r, _s, cam) => {
+    skyDome.position.copy(cam.position); skyDome.scale.setScalar(Math.max(10, (cam as THREE.PerspectiveCamera).far * 0.5)); skyDome.updateMatrixWorld();
+    haze.color.copy(sky).lerp(HAZE_WHITE, 0.55); // = the dome's horizon colour
+    const h = Math.max(2, Math.abs(cam.position.y - groundMin));
+    haze.near = Math.max(maxDim * 1.5, h * 6); haze.far = haze.near * 8;
+  };
+  scene.add(skyDome);
+
   // Surrounding meadow so shadows and the sun path have context.
   const meadow = new THREE.Mesh(
     new THREE.CircleGeometry(100000, 64), // reaches the horizon at any zoom

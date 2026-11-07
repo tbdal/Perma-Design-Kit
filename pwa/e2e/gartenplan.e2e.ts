@@ -113,7 +113,8 @@ test('site climate panel and hints from (stubbed) Open-Meteo data', async ({ pag
       time.push(iso); tmin.push(md === '01-20' ? -20 : md <= '04-15' || md >= '10-20' ? -2 : 8); pr.push(2); wd.push(250);
     }
   }
-  await stubNetwork(page, { climate: route => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ elevation: 50, daily: { time, temperature_2m_min: tmin, precipitation_sum: pr, wind_direction_10m_dominant: wd } }) }) });
+  let asked = 0;
+  await stubNetwork(page, { climate: route => { asked++; return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ elevation: 50, daily: { time, temperature_2m_min: tmin, precipitation_sum: pr, wind_direction_10m_dominant: wd } }) }); } });
   await seedNeighbourPlan(page, { geo: { lat: 50.9, lon: 7, rotationDeg: 0, basemap: 'none', opacity: 0.6 } });
   await withDb(page, `const p = (await all('plants')).find(x => x.latinName === 'Malus domestica'); p.climateZone = '7-9'; await put('plants', p);`);
   await openPlan(page, 'np');
@@ -124,6 +125,11 @@ test('site climate panel and hints from (stubbed) Open-Meteo data', async ({ pag
   await expect(page.locator('#climate-body [data-climate-source]')).toContainText('ERA5');
   await expect(page.locator('#climate-body [data-climate-source] a')).toHaveAttribute('href', 'https://open-meteo.com/');
   await expect(page.locator('#warnings-list')).toContainText('nicht winterhart');
+  // the summary is kept: opening the plan again shows the climate at once, without asking or a loading step
+  const before = asked;
+  await page.reload();
+  await expect(page.locator('#climate-body')).toContainText('6b');
+  expect(asked).toBe(before);
   void errors;
 });
 

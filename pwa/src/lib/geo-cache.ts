@@ -106,6 +106,12 @@ export async function geoCacheUsage(): Promise<Record<GeoGroup, { bytes: number;
 /** Drops everything cachedFetch stored. */
 export async function clearGeoCache(): Promise<void> {
   try { if (typeof caches !== 'undefined') await caches.delete(CACHE_NAME); } catch { /* ignore */ }
+  dropClimateSummaries();
+}
+
+/** The site climate's kept summaries (site-climate.ts, localStorage "pdk-climate:…") go with the climate data. */
+function dropClimateSummaries() {
+  try { for (const k of Object.keys(localStorage)) if (k.startsWith('pdk-climate:')) localStorage.removeItem(k); } catch { /* ignore */ }
 }
 
 const REFRESH_KEY = 'pdk-geo-refresh';
@@ -126,6 +132,7 @@ export async function refreshGeoGroups(groups: GeoGroup[]): Promise<void> {
       if (groups.includes(geoGroup(decodeURIComponent(new URL(req.url).pathname.replace('/__geo-cache__/', ''))))) await cache.delete(req);
     }
   } catch { /* best effort */ }
+  if (groups.includes('climate')) dropClimateSummaries();
   try { sessionStorage.setItem(REFRESH_KEY, String(Date.now())); } catch { /* ignore */ }
 }
 

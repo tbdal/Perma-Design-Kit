@@ -604,7 +604,7 @@ import Layout from '../layouts/Layout.astro';
   import { analyzeWater, roofRainM3, type WaterAnalysis } from '../lib/water';
   import { planYield, careTasks, buildIcs, type CareTask } from '../lib/yield-care';
   import { DEFAULT_ZONE_RADII, ZONE_COLORS, bearingVector, wedgePath, solsticeSectors } from '../lib/zones-sectors';
-  import { fetchSiteClimate, notHardy, blossomFrostRisk, zoneLabel, doyLabel, plantZoneRange, COMPASS16, CLIMATE_ATTRIBUTION, type SiteClimate } from '../lib/site-climate';
+  import { cachedSiteClimate, fetchSiteClimate, notHardy, blossomFrostRisk, zoneLabel, doyLabel, plantZoneRange, COMPASS16, CLIMATE_ATTRIBUTION, type SiteClimate } from '../lib/site-climate';
   import { createEmptyGardenPlan, type GardenPlan, type GardenPlanPlacement, type GardenPlanPoint, type GardenPlanArea, type Polyculture, type PlantData } from '../lib/types';
   import { displayRadiusM } from '../lib/growth-model';
   import { deriveLayer, LAYER_STYLE, LAYER_I18N, type PlantLayer } from '../lib/plant-layer';
@@ -4709,6 +4709,13 @@ import Layout from '../layouts/Layout.astro';
     if (!key) { climateRequestKey = ''; renderClimatePanel(); return; }
     if (key === climateRequestKey) { renderClimatePanel(); return; }
     climateRequestKey = key;
+    // Kept summary: no loading step at all (#Klima 10 s).
+    const kept = cachedSiteClimate(editing!.geo!.lat, editing!.geo!.lon);
+    if (kept) {
+      siteClimate = kept; siteClimateKey = key;
+      renderClimatePanel(); updateAttribution(planSvg); renderSuggestions(); scheduleWarnings(); renderZones();
+      return;
+    }
     renderClimatePanel(true);
     setLoad('klima', t('loadingClimate'));
     try {

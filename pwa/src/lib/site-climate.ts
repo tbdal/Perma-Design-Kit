@@ -104,13 +104,40 @@ export function climateRequestUrl(lat: number, lon: number): string {
   return `${CLIMATE_URL}?${q}`;
 }
 
-/** Site climate for a location (cached in the browser for a year). */
-export async function fetchSiteClimate(lat: number, lon: number): Promise<SiteClimate> {
-  const url = climateRequestUrl(lat, lon);
-  const res = await cachedFetch(url, 365 * DAY_MS, () => fetch(url));
-  const data = await res.json();
-  if (!data?.daily?.time?.length) throw new Error('no climate data');
-  return summarizeClimate(data.daily, Number(lat.toFixed(1)), Number(lon.toFixed(1)), typeof data.elevation === 'number' ? data.elevation : null);
+/** The summary is kept too (small, in localStorage, 30 days): opening a plan then needs neither the 30 years of
+ *  daily values (≈ 300 KB) nor their parsing — the climate is there at once, without a "loading" step. */
+const SUMMARY_KEY = (lat: number, lon: number) => `pdk-climate:${lat.toFixed(1)},${lon.toFixed(1)},${CLIMATE_YEARS.join('-')}`;
+const SUMMARY_MS = 30 * DAY_MS;
+const pending = new Map<string, Promise<SiteClimate>>();
+
+/** The kept summary for a location, or null (none, too old, unreadable). */
+export function cachedSiteClimate(lat: number, lon: number): SiteClimate | null {
+  try {
+    const raw = localStorage.getItem(SUMMARY_KEY(lat, lon));
+    const v = raw ? JSON.parse(raw) as { at: number; c: SiteClimate } : null;
+    return v && Date.now() - v.at < SUMMARY_MS && v.c && typeof v.c.zone === 'number' ? v.c : null;
+  } catch { return null; }
+}
+
+/** Site climate for a location: the kept summary, else the daily values (browser cache for a year), summarized. */
+export function fetchSiteClimate(lat: number, lon: number): Promise<SiteClimate> {
+  const hit = cachedSiteClimate(lat, lon);
+  if (hit) return Promise.resolve(hit);
+  const key = SUMMARY_KEY(lat, lon);
+  let p = pending.get(key); // planner and wind protection ask at the same time: one request
+  if (!p) {
+    p = (async () => {
+      const url = climateRequestUrl(lat, lon);
+      const res = await cachedFetch(url, 365 * DAY_MS, () => fetch(url));
+      const data = await res.json();
+      if (!data?.daily?.time?.length) throw new Error('no climate data');
+      const c = summarizeClimate(data.daily, Number(lat.toFixed(1)), Number(lon.toFixed(1)), typeof data.elevation === 'number' ? data.elevation : null);
+      try { localStorage.setItem(key, JSON.stringify({ at: Date.now(), c })); } catch { /* full or blocked: the browser cache still has the raw data */ }
+      return c;
+    })().finally(() => pending.delete(key));
+    pending.set(key, p);
+  }
+  return p;
 }
 
 // ── Plants vs. site ─────────────────────────────────────────────────────
