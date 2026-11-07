@@ -170,6 +170,8 @@ export function normalizeGardenPlan(raw: unknown): GardenPlan | null {
           ...(clampPhase(pl.phaseYear) ? { phaseYear: clampPhase(pl.phaseYear)! } : {}),
           ...(Number.isInteger(pl.plantedYear) && (pl.plantedYear as number) >= 1900 && (pl.plantedYear as number) <= 2200 ? { plantedYear: pl.plantedYear as number } : {}),
           ...(Number.isInteger(pl.diedYear) && (pl.diedYear as number) >= 1900 && (pl.diedYear as number) <= 2200 ? { diedYear: pl.diedYear as number } : {}),
+          ...(typeof pl.plantedDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(pl.plantedDate) ? { plantedDate: pl.plantedDate } : {}),
+          ...(typeof pl.diedDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(pl.diedDate) ? { diedDate: pl.diedDate } : {}),
           ...(typeof pl.polycultureId === 'string' && typeof pl.packageId === 'string' ? { polycultureId: safeId(pl.polycultureId), packageId: safeId(pl.packageId) } : {}),
         }))
       : [],

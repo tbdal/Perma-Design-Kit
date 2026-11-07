@@ -86,6 +86,9 @@ export interface GardenPlanPlacement {
   plantedYear?: number;
   /** Calendar year it died or was removed (Werkstatt #190); greyed on the map, out of yield and care from then on. */
   diedYear?: number;
+  /** Optional exact days (YYYY-MM-DD) of planting and death; the year fields stay the ones that count. */
+  plantedDate?: string;
+  diedDate?: string;
   /** Set when placed as a polyculture package: the polyculture and the id shared by that package's placements. */
   polycultureId?: string;
   packageId?: string;

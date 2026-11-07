@@ -5499,6 +5499,7 @@ import Layout from '../layouts/Layout.astro';
         if (!set.has(pl.id)) continue;
         if ('plantedYear' in patch) { if (patch.plantedYear == null) delete pl.plantedYear; else pl.plantedYear = patch.plantedYear; }
         if ('diedYear' in patch) { if (patch.diedYear == null) delete pl.diedYear; else pl.diedYear = patch.diedYear; }
+        for (const k of ['plantedDate', 'diedDate'] as const) if (k in patch) { const v = patch[k]; if (v && /^\d{4}-\d{2}-\d{2}$/.test(v)) pl[k] = v; else delete pl[k]; }
         if ('phaseYear' in patch) { const ph = clampPhase(patch.phaseYear); if (ph) pl.phaseYear = ph; else delete pl.phaseYear; }
       }
       renderPlanSvg();
