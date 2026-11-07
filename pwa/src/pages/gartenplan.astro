@@ -630,6 +630,7 @@ import Layout from '../layouts/Layout.astro';
   import { BOOL_FIELDS } from '../lib/plant-fields';
   import { orthoFor } from '../lib/ortho-sources';
   import { dgmFor, officialHeightsWanted, refineWithDgm } from '../lib/dgm';
+  import { lastGeoOrigin, type GeoGroup } from '../lib/geo-cache';
   import { fetchElevationGrid, sampleGrid, gridRange, slopeInfo, contourSegments, contourInterval, TERRAIN_ATTRIBUTION, type ElevationGrid } from '../lib/terrain';
   import { plantDetailHtml } from '../lib/plant-detail';
   import { compatScore } from '../lib/compat';
@@ -2092,7 +2093,9 @@ import Layout from '../layouts/Layout.astro';
       coverageSelect.value = savedView.coverage;
     }
     loadTimes.clear();
-    loadT0 = performance.now();
+    loadT0 = performance.now(); loadT0Epoch = Date.now();
+    // from the page's start (navigation) to opening the plan: loading the app, the plants and plans from the device
+    if (!openedOnce) { openedOnce = true; loadTimes.set('page', { label: 'page', atMs: -loadT0, ms: loadT0 }); }
     timeLoad('plan', 'plan');
     renderAreasList();
     yearsInput.value = String(editing.yearsSincePlanting);
@@ -2399,7 +2402,11 @@ import Layout from '../layouts/Layout.astro';
       document.getElementById('btn-edit-plant')?.addEventListener('click', () => void openPlantEditor(p));
       // Picture and properties open the editor too (not the picture zoom).
       const det = selectedPanel.querySelector<HTMLElement>('[data-sel-detail]');
-      det?.addEventListener('click', e => { if (!(e.target as HTMLElement).closest('a')) void openPlantEditor(p); });
+      // Only a click that also started here: the tap that selected the plant on the map (phone) ends on the
+      // panel drawn under the finger and must not open the editor too (#559).
+      let downHere = false;
+      det?.addEventListener('pointerdown', () => { downHere = true; });
+      det?.addEventListener('click', e => { if (downHere && !(e.target as HTMLElement).closest('a')) void openPlantEditor(p); downHere = false; });
       det?.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); void openPlantEditor(p); } });
     }
     document.getElementById('btn-select-package')?.addEventListener('click', () => {
@@ -2996,16 +3003,29 @@ import Layout from '../layouts/Layout.astro';
   let warnTimer: ReturnType<typeof setTimeout> | null = null;
   const loadEl = document.getElementById('plan-loading')!;
   // Load times of the open plan (the team's debug view, loadTimes() of the page API).
-  let loadT0 = 0;
-  const loadTimes = new Map<string, { label: string; atMs: number; ms: number | null }>();
+  let loadT0 = 0, loadT0Epoch = 0, openedOnce = false;
+  const loadTimes = new Map<string, { label: string; atMs: number; ms: number | null; from?: 'cache' | 'online' | 'stale' }>();
+  // where the data of an item came from (device cache or the network), as geo-cache.ts noted it last
+  const ORIGIN_GROUP: Record<string, GeoGroup> = { topo: 'terrain', gebaeude: 'osm', klima: 'climate', wald: 'forest' };
   const loadTimesListeners: (() => void)[] = [];
   function timeLoad(key: string, label: string | null) {
     const e = loadTimes.get(key), now = performance.now() - loadT0;
     if (label && e?.ms !== null) loadTimes.set(key, { label, atMs: now, ms: null });
-    else if (!label && e && e.ms === null) e.ms = now - e.atMs;
+    else if (!label && e && e.ms === null) { e.ms = now - e.atMs; const g = ORIGIN_GROUP[key]; const o = g ? lastGeoOrigin(g) : null; if (o && o.at >= loadT0Epoch) e.from = o.from; }
     else return;
     for (const cb of loadTimesListeners) cb();
   }
+  /** A finished span added up under one key (several runs of the hints, blocked main thread). */
+  function addTime(key: string, ms: number) {
+    const e = loadTimes.get(key);
+    if (e) e.ms = (e.ms ?? 0) + ms; else loadTimes.set(key, { label: key, atMs: performance.now() - loadT0 - ms, ms });
+    for (const cb of loadTimesListeners) cb();
+  }
+  // What the items above don't show (#561): the time before the plan opened, and every stretch the page could not
+  // react at all (long tasks: drawing, hints, plugins) – the reason why items "load" longer than their data takes.
+  try {
+    new PerformanceObserver(list => { if (editing && loadT0) for (const e of list.getEntries()) if (e.startTime >= loadT0) addTime('busy', e.duration); }).observe({ type: 'longtask', buffered: false });
+  } catch { /* not in every browser */ }
   function setLoad(key: string, label: string | null) {
     timeLoad(key, label);
     if (label) loadItems.set(key, label); else loadItems.delete(key);
@@ -5062,6 +5082,11 @@ import Layout from '../layouts/Layout.astro';
   function renderWarnings() {
     warnTimer = null;
     if (!editing || phaseB.classList.contains('hidden')) return;
+    const t0w = performance.now();
+    try { renderWarningsNow(); } finally { addTime('hints', performance.now() - t0w); }
+  }
+  function renderWarningsNow() {
+    if (!editing) return;
     const plan = editing;
     // By id: a find() per hint made big plans (2000 plants) quadratic.
     const byId = new Map(plan.placements.map(p => [p.id, p]));

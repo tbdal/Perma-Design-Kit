@@ -56,7 +56,7 @@ export interface GartenplanApi {
   setLoadStatus(key: string, label: string | null): void;
   /** How long the open plan took to load, per item since it was opened: 'plan' (first drawing), 'tiles' (map tiles of the view)
    *  and every "loading …" item (topo, gebaeude, klima, wald …; `label` as shown). `ms` null = still loading; `atMs` = start after opening. */
-  loadTimes(): { key: string; label: string; atMs: number; ms: number | null }[];
+  loadTimes(): { key: string; label: string; atMs: number; ms: number | null; from?: 'cache' | 'online' | 'stale' }[];
   /** Called when an entry of loadTimes() starts or ends. */
   onLoadTimes(cb: () => void): void;
   /** Pans the 2D view just far enough that this plan point is in view with some room around it (zoom stays; no effect in 3D). */

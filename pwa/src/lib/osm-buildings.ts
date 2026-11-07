@@ -230,7 +230,7 @@ export async function fetchBuildings(geo: GardenPlanGeo, rect: PlanRect): Promis
   const elements: unknown[] = [];
   // Same key as the map surroundings (gartenplan-leaflet.ts): both keep the raw /geo/overpass answer of a cell.
   const parts = await Promise.all(bboxCells(bb).map(async cell => {
-    const res = await cachedFetch(buildingsCacheKey(cell), 30 * DAY_MS, () => overpass(cell, buildingsQueryForBbox(cell)));
+    const res = await cachedFetch(buildingsCacheKey(cell), 30 * DAY_MS, () => twoAtATime(() => overpass(cell, buildingsQueryForBbox(cell))));
     return ((await res.json()) as { elements?: { type: string; id: number }[] }).elements ?? [];
   }));
   for (const els of parts) for (const el of els) {
@@ -240,6 +240,16 @@ export async function fetchBuildings(geo: GardenPlanGeo, rect: PlanRect): Promis
   const list = parseBuildings({ elements } as never, geo);
   cache.set(ck, list);
   return list;
+}
+
+/** Overpass serves two queries at a time per address (ours, through the server cache): more cells at once only
+ *  collect "429 too many requests" and retries — a new place took minutes (#551). Kept cells don't wait here. */
+let running = 0;
+const waiting: (() => void)[] = [];
+export async function twoAtATime<T>(job: () => Promise<T>): Promise<T> {
+  if (running >= 2) await new Promise<void>(r => waiting.push(r));
+  running++;
+  try { return await job(); } finally { running--; waiting.shift()?.(); }
 }
 
 /** Overpass answers an overloaded or timed-out query with HTTP 200 and a
