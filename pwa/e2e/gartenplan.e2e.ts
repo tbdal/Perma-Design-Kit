@@ -633,7 +633,16 @@ test('plant in the selection panel: the edit button and a click on its picture o
   await openPlan(page, 'np');
   await page.locator('[data-placement-id="a"] .marker-blob').click({ force: true });
   await expect(page.locator('#btn-edit-plant')).toBeVisible();
-  await Promise.all([page.waitForURL(/\/\?edit=.+&return=%2Fgartenplan%2F%3Fplan%3Dnp/), page.click('#btn-edit-plant')]);
+  // the form opens in a frame over the plan (#549) and the plan stays
+  await page.click('#btn-edit-plant');
+  const frame = page.frameLocator('iframe[name="pdk-edit"]');
+  await expect(frame.locator('#plant-dialog')).toBeVisible();
+  await expect(page).toHaveURL(/\/gartenplan/);
+  await frame.locator('#plant-dialog').press('Escape');
+  await expect(page.locator('iframe[name="pdk-edit"]')).toHaveCount(0);
+  // a click on the plant's details (picture, properties) opens it too
+  await page.locator('[data-sel-detail]').click();
+  await expect(frame.locator('#plant-dialog')).toBeVisible();
   void errors;
 });
 
