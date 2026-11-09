@@ -604,7 +604,7 @@ import Layout from '../layouts/Layout.astro';
   import { analyzeWater, roofRainM3, type WaterAnalysis } from '../lib/water';
   import { planYield, careTasks, buildIcs, type CareTask } from '../lib/yield-care';
   import { DEFAULT_ZONE_RADII, ZONE_COLORS, bearingVector, wedgePath, solsticeSectors } from '../lib/zones-sectors';
-  import { cachedSiteClimate, fetchSiteClimate, notHardy, blossomFrostRisk, zoneLabel, doyLabel, plantZoneRange, COMPASS16, CLIMATE_ATTRIBUTION, type SiteClimate } from '../lib/site-climate';
+  import { cachedSiteClimate, fetchSiteClimate, fetchFutureClimate, futureZones, climateCheck, type FutureClimate, notHardy, blossomFrostRisk, zoneLabel, doyLabel, plantZoneRange, COMPASS16, CLIMATE_ATTRIBUTION, type SiteClimate } from '../lib/site-climate';
   import { createEmptyGardenPlan, type GardenPlan, type GardenPlanPlacement, type GardenPlanPoint, type GardenPlanArea, type Polyculture, type PlantData } from '../lib/types';
   import { displayRadiusM } from '../lib/growth-model';
   import { deriveLayer, LAYER_STYLE, LAYER_I18N, type PlantLayer } from '../lib/plant-layer';
@@ -2245,11 +2245,13 @@ import Layout from '../layouts/Layout.astro';
       return;
     }
     const excluded = new Set([...editing.placements.map(pl => pl.plantId), ...unplacedPlantIds]);
-    const climate = currentClimate();
+    const climate = currentClimate(), future = currentFuture();
+    // Climate around 2045: plants under pressure there come after the others (#530).
+    const pressure = (p: PlantData) => (climate && future && climateCheck(p, climate, future)?.status === 'underPressure' ? 1 : 0);
     const candidates = plants
       .filter(p => !excluded.has(p.id) && !(climate && notHardy(p, climate)))
       .map(p => ({ p, score: placedPlants.reduce((sum, ref) => sum + compatScore(p, ref), 0) / placedPlants.length }))
-      .sort((a, b) => b.score - a.score)
+      .sort((a, b) => pressure(a.p) - pressure(b.p) || b.score - a.score)
       .slice(0, 5);
     if (candidates.length === 0) {
       suggestionsSection.classList.add('hidden');
@@ -4724,6 +4726,19 @@ import Layout from '../layouts/Layout.astro';
   const climateKeyOf = (plan: GardenPlan | null) => plan?.geo ? `${plan.geo.lat.toFixed(1)}|${plan.geo.lon.toFixed(1)}` : '';
   /** Climate of the open plan — never the previous plan's while loading. */
   const currentClimate = () => (siteClimate && editing && siteClimateKey === climateKeyOf(editing) ? siteClimate : null);
+  // Climate around 2045 (#530): loaded after the site climate, never blocks it.
+  let futureClimate: FutureClimate | null = null, futureKey = '', futureRequestKey = '';
+  const currentFuture = () => (futureClimate && editing && futureKey === climateKeyOf(editing) ? futureClimate : null);
+  async function loadFuture(key: string) {
+    if (key === futureRequestKey) return;
+    futureRequestKey = key;
+    try {
+      const f = await fetchFutureClimate(editing!.geo!.lat, editing!.geo!.lon);
+      if (futureRequestKey !== key) return;
+      futureClimate = f; futureKey = key;
+      renderClimatePanel(); renderSuggestions(); scheduleWarnings();
+    } catch { if (futureRequestKey === key) futureRequestKey = ''; }
+  }
   async function loadClimate() {
     const key = climateKeyOf(editing);
     if (!key) { climateRequestKey = ''; renderClimatePanel(); return; }
@@ -4734,6 +4749,7 @@ import Layout from '../layouts/Layout.astro';
     if (kept) {
       siteClimate = kept; siteClimateKey = key;
       renderClimatePanel(); updateAttribution(planSvg); renderSuggestions(); scheduleWarnings(); renderZones();
+      void loadFuture(key);
       return;
     }
     renderClimatePanel(true);
@@ -4754,6 +4770,7 @@ import Layout from '../layouts/Layout.astro';
     renderSuggestions();
     scheduleWarnings();
     renderZones();
+    void loadFuture(key);
   }
   function renderClimatePanel(loading = false, failed = false) {
     climateSection.hidden = !editing?.geo;
@@ -4772,8 +4789,18 @@ import Layout from '../layouts/Layout.astro';
       [t('climateRain'), t('climateMm', { mm: nf(c.precipMm) })],
       [t('climateWind'), t('climateWindValue', { dir, share: nf(c.windRose[Math.round(c.windFromDeg / 22.5) % 16] * 100) })],
     ];
+    const f = currentFuture();
+    if (f) {
+      const z = futureZones(c, f);
+      const pct = Math.round(f.summerRainChange * 100);
+      rows.push(
+        [t('climateFutureZone'), t('climateFutureZoneValue', { from: zoneLabel(z[0]), to: zoneLabel(z[z.length - 1]), n: z.length })],
+        [t('climateFutureRain'), `${pct > 0 ? '+' : ''}${nf(pct)} %`],
+      );
+    }
     climateBody.innerHTML = `<dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5">${rows.map(([k, v]) => `<dt class="text-stone-500 dark:text-stone-400">${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd>`).join('')}</dl>
       <p class="pt-1 text-[10px] text-stone-500 dark:text-stone-400">${escapeHtml(t('climateNote', { from: c.years[0], to: c.years[1] }))}</p>
+      ${f ? `<p class="text-[10px] text-stone-500 dark:text-stone-400">${escapeHtml(t('climateFutureNote'))}</p>` : ''}
       <p data-climate-source class="text-[10px] text-stone-500 dark:text-stone-400"><b>${escapeHtml(t('climateSourceLead'))}</b> <a href="https://open-meteo.com/" target="_blank" rel="noopener" class="underline">Open-Meteo</a> – ${escapeHtml(t('climateSourceBody', { from: c.years[0], to: c.years[1] }))}</p>`;
   }
 
@@ -5107,7 +5134,7 @@ import Layout from '../layouts/Layout.astro';
     const used = new Set(plan.placements.map(pl => pl.plantId));
     const plantSig = [...used].map(id => { const p = plantsById.get(id); return p ? `${id}:${p.heightM}:${p.widthM}:${p.growSpeedLow ? 1 : p.growSpeedHigh ? 3 : 2}:${+!!p.sunFull}${+!!p.sunMid}${+!!p.sunShadow}:${p.latinName}:${p.climateZone ?? ''}:${p.nitrogenFix ? 1 : 0}${p.mineralFix ? 1 : 0}${p.insects ? 1 : 0}${p.eatable ? 1 : 0}` : id; }).join(',');
     const env = `${terrainSeq(terrain)}|${extra.length}:${extra.reduce((a, o) => a + (o.kind === 'prism' ? o.minX + o.maxY + o.z1 : o.x + o.y + o.r), 0).toFixed(1)}|${seasonCache?.key ?? ''}|${plan.startYear ?? ''}|${plantSig}`;
-    const sig = `${env}|${plan.placements.map(pl => `${pl.id}:${pl.plantId}:${pl.xM}:${pl.yM}:${pl.phaseYear ?? 0}:${pl.diedYear ?? ''}`).join(',')}|${currentClimate()?.zone ?? ''}|${[...loadIgnored(plan.id)].join(',')}|${warnShow}|${lang}`;
+    const sig = `${env}|${plan.placements.map(pl => `${pl.id}:${pl.plantId}:${pl.xM}:${pl.yM}:${pl.phaseYear ?? 0}:${pl.diedYear ?? ''}`).join(',')}|${currentClimate()?.zone ?? ''}${currentFuture() ? 'f' : ''}|${[...loadIgnored(plan.id)].join(',')}|${warnShow}|${lang}`;
     if (sig === lastWarnSig && plan === lastWarnPlan) { renderYield(); renderPhases(); return; }
     lastWarnSig = sig; lastWarnPlan = plan;
     const crowd = crowdingWarnings(plan, plantsById);
@@ -5118,7 +5145,7 @@ import Layout from '../layouts/Layout.astro';
     const nf1 = new Intl.NumberFormat(lang, { maximumFractionDigits: 1 });
     const fmt1 = (v: number) => nf1.format(v);
     // Site climate: per plant (all its placements), not per placement.
-    const climate = currentClimate();
+    const climate = currentClimate(), future = currentFuture();
     const climateItems: { ids: string[]; text: string }[] = [];
     if (climate) {
       const byPlant = new Map<string, string[]>();
@@ -5134,6 +5161,11 @@ import Layout from '../layouts/Layout.astro';
           climateItems.push({ ids, text: t('warnBlossomFrost', {
             name: nm, month: new Intl.DateTimeFormat(lang, { month: 'long' }).format(new Date(2001, m, 1)), date: doyLabel(climate.lastFrostDoy!, lang),
           }) });
+        }
+        const fc = future ? climateCheck(p, climate, future) : null;
+        if (fc?.status === 'underPressure') {
+          if (fc.tooWarm) climateItems.push({ ids, text: t('warnClimateWarm', { name: nm, n: fc.tooWarm, of: fc.models, max: String(fc.maxZone) }) });
+          if (fc.drier) climateItems.push({ ids, text: t('warnClimateDry', { name: nm, pct: Math.round(-future!.summerRainChange * 100) }) });
         }
       }
     }

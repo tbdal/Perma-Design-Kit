@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, existsSync } from 'node:fs';
-import { usdaZone, zoneLabel, summarizeClimate, plantZoneRange, notHardy, blossomFrostRisk, climateRequestUrl, type SiteClimate } from '../src/lib/site-climate';
+import { usdaZone, zoneLabel, summarizeClimate, plantZoneRange, notHardy, blossomFrostRisk, climateRequestUrl, summarizeFuture, futureZones, climateCheck, type SiteClimate } from '../src/lib/site-climate';
 
 describe('usdaZone', () => {
   it('maps the mean yearly minimum to USDA zones', () => {
@@ -83,5 +83,37 @@ describe.skipIf(!existsSync(sample))('real Open-Meteo sample (Köln/Bonn)', () =
     expect(c.zone).toBeLessThanOrEqual(8.5);
     expect(c.precipMm).toBeGreaterThan(550);
     expect(c.precipMm).toBeLessThan(1100);
+  });
+});
+
+describe('future climate (#530)', () => {
+  // Two models, every day the same low; model A +3 K and 30 % less summer rain in 2040–2050, model B +5 K.
+  const time: string[] = [];
+  for (let y = 1994; y <= 2050; y++) for (let d = 0; d < 365; d++) time.push(new Date(Date.UTC(y, 0, 1 + d)).toISOString().slice(0, 10));
+  const fut = (iso: string) => Number(iso.slice(0, 4)) >= 2040;
+  const daily = {
+    time,
+    temperature_2m_min_CMCC_CM2_VHR4: time.map(s => (fut(s) ? -12 : -15)),
+    precipitation_sum_CMCC_CM2_VHR4: time.map(s => (fut(s) ? 0.7 : 1)),
+    temperature_2m_min_FGOALS_f3_H: time.map(s => (fut(s) ? -10 : -15)),
+    precipitation_sum_FGOALS_f3_H: time.map(() => 1),
+  };
+  const f = summarizeFuture(daily);
+  const site = { meanAnnualMinC: -16, zone: usdaZone(-16) } as SiteClimate;   // 7a today
+  const plant = (climateZone: string, water: 'dry' | 'wet' = 'dry') => ({ climateZone, waterDry: water === 'dry', waterMid: false, waterWet: water === 'wet' });
+
+  it('takes each model’s change against its own 1994–2023 and adds it to the measured site climate', () => {
+    expect(f.minDeltaK.map(v => Math.round(v * 10) / 10)).toEqual([3, 5]);
+    expect(f.summerRainChange).toBeCloseTo(-0.15, 2);  // median of −30 % and 0 %
+    expect(futureZones(site, f).map(zoneLabel)).toEqual(['7b', '8a']);  // −13 °C, −11 °C
+  });
+  it('rates plants: fit, under pressure (too warm in some models, or wet-soil plant and drier), becomes possible, not hardy', () => {
+    expect(climateCheck(plant('5-9'), site, f)?.status).toBe('fit');
+    expect(climateCheck(plant('4-7'), site, f)).toMatchObject({ status: 'underPressure', tooWarm: 1, models: 2 });
+    expect(climateCheck(plant('6'), site, f)?.status).toBe('fit');              // single number: coldest zone only
+    expect(climateCheck(plant('8-10'), site, f)?.status).toBe('notHardy');  // 8a in only one of two models
+    expect(climateCheck(plant('8-10'), { ...site, meanAnnualMinC: -13.5, zone: usdaZone(-13.5) }, f)?.status).toBe('becomesPossible');
+    expect(climateCheck(plant('5-9', 'wet'), site, { ...f, summerRainChange: -0.2 })).toMatchObject({ status: 'underPressure', drier: true });
+    expect(climateCheck(plant(''), site, f)).toBeNull();
   });
 });
