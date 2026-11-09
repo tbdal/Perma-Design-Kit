@@ -94,8 +94,10 @@ if [[ "${DEPLOY_QUICK:-}" == "1" ]]; then
   pub=(e2e/offline.e2e.ts) exp=()   # offline: every page opens, styled and with its scripts
   for f in $CHANGED; do
     if [[ "$f" == src/expert/* ]]; then
-      m="$(cut -d/ -f3 <<<"$f")"
-      for s in src/expert/test/e2e/"$m"*.e2e.ts; do [[ -f "$s" ]] && exp+=("$(basename "$s")"); done
+      m="$(cut -d/ -f3 <<<"$f")" found=0
+      for s in src/expert/test/e2e/"$m"*.e2e.ts; do [[ -f "$s" ]] && exp+=("$(basename "$s")") && found=1; done
+      # no spec named after the module (entwicklung → interne-doku, werkstatt …): all private specs
+      if [[ $found -eq 0 ]]; then exp=(.); fi
     else
       stem="$(basename "$f")"; stem="${stem%.*}"; stem="${stem#dict-}"; [[ "$stem" == index ]] && stem=plants
       for s in e2e/*"$stem"*.e2e.ts; do [[ -f "$s" ]] && pub+=("$s"); done
