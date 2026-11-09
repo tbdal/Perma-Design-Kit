@@ -323,6 +323,8 @@ export const gartenplanDict: Dict = {
   coverageOff: { de: 'Aus', en: 'Off' },
   coverageAll: { de: 'Alle (Abdeckung)', en: 'All (coverage)' },
   coverageHeading: { de: 'Funktions-Abdeckung', en: 'Function coverage' },
+  coverageOffHint: { de: 'Nicht aktiv: Es ist keine Einfärbung gewählt. Einschalten unter Ebenen → Plan & Hintergrund → „Einfärbung (Funktionen, Besonnung)“ (im alten Planer: Auswahl „Funktionen“ über dem Plan). Dann zeigt der Plan, wo Funktionen fehlen, und schlägt Pflanzen für die Lücken vor.', en: 'Not active: no colouring is chosen. Turn it on under Layers → Plan & background → “Colouring (functions, sun)” (old planner: the “Functions” choice above the plan). The plan then shows where functions are missing and suggests plants for the gaps.' },
+  coverageNoBoundary: { de: 'Nicht aktiv: Der Plan hat noch keinen Umriss. Erst den Umriss zeichnen, dann wird die Fläche eingefärbt.', en: 'Not active: the plan has no outline yet. Draw the outline first, then the area gets coloured.' },
   coverageAllHint: { de: 'Grün = viele Funktionen in der Nähe, rot = keine. Auf eine Funktion klicken für Lücken und Vorschläge.', en: 'Green = many functions nearby, red = none. Click a function for gaps and suggestions.' },
   coverageFnHint: { de: 'Grün = abgedeckt, rot = fehlt. Vorschläge aus deinem Bestand, passend zu den Nachbarn (Sonne/Wasser/pH) — mit der Maus darüberfahren zeigt sie in der Karte (2D und 3D).', en: 'Green = covered, red = missing. Suggestions from your collection that suit the neighbours (sun/water/pH) — hover to preview them on the map (2D and 3D).' },
   coverageGap: { de: 'Lücke ≈ {area} m²', en: 'Gap ≈ {area} m²' },
@@ -499,6 +501,8 @@ export const gartenplanDict: Dict = {
 
   // ── Suggestions (compatScore, reused from Polykulturen) ──────────────
   suggestionsHeading: { de: 'Vorschläge', en: 'Suggestions' },
+  suggestionsNoPlants: { de: 'Nicht aktiv: Es steht noch keine Pflanze im Plan. Die Vorschläge richten sich nach dem, was schon gesetzt ist.', en: 'Not active: there is no plant in the plan yet. Suggestions are based on what is already placed.' },
+  suggestionsNone: { de: 'Gerade keine Vorschläge: Alle Pflanzen deines Bestands stehen schon im Plan oder unter „Noch zu platzieren“, oder sie sind am Standort nicht winterhart.', en: 'No suggestions right now: every plant in your collection is already in the plan or under “Still to place”, or isn’t hardy at this site.' },
   suggestionsIntro: { de: 'Pflanzen aus deinem Bestand, die mit den bereits platzierten in Sonne/Wasser/pH überlappen.', en: 'Plants from your collection that overlap with what’s already placed in sun/water/pH.' },
   sunWaterPhTitle: { de: 'Übereinstimmung Sonne/Wasser/pH', en: 'Sun/water/pH match' },
   btnAdd: { de: '+ Hinzuf.', en: '+ Add' },

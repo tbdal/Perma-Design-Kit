@@ -452,7 +452,7 @@ import Layout from '../layouts/Layout.astro';
             <ul id="good-neighbors-list" class="mt-1 space-y-0.5 text-xs text-stone-700 dark:text-stone-200"></ul>
           </details>
 
-          <details data-feature="coverage" data-panel="suggestions" open id="suggestions-section" class="group/panel hidden rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+          <details data-feature="coverage" data-panel="suggestions" open id="suggestions-section" class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
             <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-1"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="suggestionsHeading">Vorschläge</h2><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-stone-500 dark:text-stone-400 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
             <p class="mb-2 text-[10px] text-stone-500 dark:text-stone-400" data-i18n="suggestionsIntro">Pflanzen aus deinem Bestand, die mit den bereits platzierten in Sonne/Wasser/pH überlappen.</p>
             <div id="suggestions-list" class="space-y-0.5"></div>
@@ -700,7 +700,6 @@ import Layout from '../layouts/Layout.astro';
   const armedHint = document.getElementById('armed-hint')!;
   const unplacedSection = document.getElementById('unplaced-section')!;
   const unplacedListEl = document.getElementById('unplaced-list')!;
-  const suggestionsSection = document.getElementById('suggestions-section')!;
   const suggestionsListEl = document.getElementById('suggestions-list')!;
   const selectedPanel = document.getElementById('selected-panel')!;
   const btnLocate = document.getElementById('btn-locate') as HTMLButtonElement;
@@ -2251,11 +2250,9 @@ import Layout from '../layouts/Layout.astro';
     const placedPlants = editing.placements
       .map(pl => plantsById.get(pl.plantId))
       .filter((p): p is PlantData => !!p);
-    if (placedPlants.length === 0) {
-      suggestionsSection.classList.add('hidden');
-      suggestionsListEl.innerHTML = '';
-      return;
-    }
+    // Always shown; when off it says why.
+    const off = (msg: string) => { suggestionsListEl.innerHTML = `<p class="text-xs text-stone-500 dark:text-stone-400">${escapeHtml(msg)}</p>`; };
+    if (placedPlants.length === 0) { off(t('suggestionsNoPlants')); return; }
     const excluded = new Set([...editing.placements.map(pl => pl.plantId), ...unplacedPlantIds]);
     const climate = currentClimate(), outlook = currentOutlook();
     // Climate in the plan's target year (#530): climate-proof first, under pressure last (and marked).
@@ -2268,12 +2265,7 @@ import Layout from '../layouts/Layout.astro';
       .slice(0, 5);
     // "Wird möglich": too cold today, fits in the target year (e.g. kaki, almond) — for later.
     const later = outlook ? plants.filter(p => !excluded.has(p.id) && check(p)?.status === 'becomesPossible').slice(0, 20) : [];
-    if (candidates.length === 0) {
-      suggestionsSection.classList.add('hidden');
-      suggestionsListEl.innerHTML = '';
-      return;
-    }
-    suggestionsSection.classList.remove('hidden');
+    if (candidates.length === 0) { off(t('suggestionsNone')); return; }
     const row = (p: PlantData, right: string) => {
       const ck = check(p);
       const mark = ck && ck.status !== 'fit' && outlook ? `<span class="shrink-0 text-[10px] font-semibold" style="color:${STATUS_COLOR[ck.status]}">${escapeHtml(statusTitle(ck, outlook.scenario.year, lang === 'en' ? 'en' : 'de'))}</span>` : '';
@@ -4106,11 +4098,20 @@ import Layout from '../layouts/Layout.astro';
   function renderCoverage() {
     const layer = planSvg.querySelector('#coverage-layer');
     const raw = featureOn('coverage') ? coverageSelect.value : '';
+    // Always shown with a plan open; when off it says why.
+    coverageSection.hidden = !editing;
+    if (!raw || !editing || editing.boundary.length < 3) {
+      sunMapToken++;
+      coverageHeading.textContent = t('coverageHeading');
+      coverageBody.innerHTML = `<p class="text-stone-500 dark:text-stone-400">${escapeHtml(t(raw ? 'coverageNoBoundary' : 'coverageOffHint'))}</p>`;
+      if (layer) layer.innerHTML = '';
+      coverage3d = null; view3d?.setCoverage(null);
+      return;
+    }
     if (raw === 'sun-day' || raw === 'sun-season') { void renderSunMap(raw); return; }
     sunMapToken++;
     coverageHeading.textContent = t('coverageHeading');
-    const mode = raw as '' | 'all' | CoverFunc;
-    coverageSection.hidden = !mode || !editing;
+    const mode = raw as 'all' | CoverFunc;
     if (!layer) return;
     if (!mode || !editing || editing.boundary.length < 3) { layer.innerHTML = ''; coverage3d = null; view3d?.setCoverage(null); return; }
     const plan = editing;
