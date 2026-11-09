@@ -5,7 +5,8 @@ import type { PlantData } from './types';
 // (Open-Meteo historical archive, ERA5 reanalysis, ≈ 10–25 km grid, CC BY 4.0).
 // Fetched through our own server (/geo/climate/, nginx cache) with the
 // location rounded to 0.1° (≈ 10 km), so neither the visitor's IP nor the
-// exact garden reaches Open-Meteo. Regional values: a frost hollow or a warm
+// exact garden reaches Open-Meteo. Only when our server hits Open-Meteo's daily limit (HTTP 429) and the visitor
+// agreed (allowDirect(), #610) does the browser ask Open-Meteo itself. Regional values: a frost hollow or a warm
 // wall in the garden can differ by a zone.
 
 export const CLIMATE_URL = '/geo/climate';
@@ -127,8 +128,7 @@ export function fetchSiteClimate(lat: number, lon: number): Promise<SiteClimate>
   let p = pending.get(key); // planner and wind protection ask at the same time: one request
   if (!p) {
     p = (async () => {
-      const url = climateRequestUrl(lat, lon);
-      const res = await cachedFetch(url, 365 * DAY_MS, () => fetch(url));
+      const res = await climateFetch(climateRequestUrl(lat, lon));
       const data = await res.json();
       if (!data?.daily?.time?.length) throw new Error('no climate data');
       const c = summarizeClimate(data.daily, Number(lat.toFixed(1)), Number(lon.toFixed(1)), typeof data.elevation === 'number' ? data.elevation : null);
@@ -179,6 +179,46 @@ export const COMPASS16 = { de: ['N', 'NNO', 'NO', 'ONO', 'O', 'OSO', 'SO', 'SSO'
 // the global warming of the chosen scenario (IPCC AR6 WG1, table SPM.1) — a rough projection, labelled as such.
 export const FUTURE_URL = '/geo/climate-future';
 export const FUTURE_MODELS = ['CMCC_CM2_VHR4', 'FGOALS_f3_H', 'HiRAM_SIT_HR', 'MRI_AGCM3_2_S', 'EC_Earth3P_HR', 'MPI_ESM1_2_XR', 'NICAM16_8S'];
+// ── Direct from the browser, only with consent (#610) ──
+// Our server's IP shares one free Open-Meteo quota (10 000 weighted calls a day; one location's model data alone
+// weighs ≈ 4 000). When the server answers 429, the browser may ask Open-Meteo itself — then Open-Meteo sees the
+// visitor's IP and the rounded location, so only after the visitor agreed (this time, or always on this device).
+const DIRECT: Record<string, string> = { [CLIMATE_URL]: 'https://archive-api.open-meteo.com/v1/archive', [FUTURE_URL]: 'https://climate-api.open-meteo.com/v1/climate' };
+const DIRECT_KEY = 'pdk-climate-direct';
+let directOnce = false;
+/** Our server hit Open-Meteo's daily limit and the visitor has not agreed to a direct request yet. */
+export class ClimateLimitError extends Error {}
+/** Agreed for good on this device (shown with a way to take it back). */
+export function directAlways(): boolean {
+  try { return localStorage.getItem(DIRECT_KEY) === '1'; } catch { return false; }
+}
+export const directAllowed = (): boolean => directOnce || directAlways();
+/** Consent: for this page view, or (always) on this device until revokeDirect(). */
+export function allowDirect(always: boolean): void {
+  directOnce = true;
+  if (always) try { localStorage.setItem(DIRECT_KEY, '1'); } catch { /* private window: this page view only */ }
+}
+export function revokeDirect(): void {
+  directOnce = false;
+  try { localStorage.removeItem(DIRECT_KEY); } catch { /* ignore */ }
+}
+/** Our proxy URL → the same request at Open-Meteo (same query, so the browser cache key stays the proxy URL). */
+export function directUrl(url: string): string {
+  const i = url.indexOf('?');
+  const base = DIRECT[i < 0 ? url : url.slice(0, i)];
+  if (!base) throw new Error(`no direct source for ${url}`);
+  return base + (i < 0 ? '' : url.slice(i));
+}
+/** Through our server (cached for everyone); on its 429 directly, if allowed, else ClimateLimitError. */
+function climateFetch(url: string): Promise<Response> {
+  return cachedFetch(url, 365 * DAY_MS, async () => {
+    const res = await fetch(url);
+    if (res.status !== 429) return res;
+    if (!directAllowed()) throw new ClimateLimitError('Open-Meteo daily limit (server)');
+    return fetch(directUrl(url));
+  });
+}
+
 export const modelLabel = (m: string) => m.replace(/_/g, '-');
 const FUTURE_END = 2050, HALF = 5;
 /** Last target year still read from model data (its 11-year window ends in 2050). */
@@ -348,8 +388,7 @@ export function fetchFutureClimate(lat: number, lon: number): Promise<FutureClim
         latitude: lat.toFixed(1), longitude: lon.toFixed(1), start_date: `${CLIMATE_YEARS[0]}-01-01`, end_date: `${FUTURE_END}-12-31`,
         models: FUTURE_MODELS.join(','), daily: 'temperature_2m_mean,temperature_2m_max,temperature_2m_min,precipitation_sum', timezone: 'UTC',
       });
-      const url = `${FUTURE_URL}?${q}`;
-      const data = await (await cachedFetch(url, 365 * DAY_MS, () => fetch(url))).json();
+      const data = await (await climateFetch(`${FUTURE_URL}?${q}`)).json();
       if (!data?.daily?.time?.length) throw new Error('no future climate data');
       const f = summarizeFuture(data.daily);
       if (!availableModels(f).length) throw new Error('no future climate data');

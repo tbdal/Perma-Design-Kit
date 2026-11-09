@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync, existsSync } from 'node:fs';
-import { usdaZone, zoneLabel, summarizeClimate, plantZoneRange, notHardy, blossomFrostRisk, climateRequestUrl, summarizeFuture, futureOutlook, modelDelta, scaleFactor, koeppen, normalizeScenario, LAST_DATA_YEAR, climateCheck, type SiteClimate, type ClimateScenario } from '../src/lib/site-climate';
+import { usdaZone, zoneLabel, summarizeClimate, plantZoneRange, notHardy, blossomFrostRisk, climateRequestUrl, fetchSiteClimate, allowDirect, revokeDirect, directAllowed, directUrl, ClimateLimitError, summarizeFuture, futureOutlook, modelDelta, scaleFactor, koeppen, normalizeScenario, LAST_DATA_YEAR, climateCheck, type SiteClimate, type ClimateScenario } from '../src/lib/site-climate';
 import { explorerOutHtml } from '../src/lib/climate-explorer';
 
 describe('usdaZone', () => {
@@ -71,6 +71,37 @@ describe('climateRequestUrl', () => {
     const u = climateRequestUrl(50.93761, 6.96025);
     expect(u).toContain('latitude=50.9&longitude=7.0');
     expect(u.startsWith('/geo/climate?')).toBe(true);
+  });
+});
+
+describe('direct from the browser after consent (#610)', () => {
+  const store = new Map<string, string>();
+  (globalThis as any).localStorage ??= { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, v: string) => void store.set(k, v), removeItem: (k: string) => void store.delete(k) };
+  afterEach(() => { revokeDirect(); vi.unstubAllGlobals(); });
+  it('maps our proxy URLs to Open-Meteo with the same query', () => {
+    expect(directUrl('/geo/climate?latitude=50.9&longitude=7.0')).toBe('https://archive-api.open-meteo.com/v1/archive?latitude=50.9&longitude=7.0');
+    expect(directUrl('/geo/climate-future?a=1')).toBe('https://climate-api.open-meteo.com/v1/climate?a=1');
+    expect(() => directUrl('/geo/overpass?x')).toThrow();
+  });
+  it('asks Open-Meteo itself only when our server hits the limit and the visitor agreed', async () => {
+    const asked: string[] = [];
+    vi.stubGlobal('fetch', async (url: string) => {
+      asked.push(url);
+      return url.startsWith('/geo/') ? new Response('{"error":true}', { status: 429 })
+        : new Response(JSON.stringify({ elevation: 50, daily: synthDaily(2, -14, '04-20', '10-25') }), { status: 200 });
+    });
+    expect(directAllowed()).toBe(false);
+    await expect(fetchSiteClimate(10.1, 20.1)).rejects.toBeInstanceOf(ClimateLimitError);
+    expect(asked).toHaveLength(1);
+    allowDirect(false); // this time only: nothing kept on the device
+    expect(localStorage.getItem('pdk-climate-direct')).toBeNull();
+    const c = await fetchSiteClimate(10.1, 20.1);
+    expect(zoneLabel(c.zone)).toBe('7b');
+    expect(asked.slice(1)).toEqual([expect.stringMatching(/^\/geo\/climate\?/), expect.stringMatching(/^https:\/\/archive-api\.open-meteo\.com\/v1\/archive\?latitude=10\.1&longitude=20\.1/)]);
+    allowDirect(true);
+    expect(localStorage.getItem('pdk-climate-direct')).toBe('1');
+    revokeDirect();
+    expect(directAllowed()).toBe(false);
   });
 });
 

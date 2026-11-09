@@ -606,7 +606,7 @@ import Layout from '../layouts/Layout.astro';
   import { analyzeWater, roofRainM3, type WaterAnalysis } from '../lib/water';
   import { planYield, careTasks, buildIcs, type CareTask } from '../lib/yield-care';
   import { DEFAULT_ZONE_RADII, ZONE_COLORS, bearingVector, wedgePath, solsticeSectors } from '../lib/zones-sectors';
-  import { cachedSiteClimate, fetchSiteClimate, fetchFutureClimate, futureOutlook, climateCheck, DEFAULT_SCENARIO, LAST_DATA_YEAR, type ClimateScenario, type FutureClimate, type FutureOutlook, type FutureMetric, FUTURE_METRICS, type Ssp, notHardy, blossomFrostRisk, zoneLabel, doyLabel, plantZoneRange, COMPASS16, CLIMATE_ATTRIBUTION, type SiteClimate } from '../lib/site-climate';
+  import { cachedSiteClimate, fetchSiteClimate, fetchFutureClimate, futureOutlook, climateCheck, DEFAULT_SCENARIO, LAST_DATA_YEAR, type ClimateScenario, type FutureClimate, type FutureOutlook, type FutureMetric, FUTURE_METRICS, type Ssp, notHardy, blossomFrostRisk, zoneLabel, doyLabel, plantZoneRange, COMPASS16, CLIMATE_ATTRIBUTION, ClimateLimitError, allowDirect, revokeDirect, directAlways, type SiteClimate } from '../lib/site-climate';
   import { installZoomer } from '../lib/zoomer';
   import { explorerControlsHtml, explorerOutHtml, statusTitle, STATUS_COLOR } from '../lib/climate-explorer';
   import { createEmptyGardenPlan, type GardenPlan, type GardenPlanPlacement, type GardenPlanPoint, type GardenPlanArea, type Polyculture, type PlantData } from '../lib/types';
@@ -4773,6 +4773,11 @@ import Layout from '../layouts/Layout.astro';
   // target year, scenario and model (plan.climateScenario); hints, suggestions and modules read currentOutlook().
   let futureClimate: FutureClimate | null = null, futureKey = '', futureRequestKey = '';
   let futureFailedKey = ''; // the outlook could not be loaded for this location (e.g. Open-Meteo's daily limit, #610)
+  // Our server hit Open-Meteo's daily limit: the panel asks whether the browser may fetch directly (#610).
+  let climateLimited = false, futureLimited = false;
+  const directAskHtml = () => `<div data-climate-direct class="space-y-1.5 rounded-md bg-amber-50 dark:bg-amber-950/40 p-2 ring-1 ring-amber-200 dark:ring-amber-800">
+      <p class="text-[11px] text-amber-900 dark:text-amber-200">${escapeHtml(t('climateLimitAsk'))}</p>
+      <div class="flex flex-wrap gap-1.5"><button type="button" data-clim-direct="once" class="rounded-md bg-white dark:bg-stone-800 px-2 py-0.5 text-xs ring-1 ring-stone-300 dark:ring-stone-600">${escapeHtml(t('climateDirectOnce'))}</button><button type="button" data-clim-direct="always" class="rounded-md bg-white dark:bg-stone-800 px-2 py-0.5 text-xs ring-1 ring-stone-300 dark:ring-stone-600">${escapeHtml(t('climateDirectAlways'))}</button></div></div>`;
   const currentFuture = () => (futureClimate && editing && futureKey === climateKeyOf(editing) ? futureClimate : null);
   // Explorer (#530): the measure shown is a view choice per device; year, scenario and model belong to the plan.
   let climateMetric: FutureMetric = (() => { try { const m = localStorage.getItem('pdk-climate-metric') as FutureMetric; return FUTURE_METRICS.includes(m) ? m : 'tann'; } catch { return 'tann'; } })();
@@ -4798,11 +4803,11 @@ import Layout from '../layouts/Layout.astro';
     try {
       const f = await fetchFutureClimate(editing!.geo!.lat, editing!.geo!.lon);
       if (futureRequestKey !== key) return;
-      futureClimate = f; futureKey = key; futureFailedKey = '';
+      futureClimate = f; futureKey = key; futureFailedKey = ''; futureLimited = false;
       renderClimatePanel(); afterClimateChange();
-    } catch {
+    } catch (err) {
       // said in the panel instead of leaving the part out silently; opening the plan again tries again
-      if (futureRequestKey === key) { futureRequestKey = ''; futureFailedKey = key; renderClimatePanel(); }
+      if (futureRequestKey === key) { futureRequestKey = ''; futureFailedKey = key; futureLimited = err instanceof ClimateLimitError; renderClimatePanel(); }
     }
   }
   async function loadClimate() {
@@ -4825,8 +4830,9 @@ import Layout from '../layouts/Layout.astro';
       if (climateRequestKey !== key) return;
       siteClimate = c;
       siteClimateKey = key;
-    } catch {
-      if (climateRequestKey === key) { climateRequestKey = ''; renderClimatePanel(false, true); }
+      climateLimited = false;
+    } catch (err) {
+      if (climateRequestKey === key) { climateRequestKey = ''; climateLimited = err instanceof ClimateLimitError; renderClimatePanel(false, true); }
       return;
     } finally {
       if (climateRequestKey === key || climateRequestKey === '') setLoad('klima', null);
@@ -4842,7 +4848,7 @@ import Layout from '../layouts/Layout.astro';
     climateSection.hidden = !editing?.geo;
     if (!editing?.geo) return;
     if (loading) { climateBody.textContent = t('climateLoading'); return; }
-    if (failed) { climateBody.textContent = t('climateFailed'); return; }
+    if (failed) { if (climateLimited) climateBody.innerHTML = directAskHtml(); else climateBody.textContent = t('climateFailed'); return; }
     const c = currentClimate();
     if (!c) return;
     const nf = (v: number, d = 0) => new Intl.NumberFormat(lang, { maximumFractionDigits: d }).format(v);
@@ -4858,8 +4864,9 @@ import Layout from '../layouts/Layout.astro';
     const f = currentFuture();
     climateBody.innerHTML = `<dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5">${rows.map(([k, v]) => `<dt class="text-stone-500 dark:text-stone-400">${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd>`).join('')}<dt class="text-stone-500 dark:text-stone-400" data-clim-zone-k hidden></dt><dd data-clim-zone-v hidden></dd><dt class="text-stone-500 dark:text-stone-400" data-clim-rain-k hidden></dt><dd data-clim-rain-v hidden></dd></dl>
       <p class="pt-1 text-[10px] text-stone-500 dark:text-stone-400">${escapeHtml(t('climateNote', { from: c.years[0], to: c.years[1] }))}</p>
-      ${f ? `<div data-climate-future class="mt-2 space-y-2 border-t border-stone-200 dark:border-stone-700 pt-2"><p class="text-xs font-semibold text-stone-800 dark:text-stone-100">${escapeHtml(t('climateFutureHeading'))}</p>${explorerControlsHtml(f, scenarioOf(editing), climateMetric, lang === 'en' ? 'en' : 'de')}<div data-clim-out class="space-y-2"></div></div>` : futureFailedKey && futureFailedKey === climateKeyOf(editing) ? `<p data-climate-future-failed class="mt-2 border-t border-stone-200 dark:border-stone-700 pt-2 text-[11px] text-amber-800 dark:text-amber-300">${escapeHtml(t('climateFutureFailed'))}</p>` : ''}
-      <p data-climate-source class="text-[10px] text-stone-500 dark:text-stone-400"><b>${escapeHtml(t('climateSourceLead'))}</b> <a href="https://open-meteo.com/" target="_blank" rel="noopener" class="underline">Open-Meteo</a> – ${escapeHtml(t('climateSourceBody', { from: c.years[0], to: c.years[1] }))}</p>`;
+      ${f ? `<div data-climate-future class="mt-2 space-y-2 border-t border-stone-200 dark:border-stone-700 pt-2"><p class="text-xs font-semibold text-stone-800 dark:text-stone-100">${escapeHtml(t('climateFutureHeading'))}</p>${explorerControlsHtml(f, scenarioOf(editing), climateMetric, lang === 'en' ? 'en' : 'de')}<div data-clim-out class="space-y-2"></div></div>` : futureFailedKey && futureFailedKey === climateKeyOf(editing) && futureLimited ? `<div class="mt-2 border-t border-stone-200 dark:border-stone-700 pt-2">${directAskHtml()}</div>` : futureFailedKey && futureFailedKey === climateKeyOf(editing) ? `<p data-climate-future-failed class="mt-2 border-t border-stone-200 dark:border-stone-700 pt-2 text-[11px] text-amber-800 dark:text-amber-300">${escapeHtml(t('climateFutureFailed'))}</p>` : ''}
+      <p data-climate-source class="text-[10px] text-stone-500 dark:text-stone-400"><b>${escapeHtml(t('climateSourceLead'))}</b> <a href="https://open-meteo.com/" target="_blank" rel="noopener" class="underline">Open-Meteo</a> – ${escapeHtml(t('climateSourceBody', { from: c.years[0], to: c.years[1] }))}</p>
+      ${directAlways() ? `<p data-climate-direct-on class="text-[10px] text-stone-500 dark:text-stone-400">${escapeHtml(t('climateDirectOn'))} <button type="button" data-clim-direct="revoke" class="underline">${escapeHtml(t('climateDirectRevoke'))}</button></p>` : ''}`;
     renderClimateOut();
   }
   /** Redraws what follows the choice (not the controls, so the year slider can be dragged). */
@@ -4906,6 +4913,14 @@ import Layout from '../layouts/Layout.astro';
     }
   });
   climateBody.addEventListener('click', e => {
+    const d = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-clim-direct]');
+    if (d) {
+      if (d.dataset.climDirect === 'revoke') { revokeDirect(); renderClimatePanel(); return; }
+      allowDirect(d.dataset.climDirect === 'always');
+      climateRequestKey = ''; futureRequestKey = ''; futureFailedKey = ''; climateLimited = futureLimited = false;
+      void loadClimate();
+      return;
+    }
     const b = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-clim-ssp]');
     if (b) setScenario({ ssp: b.dataset.climSsp as Ssp }, true);
   });

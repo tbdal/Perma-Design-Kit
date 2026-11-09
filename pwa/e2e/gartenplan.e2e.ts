@@ -135,6 +135,35 @@ test('site climate panel and hints from (stubbed) Open-Meteo data', async ({ pag
   void errors;
 });
 
+test('server at Open-Meteo’s daily limit: the browser asks Open-Meteo itself only after consent (#610)', async ({ page, errors }) => {
+  const time: string[] = [], tmin: number[] = [], pr: number[] = [], wd: number[] = [];
+  for (let y = 2000; y < 2003; y++) {
+    for (let d = new Date(Date.UTC(y, 0, 1)); d.getUTCFullYear() === y; d.setUTCDate(d.getUTCDate() + 1)) {
+      const iso = d.toISOString().slice(0, 10), md = iso.slice(5);
+      time.push(iso); tmin.push(md === '01-20' ? -20 : md <= '04-15' || md >= '10-20' ? -2 : 8); pr.push(2); wd.push(250);
+    }
+  }
+  const limit = (route: import('@playwright/test').Route) => route.fulfill({ status: 429, contentType: 'application/json', body: '{"error":true,"reason":"Daily API request limit exceeded. Please try again tomorrow."}' });
+  await stubNetwork(page, { climate: limit, climateFuture: limit });
+  const direct: string[] = [];
+  await page.route(/^https:\/\/archive-api\.open-meteo\.com\/v1\/archive\?/, route => { direct.push(route.request().url()); return route.fulfill({ contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ elevation: 50, daily: { time, temperature_2m_min: tmin, precipitation_sum: pr, wind_direction_10m_dominant: wd } }) }); });
+  await seedNeighbourPlan(page, { geo: { lat: 50.9, lon: 7, rotationDeg: 0, basemap: 'none', opacity: 0.6 } });
+  await openPlan(page, 'np');
+  const ask = page.locator('#climate-body [data-climate-direct]');
+  await expect(ask).toContainText('IP-Adresse');
+  expect(direct).toHaveLength(0); // nothing goes to Open-Meteo without consent
+  await ask.locator('[data-clim-direct="always"]').click();
+  await expect(page.locator('#climate-body')).toContainText('6b');
+  expect(direct[0]).toContain('latitude=50.9&longitude=7.0');
+  // the model data hit the limit as well and are asked for directly (not stubbed here: the plain hint stays)
+  await expect(page.locator('#climate-body [data-climate-future-failed]')).toBeVisible();
+  // "always" is kept on the device and can be taken back in the box
+  await page.locator('#climate-body [data-clim-direct="revoke"]').click();
+  await expect(page.locator('#climate-body [data-climate-direct-on]')).toHaveCount(0);
+  expect(await page.evaluate(() => localStorage.getItem('pdk-climate-direct'))).toBeNull();
+  void errors;
+});
+
 test('climate explorer: target year, scenario and model drive the hints and stay with the plan (#530)', async ({ page, errors }) => {
   // today: yearly low −20 °C (zone 6b); two models: +6 K and +8 K from 2040 on
   const time: string[] = [], tmin: number[] = [], pr: number[] = [], wd: number[] = [];
