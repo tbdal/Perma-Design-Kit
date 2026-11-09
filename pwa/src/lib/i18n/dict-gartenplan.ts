@@ -204,6 +204,7 @@ export const gartenplanDict: Dict = {
   climateFutureRain: { de: 'Sommerregen um {year}', en: 'Summer rain around {year}' },
   zoomerOpen: { de: 'Vergrößern (Zoomer)', en: 'Enlarge (zoomer)' },
   zoomerClose: { de: 'Schließen', en: 'Close' },
+  climateFutureFailed: { de: 'Klima im Zieljahr (Klimamodelle) gerade nicht abrufbar – meist ist das Tageslimit des kostenlosen Open-Meteo-Zugangs erreicht. Beim nächsten Öffnen des Plans wird es erneut versucht.', en: 'Climate in the target year (climate models) not available right now – usually the daily limit of the free Open-Meteo access is reached. Opening the plan again tries again.' },
   climateFutureHeading: { de: 'Klima im Zieljahr', en: 'Climate in the target year' },
   climateSspLater: { de: 'Szenario zählt ab {y}', en: 'scenario counts from {y}' },
   warnClimateWarm: { de: '{name}: um {year} in {n} von {of} Klimamodellen zu warm (Zone {zone}, verträgt bis {max}).', en: '{name}: around {year} too warm in {n} of {of} climate models (zone {zone}, tolerates up to {max}).' },

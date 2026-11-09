@@ -124,6 +124,8 @@ test('site climate panel and hints from (stubbed) Open-Meteo data', async ({ pag
   await expect(page.locator('#climate-body [data-climate-source]')).toContainText('Open-Meteo');
   await expect(page.locator('#climate-body [data-climate-source]')).toContainText('ERA5');
   await expect(page.locator('#climate-body [data-climate-source] a')).toHaveAttribute('href', 'https://open-meteo.com/');
+  // the climate models are not reachable here (stub: 404): said, not left out silently (#610)
+  await expect(page.locator('#climate-body [data-climate-future-failed]')).toContainText('Tageslimit');
   await expect(page.locator('#warnings-list')).toContainText('nicht winterhart');
   // the summary is kept: opening the plan again shows the climate at once, without asking or a loading step
   const before = asked;

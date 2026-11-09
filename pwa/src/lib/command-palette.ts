@@ -10,6 +10,16 @@ const providers: (() => PaletteCommand[])[] = [];
 /** A page adds its own entries (e.g. one per plant); called on every opening. */
 export function registerCommands(fn: () => PaletteCommand[]): void { providers.push(fn); }
 
+const revealers: ((el: HTMLElement) => HTMLElement | null)[] = [];
+/** A page part hidden behind a control that is not a menu toggle (e.g. the planner's inspector tabs): for a hidden
+ *  container `el` return the control that shows it, or null. Its content is then offered under the control's name,
+ *  and choosing an entry clicks the control first. */
+export function registerRevealer(fn: (el: HTMLElement) => HTMLElement | null): void { revealers.push(fn); }
+const revealerOf = (el: HTMLElement): HTMLElement | null => {
+  for (const fn of revealers) { try { const c = fn(el); if (c) return c; } catch { /* ignore */ } }
+  return null;
+};
+
 /** Lower case without accents, so "kalender" finds "Kalender" and "plantas" "Plantas". */
 export const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
@@ -62,6 +72,8 @@ function labelOf(el: HTMLElement): string {
 
 /** A hidden menu that opens from a toggle: offered with its items (clicking a hidden item works as well). */
 function menuToggle(el: HTMLElement): HTMLElement | null {
+  const via = revealerOf(el);
+  if (via) return via;
   const id = el.id;
   if (!id) return null;
   return document.querySelector<HTMLElement>(`[aria-controls="${CSS.escape(id)}"]`)
@@ -128,6 +140,11 @@ export function installCommandPalette(t: T): void {
 
   /** Opens closed boxes around `el` and brings it into view. */
   const reveal = (el: HTMLElement) => {
+    // hidden behind a tab or the like: show that first
+    for (let a: HTMLElement | null = el; a && a !== document.body; a = a.parentElement) {
+      if (getComputedStyle(a).display !== 'none' && !a.hidden) continue;
+      revealerOf(a)?.click();
+    }
     for (let d = el.closest('details'); d; d = d.parentElement?.closest('details') ?? null) d.open = true;
     el.scrollIntoView({ block: 'center', behavior: 'smooth' });
   };
@@ -182,6 +199,7 @@ export function installCommandPalette(t: T): void {
       const kind = el.tagName === 'SUMMARY' ? t('cmdkGSection') : el.tagName === 'A' ? t('cmdkGLink') : t('cmdkGAction');
       add({ label, group: groupFor(names, kind), run: () => {
         if (el.tagName === 'SUMMARY') { const d = el.parentElement as HTMLDetailsElement; reveal(el); d.open = true; return; }
+        if (el.checkVisibility?.() === false) reveal(el);
         el.click();
       } });
     }
