@@ -7,6 +7,7 @@ import { sanitizeZones } from './zones-sectors';
 import { clampPhase } from './phases';
 import { MAX_PLAN_M } from './gartenplan-extent';
 import { normalizeGridAngle } from './gartenplan-geometry';
+import { normalizeScenario } from './site-climate';
 import type { VarietyEntry, VarietyList } from './varieties';
 
 // Everything that arrives from outside the app — JSON import, backup restore,
@@ -189,6 +190,7 @@ export function normalizeGardenPlan(raw: unknown): GardenPlan | null {
     ...(isObject(raw.plantPrices) ? { plantPrices: Object.fromEntries(Object.entries(raw.plantPrices)
       .filter(([, v]) => typeof v === 'number' && Number.isFinite(v) && v >= 0)
       .map(([k, v]) => [safeId(k), v]) as [string, number][]) } : {}),
+    ...(normalizeScenario(raw.climateScenario) ? { climateScenario: normalizeScenario(raw.climateScenario)! } : {}),
     ...(normalizeExt(raw.ext) ? { ext: normalizeExt(raw.ext)! } : {}),
     createdAt: str(raw.createdAt, d.createdAt),
     updatedAt: str(raw.updatedAt, d.updatedAt),

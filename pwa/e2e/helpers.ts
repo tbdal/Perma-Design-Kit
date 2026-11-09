@@ -6,7 +6,7 @@ import { test as base, expect, type Page, type Route } from '@playwright/test';
 // specific answers register their own routes (page.route) before navigating;
 // those take precedence over the defaults here.
 
-export type Overrides = Partial<Record<'wikidataSearch' | 'wikidataEntities' | 'sparql' | 'overpass' | 'climate', (route: Route) => Promise<void> | void>>;
+export type Overrides = Partial<Record<'wikidataSearch' | 'wikidataEntities' | 'sparql' | 'overpass' | 'climate' | 'climateFuture', (route: Route) => Promise<void> | void>>;
 
 const json = (route: Route, body: unknown) => route.fulfill({ contentType: 'application/json', body: JSON.stringify(body) });
 const PNG_1PX = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/58BAwAI/AL+hc2rNAAAAABJRU5ErkJggg==', 'base64');
@@ -32,6 +32,7 @@ export async function stubNetwork(page: Page, o: Overrides = {}) {
   // buildings cache on our server (nginx); the bbox travels in the URL
   await page.route(/\/geo\/overpass\?/, route => (o.overpass ? o.overpass(route) : json(route, { elements: [] })));
   await page.route(/\/geo\/climate(\?|$)/, route => (o.climate ? o.climate(route) : route.fulfill({ status: 404, body: '' })));
+  await page.route(/\/geo\/climate-future(\?|$)/, route => (o.climateFuture ? o.climateFuture(route) : route.fulfill({ status: 404, body: '' })));
 }
 
 export const test = base.extend<{ errors: string[] }>({

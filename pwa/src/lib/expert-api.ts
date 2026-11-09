@@ -35,6 +35,14 @@ export interface ExpertModule {
 export interface GartenplanApi {
   /** The plan open in the editor, or null in the plan list. */
   getPlan(): GardenPlan | null;
+  /** The open plan's climate in its target year (zones per model, summer rain; #530); null without location or model data. */
+  climateOutlook(): import('./site-climate').FutureOutlook | null;
+  /** How a plant fares at the open plan's site today and in its target year; null when unknown. */
+  climateStatus(p: PlantData): import('./site-climate').ClimateCheck | null;
+  /** Called when the climate choice (target year, scenario, model) or the climate data of the open plan changed. */
+  onClimateChange(cb: () => void): void;
+  /** Offers "Ersetzen …" on climate hints; the handler gets the hint's placements. null removes it. */
+  setReplaceHandler(fn: ((placementIds: string[]) => void) | null): void;
   /** Called after every redraw of the plan (placements, areas, outline changed). */
   onPlanChange(cb: (plan: GardenPlan | null) => void): void;
   /** Adds a collapsible box to the sidebar (hidden whenever the feature is off); returns its body. */

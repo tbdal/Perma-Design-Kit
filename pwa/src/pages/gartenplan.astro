@@ -604,7 +604,8 @@ import Layout from '../layouts/Layout.astro';
   import { analyzeWater, roofRainM3, type WaterAnalysis } from '../lib/water';
   import { planYield, careTasks, buildIcs, type CareTask } from '../lib/yield-care';
   import { DEFAULT_ZONE_RADII, ZONE_COLORS, bearingVector, wedgePath, solsticeSectors } from '../lib/zones-sectors';
-  import { cachedSiteClimate, fetchSiteClimate, fetchFutureClimate, futureZones, climateCheck, type FutureClimate, notHardy, blossomFrostRisk, zoneLabel, doyLabel, plantZoneRange, COMPASS16, CLIMATE_ATTRIBUTION, type SiteClimate } from '../lib/site-climate';
+  import { cachedSiteClimate, fetchSiteClimate, fetchFutureClimate, futureOutlook, climateCheck, DEFAULT_SCENARIO, LAST_DATA_YEAR, type ClimateScenario, type FutureClimate, type FutureOutlook, type FutureMetric, FUTURE_METRICS, type Ssp, notHardy, blossomFrostRisk, zoneLabel, doyLabel, plantZoneRange, COMPASS16, CLIMATE_ATTRIBUTION, type SiteClimate } from '../lib/site-climate';
+  import { explorerControlsHtml, explorerOutHtml, statusTitle, STATUS_COLOR } from '../lib/climate-explorer';
   import { createEmptyGardenPlan, type GardenPlan, type GardenPlanPlacement, type GardenPlanPoint, type GardenPlanArea, type Polyculture, type PlantData } from '../lib/types';
   import { displayRadiusM } from '../lib/growth-model';
   import { deriveLayer, LAYER_STYLE, LAYER_I18N, type PlantLayer } from '../lib/plant-layer';
@@ -2179,7 +2180,15 @@ import Layout from '../layouts/Layout.astro';
       plantPickerEl.innerHTML = `<p class="text-xs text-stone-500 dark:text-stone-400">${t('noPlantsInCollection')}</p>`;
       return;
     }
-    plantPickerEl.innerHTML = filtered.map(p => `<div class="flex items-center gap-1">
+    // Small climate dot per plant (#530), status in the plan's target year in the tooltip; no text, the list stays calm.
+    const climate = currentClimate(), outlook = currentOutlook();
+    const dot = (p: PlantData) => {
+      const ck = climate && outlook ? climateCheck(p, climate, outlook) : null;
+      if (!ck || !outlook) return '';
+      const tip = statusTitle(ck, outlook.scenario.year, lang === 'en' ? 'en' : 'de');
+      return `<span data-climate-dot="${ck.status}" class="inline-block h-2 w-2 shrink-0 rounded-full" style="background:${STATUS_COLOR[ck.status]}" title="${escapeHtml(tip)}" role="img" aria-label="${escapeHtml(tip)}"></span>`;
+    };
+    plantPickerEl.innerHTML = filtered.map(p => `<div class="flex items-center gap-1">${dot(p)}
       <button data-picker-plant="${escapeHtml(p.id)}" class="block min-w-0 flex-1 truncate rounded px-2 py-1 text-left text-xs ${p.id === armedPlantId ? 'bg-green-700 text-white' : 'text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800'}">${plantLabel(p)}</button>
       ${inPlan.has(p.id) ? `<span class="shrink-0 rounded-full bg-green-100 dark:bg-green-900/40 px-1.5 text-[10px] font-semibold tabular-nums text-green-800 dark:text-green-200" title="${escapeHtml(t('pickerInPlanTitle'))}">${inPlan.get(p.id)}×</span>` : ''}
       ${own.has(p.id) ? '' : `<button type="button" data-picker-adopt="${escapeHtml(p.id)}" title="${escapeHtml(t('pickerNotInListTitle'))}" class="shrink-0 rounded bg-amber-100 dark:bg-amber-900/40 px-1.5 py-0.5 text-[10px] font-semibold text-amber-900 dark:text-amber-200 hover:bg-amber-200">${escapeHtml(t('pickerAdopt'))}</button>`}
@@ -2245,26 +2254,34 @@ import Layout from '../layouts/Layout.astro';
       return;
     }
     const excluded = new Set([...editing.placements.map(pl => pl.plantId), ...unplacedPlantIds]);
-    const climate = currentClimate(), future = currentFuture();
-    // Climate around 2045: plants under pressure there come after the others (#530).
-    const pressure = (p: PlantData) => (climate && future && climateCheck(p, climate, future)?.status === 'underPressure' ? 1 : 0);
+    const climate = currentClimate(), outlook = currentOutlook();
+    // Climate in the plan's target year (#530): climate-proof first, under pressure last (and marked).
+    const check = (p: PlantData) => (climate && outlook ? climateCheck(p, climate, outlook) : null);
+    const rank = (p: PlantData) => { const st = check(p)?.status; return st === 'fit' ? 0 : st === 'underPressure' ? 2 : 1; };
     const candidates = plants
       .filter(p => !excluded.has(p.id) && !(climate && notHardy(p, climate)))
       .map(p => ({ p, score: placedPlants.reduce((sum, ref) => sum + compatScore(p, ref), 0) / placedPlants.length }))
-      .sort((a, b) => pressure(a.p) - pressure(b.p) || b.score - a.score)
+      .sort((a, b) => rank(a.p) - rank(b.p) || b.score - a.score)
       .slice(0, 5);
+    // "Wird möglich": too cold today, fits in the target year (e.g. kaki, almond) — for later.
+    const later = outlook ? plants.filter(p => !excluded.has(p.id) && check(p)?.status === 'becomesPossible').slice(0, 20) : [];
     if (candidates.length === 0) {
       suggestionsSection.classList.add('hidden');
       suggestionsListEl.innerHTML = '';
       return;
     }
     suggestionsSection.classList.remove('hidden');
-    suggestionsListEl.innerHTML = candidates.map(({ p, score }) => `
-      <div class="flex items-center justify-between gap-2 rounded px-2 py-1 text-xs hover:bg-stone-100 dark:hover:bg-stone-800">
-        <span class="min-w-0 flex-1 truncate text-stone-700 dark:text-stone-200" title="${plantLabel(p)}">${plantLabel(p)}</span>
-        <span class="shrink-0 font-mono text-[10px] text-stone-500 dark:text-stone-400" title="${t('sunWaterPhTitle')}">${score.toFixed(1)}/3</span>
+    const row = (p: PlantData, right: string) => {
+      const ck = check(p);
+      const mark = ck && ck.status !== 'fit' && outlook ? `<span class="shrink-0 text-[10px] font-semibold" style="color:${STATUS_COLOR[ck.status]}">${escapeHtml(statusTitle(ck, outlook.scenario.year, lang === 'en' ? 'en' : 'de'))}</span>` : '';
+      return `<div class="flex items-center justify-between gap-2 rounded px-2 py-1 text-xs hover:bg-stone-100 dark:hover:bg-stone-800">
+        <span class="min-w-0 flex-1 truncate text-stone-700 dark:text-stone-200" title="${plantLabel(p)}">${plantLabel(p)}</span>${mark}${right}
         <button data-suggest-plant="${escapeHtml(p.id)}" class="shrink-0 rounded bg-green-100 dark:bg-green-900/40 px-2 py-0.5 font-medium text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/60">${t('btnAdd')}</button>
-      </div>`).join('');
+      </div>`;
+    };
+    suggestionsListEl.innerHTML = candidates.map(({ p, score }) => row(p, `<span class="shrink-0 font-mono text-[10px] text-stone-500 dark:text-stone-400" title="${t('sunWaterPhTitle')}">${score.toFixed(1)}/3</span>`)).join('')
+      + (later.length ? `<details data-suggest-later class="mt-1"><summary class="cursor-pointer px-2 py-1 text-xs font-semibold text-blue-800 dark:text-blue-300">${escapeHtml(t('suggestLater', { n: later.length, year: outlook!.scenario.year }))}</summary>
+        <p class="px-2 text-[10px] text-stone-500 dark:text-stone-400">${escapeHtml(t('suggestLaterNote'))}</p>${later.map(p => row(p, '')).join('')}</details>` : '');
     suggestionsListEl.querySelectorAll<HTMLButtonElement>('[data-suggest-plant]').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = btn.dataset.suggestPlant!;
@@ -4726,9 +4743,28 @@ import Layout from '../layouts/Layout.astro';
   const climateKeyOf = (plan: GardenPlan | null) => plan?.geo ? `${plan.geo.lat.toFixed(1)}|${plan.geo.lon.toFixed(1)}` : '';
   /** Climate of the open plan — never the previous plan's while loading. */
   const currentClimate = () => (siteClimate && editing && siteClimateKey === climateKeyOf(editing) ? siteClimate : null);
-  // Climate around 2045 (#530): loaded after the site climate, never blocks it.
+  // Future climate (#530): loaded after the site climate, never blocks it. The plan keeps its choice of
+  // target year, scenario and model (plan.climateScenario); hints, suggestions and modules read currentOutlook().
   let futureClimate: FutureClimate | null = null, futureKey = '', futureRequestKey = '';
   const currentFuture = () => (futureClimate && editing && futureKey === climateKeyOf(editing) ? futureClimate : null);
+  // Explorer (#530): the measure shown is a view choice per device; year, scenario and model belong to the plan.
+  let climateMetric: FutureMetric = (() => { try { const m = localStorage.getItem('pdk-climate-metric') as FutureMetric; return FUTURE_METRICS.includes(m) ? m : 'tann'; } catch { return 'tann'; } })();
+  const scenarioOf = (plan: GardenPlan | null): ClimateScenario => plan?.climateScenario ?? DEFAULT_SCENARIO;
+  let outlookMemo: { f: FutureClimate; c: SiteClimate; key: string; o: FutureOutlook } | null = null;
+  /** Zones and summer rain of the open plan's climate choice; null without location or model data. */
+  function currentOutlook(): FutureOutlook | null {
+    const c = currentClimate(), f = currentFuture();
+    if (!c || !f) return null;
+    const s = scenarioOf(editing), key = `${s.year}|${s.ssp}|${s.model}`;
+    if (outlookMemo?.f !== f || outlookMemo.c !== c || outlookMemo.key !== key) outlookMemo = { f, c, key, o: futureOutlook(c, f, s) };
+    return outlookMemo.o;
+  }
+  const climateListeners: (() => void)[] = [];
+  /** Everything that follows the climate choice. */
+  function afterClimateChange() {
+    renderSuggestions(); scheduleWarnings(); renderPlantPicker();
+    for (const cb of climateListeners) { try { cb(); } catch (err) { console.error(err); } }
+  }
   async function loadFuture(key: string) {
     if (key === futureRequestKey) return;
     futureRequestKey = key;
@@ -4736,7 +4772,7 @@ import Layout from '../layouts/Layout.astro';
       const f = await fetchFutureClimate(editing!.geo!.lat, editing!.geo!.lon);
       if (futureRequestKey !== key) return;
       futureClimate = f; futureKey = key;
-      renderClimatePanel(); renderSuggestions(); scheduleWarnings();
+      renderClimatePanel(); afterClimateChange();
     } catch { if (futureRequestKey === key) futureRequestKey = ''; }
   }
   async function loadClimate() {
@@ -4790,19 +4826,59 @@ import Layout from '../layouts/Layout.astro';
       [t('climateWind'), t('climateWindValue', { dir, share: nf(c.windRose[Math.round(c.windFromDeg / 22.5) % 16] * 100) })],
     ];
     const f = currentFuture();
-    if (f) {
-      const z = futureZones(c, f);
-      const pct = Math.round(f.summerRainChange * 100);
-      rows.push(
-        [t('climateFutureZone'), t('climateFutureZoneValue', { from: zoneLabel(z[0]), to: zoneLabel(z[z.length - 1]), n: z.length })],
-        [t('climateFutureRain'), `${pct > 0 ? '+' : ''}${nf(pct)} %`],
-      );
-    }
-    climateBody.innerHTML = `<dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5">${rows.map(([k, v]) => `<dt class="text-stone-500 dark:text-stone-400">${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd>`).join('')}</dl>
+    climateBody.innerHTML = `<dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5">${rows.map(([k, v]) => `<dt class="text-stone-500 dark:text-stone-400">${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd>`).join('')}<dt class="text-stone-500 dark:text-stone-400" data-clim-zone-k hidden></dt><dd data-clim-zone-v hidden></dd><dt class="text-stone-500 dark:text-stone-400" data-clim-rain-k hidden></dt><dd data-clim-rain-v hidden></dd></dl>
       <p class="pt-1 text-[10px] text-stone-500 dark:text-stone-400">${escapeHtml(t('climateNote', { from: c.years[0], to: c.years[1] }))}</p>
-      ${f ? `<p class="text-[10px] text-stone-500 dark:text-stone-400">${escapeHtml(t('climateFutureNote'))}</p>` : ''}
+      ${f ? `<div data-climate-future class="mt-2 space-y-2 border-t border-stone-200 dark:border-stone-700 pt-2"><p class="text-xs font-semibold text-stone-800 dark:text-stone-100">${escapeHtml(t('climateFutureHeading'))}</p>${explorerControlsHtml(f, scenarioOf(editing), climateMetric, lang === 'en' ? 'en' : 'de')}<div data-clim-out class="space-y-2"></div></div>` : ''}
       <p data-climate-source class="text-[10px] text-stone-500 dark:text-stone-400"><b>${escapeHtml(t('climateSourceLead'))}</b> <a href="https://open-meteo.com/" target="_blank" rel="noopener" class="underline">Open-Meteo</a> – ${escapeHtml(t('climateSourceBody', { from: c.years[0], to: c.years[1] }))}</p>`;
+    renderClimateOut();
   }
+  /** Redraws what follows the choice (not the controls, so the year slider can be dragged). */
+  function renderClimateOut() {
+    const c = currentClimate(), f = currentFuture(), out = climateBody.querySelector<HTMLElement>('[data-clim-out]');
+    if (!c || !f || !out || !editing) return;
+    const s = scenarioOf(editing), o = currentOutlook()!;
+    const nameOf = new Map<string, string>();
+    for (const pl of editing.placements) { const p = plantsById.get(pl.plantId); if (p) nameOf.set(p.id, displayName(p) || p.latinName); }
+    const ruler = [...nameOf].map(([id, name]) => ({ ...plantsById.get(id)!, name }));
+    const r = explorerOutHtml(c, f, s, climateMetric, lang === 'en' ? 'en' : 'de', ruler);
+    out.innerHTML = r.html;
+    const modeEl = climateBody.querySelector<HTMLElement>('[data-clim-mode]')!;
+    modeEl.textContent = `${r.mode}${s.year > LAST_DATA_YEAR ? '' : ' · ' + t('climateSspLater', { y: LAST_DATA_YEAR + 1 })}`;
+    modeEl.className = `pl-[4.5rem] text-[10px] ${s.year > LAST_DATA_YEAR ? 'text-orange-700 dark:text-orange-300' : 'text-green-800 dark:text-green-300'}`;
+    climateBody.querySelector('[data-clim-year-out]')!.textContent = String(s.year);
+    climateBody.querySelectorAll<HTMLButtonElement>('[data-clim-ssp]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.climSsp === s.ssp)));
+    // the two short rows in the list above
+    const z = o.zones, pct = Math.round(o.summerRainChange * 100);
+    const set = (sel: string, txt: string) => { const el = climateBody.querySelector<HTMLElement>(sel)!; el.textContent = txt; el.hidden = !z.length; };
+    set('[data-clim-zone-k]', t('climateFutureZone', { year: s.year }));
+    set('[data-clim-zone-v]', z.length ? (z.length > 1 ? t('climateFutureZoneValue', { from: zoneLabel(z[0]), to: zoneLabel(z[z.length - 1]), n: z.length }) : zoneLabel(z[0])) : '');
+    set('[data-clim-rain-k]', t('climateFutureRain', { year: s.year }));
+    set('[data-clim-rain-v]', `${pct > 0 ? '+' : ''}${pct} %`);
+  }
+  function setScenario(patch: Partial<ClimateScenario>, commit: boolean) {
+    if (!editing) return;
+    editing.climateScenario = { ...scenarioOf(editing), ...patch };
+    renderClimateOut();
+    if (commit) { scheduleAutosave(); afterClimateChange(); }
+  }
+  climateBody.addEventListener('input', e => {
+    const el = e.target as HTMLInputElement;
+    if (el.matches('[data-clim-year]')) setScenario({ year: Number(el.value) }, false);
+  });
+  climateBody.addEventListener('change', e => {
+    const el = e.target as HTMLInputElement | HTMLSelectElement;
+    if (el.matches('[data-clim-year]')) setScenario({ year: Number(el.value) }, true);
+    else if (el.matches('[data-clim-model]')) setScenario({ model: el.value }, true);
+    else if (el.matches('[data-clim-metric]')) {
+      climateMetric = el.value as FutureMetric;
+      try { localStorage.setItem('pdk-climate-metric', climateMetric); } catch { /* private mode */ }
+      renderClimateOut();
+    }
+  });
+  climateBody.addEventListener('click', e => {
+    const b = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-clim-ssp]');
+    if (b) setScenario({ ssp: b.dataset.climSsp as Ssp }, true);
+  });
 
   // ── Gebäude (OSM) ──
   const buildingsToggle = document.getElementById('buildings-toggle')!;
@@ -5017,7 +5093,9 @@ import Layout from '../layouts/Layout.astro';
   // an allelopathic plant, the full-grown crowns that collide … A second
   // click on the same hint selects its plants; Esc clears the pin.
   type WarnMark = { xM: number; yM: number; rM: number; kind: 'zone' | 'crown' };
-  type WarnItem = { key: string; ids: string[]; text: string; marks: WarnMark[]; tone: 'bad' | 'good' };
+  type WarnItem = { key: string; ids: string[]; text: string; marks: WarnMark[]; tone: 'bad' | 'good'; replace?: boolean };
+  /** "Ersetzen …" on climate hints, when a module offers replacing (setReplaceHandler). */
+  let replaceHandler: ((placementIds: string[]) => void) | null = null;
   let hoverWarn: WarnItem | null = null;
   let pinnedWarn: WarnItem | null = null;
   let hoverWarnIds: string[] = [];
@@ -5134,9 +5212,10 @@ import Layout from '../layouts/Layout.astro';
     const used = new Set(plan.placements.map(pl => pl.plantId));
     const plantSig = [...used].map(id => { const p = plantsById.get(id); return p ? `${id}:${p.heightM}:${p.widthM}:${p.growSpeedLow ? 1 : p.growSpeedHigh ? 3 : 2}:${+!!p.sunFull}${+!!p.sunMid}${+!!p.sunShadow}:${p.latinName}:${p.climateZone ?? ''}:${p.nitrogenFix ? 1 : 0}${p.mineralFix ? 1 : 0}${p.insects ? 1 : 0}${p.eatable ? 1 : 0}` : id; }).join(',');
     const env = `${terrainSeq(terrain)}|${extra.length}:${extra.reduce((a, o) => a + (o.kind === 'prism' ? o.minX + o.maxY + o.z1 : o.x + o.y + o.r), 0).toFixed(1)}|${seasonCache?.key ?? ''}|${plan.startYear ?? ''}|${plantSig}`;
-    const sig = `${env}|${plan.placements.map(pl => `${pl.id}:${pl.plantId}:${pl.xM}:${pl.yM}:${pl.phaseYear ?? 0}:${pl.diedYear ?? ''}`).join(',')}|${currentClimate()?.zone ?? ''}${currentFuture() ? 'f' : ''}|${[...loadIgnored(plan.id)].join(',')}|${warnShow}|${lang}`;
+    const sig = `${env}|${plan.placements.map(pl => `${pl.id}:${pl.plantId}:${pl.xM}:${pl.yM}:${pl.phaseYear ?? 0}:${pl.diedYear ?? ''}`).join(',')}|${currentClimate()?.zone ?? ''}${currentOutlook() ? JSON.stringify(scenarioOf(plan)) : ''}|${[...loadIgnored(plan.id)].join(',')}|${warnShow}|${lang}`;
     if (sig === lastWarnSig && plan === lastWarnPlan) { renderYield(); renderPhases(); return; }
     lastWarnSig = sig; lastWarnPlan = plan;
+    renderClimateOut(); // the zone ruler shows the plan's plants
     const crowd = crowdingWarnings(plan, plantsById);
     const grown = { ...scene, occluders: [...grownOccluders(plan, plantsById, scene.groundZ), ...extra] };
     // Only the plants near what changed are counted again; the rest keep their sun hours.
@@ -5145,8 +5224,8 @@ import Layout from '../layouts/Layout.astro';
     const nf1 = new Intl.NumberFormat(lang, { maximumFractionDigits: 1 });
     const fmt1 = (v: number) => nf1.format(v);
     // Site climate: per plant (all its placements), not per placement.
-    const climate = currentClimate(), future = currentFuture();
-    const climateItems: { ids: string[]; text: string }[] = [];
+    const climate = currentClimate(), outlook = currentOutlook();
+    const climateItems: { ids: string[]; text: string; replace?: boolean }[] = [];
     if (climate) {
       const byPlant = new Map<string, string[]>();
       for (const pl of plan.placements) byPlant.set(pl.plantId, [...(byPlant.get(pl.plantId) ?? []), pl.id]);
@@ -5162,10 +5241,11 @@ import Layout from '../layouts/Layout.astro';
             name: nm, month: new Intl.DateTimeFormat(lang, { month: 'long' }).format(new Date(2001, m, 1)), date: doyLabel(climate.lastFrostDoy!, lang),
           }) });
         }
-        const fc = future ? climateCheck(p, climate, future) : null;
-        if (fc?.status === 'underPressure') {
-          if (fc.tooWarm) climateItems.push({ ids, text: t('warnClimateWarm', { name: nm, n: fc.tooWarm, of: fc.models, max: String(fc.maxZone) }) });
-          if (fc.drier) climateItems.push({ ids, text: t('warnClimateDry', { name: nm, pct: Math.round(-future!.summerRainChange * 100) }) });
+        const fc = outlook ? climateCheck(p, climate, outlook) : null;
+        if (fc?.status === 'underPressure' && outlook) {
+          const year = outlook.scenario.year, zone = zoneLabel(outlook.zones[outlook.zones.length - 1]);
+          if (fc.tooWarm) climateItems.push({ ids, replace: true, text: t(fc.models > 1 ? 'warnClimateWarm' : 'warnClimateWarm1', { name: nm, n: fc.tooWarm, of: fc.models, max: String(fc.maxZone), year, zone }) });
+          if (fc.drier) climateItems.push({ ids, replace: true, text: t('warnClimateDry', { name: nm, pct: Math.round(-outlook.summerRainChange * 100), year }) });
         }
       }
     }
@@ -5184,7 +5264,7 @@ import Layout from '../layouts/Layout.astro';
       ...neighbors.bad.map(w => item(`nb:${w.source}:${w.target}`, [w.source, w.target], t('warnBadNeighbor', {
         a: name(w.source), b: name(w.target), d: fmt1(w.distM), r: fmt1(w.radiusM), why: w.reason.label[lang === 'en' ? 'en' : 'de'],
       }), [{ xM: at(w.source)!.xM, yM: at(w.source)!.yM, rM: w.radiusM, kind: 'zone' }, ...crown(w.target)])),
-      ...climateItems.map(c => item(`cl:${c.ids.join(',')}:${c.text.slice(0, 12)}`, c.ids, c.text, c.ids.flatMap(crown))),
+      ...climateItems.map(c => ({ ...item(`cl:${c.ids.join(',')}:${c.text.slice(0, 12)}`, c.ids, c.text, c.ids.flatMap(crown)), replace: c.replace })),
       ...shade.map(w => item(`sh:${w.id}`, [w.id], t('warnShade', { name: name(w.id), h: fmt1(w.hours), need: t(w.need === 'full' ? 'warnNeedFull' : 'warnNeedMid') }), crown(w.id))),
       ...crowd.map(w => item(`cr:${w.a}:${w.b}`, [w.a, w.b], t('warnCrowded', { a: name(w.a), b: name(w.b), d: fmt1(w.distM), min: fmt1(w.minM) }), [...crown(w.a), ...crown(w.b)])),
     ];
@@ -5209,10 +5289,14 @@ import Layout from '../layouts/Layout.astro';
     document.getElementById('warn-ignored-n')!.textContent = t('warnIgnoredN', { n: ignoredCount });
     warningsCount.textContent = String(items.length);
     warningsList.innerHTML = items.slice(0, 30).map(i => `
-      <li class="flex items-start gap-1"><button type="button" data-key="${escapeHtml(i.key)}" data-tone="bad" aria-pressed="false" class="min-w-0 flex-1 rounded px-1.5 py-1 text-left hover:bg-red-50 dark:hover:bg-red-900/30">${escapeHtml(i.text)}</button><button type="button" data-warn-ignore="${escapeHtml(i.key)}" title="${escapeHtml(t('warnIgnore'))}" aria-label="${escapeHtml(t('warnIgnore'))}" class="shrink-0 rounded px-1.5 py-1 text-stone-400 hover:bg-stone-100 hover:text-stone-700 dark:hover:bg-stone-800">×</button></li>`).join('') + (items.length > 30 ? `<li class="px-1.5 py-1 text-[11px] text-stone-500 dark:text-stone-400">${escapeHtml(t('warnListMore', { n: items.length - 30 }))}</li>` : '');
+      <li class="flex items-start gap-1"><button type="button" data-key="${escapeHtml(i.key)}" data-tone="bad" aria-pressed="false" class="min-w-0 flex-1 rounded px-1.5 py-1 text-left hover:bg-red-50 dark:hover:bg-red-900/30">${escapeHtml(i.text)}</button>${i.replace && replaceHandler ? `<button type="button" data-warn-replace="${escapeHtml(i.key)}" class="shrink-0 rounded px-1.5 py-1 text-[11px] underline text-red-900 dark:text-red-200 hover:bg-red-50 dark:hover:bg-red-900/30">${escapeHtml(t('warnReplace'))}</button>` : ''}<button type="button" data-warn-ignore="${escapeHtml(i.key)}" title="${escapeHtml(t('warnIgnore'))}" aria-label="${escapeHtml(t('warnIgnore'))}" class="shrink-0 rounded px-1.5 py-1 text-stone-400 hover:bg-stone-100 hover:text-stone-700 dark:hover:bg-stone-800">×</button></li>`).join('') + (items.length > 30 ? `<li class="px-1.5 py-1 text-[11px] text-stone-500 dark:text-stone-400">${escapeHtml(t('warnListMore', { n: items.length - 30 }))}</li>` : '');
     goodNeighborsHeading.hidden = goodItems.length === 0;
     goodNeighborsList.innerHTML = goodItems.slice(0, 20).map(i => `
       <li><button type="button" data-key="${escapeHtml(i.key)}" data-tone="good" aria-pressed="false" class="w-full rounded px-1.5 py-1 text-left hover:bg-green-50 dark:hover:bg-green-900/30"><span aria-hidden="true" class="text-green-700 dark:text-green-400">✓ </span>${escapeHtml(i.text)}</button></li>`).join('');
+    warningsList.querySelectorAll<HTMLButtonElement>('[data-warn-replace]').forEach(b => b.addEventListener('click', () => {
+      const it = warnItemsByKey.get(b.dataset.warnReplace!);
+      if (it) replaceHandler?.(it.ids);
+    }));
     warningsList.querySelectorAll<HTMLButtonElement>('[data-warn-ignore]').forEach(b => b.addEventListener('click', () => {
       const set = loadIgnored(plan.id);
       set.add(b.dataset.warnIgnore!);
@@ -5418,6 +5502,10 @@ import Layout from '../layouts/Layout.astro';
   }
   providePageApi('gartenplan', {
     getPlan: () => editing,
+    climateOutlook: () => currentOutlook(),
+    climateStatus(p) { const c = currentClimate(), o = currentOutlook(); return c && o ? climateCheck(p, c, o) : null; },
+    onClimateChange(cb) { climateListeners.push(cb); },
+    setReplaceHandler(fn) { replaceHandler = fn; lastWarnSig = ''; scheduleWarnings(); },
     add3dLayer(featureId, layer) {
       pluginLayers.push({ featureId, layer });
       if (!plan3dContainer.hidden && featureOn(featureId)) btnView3d.click();
@@ -5911,6 +5999,13 @@ import Layout from '../layouts/Layout.astro';
     renderSuggestions();
     afterGeometryEdit();
     showToast(t('toastPkgPlaced', { name: pc.name || t('planUnnamed'), n: spots.length }));
+    // Polyculture vs. the site's climate in the target year (#530): a hint when members are under pressure there.
+    const climate = currentClimate(), outlook = currentOutlook();
+    if (climate && outlook) {
+      const weak = [...new Set(added.map(a => a.plantId))].map(id => plantsById.get(id))
+        .filter((p): p is PlantData => !!p && ['underPressure', 'notHardy'].includes(climateCheck(p, climate, outlook)?.status ?? ''));
+      if (weak.length) setTimeout(() => showToast(t('toastPkgClimate', { n: weak.length, year: outlook.scenario.year, names: weak.slice(0, 3).map(p => displayName(p) || p.latinName).join(', ') })), 2100);
+    }
   }
 
   // ── Pflanzensuche (wie auf der Pflanzenseite) ─────────────────────────────

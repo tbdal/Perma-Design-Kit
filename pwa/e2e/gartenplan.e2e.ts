@@ -133,6 +133,51 @@ test('site climate panel and hints from (stubbed) Open-Meteo data', async ({ pag
   void errors;
 });
 
+test('climate explorer: target year, scenario and model drive the hints and stay with the plan (#530)', async ({ page, errors }) => {
+  // today: yearly low −20 °C (zone 6b); two models: +6 K and +8 K from 2040 on
+  const time: string[] = [], tmin: number[] = [], pr: number[] = [], wd: number[] = [];
+  for (let y = 2000; y < 2003; y++) for (let d = new Date(Date.UTC(y, 0, 1)); d.getUTCFullYear() === y; d.setUTCDate(d.getUTCDate() + 1)) {
+    const iso = d.toISOString().slice(0, 10);
+    time.push(iso); tmin.push(iso.slice(5) === '01-20' ? -20 : 5); pr.push(2); wd.push(250);
+  }
+  const ft: string[] = [];
+  for (let y = 1994; y <= 2050; y++) for (let d = 0; d < 365; d++) ft.push(new Date(Date.UTC(y, 0, 1 + d)).toISOString().slice(0, 10));
+  const model = (dk: number) => ft.map(s => (s.slice(5) === '01-20' ? -20 : 5) + (Number(s.slice(0, 4)) >= 2040 ? dk : 0));
+  const future = { daily: { time: ft,
+    temperature_2m_min_CMCC_CM2_VHR4: model(6), temperature_2m_max_CMCC_CM2_VHR4: ft.map(() => 20), precipitation_sum_CMCC_CM2_VHR4: ft.map(() => 2),
+    temperature_2m_min_FGOALS_f3_H: model(8), temperature_2m_max_FGOALS_f3_H: ft.map(() => 20), precipitation_sum_FGOALS_f3_H: ft.map(() => 2) } };
+  await stubNetwork(page, {
+    climate: route => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ elevation: 50, daily: { time, temperature_2m_min: tmin, precipitation_sum: pr, wind_direction_10m_dominant: wd } }) }),
+    climateFuture: route => route.fulfill({ contentType: 'application/json', body: JSON.stringify(future) }),
+  });
+  await seedNeighbourPlan(page, { geo: { lat: 51.3, lon: 9.5, rotationDeg: 0, basemap: 'none', opacity: 0.6 } });
+  await withDb(page, `const p = (await all('plants')).find(x => x.latinName === 'Malus domestica'); p.climateZone = '4-7'; await put('plants', p);`);
+  await openPlan(page, 'np');
+  const box = page.locator('#climate-body [data-climate-future]');
+  await expect(box).toContainText('Klima im Zieljahr');
+  await expect(box.locator('[data-clim-mode]')).toContainText('Hochrechnung SSP2-4.5');   // default 2050, after the model data
+  await expect(box.locator('[data-clim-out] svg')).toHaveCount(3);                         // course, zone ruler, scenario fan
+  await expect(page.locator('#warnings-list')).not.toContainText('zu warm');
+  // model data around 2045: too warm for the apple (up to zone 7) in one of the two models
+  await box.locator('[data-clim-year]').fill('2045');
+  await expect(box.locator('[data-clim-mode]')).toContainText('Modelldaten');
+  await expect(page.locator('#warnings-list')).toContainText('um 2045 in 1 von 2 Klimamodellen zu warm');
+  await expect(box.locator('[data-clim-out]')).toContainText('zu warm 1/2');
+  // high emissions in 2090: too warm in both
+  await box.locator('[data-clim-ssp="SSP5-8.5"]').click();
+  await box.locator('[data-clim-year]').fill('2090');
+  await expect(box.locator('[data-clim-mode]')).toContainText('Hochrechnung SSP5-8.5');
+  await expect(page.locator('#warnings-list')).toContainText('um 2090 in 2 von 2 Klimamodellen zu warm');
+  // one model only
+  await box.locator('[data-clim-model]').selectOption('CMCC_CM2_VHR4');
+  await expect(page.locator('#warnings-list')).toContainText('um 2090 zu warm');
+  // the choice is saved with the plan and comes back
+  await expect.poll(() => withDb(page, `return (await all('gardenPlans')).find(p => p.id === 'np').climateScenario`)).toEqual({ year: 2090, ssp: 'SSP5-8.5', model: 'CMCC_CM2_VHR4' });
+  await page.reload();   // reopens the last plan
+  await expect(page.locator('#climate-body [data-clim-year-out]')).toHaveText('2090');
+  void errors;
+});
+
 test('buildings of the previous plan never show in the next one', async ({ page, errors }) => {
   let delayB = false;
   const fake = (lat: number, lon: number) => ({ elements: [{ type: 'way', tags: { building: 'house' }, geometry: [

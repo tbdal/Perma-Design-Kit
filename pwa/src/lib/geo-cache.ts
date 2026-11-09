@@ -111,7 +111,7 @@ export async function clearGeoCache(): Promise<void> {
 
 /** The site climate's kept summaries (site-climate.ts, localStorage "pdk-climate:…") go with the climate data. */
 function dropClimateSummaries() {
-  try { for (const k of Object.keys(localStorage)) if (k.startsWith('pdk-climate:')) localStorage.removeItem(k); } catch { /* ignore */ }
+  try { for (const k of Object.keys(localStorage)) if (k.startsWith('pdk-climate:') || k.startsWith('pdk-climate-future:')) localStorage.removeItem(k); } catch { /* ignore */ }
 }
 
 const REFRESH_KEY = 'pdk-geo-refresh';

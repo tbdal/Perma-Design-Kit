@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync, existsSync } from 'node:fs';
-import { usdaZone, zoneLabel, summarizeClimate, plantZoneRange, notHardy, blossomFrostRisk, climateRequestUrl, summarizeFuture, futureZones, climateCheck, type SiteClimate } from '../src/lib/site-climate';
+import { usdaZone, zoneLabel, summarizeClimate, plantZoneRange, notHardy, blossomFrostRisk, climateRequestUrl, summarizeFuture, futureOutlook, modelDelta, scaleFactor, koeppen, normalizeScenario, LAST_DATA_YEAR, climateCheck, type SiteClimate, type ClimateScenario } from '../src/lib/site-climate';
+import { explorerOutHtml } from '../src/lib/climate-explorer';
 
 describe('usdaZone', () => {
   it('maps the mean yearly minimum to USDA zones', () => {
@@ -87,33 +88,66 @@ describe.skipIf(!existsSync(sample))('real Open-Meteo sample (Köln/Bonn)', () =
 });
 
 describe('future climate (#530)', () => {
-  // Two models, every day the same low; model A +3 K and 30 % less summer rain in 2040–2050, model B +5 K.
+  // Two models, every day the same; model A +3 K and 30 % less rain from 2040 on, model B +5 K.
   const time: string[] = [];
   for (let y = 1994; y <= 2050; y++) for (let d = 0; d < 365; d++) time.push(new Date(Date.UTC(y, 0, 1 + d)).toISOString().slice(0, 10));
   const fut = (iso: string) => Number(iso.slice(0, 4)) >= 2040;
   const daily = {
     time,
     temperature_2m_min_CMCC_CM2_VHR4: time.map(s => (fut(s) ? -12 : -15)),
+    temperature_2m_max_CMCC_CM2_VHR4: time.map(s => (fut(s) ? 31 : 20)),
     precipitation_sum_CMCC_CM2_VHR4: time.map(s => (fut(s) ? 0.7 : 1)),
     temperature_2m_min_FGOALS_f3_H: time.map(s => (fut(s) ? -10 : -15)),
+    temperature_2m_max_FGOALS_f3_H: time.map(() => 20),
     precipitation_sum_FGOALS_f3_H: time.map(() => 1),
   };
   const f = summarizeFuture(daily);
   const site = { meanAnnualMinC: -16, zone: usdaZone(-16) } as SiteClimate;   // 7a today
+  const s2045: ClimateScenario = { year: 2045, ssp: 'SSP2-4.5', model: 'all' };
+  const o = futureOutlook(site, f, s2045);
   const plant = (climateZone: string, water: 'dry' | 'wet' = 'dry') => ({ climateZone, waterDry: water === 'dry', waterMid: false, waterWet: water === 'wet' });
 
-  it('takes each model’s change against its own 1994–2023 and adds it to the measured site climate', () => {
-    expect(f.minDeltaK.map(v => Math.round(v * 10) / 10)).toEqual([3, 5]);
-    expect(f.summerRainChange).toBeCloseTo(-0.15, 2);  // median of −30 % and 0 %
-    expect(futureZones(site, f).map(zoneLabel)).toEqual(['7b', '8a']);  // −13 °C, −11 °C
+  it('keeps yearly rows per model and takes each model’s change against its own 1994–2023', () => {
+    expect(f.from).toBe(1994);
+    expect(f.models.CMCC_CM2_VHR4[0]!.slice(0, 3)).toEqual([-15, 0, 365]);         // lowest, hot days, frost days
+    expect(modelDelta(f, 'CMCC_CM2_VHR4', 'minT', 2045, 'SSP2-4.5')).toBeCloseTo(3, 5);
+    expect(modelDelta(f, 'CMCC_CM2_VHR4', 'hot', 2045, 'SSP2-4.5')).toBeCloseTo(365, 5);
+    expect(modelDelta(f, 'CMCC_CM2_VHR4', 'summerRain', 2045, 'SSP2-4.5')).toBeCloseTo(-30, 5);
+    expect(o.zones.map(zoneLabel)).toEqual(['7b', '8a']);  // −13 °C, −11 °C
+    expect(o.summerRainChange).toBeCloseTo(-0.15, 2);       // median of −30 % and 0 %
+    expect(futureOutlook(site, f, { ...s2045, model: 'FGOALS_f3_H' }).zones.map(zoneLabel)).toEqual(['8a']);
+  });
+  it('projects past the model data with the scenario’s global warming', () => {
+    expect(scaleFactor('SSP5-8.5', LAST_DATA_YEAR)).toBeCloseTo(1, 5);
+    expect(scaleFactor('SSP1-2.6', 2090)).toBeLessThan(scaleFactor('SSP2-4.5', 2090));
+    expect(scaleFactor('SSP2-4.5', 2090)).toBeLessThan(scaleFactor('SSP5-8.5', 2090));
+    const d = modelDelta(f, 'CMCC_CM2_VHR4', 'minT', 2090, 'SSP5-8.5')!;
+    expect(d).toBeCloseTo(3 * scaleFactor('SSP5-8.5', 2090), 5);
+    expect(futureOutlook(site, f, { year: 2090, ssp: 'SSP5-8.5', model: 'all' }).projected).toBe(true);
   });
   it('rates plants: fit, under pressure (too warm in some models, or wet-soil plant and drier), becomes possible, not hardy', () => {
-    expect(climateCheck(plant('5-9'), site, f)?.status).toBe('fit');
-    expect(climateCheck(plant('4-7'), site, f)).toMatchObject({ status: 'underPressure', tooWarm: 1, models: 2 });
-    expect(climateCheck(plant('6'), site, f)?.status).toBe('fit');              // single number: coldest zone only
-    expect(climateCheck(plant('8-10'), site, f)?.status).toBe('notHardy');  // 8a in only one of two models
-    expect(climateCheck(plant('8-10'), { ...site, meanAnnualMinC: -13.5, zone: usdaZone(-13.5) }, f)?.status).toBe('becomesPossible');
-    expect(climateCheck(plant('5-9', 'wet'), site, { ...f, summerRainChange: -0.2 })).toMatchObject({ status: 'underPressure', drier: true });
-    expect(climateCheck(plant(''), site, f)).toBeNull();
+    expect(climateCheck(plant('5-9'), site, o)?.status).toBe('fit');
+    expect(climateCheck(plant('4-7'), site, o)).toMatchObject({ status: 'underPressure', tooWarm: 1, models: 2 });
+    expect(climateCheck(plant('6'), site, o)?.status).toBe('fit');              // single number: coldest zone only
+    expect(climateCheck(plant('8-10'), site, o)).toMatchObject({ status: 'becomesPossible', fits: 1 });  // 8a in one of two models
+    expect(climateCheck(plant('9-10'), site, o)?.status).toBe('notHardy');
+    expect(climateCheck(plant('5-9', 'wet'), site, { ...o, summerRainChange: -0.2 })).toMatchObject({ status: 'underPressure', drier: true });
+    expect(climateCheck(plant(''), site, o)).toBeNull();
+  });
+  it('classifies Köppen-Geiger and cleans a stored scenario', () => {
+    expect(koeppen([0, 1, 4, 8, 13, 16, 18, 18, 14, 9, 4, 1], Array(12).fill(60))).toBe('Cfb');
+    expect(koeppen([10, 11, 13, 15, 19, 23, 26, 26, 22, 18, 14, 11], [80, 70, 60, 50, 30, 10, 5, 10, 30, 70, 90, 90])).toBe('Csa');
+    expect(normalizeScenario({ year: 2060, ssp: 'SSP3-7.0', model: 'all' })).toEqual({ year: 2060, ssp: 'SSP3-7.0', model: 'all' });
+    expect(normalizeScenario({ year: 2200, ssp: 'SSP3-7.0', model: 'all' })).toBeNull();
+    expect(normalizeScenario({ year: 2060, ssp: 'RCP8.5', model: 'all' })).toBeNull();
+    expect(normalizeScenario({ year: 2060, ssp: 'SSP3-7.0', model: 'x' })).toBeNull();
+  });
+  it('draws the explorer for a choice (course, figures, ruler with the plan’s plants)', () => {
+    const r = explorerOutHtml({ ...site, years: [1994, 2023] } as SiteClimate, f, s2045, 'tann', 'de', [{ name: 'Grauerle', ...plant('2-6') }, { name: 'Apfel', ...plant('4-9') }]);
+    expect(r.mode).toBe('Modelldaten');
+    expect(r.html).toContain('<svg');
+    expect(r.html).toContain('Grauerle');
+    expect(r.html).toContain('zu warm 2/2');
+    expect(explorerOutHtml(site, f, { year: 2080, ssp: 'SSP1-2.6', model: 'all' }, 'hot', 'de', []).mode).toBe('Hochrechnung SSP1-2.6');
   });
 });

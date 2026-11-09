@@ -140,6 +140,8 @@ export interface GardenPlan {
   startYear?: number;
   /** Permaculture zones around a centre (lib/zones-sectors.ts); absent = never set up. */
   zones?: import('./zones-sectors').PlanZones;
+  /** Climate outlook the plan's hints and suggestions use (#530); absent = DEFAULT_SCENARIO. */
+  climateScenario?: import('./site-climate').ClimateScenario;
   /** Data of optional modules (expert-api.ts setPluginData), by feature id;
    *  plain JSON, travels with backups and share links. */
   ext?: Record<string, unknown>;
