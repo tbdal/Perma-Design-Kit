@@ -14,6 +14,11 @@ describe('agroforestry pattern (#563)', () => {
       ['tree', 0, 0], ['shrub', 2, 1], ['tree', 4, 0], ['shrub', 6, 1], ['tree', 8, 0], ['shrub', 10, 1],
     ]);
   });
+  it('lays only whole patterns, as many as fit; a short line still gets one', () => {
+    const out = patternAlongPolyline([{ xM: 0, yM: 0 }, { xM: 9, yM: 0 }], spots, 4);
+    expect(out.filter(p => p.plantId === 'tree').map(p => p.xM)).toEqual([0, 4]);   // a third would end at 10 > 9
+    expect(patternAlongPolyline([{ xM: 0, yM: 0 }, { xM: 1, yM: 0 }], spots, 4).map(p => p.plantId)).toEqual(['tree']);
+  });
   it('follows a bend: after the corner x runs south and "right" is west', () => {
     const out = patternAlongPolyline([{ xM: 0, yM: 0 }, { xM: 4, yM: 0 }, { xM: 4, yM: 10 }], spots, 6);
     const second = out.filter(p => p.plantId === 'tree')[1];       // 6 m along: 2 m past the corner

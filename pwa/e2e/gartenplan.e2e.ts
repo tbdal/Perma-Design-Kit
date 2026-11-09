@@ -199,6 +199,15 @@ test('climate explorer: target year, scenario and model drive the hints and stay
   await page.click('#btn-climate-zoomer');
   await expect(zoomer.locator('[data-climate-future]')).toBeVisible();
   expect((await zoomer.boundingBox())!.width).toBeGreaterThan(600);
+  // own layout (#602): drawings beside the controls, four figures in a row, page-size text
+  await expect(zoomer.locator('[data-clim-out] .grid-cols-4')).toHaveCount(1);
+  const [ctl, out] = await Promise.all([zoomer.locator('#clim-year').boundingBox(), zoomer.locator('[data-clim-out] svg').first().boundingBox()]);
+  expect(out!.x).toBeGreaterThan(ctl!.x + ctl!.width);
+  expect(await zoomer.locator('#climate-body').evaluate(el => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(15);
+  // explanations (#603): the model "i" opens its popover
+  await zoomer.locator('[popovertarget="clim-i-models"]').click();
+  await expect(page.locator('#clim-i-models')).toContainText('HighResMIP');
+  await page.keyboard.press('Escape');
   await zoomer.locator('[data-clim-year]').fill('2046');
   await expect(zoomer.locator('[data-clim-mode]')).toContainText('Hochrechnung');
   await page.keyboard.press('Escape');
@@ -211,6 +220,8 @@ test('climate explorer: target year, scenario and model drive the hints and stay
   await page.mouse.click(5, 5);
   await expect(zoomer).toHaveCount(0);
   await expect(page.locator('#climate-section')).toHaveAttribute('open', '');
+  // a plant on the zone ruler opens its edit window (#603)
+  await expect(page.locator('#climate-body [data-plant-id]').first()).toBeAttached();
   await box.locator('[data-clim-year]').fill('2045');
   // high emissions in 2090: too warm in both
   await box.locator('[data-clim-ssp="SSP5-8.5"]').click();

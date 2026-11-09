@@ -174,11 +174,15 @@ describe('future climate (#530)', () => {
     expect(normalizeScenario({ year: 2060, ssp: 'SSP3-7.0', model: 'x' })).toBeNull();
   });
   it('draws the explorer for a choice (course, figures, ruler with the plan’s plants)', () => {
-    const r = explorerOutHtml({ ...site, years: [1994, 2023] } as SiteClimate, f, s2045, 'tann', 'de', [{ name: 'Grauerle', ...plant('2-6') }, { name: 'Apfel', ...plant('4-9') }]);
+    const r = explorerOutHtml({ ...site, years: [1994, 2023] } as SiteClimate, f, s2045, 'tann', 'de', [{ id: 'g', name: 'Grauerle', ...plant('2-6') }, { id: 'a', name: 'Apfel', ...plant('4-9') }]);
     expect(r.mode).toBe('Modelldaten');
     expect(r.html).toContain('<svg');
     expect(r.html).toContain('Grauerle');
     expect(r.html).toContain('zu warm 2/2');
+    expect(r.html).toContain('data-plant-id="g"');                       // a click opens the plant (#603)
+    expect(r.html).toContain('popovertarget="clim-i-koeppen"');            // explanations (#603)
+    expect(r.html).not.toContain('grid-cols-4');
+    expect(explorerOutHtml(site, f, s2045, 'tann', 'de', [], true).html).toContain('grid-cols-4'); // zoomer layout (#602)
     expect(explorerOutHtml(site, f, { year: 2080, ssp: 'SSP1-2.6', model: 'all' }, 'hot', 'de', []).mode).toBe('Hochrechnung SSP1-2.6');
   });
 });

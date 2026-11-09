@@ -31,6 +31,17 @@ const T = {
     } as Record<ClimateStatus, string>,
     fan: 'Szenarien im Vergleich', fanNote: 'Globale Erwärmung gegenüber 1850–1900, Median und sehr wahrscheinlicher Bereich (5–95 %), IPCC AR6 WG1, Tabelle SPM.1. Über Land und in Mitteleuropa fällt die Erwärmung höher aus. Die Modelldaten folgen etwa SSP5-8.5 und enden 2050.',
     more: 'Mehr dazu', twin: 'Klimatische Zwillingsstädte (UBA)', dwd: 'Deutscher Klimaatlas (DWD)', geo: 'Verschiebung der Klimazonen (GeoSphere Austria)',
+    info: 'Erklärung',
+    infoZone: 'USDA-Winterhärtezone: eingeteilt nach der tiefsten Temperatur, die im Mittel einmal im Winter erreicht wird, in Schritten von 5,6 K (a/b je halbe Zone). 6b heißt etwa −20,6 bis −17,8 °C, 7b −14,9 bis −12,2 °C. Pflanzenlisten geben einen Bereich an („5–9“): unter der unteren Zone erfriert die Pflanze, über der oberen fehlt oft der Kältereiz für Blüte und Frucht, seltener ist es Hitze. „Um <Jahr>“: die Zone, die der Standort mit der Erwärmung der Klimamodelle bekommt – eine pro Modell.',
+    infoModels: 'Sieben Klimamodelle aus dem Projekt CMIP6 HighResMIP (besonders feine Gitter), von Open-Meteo auf 10 km herunterskaliert und je Monat an gemessene Werte angeglichen. Alle rechnen mit hohen Emissionen bis 2050. Gezeigt wird je Modell nur die Änderung gegenüber 1994–2023 im selben Modell, aufgeschlagen auf das gemessene Klima. „Alle“: Median der Modelle, die Fläche zeigt ihre Spanne.',
+    models: [['EC-Earth3P-HR', 'Europa (SMHI u. a.), 29 km, gekoppelt'], ['MPI-ESM1-2-XR', 'Deutschland (MPI-M Hamburg), 51 km, gekoppelt'], ['CMCC-CM2-VHR4', 'Italien (CMCC), 30 km, gekoppelt'], ['MRI-AGCM3-2-S', 'Japan (MRI), 20 km, Atmosphäre'], ['HiRAM-SIT-HR', 'Taiwan (AS-RCEC), 25 km, Atmosphäre + einfacher Ozean'], ['NICAM16-8S', 'Japan (JAMSTEC), 31 km, Atmosphäre'], ['FGOALS-f3-H', 'China (CAS), 28 km, Atmosphäre']],
+    modelsNote: '„Gekoppelt“: das Modell rechnet Ozean und Meereis mit; „Atmosphäre“: künftige Meerestemperaturen sind vorgegeben. Quelle: Open-Meteo Climate API (CC BY 4.0).',
+    infoSsp: 'Emissionsszenarien des Weltklimarats (IPCC AR6): SSP1-2.6 starker Klimaschutz, SSP2-4.5 mittlerer Weg, SSP3-7.0 Rivalität und hohe Emissionen, SSP5-8.5 fossiler Ausbau. Bis {y} folgen die Modelldaten etwa SSP5-8.5; danach wird die Änderung der Modelle mit der globalen Erwärmung des gewählten Szenarios hochgerechnet (Tabelle SPM.1). Für Bäume, die 2080 noch tragen sollen, ist das der wichtigere Teil.',
+    infoMetric: 'Jahresmittel: Mittel der Tagesmitteltemperatur. Tiefste Temperatur: kältester Wert eines Jahres (Grundlage der Winterhärtezone). Hitzetage: Tage mit mindestens 30 °C. Frosttage: Tage, an denen es unter 0 °C abkühlt. Sommerregen: Niederschlag Juni–August in Prozent gegenüber 1994–2023. Alle als 11-Jahres-Mittel um das Jahr.',
+    infoMode: 'Modelldaten: Werte direkt aus den Klimamodellen (bis {y}, dem letzten Jahr mit vollem 11-Jahres-Fenster). Hochrechnung: danach skaliert die Änderung um {y} mit der globalen Erwärmung des Szenarios – grob, Hitze und Trockenheit steigen in Wirklichkeit eher stärker.',
+    infoRange: 'Median: der mittlere Wert der Modelle (die Hälfte liegt darüber, die Hälfte darunter). Spanne: kleinster bis größter Wert der Modelle; bei einer Hochrechnung zusätzlich der sehr wahrscheinliche Bereich (5–95 %) des Szenarios. Je breiter die Spanne, desto unsicherer.',
+    infoKoeppen: 'Köppen-Geiger-Klasse (Kottek u. a. 2006) aus Monatsmitteln von Temperatur und Niederschlag. 1. Buchstabe Hauptklima: A tropisch, B trocken, C gemäßigt, D kontinental (kalte Winter), E polar. 2. Buchstabe Niederschlag: f ganzjährig feucht, s trockene Sommer, w trockene Winter (bei B: W Wüste, S Steppe). 3. Buchstabe Sommer: a heiß (wärmster Monat ≥ 22 °C), b warm, c kühl. Cfb → Cfa heißt: aus warmen werden heiße Sommer. Berechnet aus den Modellen (Mehrheit).',
+    infoWarm: '„zu warm 3/7“: in 3 von 7 Modellen liegt die Zone des Standorts im Zieljahr über der oberen Zone der Pflanze. „wird möglich 2/7“: heute zu kalt, im Zieljahr in 2 Modellen im Bereich. Klick auf eine Pflanze öffnet sie zum Bearbeiten.',
     note: 'Bis {y}: sieben Klimamodelle (CMIP6 HighResMIP, hoher Emissionspfad, Open-Meteo, CC BY 4.0), je Modell die Änderung gegenüber 1994–2023 als 11-Jahres-Mittel, auf das gemessene Klima aufgeschlagen. Danach grobe Hochrechnung: die Änderung um {y} wird mit der globalen Erwärmung des Szenarios skaliert (IPCC AR6). Eine Bandbreite, keine Prognose. Hinweise und Vorschläge des Plans nutzen diese Auswahl.',
   },
   en: {
@@ -53,10 +64,36 @@ const T = {
     } as Record<ClimateStatus, string>,
     fan: 'Scenarios compared', fanNote: 'Global warming against 1850–1900, median and very likely range (5–95 %), IPCC AR6 WG1, table SPM.1. Warming over land and in Central Europe is higher. The model data follow roughly SSP5-8.5 and end in 2050.',
     more: 'More', twin: 'Climate twin cities (UBA)', dwd: 'German climate atlas (DWD)', geo: 'Shifting climate zones (GeoSphere Austria)',
+    info: 'Explanation',
+    infoZone: 'USDA hardiness zone: by the lowest temperature reached once a winter on average, in steps of 5.6 K (a/b half zones). 6b is about −20.6 to −17.8 °C, 7b −14.9 to −12.2 °C. Plant lists give a range (“5–9”): below the lowest zone the plant freezes, above the highest it often lacks the winter chill for flowers and fruit, more rarely it is heat. “Around <year>”: the zone the site gets with each climate model’s warming – one per model.',
+    infoModels: 'Seven climate models of the CMIP6 HighResMIP project (very fine grids), downscaled by Open-Meteo to 10 km and adjusted to measured values per month. All follow high emissions up to 2050. Shown is each model’s change against 1994–2023 in the same model, added to the measured climate. “All”: median of the models, the band shows their range.',
+    models: [['EC-Earth3P-HR', 'Europe (SMHI et al.), 29 km, coupled'], ['MPI-ESM1-2-XR', 'Germany (MPI-M Hamburg), 51 km, coupled'], ['CMCC-CM2-VHR4', 'Italy (CMCC), 30 km, coupled'], ['MRI-AGCM3-2-S', 'Japan (MRI), 20 km, atmosphere'], ['HiRAM-SIT-HR', 'Taiwan (AS-RCEC), 25 km, atmosphere + simple ocean'], ['NICAM16-8S', 'Japan (JAMSTEC), 31 km, atmosphere'], ['FGOALS-f3-H', 'China (CAS), 28 km, atmosphere']],
+    modelsNote: '“Coupled”: the model computes ocean and sea ice too; “atmosphere”: future sea temperatures are given. Source: Open-Meteo Climate API (CC BY 4.0).',
+    infoSsp: 'Emission scenarios of the IPCC (AR6): SSP1-2.6 strong climate protection, SSP2-4.5 middle of the road, SSP3-7.0 rivalry and high emissions, SSP5-8.5 fossil growth. Up to {y} the model data follow roughly SSP5-8.5; after that the models’ change is scaled with the chosen scenario’s global warming (table SPM.1). For trees that should still bear in 2080 that is the more important part.',
+    infoMetric: 'Annual mean: mean of the daily mean temperature. Lowest temperature: the coldest value of a year (basis of the hardiness zone). Hot days: days with at least 30 °C. Frost days: days that cool below 0 °C. Summer rain: rain June–August in percent against 1994–2023. All as 11-year means around the year.',
+    infoMode: 'Model data: values straight from the climate models (up to {y}, the last year with a full 11-year window). Projection: after that the change around {y} is scaled with the scenario’s global warming – rough; heat and drought tend to rise faster in reality.',
+    infoRange: 'Median: the middle value of the models (half above, half below). Range: lowest to highest model; for a projection also the scenario’s very likely range (5–95 %). The wider the range, the less certain.',
+    infoKoeppen: 'Köppen-Geiger class (Kottek et al. 2006) from monthly temperature and rain. 1st letter main climate: A tropical, B dry, C temperate, D continental (cold winters), E polar. 2nd letter rain: f wet all year, s dry summers, w dry winters (for B: W desert, S steppe). 3rd letter summer: a hot (warmest month ≥ 22 °C), b warm, c cool. Cfb → Cfa means warm summers become hot. Computed from the models (majority).',
+    infoWarm: '“too warm 3/7”: in 3 of 7 models the site’s zone in the target year is above the plant’s highest zone. “becomes possible 2/7”: too cold today, within range in 2 models in the target year. A click on a plant opens it for editing.',
     note: 'Up to {y}: seven climate models (CMIP6 HighResMIP, high emission path, Open-Meteo, CC BY 4.0), per model the change against 1994–2023 as an 11-year mean, added to the measured climate. After that a rough projection: the change around {y} scaled with the scenario’s global warming (IPCC AR6). A range, not a forecast. The plan’s hints and suggestions use this choice.',
   },
 };
 const fill = (s: string, v: Record<string, string | number>) => s.replace(/\{(\w+)\}/g, (_, k) => String(v[k] ?? ''));
+
+/** An "i" that opens a short explanation (native popover, #603); `html` is already escaped markup. */
+export function infoHtml(key: string, html: string, label: string): string {
+  return `<button type="button" popovertarget="clim-i-${key}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}" class="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full align-middle text-[10px] font-semibold italic text-stone-500 ring-1 ring-stone-300 hover:bg-stone-200 hover:text-stone-800 dark:text-stone-400 dark:ring-stone-600 dark:hover:bg-stone-700">i</button>`
+    + `<div id="clim-i-${key}" popover class="m-auto max-w-md rounded-lg bg-white p-4 text-sm leading-relaxed text-stone-700 shadow-xl ring-1 ring-stone-200 dark:bg-stone-800 dark:text-stone-200 dark:ring-stone-700">${html}</div>`;
+}
+const para = (s: string) => `<p>${escapeHtml(s)}</p>`;
+/** The explanations as markup, by key (the page uses 'zone' beside "Zone um <Jahr>"). */
+export function infoText(key: 'zone' | 'models' | 'ssp' | 'metric' | 'mode' | 'range' | 'koeppen' | 'warm', lang: Lang): string {
+  const L = T[lang];
+  if (key === 'models') return para(L.infoModels) + `<ul class="my-2 list-disc pl-5">${L.models.map(([n, d]) => `<li><b>${escapeHtml(n)}</b>: ${escapeHtml(d)}</li>`).join('')}</ul>` + para(L.modelsNote);
+  const txt = { zone: L.infoZone, ssp: L.infoSsp, metric: L.infoMetric, mode: L.infoMode, range: L.infoRange, koeppen: L.infoKoeppen, warm: L.infoWarm }[key];
+  return para(fill(txt, { y: LAST_DATA_YEAR }));
+}
+const info = (key: Parameters<typeof infoText>[0], lang: Lang) => infoHtml(key, infoText(key, lang), T[lang].info);
 
 export const STATUS_COLOR: Record<ClimateStatus, string> = { fit: '#16a34a', becomesPossible: '#3b82f6', underPressure: '#d97706', notHardy: '#dc2626' };
 const ACCENT = '#16a34a', WARM = '#ea580c', COLD = '#3b82f6';
@@ -64,33 +101,37 @@ const SSP_COLOR: Record<Ssp, string> = { 'SSP1-2.6': '#3b82f6', 'SSP2-4.5': '#16
 const median = (a: number[]) => { const s = [...a].sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
 const mode = (a: string[]) => { const c = new Map<string, number>(); a.forEach(v => c.set(v, (c.get(v) ?? 0) + 1)); return [...c].sort((x, y) => y[1] - x[1])[0]?.[0] ?? ''; };
 function niceStep(raw: number) { const p = 10 ** Math.floor(Math.log10(raw || 1)), n = raw / p; return (n < 1.5 ? 1 : n < 3.5 ? 2 : n < 7.5 ? 5 : 10) * p; }
-const SVG = (w: number, h: number, label: string, body: string) =>
-  `<svg viewBox="0 0 ${w} ${h}" class="block h-auto w-full" font-size="9" fill="currentColor" role="img" aria-label="${escapeHtml(label)}">${body}</svg>`;
+const SVG = (w: number, h: number, label: string, body: string, fs = 9) =>
+  `<svg viewBox="0 0 ${w} ${h}" class="block h-auto w-full" font-size="${fs}" fill="currentColor" role="img" aria-label="${escapeHtml(label)}">${body}</svg>`;
+/** Drawing sizes: the sidebar box, or the zoomer (#602: twice as wide, text a bit larger, so it reads like the page). */
+const SIZE = { narrow: { W: 340, H: 190, fs: 9, rh: 18, fanH: 150 }, wide: { W: 680, H: 280, fs: 11, rh: 22, fanH: 190 } };
+type Size = typeof SIZE.narrow;
 
 /** The controls; drawn once per panel render so the year slider keeps working while it is dragged. */
 export function explorerControlsHtml(f: FutureClimate, s: ClimateScenario, metric: FutureMetric, lang: Lang): string {
   const L = T[lang];
   const sel = 'min-w-0 flex-1 rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1.5 py-0.5 text-xs';
-  const lbl = 'w-16 shrink-0 text-stone-500 dark:text-stone-400';
+  const lbl = 'w-20 shrink-0 text-stone-500 dark:text-stone-400';
   return `<div class="space-y-1.5">
     <div class="flex items-center gap-2"><label for="clim-year" class="${lbl}">${escapeHtml(L.year)}</label>
       <input id="clim-year" data-clim-year type="range" min="${TARGET_YEARS[0]}" max="${TARGET_YEARS[1]}" step="1" value="${s.year}" class="min-w-0 flex-1 accent-green-700" />
       <output for="clim-year" data-clim-year-out class="w-9 text-right text-sm font-semibold tabular-nums">${s.year}</output></div>
-    <div class="flex items-center gap-2"><span class="${lbl}">${escapeHtml(L.ssp)}</span><span class="flex flex-wrap gap-1" role="group" aria-label="${escapeHtml(L.ssp)}">${SSPS.map(x =>
+    <div class="flex items-center gap-2"><span class="${lbl} inline-flex items-center gap-1">${escapeHtml(L.ssp)} ${info('ssp', lang)}</span><span class="flex flex-wrap gap-1" role="group" aria-label="${escapeHtml(L.ssp)}">${SSPS.map(x =>
       `<button type="button" data-clim-ssp="${x}" aria-pressed="${s.ssp === x}" class="rounded-full px-1.5 py-0.5 text-[10px] ring-1 ring-stone-300 dark:ring-stone-600 aria-pressed:bg-green-700 aria-pressed:text-white aria-pressed:ring-green-700">${x.replace('SSP', '')}</button>`).join('')}</span></div>
-    <p data-clim-mode class="pl-[4.5rem] text-[10px]"></p>
-    <div class="flex items-center gap-2"><label for="clim-model" class="${lbl}">${escapeHtml(L.model)}</label><select id="clim-model" data-clim-model class="${sel}">
+    <p class="flex items-center gap-1 pl-[5.5rem] text-[10px]"><span data-clim-mode></span>${info('mode', lang)}</p>
+    <div class="flex items-center gap-2"><span class="${lbl} inline-flex items-center gap-1"><label for="clim-model">${escapeHtml(L.model)}</label> ${info('models', lang)}</span><select id="clim-model" data-clim-model class="${sel}">
       <option value="all"${s.model === 'all' ? ' selected' : ''}>${escapeHtml(L.all)}</option>${availableModels(f).map(m => `<option value="${m}"${s.model === m ? ' selected' : ''}>${escapeHtml(modelLabel(m))}</option>`).join('')}</select></div>
-    <div class="flex items-center gap-2"><label for="clim-metric" class="${lbl}">${escapeHtml(L.metric)}</label><select id="clim-metric" data-clim-metric class="${sel}">
+    <div class="flex items-center gap-2"><span class="${lbl} inline-flex items-center gap-1"><label for="clim-metric">${escapeHtml(L.metric)}</label> ${info('metric', lang)}</span><select id="clim-metric" data-clim-metric class="${sel}">
       ${FUTURE_METRICS.map(m => `<option value="${m}"${metric === m ? ' selected' : ''}>${escapeHtml(L.metrics[m])}</option>`).join('')}</select></div>
   </div>`;
 }
 
-export interface RulerPlant extends Pick<PlantData, 'climateZone' | 'waterDry' | 'waterMid' | 'waterWet'> { name: string }
+export interface RulerPlant extends Pick<PlantData, 'id' | 'climateZone' | 'waterDry' | 'waterMid' | 'waterWet'> { name: string }
 
 /** Everything that follows the choice: mode label, course chart, key figures, zone ruler, scenario fan, links, note. */
-export function explorerOutHtml(c: SiteClimate, f: FutureClimate, s: ClimateScenario, metric: FutureMetric, lang: Lang, plants: RulerPlant[]): { mode: string; html: string } {
+export function explorerOutHtml(c: SiteClimate, f: FutureClimate, s: ClimateScenario, metric: FutureMetric, lang: Lang, plants: RulerPlant[], wide = false): { mode: string; html: string } {
   const L = T[lang];
+  const Z = wide ? SIZE.wide : SIZE.narrow, k = Z.fs / 9;
   const nf = (v: number, d: number, sign = true) => new Intl.NumberFormat(lang, { maximumFractionDigits: d, minimumFractionDigits: d, ...(sign ? { signDisplay: 'exceptZero' as const } : {}) }).format(v);
   const projected = s.year > LAST_DATA_YEAR;
   const all = availableModels(f), ms = scenarioModels(f, s), one = ms.length === 1 && s.model !== 'all' ? ms[0] : null;
@@ -101,7 +142,7 @@ export function explorerOutHtml(c: SiteClimate, f: FutureClimate, s: ClimateScen
   const main = targets.length ? (one ? targets[0] : median(targets)) : 0;
 
   // ── course ──
-  const W = 340, H = 190, Lx = 30, R = 6, Ty = 14, B = 18, x0 = 1999, x1 = 2100;
+  const { W, H } = Z, Lx = 30 * k, R = 6, Ty = 14 * k, B = 18 * k, x0 = 1999, x1 = 2100;
   const X = (y: number) => Lx + (y - x0) / (x1 - x0) * (W - Lx - R);
   const years: number[] = []; for (let y = x0; y <= LAST_DATA_YEAR; y++) years.push(y);
   const series = new Map(all.map(m => [m, years.map(y => at(m, y) ?? 0)]));
@@ -126,7 +167,7 @@ export function explorerOutHtml(c: SiteClimate, f: FutureClimate, s: ClimateScen
   g += `<polyline points="${pts(projLine)}" fill="none" stroke="${WARM}" stroke-width="1.8" stroke-dasharray="4 3"/>`;
   g += `<line x1="${X(s.year)}" x2="${X(s.year)}" y1="${Ty}" y2="${H - B}" stroke="currentColor" stroke-opacity=".7"/><circle cx="${X(s.year)}" cy="${Y(main)}" r="3.5" fill="currentColor"/>`;
   g += `<text x="${Lx}" y="${Ty - 4}" fill-opacity=".7">${escapeHtml(fill(L.delta, { m: L.metrics[metric], u: unit }))}</text>`;
-  const chart = SVG(W, H, fill(L.delta, { m: L.metrics[metric], u: unit }), g);
+  const chart = SVG(W, H, fill(L.delta, { m: L.metrics[metric], u: unit }), g, Z.fs);
 
   // ── key figures ──
   const o = futureOutlook(c, f, s);
@@ -134,19 +175,19 @@ export function explorerOutHtml(c: SiteClimate, f: FutureClimate, s: ClimateScen
   const kp = ms.map(m => modelKoeppen(f, m, s)).filter((v): v is [string, string] => !!v);
   const kr = mode(kp.map(k => k[0])), kt = mode(kp.map(k => k[1]));
   const who = one ? modelLabel(one) : fill(L.median, { n: ms.length });
-  const stat = (b: string, t: string) => `<div class="rounded-md bg-white/70 dark:bg-stone-800/60 p-1.5 ring-1 ring-stone-200 dark:ring-stone-700"><b class="block text-sm tabular-nums">${b}</b><span class="text-[10px] leading-tight text-stone-500 dark:text-stone-400">${t}</span></div>`;
+  const stat = (b: string, t: string, i = '') => `<div class="rounded-md bg-white/70 dark:bg-stone-800/60 p-1.5 ring-1 ring-stone-200 dark:ring-stone-700"><b class="block text-sm tabular-nums">${b}</b><span class="inline-flex items-start gap-1 text-[10px] leading-tight text-stone-500 dark:text-stone-400"><span>${t}</span>${i}</span></div>`;
   const zoneTxt = zt.length ? `${zoneLabel(c.zone)} → ${zoneLabel(zt[0])}${zt[zt.length - 1] !== zt[0] ? '–' + zoneLabel(zt[zt.length - 1]) : ''}` : '—';
-  const stats = `<div class="grid grid-cols-2 gap-1.5">${[
+  const stats = `<div class="grid ${wide ? 'grid-cols-4' : 'grid-cols-2'} gap-1.5">${[
     stat(`${nf(main, d)} ${escapeHtml(unit)}`, escapeHtml(fill(L.valueAt, { m: L.metrics[metric], y: s.year, who }))),
-    stat(targets.length > 1 ? `${nf(Math.min(...targets), d)} … ${nf(Math.max(...targets), d)}` : '—', escapeHtml(projected ? fill(L.rangeProj, { s: s.ssp }) : fill(L.range, { n: ms.length }))),
-    stat(zoneTxt, escapeHtml(L.zone)),
-    stat(kr ? `${kr} → ${kt}` : '—', escapeHtml(L.koeppen)),
+    stat(targets.length > 1 ? `${nf(Math.min(...targets), d)} … ${nf(Math.max(...targets), d)}` : '—', escapeHtml(projected ? fill(L.rangeProj, { s: s.ssp }) : fill(L.range, { n: ms.length })), info('range', lang)),
+    stat(zoneTxt, escapeHtml(L.zone), info('zone', lang)),
+    stat(kr ? `${kr} → ${kt}` : '—', escapeHtml(L.koeppen), info('koeppen', lang)),
   ].join('')}</div>`;
 
   return {
     mode: projected ? fill(L.proj, { s: s.ssp }) : L.data,
-    html: `${chart}${stats}${rulerHtml(c, o, plants, lang)}
-      <details class="text-[10px]"><summary class="cursor-pointer font-semibold text-stone-600 dark:text-stone-300">${escapeHtml(L.fan)}</summary>${fanSvg(s.ssp)}<p class="text-stone-500 dark:text-stone-400">${escapeHtml(L.fanNote)}</p></details>
+    html: `${chart}${stats}${rulerHtml(c, o, plants, lang, Z)}
+      <details class="text-[10px]"${wide ? ' open' : ''}><summary class="cursor-pointer font-semibold text-stone-600 dark:text-stone-300">${escapeHtml(L.fan)}</summary>${fanSvg(s.ssp, Z)}<p class="text-stone-500 dark:text-stone-400">${escapeHtml(L.fanNote)}</p></details>
       <p class="text-[10px] text-stone-500 dark:text-stone-400">${escapeHtml(L.more)}: <a class="underline" href="https://kunden.dwd.de/klimaatlas/" target="_blank" rel="noopener">${escapeHtml(L.dwd)}</a> · <a class="underline" href="https://klimaportal.geosphere.at/informationsportal-klimawandel/klimazonen.html" target="_blank" rel="noopener">${escapeHtml(L.geo)}</a> · <a class="underline" href="https://www.umweltbundesamt.de/klimatische-zwillingsstaedte-in-europa" target="_blank" rel="noopener">${escapeHtml(L.twin)}</a></p>
       <p class="text-[10px] text-stone-500 dark:text-stone-400">${escapeHtml(fill(L.note, { y: LAST_DATA_YEAR }))}</p>`,
   };
@@ -156,49 +197,50 @@ const ORDER: Record<ClimateStatus, number> = { underPressure: 0, notHardy: 1, be
 const MAX_ROWS = 12;
 
 /** Site today (blue) and per model in the target year (orange), each plant's zone range coloured by its status. */
-function rulerHtml(c: SiteClimate, o: ReturnType<typeof futureOutlook>, plants: RulerPlant[], lang: Lang): string {
+function rulerHtml(c: SiteClimate, o: ReturnType<typeof futureOutlook>, plants: RulerPlant[], lang: Lang, Z: Size): string {
   const L = T[lang];
   const rows = plants.map(p => ({ p, r: plantZoneRange(p.climateZone), ck: climateCheck(p, c, o) }))
     .filter((x): x is { p: RulerPlant; r: [number, number]; ck: NonNullable<ReturnType<typeof climateCheck>> } => !!x.r && !!x.ck)
     .sort((a, b) => ORDER[a.ck.status] - ORDER[b.ck.status] || a.p.name.localeCompare(b.p.name, lang));
   const shown = rows.length > MAX_ROWS ? rows.filter((x, i) => x.ck.status !== 'fit' || i < MAX_ROWS) : rows;
   const hidden = rows.length - shown.length;
-  const W = 340, z0 = 2, z1 = 11, xa = 104, xb = 268, X = (z: number) => xa + (z - z0) / (z1 - z0) * (xb - xa);
-  const top = 50, rh = 18, H = top + Math.max(shown.length, 1) * rh + 4;
+  const k = Z.fs / 9, W = Z.W, z0 = 2, z1 = 11, xa = 104 * k, xb = W - 72 * k, X = (z: number) => xa + (z - z0) / (z1 - z0) * (xb - xa);
+  const top = 50 * k, rh = Z.rh, H = top + Math.max(shown.length, 1) * rh + 4;
   const zs = o.zones, tMin = zs[0] ?? c.zone, tMax = (zs[zs.length - 1] ?? c.zone) + 0.5;
   let g = `<defs><linearGradient id="clim-fade" x1="0" x2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient><mask id="clim-fm" maskContentUnits="objectBoundingBox"><rect width="1" height="1" fill="url(#clim-fade)"/></mask></defs>`;
-  for (let z = z0; z <= z1; z++) g += `<text x="${X(z)}" y="9" text-anchor="middle" fill-opacity=".6">${z}</text><line x1="${X(z)}" x2="${X(z)}" y1="13" y2="${H}" stroke="currentColor" stroke-opacity=".1"/>`;
-  g += `<rect x="${X(tMin)}" y="20" width="${X(tMax) - X(tMin)}" height="${H - 20}" fill="${WARM}" fill-opacity=".1"/>`;
-  g += `<line x1="${X(c.zone + 0.25)}" x2="${X(c.zone + 0.25)}" y1="20" y2="${H}" stroke="${COLD}" stroke-width="1.2" stroke-dasharray="3 2"/>`;
-  g += `<text x="0" y="33" font-weight="600" font-size="10">${escapeHtml(L.site)}</text><text x="${xa - 6}" y="33" text-anchor="end" fill-opacity=".6">${escapeHtml(zoneLabel(c.zone))} → ${escapeHtml(zoneLabel(tMin))}${tMax - 0.5 > tMin ? '–' + escapeHtml(zoneLabel(tMax - 0.5)) : ''}</text>`;
-  g += `<circle cx="${X(c.zone + 0.25)}" cy="30" r="4.5" fill="${COLD}"><title>${escapeHtml(L.today)}: ${zoneLabel(c.zone)}</title></circle>`;
+  for (let z = z0; z <= z1; z++) g += `<text x="${X(z)}" y="${9 * k}" text-anchor="middle" fill-opacity=".6">${z}</text><line x1="${X(z)}" x2="${X(z)}" y1="${13 * k}" y2="${H}" stroke="currentColor" stroke-opacity=".1"/>`;
+  g += `<rect x="${X(tMin)}" y="${20 * k}" width="${X(tMax) - X(tMin)}" height="${H - 20 * k}" fill="${WARM}" fill-opacity=".1"/>`;
+  g += `<line x1="${X(c.zone + 0.25)}" x2="${X(c.zone + 0.25)}" y1="${20 * k}" y2="${H}" stroke="${COLD}" stroke-width="1.2" stroke-dasharray="3 2"/>`;
+  g += `<text x="0" y="${33 * k}" font-weight="600" font-size="${Z.fs + 1}">${escapeHtml(L.site)}</text><text x="${xa - 6}" y="${33 * k}" text-anchor="end" fill-opacity=".6">${escapeHtml(zoneLabel(c.zone))} → ${escapeHtml(zoneLabel(tMin))}${tMax - 0.5 > tMin ? '–' + escapeHtml(zoneLabel(tMax - 0.5)) : ''}</text>`;
+  g += `<circle cx="${X(c.zone + 0.25)}" cy="${30 * k}" r="${4.5 * k}" fill="${COLD}"><title>${escapeHtml(L.today)}: ${zoneLabel(c.zone)}</title></circle>`;
   const byZone = new Map<number, number>();
   for (const z of zs) {
     const i = byZone.get(z) ?? 0; byZone.set(z, i + 1);
-    g += `<circle cx="${X(z + 0.25) + (i % 2 ? 1 : -1) * Math.ceil(i / 2) * 6}" cy="30" r="3" fill="${WARM}" stroke="#fff" stroke-width=".7"><title>${zoneLabel(z)} (${o.scenario.year})</title></circle>`;
+    g += `<circle cx="${X(z + 0.25) + (i % 2 ? 1 : -1) * Math.ceil(i / 2) * 6 * k}" cy="${30 * k}" r="${3 * k}" fill="${WARM}" stroke="#fff" stroke-width=".7"><title>${zoneLabel(z)} (${o.scenario.year})</title></circle>`;
   }
   g += `<line x1="0" x2="${W}" y1="${top - 8}" y2="${top - 8}" stroke="currentColor" stroke-opacity=".15"/>`;
   shown.forEach(({ p, r, ck }, i) => {
     const y = top + i * rh, col = STATUS_COLOR[ck.status];
     const name = p.name.length > 20 ? p.name.slice(0, 19) + '…' : p.name;
-    g += `<text x="0" y="${y + 8}" font-size="10"><title>${escapeHtml(p.name)}</title>${escapeHtml(name)}</text><text x="${xa - 6}" y="${y + 8}" text-anchor="end" fill-opacity=".6">${r[0]}–${ck.maxZone ?? '?'}</text>`;
+    // a click opens the plant for editing (#603)
+    g += `<g data-plant-id="${escapeHtml(p.id)}" tabindex="0" role="button" aria-label="${escapeHtml(p.name)}" style="cursor:pointer"><rect x="0" y="${y - 3 * k}" width="${W}" height="${rh}" fill="transparent"/><text x="0" y="${y + 8 * k}" font-size="${Z.fs + 1}"><title>${escapeHtml(p.name)}</title>${escapeHtml(name)}</text><text x="${xa - 6}" y="${y + 8 * k}" text-anchor="end" fill-opacity=".6">${r[0]}–${ck.maxZone ?? '?'}</text>`;
     const x1 = X(r[0]), x2 = ck.maxZone != null ? X(ck.maxZone + 1) : X(z1);
-    g += `<rect x="${x1}" y="${y}" width="${Math.max(2, x2 - x1)}" height="9" rx="2" fill="${col}" fill-opacity=".6"${ck.maxZone == null ? ' mask="url(#clim-fm)"' : ''}><title>${escapeHtml(ck.maxZone == null ? L.unknownMax : `${r[0]}–${ck.maxZone}`)}</title></rect>`;
+    g += `<rect x="${x1}" y="${y}" width="${Math.max(2, x2 - x1)}" height="${9 * k}" rx="2" fill="${col}" fill-opacity=".6"${ck.maxZone == null ? ' mask="url(#clim-fm)"' : ''}><title>${escapeHtml(ck.maxZone == null ? L.unknownMax : `${r[0]}–${ck.maxZone}`)}</title></rect>`;
     const label = ck.status === 'underPressure' ? (ck.tooWarm ? fill(L.warmN, { n: ck.tooWarm, of: ck.models }) : L.drier)
       : ck.status === 'becomesPossible' && ck.models > 1 ? fill(L.possibleN, { n: ck.fits, of: ck.models }) : L.status[ck.status];
-    g += `<text x="${xb + 6}" y="${y + 8}" fill="${col}" font-weight="600">${escapeHtml(label)}</text>`;
+    g += `<text x="${xb + 6}" y="${y + 8 * k}" fill="${col}" font-weight="600">${escapeHtml(label)}</text></g>`;
   });
   if (!shown.length) g += `<text x="0" y="${top + 8}" fill-opacity=".6">${escapeHtml(L.noPlants)}</text>`;
   const legend = (Object.keys(ORDER) as ClimateStatus[]).sort((a, b) => ORDER[b] - ORDER[a])
     .map(k => `<span class="inline-flex items-start gap-1"><i class="mt-0.5 inline-block h-2 w-2 shrink-0 rounded-full" style="background:${STATUS_COLOR[k]}"></i>${escapeHtml(L.legend[k])}</span>`).join('');
-  return `<p class="pt-1 text-xs font-semibold">${escapeHtml(L.ruler)}</p>${SVG(W, H, L.ruler, g)}
+  return `<p class="flex items-center gap-1 pt-1 text-xs font-semibold">${escapeHtml(L.ruler)} ${info('warm', lang)}</p>${SVG(W, H, L.ruler, g, Z.fs)}
     ${hidden ? `<p class="text-[10px] text-stone-500 dark:text-stone-400">${escapeHtml(fill(L.moreFit, { n: hidden }))}</p>` : ''}
     <div class="grid gap-0.5 text-[10px] text-stone-500 dark:text-stone-400">${legend}</div>`;
 }
 
 /** IPCC AR6: global warming per scenario and period, the plan's scenario highlighted. */
-function fanSvg(active: Ssp): string {
-  const W = 340, H = 150, Lx = 26, Ty = 8, B = 20, groups = ['2021–40', '2041–60', '2081–2100'];
+function fanSvg(active: Ssp, Z: Size): string {
+  const k = Z.fs / 9, W = Z.W, H = Z.fanH, Lx = 26 * k, Ty = 8 * k, B = 20 * k, groups = ['2021–40', '2041–60', '2081–2100'];
   const Y = (v: number) => Ty + (6 - v) / 6 * (H - Ty - B), gw = (W - Lx - 4) / 3;
   let g = '';
   for (let v = 0; v <= 6; v += 1) g += `<line x1="${Lx}" x2="${W - 4}" y1="${Y(v)}" y2="${Y(v)}" stroke="currentColor" stroke-opacity=".12"/><text x="${Lx - 3}" y="${Y(v) + 3}" text-anchor="end" fill-opacity=".6">${v}°</text>`;
@@ -211,8 +253,8 @@ function fanSvg(active: Ssp): string {
       g += `<line x1="${x}" x2="${x}" y1="${Y(a)}" y2="${Y(b)}" stroke="${SSP_COLOR[s]}" stroke-width="${on ? 7 : 5}" stroke-linecap="round" stroke-opacity="${on ? 0.6 : 0.3}"/><circle cx="${x}" cy="${Y(m)}" r="${on ? 4 : 3}" fill="${SSP_COLOR[s]}"><title>${s}: ${m} °C (${a}–${b})</title></circle>`;
     });
   });
-  const leg = SSPS.map((s, i) => `<g transform="translate(${Lx + i * 78},${Ty + 4})"><circle r="3" cx="3" cy="-3" fill="${SSP_COLOR[s]}"/><text x="9" y="0" font-weight="${s === active ? 700 : 400}">${s}</text></g>`).join('');
-  return SVG(W, H, 'IPCC AR6', g + leg);
+  const leg = SSPS.map((s, i) => `<g transform="translate(${Lx + i * 78 * k},${Ty + 4})"><circle r="3" cx="3" cy="-3" fill="${SSP_COLOR[s]}"/><text x="9" y="0" font-weight="${s === active ? 700 : 400}">${s}</text></g>`).join('');
+  return SVG(W, H, 'IPCC AR6', g + leg, Z.fs);
 }
 
 /** Short status text for a dot or tooltip ("klimafest um 2050", "zu warm 3/7 um 2050"). */

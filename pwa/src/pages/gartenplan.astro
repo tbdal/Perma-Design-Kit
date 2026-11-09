@@ -258,8 +258,8 @@ import Layout from '../layouts/Layout.astro';
         <div class="lg:col-span-2 2xl:col-span-3 space-y-2">
           <div data-feature="row" id="row-draw-bar" class="hidden flex flex-wrap items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-900/30 px-3 py-2 text-xs text-amber-900 dark:text-amber-100 ring-1 ring-amber-200 dark:ring-amber-800">
             <span id="row-draw-hint" class="mr-auto"></span>
-            <label id="row-pattern-wrap" class="inline-flex items-center gap-1"><span data-i18n="rowPattern">Was</span>
-              <select id="row-pattern" class="max-w-48 rounded-md border border-amber-300 dark:border-amber-700 bg-white dark:bg-stone-900 px-1.5 py-0.5"></select></label>
+            <span id="row-pattern-wrap" class="inline-flex items-center gap-2"><label class="inline-flex items-center gap-1"><input id="row-agro" type="checkbox" class="accent-green-700" /> <span data-i18n="rowAgroOn">Agroforst-Reihe pflanzen statt einer Pflanze</span></label>
+              <select id="row-pattern" aria-label="Agroforst-Reihe" class="max-w-48 rounded-md border border-amber-300 dark:border-amber-700 bg-white dark:bg-stone-900 px-1.5 py-0.5"></select></span>
             <label class="inline-flex items-center gap-1"><span id="row-spacing-label" data-i18n="rowSpacing">Abstand</span>
               <input id="row-spacing" type="number" min="0.1" max="50" step="0.1" value="1" class="w-16 rounded-md border border-amber-300 dark:border-amber-700 bg-white dark:bg-stone-900 px-1.5 py-0.5" /> m</label>
             <span id="row-count" class="font-medium"></span>
@@ -568,6 +568,14 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <style is:global>
+  /* Standortklima in the zoomer (#602): text at the page's size, controls left, drawings right */
+  #climate-body.zoomed { font-size: 1rem; line-height: 1.5; max-width: 90rem; margin: 0 auto; }
+  #climate-body.zoomed .text-xs, #climate-body.zoomed .text-sm { font-size: 1rem; }
+  #climate-body.zoomed .text-\[10px\], #climate-body.zoomed .text-\[11px\] { font-size: .85rem; }
+  #climate-body.zoomed > dl { grid-template-columns: auto 1fr auto 1fr; column-gap: 2rem; }
+  #climate-body.zoomed [data-climate-future] { display: grid; grid-template-columns: minmax(18rem, 24rem) minmax(0, 1fr); column-gap: 2.5rem; align-items: start; }
+  #climate-body.zoomed [data-climate-future] > [data-clim-out] { grid-column: 2; grid-row: 1 / span 3; }
+  #climate-body.zoomed [data-clim-ssp] { font-size: .85rem; padding: .15rem .6rem; }
   #plan-svg.tool-pan { cursor: grab; }
   #plan-svg.tool-pan #plan-markers, #plan-svg.tool-pan #plan-areas-layer,
   #plan-svg.tool-lasso #plan-markers, #plan-svg.tool-lasso #plan-areas-layer { pointer-events: none; }
@@ -608,7 +616,7 @@ import Layout from '../layouts/Layout.astro';
   import { DEFAULT_ZONE_RADII, ZONE_COLORS, bearingVector, wedgePath, solsticeSectors } from '../lib/zones-sectors';
   import { cachedSiteClimate, fetchSiteClimate, fetchFutureClimate, futureOutlook, climateCheck, DEFAULT_SCENARIO, LAST_DATA_YEAR, type ClimateScenario, type FutureClimate, type FutureOutlook, type FutureMetric, FUTURE_METRICS, type Ssp, notHardy, blossomFrostRisk, zoneLabel, doyLabel, plantZoneRange, COMPASS16, CLIMATE_ATTRIBUTION, ClimateLimitError, allowDirect, revokeDirect, directAlways, type SiteClimate } from '../lib/site-climate';
   import { installZoomer } from '../lib/zoomer';
-  import { explorerControlsHtml, explorerOutHtml, statusTitle, STATUS_COLOR } from '../lib/climate-explorer';
+  import { explorerControlsHtml, explorerOutHtml, statusTitle, STATUS_COLOR, infoHtml, infoText } from '../lib/climate-explorer';
   import { createEmptyGardenPlan, type GardenPlan, type GardenPlanPlacement, type GardenPlanPoint, type GardenPlanArea, type Polyculture, type PlantData } from '../lib/types';
   import { displayRadiusM } from '../lib/growth-model';
   import { deriveLayer, LAYER_STYLE, LAYER_I18N, type PlantLayer } from '../lib/plant-layer';
@@ -2193,8 +2201,14 @@ import Layout from '../layouts/Layout.astro';
     plantPickerEl.innerHTML = filtered.map(p => `<div class="flex items-center gap-1">${dot(p)}
       <button data-picker-plant="${escapeHtml(p.id)}" class="block min-w-0 flex-1 truncate rounded px-2 py-1 text-left text-xs ${p.id === armedPlantId ? 'bg-green-700 text-white' : 'text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800'}">${plantLabel(p)}</button>
       ${inPlan.has(p.id) ? `<span class="shrink-0 rounded-full bg-green-100 dark:bg-green-900/40 px-1.5 text-[10px] font-semibold tabular-nums text-green-800 dark:text-green-200" title="${escapeHtml(t('pickerInPlanTitle'))}">${inPlan.get(p.id)}×</span>` : ''}
+      <button type="button" data-picker-edit="${escapeHtml(p.id)}" title="${escapeHtml(t('pickerEditTitle'))}" aria-label="${escapeHtml(t('pickerEditTitle'))}: ${escapeHtml(displayName(p) || p.latinName)}" class="shrink-0 rounded px-1.5 py-0.5 text-xs text-stone-500 hover:bg-stone-100 hover:text-stone-800 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100">✎</button>
       ${own.has(p.id) ? '' : `<button type="button" data-picker-adopt="${escapeHtml(p.id)}" title="${escapeHtml(t('pickerNotInListTitle'))}" class="shrink-0 rounded bg-amber-100 dark:bg-amber-900/40 px-1.5 py-0.5 text-[10px] font-semibold text-amber-900 dark:text-amber-200 hover:bg-amber-200">${escapeHtml(t('pickerAdopt'))}</button>`}
     </div>`).join('');
+    // ✎ at the end of the row: the plant's edit window (#604)
+    plantPickerEl.querySelectorAll<HTMLButtonElement>('[data-picker-edit]').forEach(btn => btn.addEventListener('click', () => {
+      const p = plantsById.get(btn.dataset.pickerEdit!);
+      if (p) void openPlantEditor(p);
+    }));
     plantPickerEl.querySelectorAll<HTMLButtonElement>('[data-picker-adopt]').forEach(btn => btn.addEventListener('click', async () => {
       const p = plantsById.get(btn.dataset.pickerAdopt!);
       if (!p) return;
@@ -3583,6 +3597,7 @@ import Layout from '../layouts/Layout.astro';
 
   // Agroforestry pattern (#563): a polyculture of kind 'agroforst' repeated along the line instead of one plant.
   const rowPatternSelect = document.getElementById('row-pattern') as HTMLSelectElement;
+  const rowAgro = document.getElementById('row-agro') as HTMLInputElement;
   let rowPattern: (ReturnType<typeof patternOf> & { pc: Polyculture }) | null = null;
   const agroforests = () => polycultures.filter(pc => pc.kind === 'agroforst');
   function rowPositions(): { plantId: string; xM: number; yM: number }[] {
@@ -3591,8 +3606,9 @@ import Layout from '../layouts/Layout.astro';
     const pts = !rowDraft || rowDraft.length < 2 ? rowDraft ?? [] : pointsAlongPolyline(rowLine(), spacing);
     return pts.map(q => ({ plantId: rowPlantId ?? '', xM: q.xM, yM: q.yM }));
   }
-  function setRowWhat(v: string) {
-    const pc = v ? agroforests().find(x => x.id === v) : undefined;
+  function setRowWhat() {
+    rowPatternSelect.hidden = !rowAgro.checked;
+    const pc = rowAgro.checked ? agroforests().find(x => x.id === rowPatternSelect.value) : undefined;
     rowPattern = pc ? { ...patternOf(pc, plantsById), pc } : null;
     const p = rowPlantId ? plantsById.get(rowPlantId) : undefined;
     rowSpacingInput.value = String(rowPattern ? rowPattern.periodM : Math.max(0.1, Math.round((p?.widthM || 1) * 10) / 10));
@@ -3600,7 +3616,8 @@ import Layout from '../layouts/Layout.astro';
     document.getElementById('row-draw-hint')!.textContent = rowPattern ? t('rowPatternHint', { name: pc!.name || t('planUnnamed') }) : t('rowHint', { name: p ? displayName(p) : '?' });
     renderRowDraft();
   }
-  rowPatternSelect.addEventListener('change', () => setRowWhat(rowPatternSelect.value));
+  rowPatternSelect.addEventListener('change', setRowWhat);
+  rowAgro.addEventListener('change', setRowWhat);
 
   // Live: the line from the last point of a row to the mouse pointer, with its length.
   let rowHover: GardenPlanPoint | null = null;
@@ -3652,11 +3669,13 @@ import Layout from '../layouts/Layout.astro';
     setBoundaryEdit(false);
     rowPlantId = armedPlantId;
     const p = rowPlantId ? plantsById.get(rowPlantId) : undefined;
-    // What goes along the line: the armed plant or an agroforestry pattern (the choice shows only when there are patterns).
-    rowPatternSelect.innerHTML = (p ? `<option value="">${escapeHtml(t('rowPatternPlant', { name: displayName(p) || p.latinName }))}</option>` : '')
-      + agro.map(pc => `<option value="${escapeHtml(pc.id)}">${escapeHtml(t('rowPatternAgro', { name: pc.name || t('planUnnamed') }))}</option>`).join('');
+    // What goes along the line: the armed plant, or – the extra option – an agroforestry row (only when there are some;
+    // without an armed plant it is the only choice).
+    rowPatternSelect.innerHTML = agro.map(pc => `<option value="${escapeHtml(pc.id)}">${escapeHtml(t('rowPatternAgro', { name: pc.name || t('planUnnamed') }))}</option>`).join('');
     document.getElementById('row-pattern-wrap')!.hidden = !agro.length;
-    setRowWhat(p ? '' : agro[0].id);
+    rowAgro.checked = !p;
+    rowAgro.disabled = !p;
+    setRowWhat();
     rowDraft = [];
     rowDrawBar.classList.remove('hidden');
     planSvg.classList.add('area-drawing');
@@ -4763,7 +4782,7 @@ import Layout from '../layouts/Layout.astro';
   // "not hardy" / "blossom before last frost" hints and the suggestions.
   const climateSection = document.getElementById('climate-section')!;
   const climateBody = document.getElementById('climate-body')!;
-  installZoomer(document.getElementById('btn-climate-zoomer')!, climateBody, t('zoomerClose'));
+  installZoomer(document.getElementById('btn-climate-zoomer')!, climateBody, t('zoomerClose'), () => renderClimateOut());
   let siteClimate: SiteClimate | null = null;
   let siteClimateKey = '';       // what siteClimate belongs to
   let climateRequestKey = '';
@@ -4878,17 +4897,18 @@ import Layout from '../layouts/Layout.astro';
     const nameOf = new Map<string, string>();
     for (const pl of editing.placements) { const p = plantsById.get(pl.plantId); if (p) nameOf.set(p.id, displayName(p) || p.latinName); }
     const ruler = [...nameOf].map(([id, name]) => ({ ...plantsById.get(id)!, name }));
-    const r = explorerOutHtml(c, f, s, climateMetric, lang === 'en' ? 'en' : 'de', ruler);
+    const r = explorerOutHtml(c, f, s, climateMetric, lang === 'en' ? 'en' : 'de', ruler, climateBody.classList.contains('zoomed'));
     out.innerHTML = r.html;
     const modeEl = climateBody.querySelector<HTMLElement>('[data-clim-mode]')!;
     modeEl.textContent = `${r.mode}${s.year > LAST_DATA_YEAR ? '' : ' · ' + t('climateSspLater', { y: LAST_DATA_YEAR + 1 })}`;
-    modeEl.className = `pl-[4.5rem] text-[10px] ${s.year > LAST_DATA_YEAR ? 'text-orange-700 dark:text-orange-300' : 'text-green-800 dark:text-green-300'}`;
+    modeEl.className = s.year > LAST_DATA_YEAR ? 'text-orange-700 dark:text-orange-300' : 'text-green-800 dark:text-green-300';
     climateBody.querySelector('[data-clim-year-out]')!.textContent = String(s.year);
     climateBody.querySelectorAll<HTMLButtonElement>('[data-clim-ssp]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.climSsp === s.ssp)));
     // the two short rows in the list above
     const z = o.zones, pct = Math.round(o.summerRainChange * 100);
     const set = (sel: string, txt: string) => { const el = climateBody.querySelector<HTMLElement>(sel)!; el.textContent = txt; el.hidden = !z.length; };
     set('[data-clim-zone-k]', t('climateFutureZone', { year: s.year }));
+    climateBody.querySelector('[data-clim-zone-k]')!.insertAdjacentHTML('beforeend', ' ' + infoHtml('zone-row', infoText('zone', lang === 'en' ? 'en' : 'de'), t('zoomerInfo')));
     set('[data-clim-zone-v]', z.length ? (z.length > 1 ? t('climateFutureZoneValue', { from: zoneLabel(z[0]), to: zoneLabel(z[z.length - 1]), n: z.length }) : zoneLabel(z[0])) : '');
     set('[data-clim-rain-k]', t('climateFutureRain', { year: s.year }));
     set('[data-clim-rain-v]', `${pct > 0 ? '+' : ''}${pct} %`);
@@ -4924,6 +4944,13 @@ import Layout from '../layouts/Layout.astro';
     }
     const b = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-clim-ssp]');
     if (b) setScenario({ ssp: b.dataset.climSsp as Ssp }, true);
+    // a plant on the zone ruler opens for editing (#603)
+    const row = (e.target as Element).closest<SVGElement>('[data-plant-id]'), p = row && plantsById.get(row.dataset.plantId!);
+    if (p) { climateBody.closest('dialog')?.close(); void openPlantEditor(p); }
+  });
+  climateBody.addEventListener('keydown', e => {
+    const row = (e.target as Element).closest<SVGElement>('[data-plant-id]');
+    if (row && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); (row as unknown as HTMLElement).dispatchEvent(new MouseEvent('click', { bubbles: true })); }
   });
 
   // ── Gebäude (OSM) ──

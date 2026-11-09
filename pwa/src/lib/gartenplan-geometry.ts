@@ -69,9 +69,9 @@ export function polygonPerimeterM(pts: GardenPlanPoint[]): number {
 /** Positions every `spacingM` along a polyline, starting at its first point
  *  ("Reihe pflanzen"). The end point is included when the length is a whole
  *  multiple of the spacing (within 1 cm). */
-/** A pattern (#563: agroforestry) repeated along a polyline every `periodM` m: x of a spot runs along the line (from the
- *  pattern's westmost spot), y across it (positive = right of the walking direction, i.e. south for a line going east).
- *  Spots beyond the line's end are left out. */
+/** A pattern (#563: agroforestry) repeated along a polyline every `periodM` m, as often as it fits whole: x of a spot runs
+ *  along the line (from the pattern's westmost spot), y across it (positive = right of the walking direction, i.e. south
+ *  for a line going east). A line shorter than one pattern still gets it once, cut at the end. */
 export function patternAlongPolyline<T extends GardenPlanPoint>(pts: GardenPlanPoint[], spots: T[], periodM: number): (T & GardenPlanPoint)[] {
   const segs: { a: GardenPlanPoint; dx: number; dy: number; len: number; at: number }[] = [];
   let total = 0;
@@ -80,9 +80,10 @@ export function patternAlongPolyline<T extends GardenPlanPoint>(pts: GardenPlanP
     if (len > 0) { segs.push({ a, dx: dx / len, dy: dy / len, len, at: total }); total += len; }
   }
   if (!segs.length || !spots.length || !(periodM > 0)) return [];
-  const x0 = Math.min(...spots.map(s => s.xM));
+  const x0 = Math.min(...spots.map(s => s.xM)), span = Math.max(...spots.map(s => s.xM)) - x0;
+  const copies = Math.max(1, Math.floor((total - span) / periodM + 1e-6) + 1);
   const out: (T & GardenPlanPoint)[] = [];
-  for (let k = 0; k * periodM <= total + 0.01; k++) {
+  for (let k = 0; k < copies; k++) {
     for (const s of spots) {
       const d = k * periodM + s.xM - x0;
       if (d > total + 0.01) continue;
