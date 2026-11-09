@@ -10,6 +10,11 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
+# Everything (stdout + stderr) also goes to a log of the last deploy, so its
+# progress and result can be checked later: tail -f ~/pdk-deploy.log
+exec > >(tee "$HOME/pdk-deploy.log") 2>&1
+echo "Deploy started $(date -Is)"
+
 if [[ "${DEPLOY_FORCE:-}" != "1" ]]; then
   branch="$(git rev-parse --abbrev-ref HEAD)"
   if [[ "$branch" != "main" ]]; then
