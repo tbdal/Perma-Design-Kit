@@ -312,7 +312,7 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
             <input data-act="pw" id="pw-${i}" type="password" minlength="10" autocomplete="new-password" placeholder="${escapeHtml(t('adSetPassword'))}" aria-label="${escapeHtml(`${u.name}: ${t('adSetPassword')}`)}" class="w-32 rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2 py-1 text-xs" />
             <button type="button" data-act="pw-save" class="rounded-md bg-stone-100 dark:bg-stone-700 px-2 py-1 text-xs font-medium ring-1 ring-stone-300 dark:ring-stone-600">${escapeHtml(t('adSave'))}</button></td>
           <td class="px-3 py-2"><input data-act="comment" maxlength="300" value="${escapeHtml(u.comment ?? '')}" placeholder="${escapeHtml(t('adComment'))}" aria-label="${escapeHtml(`${u.name}: ${t('adComment')}`)}" class="w-44 rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2 py-1 text-xs" /></td>
-          <td class="px-3 py-2 text-right"><button type="button" data-act="remove" class="rounded-md px-2 py-1 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30">${escapeHtml(t('adRemove'))}</button></td>
+          <td class="px-3 py-2 text-right whitespace-nowrap">${u.role === 'admin' ? '' : `<button type="button" data-act="login-link" class="rounded-md px-2 py-1 text-xs font-medium ring-1 ring-stone-300 dark:ring-stone-600">${escapeHtml(t('adLoginLink'))}</button> `}<button type="button" data-act="remove" class="rounded-md px-2 py-1 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30">${escapeHtml(t('adRemove'))}</button></td>
         </tr>`).join('');
     }
 
@@ -337,6 +337,10 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
       if (btn.dataset.act === 'pw-save') {
         const pw = li.querySelector<HTMLInputElement>('[data-act="pw"]')!.value;
         await userAction(await api('POST', '/api/admin/users', { name, password: pw }));
+      } else if (btn.dataset.act === 'login-link') {
+        const res = await api('POST', '/api/admin/login-link', { name });
+        if (!res.ok) { userStatus.textContent = errText(String(res.data.error ?? res.data.status)); return; }
+        await showLink(`${location.origin}/anmelden/?geraet=${encodeURIComponent(String(res.data.token))}`);
       } else if (btn.dataset.act === 'remove') {
         if (!confirm(t('adRemoveConfirm', { name }))) return;
         await userAction(await api('DELETE', `/api/admin/users?name=${encodeURIComponent(name)}`));
@@ -402,14 +406,17 @@ const btn = 'rounded-lg px-3 py-1.5 text-sm font-medium shadow-sm';
       const res = await api('POST', '/api/admin/invites', { role, label: labelEl.value.trim(), extra });
       if (!res.ok) { userStatus.textContent = errText(String(res.data.error ?? res.data.status)); return; }
       labelEl.value = '';
-      const url = `${location.origin}/anmelden/?einladung=${encodeURIComponent(String(res.data.token))}`;
+      await showLink(`${location.origin}/anmelden/?einladung=${encodeURIComponent(String(res.data.token))}`);
+    });
+    async function showLink(url: string) {
       (document.getElementById('invite-url') as HTMLInputElement).value = url;
       document.getElementById('invite-copied')!.textContent = '';
       document.getElementById('invite-result')!.hidden = false;
       const { default: QRCode } = await import('qrcode');
       await QRCode.toCanvas(document.getElementById('invite-qr'), url, { width: 220, margin: 1 });
+      document.getElementById('invite-result')!.scrollIntoView({ block: 'center' });
       await loadInvites();
-    });
+    }
     document.getElementById('invite-copy')!.addEventListener('click', async () => {
       const input = document.getElementById('invite-url') as HTMLInputElement;
       try { await navigator.clipboard.writeText(input.value); } catch { input.select(); document.execCommand('copy'); }

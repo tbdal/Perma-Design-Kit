@@ -60,6 +60,7 @@ export const accessDict: Dict = {
   adCreated: { de: 'Angelegt', en: 'Created' },
   adSince: { de: 'seit', en: 'since' },
   adSetPassword: { de: 'Neues Passwort', en: 'New password' },
+  adLoginLink: { de: 'Anmeldelink', en: 'Login link' },
   adRemove: { de: 'Entfernen', en: 'Remove' },
   adRemoveConfirm: { de: 'Zugang „{name}“ entfernen?', en: 'Remove access “{name}”?' },
   adAddUser: { de: 'Zugang anlegen', en: 'Add access' },

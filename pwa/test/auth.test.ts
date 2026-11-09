@@ -204,4 +204,19 @@ describe('HTTP endpoints', () => {
     expect(del.status).toBe(200);
     expect((await redeem(m2.token, 'Dritte')).status).toBe(404);
   });
+
+  it('admin makes a one-time login link for an existing person (not for admins, not usable as invitation)', async () => {
+    const post = (path: string, body: unknown, cookie = '') => fetch(`${base}${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(cookie ? { cookie } : {}) }, body: JSON.stringify(body) });
+    const admin = cookieOf(await login('admin', 'admin-passwort'));
+    expect((await post('/api/admin/login-link', { name: 'Gast' })).status).toBe(401);
+    await post('/api/admin/users', { name: 'Linda', role: 'expert', password: 'linda-passwort' }, admin);
+    expect((await post('/api/admin/login-link', { name: 'Admin' }, admin)).status).toBe(400);
+    expect((await post('/api/admin/login-link', { name: 'Niemand' }, admin)).status).toBe(404);
+    const { token } = await (await post('/api/admin/login-link', { name: 'Linda' }, admin)).json();
+    expect((await post('/api/auth/invite', { token, name: 'Neu', password: 'neues-passwort' })).status).toBe(404);
+    const phone = await post('/api/auth/device/redeem', { token });
+    expect(phone.status).toBe(200);
+    expect(await phone.json()).toEqual({ name: 'Linda', role: 'expert' });
+    expect((await post('/api/auth/device/redeem', { token })).status).toBe(404);
+  });
 });

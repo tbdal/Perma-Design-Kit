@@ -333,6 +333,9 @@ export function createAuthHandler({ store, isAllowedOrigin = () => true, now = (
     return { name: user.name, role: user.role };
   }
 
+  // Login-link invitations (extra.login = account of an existing person) only work on /api/auth/device/redeem, never to create an account.
+  const findNewInvite = (token, clock) => { const i = findInvite(store.invites(), token, clock); return i && !i.extra?.login ? i : null; };
+
   async function handle(req, res, url, ip) {
     const path = url.pathname;
     if (!path.startsWith('/api/auth/') && !path.startsWith('/api/admin/') && path !== '/api/features') return false;
@@ -356,19 +359,19 @@ export function createAuthHandler({ store, isAllowedOrigin = () => true, now = (
       const clock = new Date(now());
       try {
         if (method === 'GET') {
-          const inv = findInvite(store.invites(), url.searchParams.get('token'), clock);
+          const inv = findNewInvite(url.searchParams.get('token'), clock);
           if (!inv) { limiter.fail(ip, now()); send(res, 404, { error: 'invalid' }); return true; }
           send(res, 200, { role: inv.role, label: inv.label });
           return true;
         }
         const body = await readJsonBody(req);
-        const inv = findInvite(store.invites(), body?.token, clock);
+        const inv = findNewInvite(body?.token, clock);
         if (!inv) { limiter.fail(ip, now()); send(res, 404, { error: 'invalid' }); return true; }
         const name = String(body?.name || '').trim();
         if (findUser(store.users(), name)) { send(res, 409, { error: 'name-taken' }); return true; }
         // Checked again after hashing: a parallel request may have used the invite or taken the name meanwhile.
         const users = await upsertUser(() => {
-          if (!findInvite(store.invites(), body?.token, clock)) throw new Error('invalid');
+          if (!findNewInvite(body?.token, clock)) throw new Error('invalid');
           if (findUser(store.users(), name)) throw new Error('name-taken');
           return store.users();
         }, { name, role: inv.role, password: String(body?.password ?? ''), comment: `Eingeladen von ${inv.by || '?'}${inv.label ? ` (${inv.label})` : ''}` }, clock);
@@ -397,7 +400,16 @@ export function createAuthHandler({ store, isAllowedOrigin = () => true, now = (
       if (limiter.blocked(ip, now())) { send(res, 429, { error: 'rate' }); return true; }
       let body;
       try { body = await readJsonBody(req); } catch { send(res, 400, { error: 'body' }); return true; }
-      const name = deviceCodes.redeem(body?.token);
+      let name = deviceCodes.redeem(body?.token);
+      if (!name) {
+        // Login link made by an admin (kept like an invitation, valid INVITE_DAYS, once).
+        const clock = new Date(now());
+        const inv = findInvite(store.invites(), body?.token, clock);
+        if (inv?.extra?.login) {
+          name = inv.extra.login;
+          store.saveInvites(store.invites().map(i => (i.id === inv.id ? { ...i, used: clock.toISOString(), usedBy: name } : i)));
+        }
+      }
       const user = name ? findUser(store.users(), name) : null;
       if (!user) { limiter.fail(ip, now()); send(res, 404, { error: 'invalid' }); return true; }
       const token = signSession({ n: user.name, r: user.role, e: now() + SESSION_DAYS * 86_400_000, v: user.v || 1 }, store.secret());
@@ -451,6 +463,17 @@ export function createAuthHandler({ store, isAllowedOrigin = () => true, now = (
           const made = createInvite(store.invites(), { role: body?.role, label: body?.label, by: s.name, extra: body?.extra }, new Date(now()));
           store.saveInvites(made.invites);
           send(res, 200, { id: made.invite.id, token: made.token, expires: made.invite.expires });
+          return true;
+        }
+        // Link / QR code that signs an existing person in once (no password); not for admin accounts.
+        if (path === '/api/admin/login-link' && method === 'POST') {
+          const body = await readJsonBody(req);
+          const user = findUser(store.users(), body?.name);
+          if (!user) throw new Error('not-found');
+          if (user.role === 'admin') throw new Error('bad-role');
+          const made = createInvite(store.invites(), { role: user.role, label: `Anmeldelink: ${user.name}`, by: s.name, extra: { login: user.name } }, new Date(now()));
+          store.saveInvites(made.invites);
+          send(res, 200, { token: made.token, expires: made.invite.expires });
           return true;
         }
         if (path === '/api/admin/invites' && method === 'DELETE') {
