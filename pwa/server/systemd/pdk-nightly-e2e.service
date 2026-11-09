@@ -1,0 +1,9 @@
+# All browser tests (also @slow) every night against main — Werkstatt #591. Install: copy both files to
+# /etc/systemd/system/, systemctl daemon-reload, systemctl enable --now pdk-nightly-e2e.timer
+[Unit]
+Description=Perma Design Kit: nightly browser tests (all, also @slow)
+
+[Service]
+Type=oneshot
+ExecStart=/root/pdk/pwa/scripts/nightly-e2e.sh
+Nice=10

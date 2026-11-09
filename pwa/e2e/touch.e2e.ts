@@ -130,7 +130,7 @@ test('2D: years slider moves the plants and saves once it rests', async ({ page,
   void errors;
 });
 
-test('3D: pinch starting on a plant zooms the camera and leaves the plant where it is', async ({ page, errors }) => {
+test('3D: pinch starting on a plant zooms the camera and leaves the plant where it is @slow', async ({ page, errors }) => {
   test.setTimeout(120_000);
   await setup(page);
   await page.evaluate(() => (document.getElementById('btn-view-3d') as HTMLButtonElement).click());

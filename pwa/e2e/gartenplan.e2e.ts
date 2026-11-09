@@ -57,7 +57,7 @@ test('placement view: search only there, neighbours, yield, zones', async ({ pag
   void errors;
 });
 
-test('3D and back to 2D keeps the 2D section (no zooming out on every switch)', async ({ page, errors }) => {
+test('3D and back to 2D keeps the 2D section (no zooming out on every switch) @slow', async ({ page, errors }) => {
   await stubNetwork(page);
   await seedNeighbourPlan(page);
   await openPlan(page, 'np');
@@ -516,7 +516,7 @@ test('scale bar bottom left follows the zoom (desktop, 2D)', async ({ page, erro
   void errors;
 });
 
-test('3D compass: shows where north is, a click turns the view to look north', async ({ page, errors }) => {
+test('3D compass: shows where north is, a click turns the view to look north @slow', async ({ page, errors }) => {
   await stubNetwork(page);
   await seedNeighbourPlan(page, { geo: { lat: 50.9, lon: 7.0, rotationDeg: 40, basemap: 'none', opacity: 0.6 } });
   await openPlan(page, 'np');
@@ -573,7 +573,7 @@ test('status at the bottom right shows what is still loading (buildings, terrain
   void errors;
 });
 
-test('3D aerial photo: a tile that fails once is tried again before the coarse satellite replaces it', async ({ page, errors }) => {
+test('3D aerial photo: a tile that fails once is tried again before the coarse satellite replaces it @slow', async ({ page, errors }) => {
   await stubNetwork(page);
   const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/58BAwAI/AL+hc2rNAAAAABJRU5ErkJggg==', 'base64');
   const seen = new Map<string, number>();
@@ -621,7 +621,7 @@ test('2D aerial photo: a tile that fails once is tried again before the coarse s
   void errors;
 });
 
-test('aerial photo of a big plan: 3D loads the ground in front at the finest zoom, the status shows until every tile is there', async ({ page, errors }) => {
+test('aerial photo of a big plan: 3D loads the ground in front at the finest zoom, the status shows until every tile is there @slow', async ({ page, errors }) => {
   test.setTimeout(120_000); // software WebGL on the VPS is slow when the whole suite runs in parallel
   await stubNetwork(page);
   const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/58BAwAI/AL+hc2rNAAAAABJRU5ErkJggg==', 'base64');
@@ -652,7 +652,7 @@ test('aerial photo of a big plan: 3D loads the ground in front at the finest zoo
   void errors;
 });
 
-test('arrow keys move the map (2D) and the view over the ground (3D)', async ({ page, errors }) => {
+test('arrow keys move the map (2D) and the view over the ground (3D) @slow', async ({ page, errors }) => {
   await stubNetwork(page);
   await seedNeighbourPlan(page, {});
   await openPlan(page, 'np');
@@ -740,7 +740,7 @@ test('phone: a finger lifted outside the plan after a pinch does not turn the ne
   void errors;
 });
 
-test('3D shows a wait animation until its first picture, and "whole plan" works in 3D', async ({ page, errors }) => {
+test('3D shows a wait animation until its first picture, and "whole plan" works in 3D @slow', async ({ page, errors }) => {
   await stubNetwork(page);
   await seedNeighbourPlan(page, {});
   await openPlan(page, 'np');

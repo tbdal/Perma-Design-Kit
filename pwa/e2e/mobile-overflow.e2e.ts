@@ -98,7 +98,7 @@ function measure(page: Page, W: number) {
 
 for (const mode of ['simple', 'classic', 'team'] as const) {
   for (const width of WIDTHS) {
-    test.describe(`${mode} @${width}`, () => {
+    test.describe(`${mode} @${width} @slow`, () => {
       test.use({ viewport: { width, height: width === 360 ? 780 : 667 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 });
 
       for (const p of PAGES) {

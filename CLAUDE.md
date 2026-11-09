@@ -31,7 +31,7 @@ npm run build
 npm run deploy
 ```
 
-Run `npm run check` and `npm test` before committing (check the summary for `1 error` too, not only `errors`). `npm run deploy` also runs the browser tests. `test/fixtures/pfaf/*.html` are saved PFAF pages for the parser tests — refresh them when PFAF changes its markup.
+Run `npm run check` and `npm test` before committing (check the summary for `1 error` too, not only `errors`). `npm run deploy` also runs the browser tests — except those tagged `@slow` in their title (3D, phone overflow), unless their scope changed since the last deploy (`~/.pdk-deployed`); all of them run nightly (`scripts/nightly-e2e.sh`, timer in `server/systemd/`, log `~/pdk-nightly.log`, a failure becomes a Werkstatt entry). `DEPLOY_QUICK=1 npm run deploy` for text/layout-only changes (refused otherwise) runs just the browser tests of the touched pages. Tag a new slow test (> ~5 s) with ` @slow` in its title. `test/fixtures/pfaf/*.html` are saved PFAF pages for the parser tests — refresh them when PFAF changes its markup.
 
 ## Architecture
 

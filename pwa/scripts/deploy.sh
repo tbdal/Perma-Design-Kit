@@ -53,6 +53,26 @@ if [[ -d src/expert/.git && "${DEPLOY_FORCE:-}" != "1" ]]; then
   fi
 fi
 
+# Faster deploys (Werkstatt #591): browser tests tagged @slow (3D, phone overflow) run every night
+# (scripts/nightly-e2e.sh) and in a deploy only when something in their scope changed since the last deploy.
+# DEPLOY_QUICK=1 is for text/layout changes only (refused otherwise): just the browser tests of the touched pages.
+STAMP="$HOME/.pdk-deployed"   # line 1: public commit of the last deploy, line 2: expert commit
+SLOW_SCOPE='^(\*|src/lib/[^/]*3d[^/]*|src/layouts/|src/styles/|e2e/|package-lock\.json|playwright\.config\.ts|scripts/serve-dist\.mjs)'
+# Files changed since the last deploy (paths relative to pwa/, expert ones with src/expert/); "*" = unknown, i.e. everything.
+changed() {
+  local last last_x
+  last="$(sed -n 1p "$STAMP" 2>/dev/null || true)"; last_x="$(sed -n 2p "$STAMP" 2>/dev/null || true)"
+  if [[ -n "$last" ]] && git cat-file -e "$last^{commit}" 2>/dev/null; then git diff --name-only --relative "$last" HEAD; else echo '*'; fi
+  if [[ -d src/expert/.git ]]; then
+    if [[ -n "$last_x" ]] && git -C src/expert cat-file -e "$last_x^{commit}" 2>/dev/null; then git -C src/expert diff --name-only "$last_x" HEAD | sed 's#^#src/expert/#'; else echo '*'; fi
+  fi
+}
+CHANGED="$(changed)"
+if [[ "${DEPLOY_QUICK:-}" == "1" ]]; then
+  bad="$(grep -Ev '\.(astro|md|css|svg|png|jpe?g|webp)$|^src/lib/i18n/' <<<"$CHANGED" || true)"
+  if [[ -n "$bad" ]]; then echo "Refusing DEPLOY_QUICK: more than text/layout changed since the last deploy:" >&2; echo "$bad" >&2; exit 1; fi
+fi
+
 # Incremental install (not `npm ci`): keeps a dev server running from this
 # checkout alive while still picking up dependency changes from the lockfile.
 npm install --no-audit --no-fund --silent
@@ -65,9 +85,34 @@ node scripts/check-csp.mjs dist
 node scripts/check-private.mjs dist
 # Browser tests against the fresh build (offline, external services stubbed).
 # Needs Playwright's Chromium once: npx playwright install chromium
-npx playwright test --reporter=line
-# The private modules' browser tests too: an outdated one (baumbio, 30.10.) went unnoticed otherwise.
-if [[ -f src/expert/test/e2e/playwright.config.ts ]]; then npx playwright test -c src/expert/test/e2e/playwright.config.ts --reporter=line; fi
+# Tests tagged @slow (3D, phone overflow) run nightly and only when their scope changed; DEPLOY_QUICK: see above.
+EXPERT_E2E=src/expert/test/e2e/playwright.config.ts
+# One browser test run at a time (the nightly run uses the same port and both cores).
+exec 9>"$HOME/.pdk-e2e.lock"; flock -w 3600 9
+if [[ "${DEPLOY_QUICK:-}" == "1" ]]; then
+  # gartenplan.astro, dict-gartenplan.ts → e2e/*gartenplan*; index.astro → plants; src/expert/<module>/… → its specs.
+  pub=(e2e/offline.e2e.ts) exp=()   # offline: every page opens, styled and with its scripts
+  for f in $CHANGED; do
+    if [[ "$f" == src/expert/* ]]; then
+      m="$(cut -d/ -f3 <<<"$f")"
+      for s in src/expert/test/e2e/"$m"*.e2e.ts; do [[ -f "$s" ]] && exp+=("$(basename "$s")"); done
+    else
+      stem="$(basename "$f")"; stem="${stem%.*}"; stem="${stem#dict-}"; [[ "$stem" == index ]] && stem=plants
+      for s in e2e/*"$stem"*.e2e.ts; do [[ -f "$s" ]] && pub+=("$s"); done
+    fi
+  done
+  echo "DEPLOY_QUICK: browser tests ${pub[*]} ${exp[*]}"
+  npx playwright test --reporter=line "${pub[@]}"
+  if [[ ${#exp[@]} -gt 0 && -f $EXPERT_E2E ]]; then npx playwright test -c $EXPERT_E2E --reporter=line "${exp[@]}"; fi
+else
+  slow=(--grep-invert @slow)
+  if grep -Eq "$SLOW_SCOPE" <<<"$CHANGED"; then slow=(); echo "Slow browser tests (@slow) run too: something in their scope changed."
+  else echo "Slow browser tests (@slow) left out: nothing in their scope changed (they run nightly)."; fi
+  npx playwright test --reporter=line "${slow[@]}"
+  # The private modules' browser tests too: an outdated one (baumbio, 30.10.) went unnoticed otherwise.
+  if [[ -f $EXPERT_E2E ]]; then npx playwright test -c $EXPERT_E2E --reporter=line "${slow[@]}"; fi
+fi
+flock -u 9
 
 # /x/ (private chunks) keeps the files of earlier builds: a tab still running
 # the previous build (the service worker holds it until "Neu laden") would
@@ -86,4 +131,5 @@ if systemctl cat plant-proxy.service >/dev/null 2>&1; then
   systemctl restart plant-proxy && echo "Restarted plant-proxy"
 fi
 
+printf '%s\n%s\n' "$(git rev-parse HEAD)" "$(git -C src/expert rev-parse HEAD 2>/dev/null || true)" > "$STAMP"
 echo "Deployed $(git rev-parse --short HEAD) to https://permadesignkit.org"

@@ -24,7 +24,7 @@ for (const basemap of ['osm', 'sat', 'ortho'] as const) test(`map opacity slider
   expect(saved).toBe(0.3);
 });
 
-test('map opacity in 3D: the ground map turns see-through, the lawn shows under it', async ({ page }) => {
+test('map opacity in 3D: the ground map turns see-through, the lawn shows under it @slow', async ({ page }) => {
   await stubNetwork(page);
   await page.route(url => /tile\.openstreetmap\.org|eox\.at/.test(url.hostname), route => route.fulfill({ contentType: 'image/png', headers: { 'Access-Control-Allow-Origin': '*' }, body: RED_TILE }));
   await page.addInitScript(() => { localStorage.setItem('pdk-welcome-seen', '1'); localStorage.setItem('pdk-mode', 'classic'); });

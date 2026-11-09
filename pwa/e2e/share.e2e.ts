@@ -1,6 +1,6 @@
 import { test, expect, stubNetwork, loadSamples, withDb, planRecord } from './helpers';
 
-test('share link with view: recipient imports, start plan opens in 3D with the sun set', async ({ browser }) => {
+test('share link with view: recipient imports, start plan opens in 3D with the sun set @slow', async ({ browser }) => {
   // author
   const a = await browser.newPage();
   await a.addInitScript(() => { localStorage.setItem('pdk-welcome-seen', '1'); localStorage.setItem('pdk-persist-later', String(Date.now())); });
