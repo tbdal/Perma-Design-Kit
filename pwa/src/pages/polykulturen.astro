@@ -186,6 +186,7 @@ import Layout from '../layouts/Layout.astro';
     getEditing: () => editing,
     plantsById: () => plantsById,
     onEditorChange: cb => { editorListeners.push(cb); },
+    refreshMembers: () => { renderMembers(); renderSuggestions(); },
     addEditorBox(featureId, title) {
       const box = document.createElement('div');
       box.dataset.feature = featureId;

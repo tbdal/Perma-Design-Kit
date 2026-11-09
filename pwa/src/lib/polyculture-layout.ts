@@ -15,6 +15,14 @@ const RING: Record<PolycultureRole, number> = {
 
 export interface PackagePlacement { plantId: string; xM: number; yM: number; }
 
+/** An agroforestry pattern (#563) for the row tool: its plants relative to the anchor (grown, x along the row) and the
+ *  length after which it repeats: its extent along the row plus one grid step as gap. */
+export function patternOf(pc: Polyculture, plantsById: Map<string, PlantData>): { spots: PackagePlacement[]; periodM: number } {
+  const spots = layoutPolyculture(pc, plantsById, { xM: 0, yM: 0 }, 30);
+  const xs = spots.map(s => s.xM);
+  return { spots, periodM: spots.length ? Math.max(0.1, Math.round((Math.max(...xs) - Math.min(...xs) + (pc.gridM ?? 1)) * 10) / 10) : 1 };
+}
+
 export function layoutPolyculture(pc: Polyculture, plantsById: Map<string, PlantData>, center: GardenPlanPoint, years: number): PackagePlacement[] {
   const rand = seededRandom(pc.id);
   const anchor = pc.anchorPlantId ? plantsById.get(pc.anchorPlantId) : undefined;
@@ -23,7 +31,8 @@ export function layoutPolyculture(pc: Polyculture, plantsById: Map<string, Plant
   if (anchor) out.push({ plantId: anchor.id, xM: center.xM, yM: center.yM });
   const rings: { plantId: string; r: number }[][] = [[], [], []];
   for (const m of pc.members) {
-    if (m.plantId === pc.anchorPlantId) continue;
+    // the anchor species again only with its own spot (more trees of it along an agroforestry row, #563)
+    if (m.plantId === pc.anchorPlantId && m.dxM === undefined) continue;
     if (m.dxM !== undefined && m.dyM !== undefined) { out.push({ plantId: m.plantId, xM: center.xM + m.dxM, yM: center.yM + m.dyM }); continue; }
     const p = plantsById.get(m.plantId);
     rings[RING[m.role] ?? 2].push({ plantId: m.plantId, r: p ? displayRadiusM(p, Math.max(years, 5)) : 0.4 });

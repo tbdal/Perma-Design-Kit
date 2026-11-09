@@ -258,7 +258,9 @@ import Layout from '../layouts/Layout.astro';
         <div class="lg:col-span-2 2xl:col-span-3 space-y-2">
           <div data-feature="row" id="row-draw-bar" class="hidden flex flex-wrap items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-900/30 px-3 py-2 text-xs text-amber-900 dark:text-amber-100 ring-1 ring-amber-200 dark:ring-amber-800">
             <span id="row-draw-hint" class="mr-auto"></span>
-            <label class="inline-flex items-center gap-1"><span data-i18n="rowSpacing">Abstand</span>
+            <label id="row-pattern-wrap" class="inline-flex items-center gap-1"><span data-i18n="rowPattern">Was</span>
+              <select id="row-pattern" class="max-w-48 rounded-md border border-amber-300 dark:border-amber-700 bg-white dark:bg-stone-900 px-1.5 py-0.5"></select></label>
+            <label class="inline-flex items-center gap-1"><span id="row-spacing-label" data-i18n="rowSpacing">Abstand</span>
               <input id="row-spacing" type="number" min="0.1" max="50" step="0.1" value="1" class="w-16 rounded-md border border-amber-300 dark:border-amber-700 bg-white dark:bg-stone-900 px-1.5 py-0.5" /> m</label>
             <span id="row-count" class="font-medium"></span>
             <button id="btn-row-undo" type="button" data-i18n="btnUndoPoint" class="rounded-md bg-white dark:bg-stone-800 px-2.5 py-1 font-medium ring-1 ring-amber-300 dark:ring-amber-700">Letzten Punkt entfernen</button>
@@ -611,7 +613,7 @@ import Layout from '../layouts/Layout.astro';
   import { displayRadiusM } from '../lib/growth-model';
   import { deriveLayer, LAYER_STYLE, LAYER_I18N, type PlantLayer } from '../lib/plant-layer';
   import { blobPathD } from '../lib/blob-shape';
-  import { pointInPolygon, formatMeters, polygonAreaM2, polygonPerimeterM, pointsAlongPolyline, nearestGridPoint, gridAngleAlongOutline, normalizeGridAngle } from '../lib/gartenplan-geometry';
+  import { pointInPolygon, formatMeters, polygonAreaM2, polygonPerimeterM, pointsAlongPolyline, patternAlongPolyline, nearestGridPoint, gridAngleAlongOutline, normalizeGridAngle } from '../lib/gartenplan-geometry';
   import { recordAerialUsage } from '../lib/aerial-usage';
   import { areasSvg, AREA_PALETTE, uiScale, polygonCentroid } from '../lib/gartenplan-render';
   import { planFromLatLngPolygon, planToLatLon, planToEnu } from '../lib/gartenplan-geo';
@@ -622,7 +624,7 @@ import Layout from '../layouts/Layout.astro';
   import { compassLabel, sunPosition } from '../lib/sun-position';
   import { browserTimeZone, timeZoneAt, timeZoneLabel, wallClock, zonedDate } from '../lib/plan-time';
   import { COVER_FUNCS, coverageGrid, coverageSummary, findGaps, suggestPlants, hasFunc, funcCount, influenceRadius, type CoverFunc } from '../lib/function-coverage';
-  import { layoutPolyculture } from '../lib/polyculture-layout';
+  import { layoutPolyculture, patternOf } from '../lib/polyculture-layout';
   import { shoppingRows, shoppingTotal, shoppingCsv, exportShoppingPDF, downloadText, type ShoppingLabels } from '../lib/plan-shopping';
   import { crowdingWarnings, shadeWarnings, grownOccluders, newShadeCache, WARN_YEARS } from '../lib/plan-warnings';
   import { fetchBuildings, BUILDINGS_ATTRIBUTION, type Building } from '../lib/osm-buildings';
@@ -3587,10 +3589,26 @@ import Layout from '../layouts/Layout.astro';
   let rowPathFn: ((points: GardenPlanPoint[]) => GardenPlanPoint[]) | null = null;
   const rowLine = (): GardenPlanPoint[] => (rowDraft && rowDraft.length >= 2 && rowPathFn ? rowPathFn(rowDraft) : rowDraft ?? []);
 
-  function rowPositions(): GardenPlanPoint[] {
-    if (!rowDraft || rowDraft.length < 2) return rowDraft ? [...rowDraft] : [];
-    return pointsAlongPolyline(rowLine(), Math.max(0.1, Number(rowSpacingInput.value) || 1));
+  // Agroforestry pattern (#563): a polyculture of kind 'agroforst' repeated along the line instead of one plant.
+  const rowPatternSelect = document.getElementById('row-pattern') as HTMLSelectElement;
+  let rowPattern: (ReturnType<typeof patternOf> & { pc: Polyculture }) | null = null;
+  const agroforests = () => polycultures.filter(pc => pc.kind === 'agroforst');
+  function rowPositions(): { plantId: string; xM: number; yM: number }[] {
+    const spacing = Math.max(0.1, Number(rowSpacingInput.value) || 1);
+    if (rowPattern) return rowDraft && rowDraft.length >= 2 ? patternAlongPolyline(rowLine(), rowPattern.spots, spacing) : [];
+    const pts = !rowDraft || rowDraft.length < 2 ? rowDraft ?? [] : pointsAlongPolyline(rowLine(), spacing);
+    return pts.map(q => ({ plantId: rowPlantId ?? '', xM: q.xM, yM: q.yM }));
   }
+  function setRowWhat(v: string) {
+    const pc = v ? agroforests().find(x => x.id === v) : undefined;
+    rowPattern = pc ? { ...patternOf(pc, plantsById), pc } : null;
+    const p = rowPlantId ? plantsById.get(rowPlantId) : undefined;
+    rowSpacingInput.value = String(rowPattern ? rowPattern.periodM : Math.max(0.1, Math.round((p?.widthM || 1) * 10) / 10));
+    document.getElementById('row-spacing-label')!.textContent = t(rowPattern ? 'rowPeriod' : 'rowSpacing');
+    document.getElementById('row-draw-hint')!.textContent = rowPattern ? t('rowPatternHint', { name: pc!.name || t('planUnnamed') }) : t('rowHint', { name: p ? displayName(p) : '?' });
+    renderRowDraft();
+  }
+  rowPatternSelect.addEventListener('change', () => setRowWhat(rowPatternSelect.value));
 
   // Live: the line from the last point of a row to the mouse pointer, with its length.
   let rowHover: GardenPlanPoint | null = null;
@@ -3605,14 +3623,13 @@ import Layout from '../layouts/Layout.astro';
     if (!g) return;
     if (!rowDraft || !editing) { g.innerHTML = ''; return; }
     const u = SVG_UNITS_PER_METER, k = viewK();
-    const p = rowPlantId ? plantsById.get(rowPlantId) : undefined;
-    const fill = p ? LAYER_STYLE[deriveLayer(p)].fill : '#15803d';
+    const fillOf = (id: string) => { const p = plantsById.get(id); return p ? LAYER_STYLE[deriveLayer(p)].fill : '#15803d'; };
     const line = rowLine().map(q => `${q.xM * u},${q.yM * u}`).join(' ');
     const spots = rowPositions();
     g.innerHTML = `
       ${rowDraft.length >= 2 ? `<polyline points="${line}" fill="none" stroke="#b45309" stroke-width="${2 * k}" stroke-dasharray="${6 * k} ${4 * k}"/>` : ''}
       ${rowDraft.length && rowHover ? `<line x1="${rowDraft[rowDraft.length - 1].xM * u}" y1="${rowDraft[rowDraft.length - 1].yM * u}" x2="${rowHover.xM * u}" y2="${rowHover.yM * u}" stroke="#b45309" stroke-width="${1.5 * k}" stroke-opacity="0.7" pointer-events="none"/>${liveDistLabel(rowDraft[rowDraft.length - 1], rowHover, k, '#7c2d12')}` : ''}
-      ${spots.map(q => `<circle cx="${q.xM * u}" cy="${q.yM * u}" r="${5 * k}" fill="${fill}" fill-opacity="0.85" stroke="#ffffff" stroke-width="${1.5 * k}"/>`).join('')}`;
+      ${spots.map(q => `<circle cx="${q.xM * u}" cy="${q.yM * u}" r="${5 * k}" fill="${fillOf(q.plantId)}" fill-opacity="0.85" stroke="#ffffff" stroke-width="${1.5 * k}"/>`).join('')}`;
     document.getElementById('row-count')!.textContent = rowDraft.length >= 2 ? t('rowCount', { n: spots.length }) : '';
     btnRowFinish.disabled = rowDraft.length < 2;
   }
@@ -3622,6 +3639,7 @@ import Layout from '../layouts/Layout.astro';
     rowDraft = null;
     rowHover = null;
     rowPlantId = null;
+    rowPattern = null;
     rowDrawBar.classList.add('hidden');
     planSvg.classList.remove('area-drawing');
     renderRowDraft();
@@ -3635,14 +3653,18 @@ import Layout from '../layouts/Layout.astro';
 
   document.getElementById('btn-draw-row')!.addEventListener('click', () => {
     if (!editing) return;
-    if (!armedPlantId) { alert(t('rowNeedPlant')); return; }
+    const agro = agroforests();
+    if (!armedPlantId && !agro.length) { alert(t(featureOn('anordnung') ? 'rowNeedPlantOrPattern' : 'rowNeedPlant')); return; }
     if (!plan3dContainer.hidden) btnView2d.click();
     endAreaDraw();
     setBoundaryEdit(false);
     rowPlantId = armedPlantId;
-    const p = plantsById.get(rowPlantId);
-    rowSpacingInput.value = String(Math.max(0.1, Math.round((p?.widthM || 1) * 10) / 10));
-    document.getElementById('row-draw-hint')!.textContent = t('rowHint', { name: p ? displayName(p) : '?' });
+    const p = rowPlantId ? plantsById.get(rowPlantId) : undefined;
+    // What goes along the line: the armed plant or an agroforestry pattern (the choice shows only when there are patterns).
+    rowPatternSelect.innerHTML = (p ? `<option value="">${escapeHtml(t('rowPatternPlant', { name: displayName(p) || p.latinName }))}</option>` : '')
+      + agro.map(pc => `<option value="${escapeHtml(pc.id)}">${escapeHtml(t('rowPatternAgro', { name: pc.name || t('planUnnamed') }))}</option>`).join('');
+    document.getElementById('row-pattern-wrap')!.hidden = !agro.length;
+    setRowWhat(p ? '' : agro[0].id);
     rowDraft = [];
     rowDrawBar.classList.remove('hidden');
     planSvg.classList.add('area-drawing');
@@ -3652,19 +3674,21 @@ import Layout from '../layouts/Layout.astro';
   document.getElementById('btn-row-undo')!.addEventListener('click', () => { rowDraft?.pop(); renderRowDraft(); });
   document.getElementById('btn-row-cancel')!.addEventListener('click', endRowDraw);
   btnRowFinish.addEventListener('click', () => {
-    if (!editing || !rowDraft || rowDraft.length < 2 || !rowPlantId) return;
+    if (!editing || !rowDraft || rowDraft.length < 2 || (!rowPlantId && !rowPattern)) return;
     const spots = rowPositions();
-    const plantId = rowPlantId;
-    const added = spots.map(q => newPlacement(plantId, q.xM, q.yM));
+    const pattern = rowPattern, plantId = rowPlantId, packageId = newId();
+    // a pattern row is one package (the planner's "select the whole package" picks the row)
+    const added = spots.map(q => ({ ...newPlacement(q.plantId, q.xM, q.yM), ...(pattern ? { polycultureId: pattern.pc.id, packageId } : {}) }));
     editing.placements.push(...added);
-    unplacedPlantIds = unplacedPlantIds.filter(id => id !== plantId);
-    const p = plantsById.get(plantId);
+    const used = new Set(added.map(a => a.plantId));
+    unplacedPlantIds = unplacedPlantIds.filter(id => !used.has(id));
+    const p = plantId ? plantsById.get(plantId) : undefined;
     endRowDraw();
     renderUnplacedList();
     renderSuggestions();
     addPlacementMarkers(added);
     afterGeometryEdit();
-    showToast(t('toastRowPlanted', { n: spots.length, name: p ? displayName(p) : '?' }));
+    showToast(pattern ? t('toastRowPattern', { n: spots.length, name: pattern.pc.name || t('planUnnamed') }) : t('toastRowPlanted', { n: spots.length, name: p ? displayName(p) : '?' }));
   });
 
   // ── GeoJSON für QGIS: Export & Import ──────────────────────────────────

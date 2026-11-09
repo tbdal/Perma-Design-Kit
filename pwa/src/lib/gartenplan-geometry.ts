@@ -69,6 +69,31 @@ export function polygonPerimeterM(pts: GardenPlanPoint[]): number {
 /** Positions every `spacingM` along a polyline, starting at its first point
  *  ("Reihe pflanzen"). The end point is included when the length is a whole
  *  multiple of the spacing (within 1 cm). */
+/** A pattern (#563: agroforestry) repeated along a polyline every `periodM` m: x of a spot runs along the line (from the
+ *  pattern's westmost spot), y across it (positive = right of the walking direction, i.e. south for a line going east).
+ *  Spots beyond the line's end are left out. */
+export function patternAlongPolyline<T extends GardenPlanPoint>(pts: GardenPlanPoint[], spots: T[], periodM: number): (T & GardenPlanPoint)[] {
+  const segs: { a: GardenPlanPoint; dx: number; dy: number; len: number; at: number }[] = [];
+  let total = 0;
+  for (let i = 1; i < pts.length; i++) {
+    const a = pts[i - 1], dx = pts[i].xM - a.xM, dy = pts[i].yM - a.yM, len = Math.hypot(dx, dy);
+    if (len > 0) { segs.push({ a, dx: dx / len, dy: dy / len, len, at: total }); total += len; }
+  }
+  if (!segs.length || !spots.length || !(periodM > 0)) return [];
+  const x0 = Math.min(...spots.map(s => s.xM));
+  const out: (T & GardenPlanPoint)[] = [];
+  for (let k = 0; k * periodM <= total + 0.01; k++) {
+    for (const s of spots) {
+      const d = k * periodM + s.xM - x0;
+      if (d > total + 0.01) continue;
+      const g = segs.find(q => d <= q.at + q.len + 1e-9) ?? segs[segs.length - 1];
+      const t = d - g.at;
+      out.push({ ...s, xM: g.a.xM + g.dx * t - g.dy * s.yM, yM: g.a.yM + g.dy * t + g.dx * s.yM });
+    }
+  }
+  return out;
+}
+
 export function pointsAlongPolyline(pts: GardenPlanPoint[], spacingM: number): GardenPlanPoint[] {
   if (pts.length === 0 || !(spacingM > 0)) return [];
   const out: GardenPlanPoint[] = [{ ...pts[0] }];

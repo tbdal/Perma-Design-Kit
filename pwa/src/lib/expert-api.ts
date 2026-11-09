@@ -217,6 +217,8 @@ export interface PolykulturenApi {
   plantsById(): Map<string, PlantData>;
   /** Called when a polyculture opens in the editor and whenever its members change. */
   onEditorChange(cb: (pc: Polyculture | null) => void): void;
+  /** Draws the member list again after a module changed `getEditing().members` (e.g. pasted plants, #563). */
+  refreshMembers(): void;
   /** A box below the members in the editor; returns its body. */
   addEditorBox(featureId: string, title: string): HTMLElement;
   /** Extra HTML at the end of each polyculture card in the list (null = none). */

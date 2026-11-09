@@ -142,6 +142,8 @@ export function normalizePolyculture(raw: unknown): Polyculture | null {
         }))
       : [],
     notes: str(raw.notes, ''),
+    ...(raw.kind === 'agroforst' ? { kind: 'agroforst' as const } : {}),
+    ...(finite(raw.gridM) != null && finite(raw.gridM)! >= 0.1 && finite(raw.gridM)! <= 20 ? { gridM: finite(raw.gridM)! } : {}),
     createdAt: str(raw.createdAt, d.createdAt),
     updatedAt: str(raw.updatedAt, d.updatedAt),
   };

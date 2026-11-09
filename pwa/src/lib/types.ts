@@ -52,6 +52,11 @@ export interface Polyculture {
   anchorPlantId: string | null;
   members: PolycultureMember[];
   notes: string;
+  /** "Agroforst" (#563): a planting pattern along a row (x along the row, y across it); the planner's row and curve
+   *  tools repeat it along a line. Absent = an ordinary polyculture. */
+  kind?: 'agroforst';
+  /** Grid of the arrangement's mini map (m), also the gap between two repeats of an agroforestry pattern; default 1. */
+  gridM?: number;
   createdAt: string;
   updatedAt: string;
 }
