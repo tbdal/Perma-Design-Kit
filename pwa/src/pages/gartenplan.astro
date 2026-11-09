@@ -436,7 +436,7 @@ import Layout from '../layouts/Layout.astro';
           </details>
 
           <details data-feature="climate" data-panel="climate" open id="climate-section" hidden class="group/panel rounded-xl bg-stone-50 dark:bg-stone-900 p-4 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
-            <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="climateHeading">Standortklima</h2><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-stone-500 dark:text-stone-400 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-2 group-open/panel:mb-2"><span class="flex items-center gap-1"><h2 class="text-sm font-semibold text-stone-800 dark:text-stone-100" data-i18n="climateHeading">Standortklima</h2><button type="button" id="btn-climate-zoomer" data-feature="zoomer" data-i18n-title="zoomerOpen" data-i18n-aria-label="zoomerOpen" title="Vergrößern (Zoomer)" aria-label="Vergrößern (Zoomer)" class="flex h-6 w-6 items-center justify-center rounded-md text-stone-500 hover:bg-stone-200 hover:text-stone-800 dark:text-stone-400 dark:hover:bg-stone-700 dark:hover:text-stone-100"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" aria-hidden="true"><path d="M12 3h5v5M8 17H3v-5M17 3l-6 6M3 17l6-6"/></svg></button></span><span aria-hidden="true" class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-stone-500 dark:text-stone-400 transition-transform group-open/panel:rotate-180"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M5 7.5l5 5 5-5"/></svg></span></summary>
             <div id="climate-body" class="space-y-1 text-xs text-stone-700 dark:text-stone-200"></div>
           </details>
 
@@ -605,6 +605,7 @@ import Layout from '../layouts/Layout.astro';
   import { planYield, careTasks, buildIcs, type CareTask } from '../lib/yield-care';
   import { DEFAULT_ZONE_RADII, ZONE_COLORS, bearingVector, wedgePath, solsticeSectors } from '../lib/zones-sectors';
   import { cachedSiteClimate, fetchSiteClimate, fetchFutureClimate, futureOutlook, climateCheck, DEFAULT_SCENARIO, LAST_DATA_YEAR, type ClimateScenario, type FutureClimate, type FutureOutlook, type FutureMetric, FUTURE_METRICS, type Ssp, notHardy, blossomFrostRisk, zoneLabel, doyLabel, plantZoneRange, COMPASS16, CLIMATE_ATTRIBUTION, type SiteClimate } from '../lib/site-climate';
+  import { installZoomer } from '../lib/zoomer';
   import { explorerControlsHtml, explorerOutHtml, statusTitle, STATUS_COLOR } from '../lib/climate-explorer';
   import { createEmptyGardenPlan, type GardenPlan, type GardenPlanPlacement, type GardenPlanPoint, type GardenPlanArea, type Polyculture, type PlantData } from '../lib/types';
   import { displayRadiusM } from '../lib/growth-model';
@@ -4737,6 +4738,7 @@ import Layout from '../layouts/Layout.astro';
   // "not hardy" / "blossom before last frost" hints and the suggestions.
   const climateSection = document.getElementById('climate-section')!;
   const climateBody = document.getElementById('climate-body')!;
+  installZoomer(document.getElementById('btn-climate-zoomer')!, climateBody, t('zoomerClose'));
   let siteClimate: SiteClimate | null = null;
   let siteClimateKey = '';       // what siteClimate belongs to
   let climateRequestKey = '';

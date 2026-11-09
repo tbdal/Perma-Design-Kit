@@ -202,6 +202,8 @@ export const gartenplanDict: Dict = {
   climateFutureZoneValue: { de: '{from} bis {to} ({n} Modelle)', en: '{from} to {to} ({n} models)' },
   climateFutureZone: { de: 'Zone um {year}', en: 'Zone around {year}' },
   climateFutureRain: { de: 'Sommerregen um {year}', en: 'Summer rain around {year}' },
+  zoomerOpen: { de: 'Vergrößern (Zoomer)', en: 'Enlarge (zoomer)' },
+  zoomerClose: { de: 'Schließen', en: 'Close' },
   climateFutureHeading: { de: 'Klima im Zieljahr', en: 'Climate in the target year' },
   climateSspLater: { de: 'Szenario zählt ab {y}', en: 'scenario counts from {y}' },
   warnClimateWarm: { de: '{name}: um {year} in {n} von {of} Klimamodellen zu warm (Zone {zone}, verträgt bis {max}).', en: '{name}: around {year} too warm in {n} of {of} climate models (zone {zone}, tolerates up to {max}).' },

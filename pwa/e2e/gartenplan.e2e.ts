@@ -163,6 +163,24 @@ test('climate explorer: target year, scenario and model drive the hints and stay
   await expect(box.locator('[data-clim-mode]')).toContainText('Modelldaten');
   await expect(page.locator('#warnings-list')).toContainText('um 2045 in 1 von 2 Klimamodellen zu warm');
   await expect(box.locator('[data-clim-out]')).toContainText('zu warm 1/2');
+  // zoomer: the box enlarged in a dialog, closed by Esc, × or a click outside; the controls keep working inside
+  const zoomer = page.locator('dialog.zoomer');
+  await page.click('#btn-climate-zoomer');
+  await expect(zoomer.locator('[data-climate-future]')).toBeVisible();
+  expect((await zoomer.boundingBox())!.width).toBeGreaterThan(600);
+  await zoomer.locator('[data-clim-year]').fill('2046');
+  await expect(zoomer.locator('[data-clim-mode]')).toContainText('Hochrechnung');
+  await page.keyboard.press('Escape');
+  await expect(zoomer).toHaveCount(0);
+  await expect(page.locator('#climate-section #climate-body [data-climate-future]')).toBeAttached();
+  await page.click('#btn-climate-zoomer');
+  await zoomer.getByRole('button', { name: 'Schließen' }).click();
+  await expect(zoomer).toHaveCount(0);
+  await page.click('#btn-climate-zoomer');
+  await page.mouse.click(5, 5);
+  await expect(zoomer).toHaveCount(0);
+  await expect(page.locator('#climate-section')).toHaveAttribute('open', '');
+  await box.locator('[data-clim-year]').fill('2045');
   // high emissions in 2090: too warm in both
   await box.locator('[data-clim-ssp="SSP5-8.5"]').click();
   await box.locator('[data-clim-year]').fill('2090');

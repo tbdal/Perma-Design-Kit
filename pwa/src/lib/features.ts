@@ -81,6 +81,7 @@ export const FEATURES: readonly FeatureDef[] = [
   { id: 'water', de: 'Wasser im Gelände, Swales', en: 'Water on the land, swales', modes: FULL, group: 'gartenplan' },
   { id: 'zones', de: 'Zonen & Sektoren', en: 'Zones & sectors', modes: FULL, group: 'gartenplan' },
   { id: 'climate', de: 'Standortklima', en: 'Site climate', modes: FULL, group: 'gartenplan', licence: { de: 'Open-Meteo (ERA5, CC BY 4.0): Namensnennung nötig; die kostenlose API ist nur für nichtkommerzielle Nutzung.', en: 'Open-Meteo (ERA5, CC BY 4.0): attribution required; the free API is for non-commercial use only.' } },
+  { id: 'zoomer', de: 'Zoomer: Standortklima vergrößert anzeigen', en: 'Zoomer: show the site climate enlarged', modes: FULL, group: 'gartenplan' },
   { id: 'yield', de: 'Ertrag & Pflege, Pflegekalender', en: 'Yield & care, care calendar', modes: FULL, group: 'gartenplan' },
   { id: 'export', de: 'Export: PDF, GeoJSON, Pflanzliste, Kalender', en: 'Export: PDF, GeoJSON, plant list, calendar', modes: FULL, group: 'gartenplan' },
 ];
