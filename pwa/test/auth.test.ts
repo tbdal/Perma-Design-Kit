@@ -219,4 +219,19 @@ describe('HTTP endpoints', () => {
     expect(await phone.json()).toEqual({ name: 'Linda', role: 'expert' });
     expect((await post('/api/auth/device/redeem', { token })).status).toBe(404);
   });
+
+  it('a person changes their own password (old one required; other sessions end, this one continues)', async () => {
+    const post = (body: unknown, cookie = '') => fetch(`${base}/api/auth/password`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(cookie ? { cookie } : {}) }, body: JSON.stringify(body) });
+    const admin = cookieOf(await login('admin', 'admin-passwort'));
+    await fetch(`${base}/api/admin/users`, { method: 'POST', headers: { 'Content-Type': 'application/json', cookie: admin }, body: JSON.stringify({ name: 'Pia', role: 'expert', password: 'pia-passwort-1' }) });
+    const a = cookieOf(await login('pia', 'pia-passwort-1')), b = cookieOf(await login('pia', 'pia-passwort-1'));
+    expect((await post({ old: 'x', password: 'neues-passwort' })).status).toBe(401);
+    expect((await post({ old: 'falsch-falsch', password: 'neues-passwort' }, a)).status).toBe(401);
+    expect((await post({ old: 'pia-passwort-1', password: 'kurz' }, a)).status).toBe(400);
+    const ok = await post({ old: 'pia-passwort-1', password: 'neues-passwort' }, a);
+    expect(ok.status).toBe(200);
+    expect((await fetch(`${base}/api/auth/me`, { headers: { cookie: cookieOf(ok) } })).status).toBe(200);
+    expect((await fetch(`${base}/api/auth/me`, { headers: { cookie: b } })).status).toBe(401);
+    expect((await login('pia', 'neues-passwort')).status).toBe(200);
+  });
 });

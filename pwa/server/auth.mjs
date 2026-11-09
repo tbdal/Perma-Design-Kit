@@ -416,6 +416,22 @@ export function createAuthHandler({ store, isAllowedOrigin = () => true, now = (
       send(res, 200, { name: user.name, role: user.role }, { 'Set-Cookie': cookieHeader(token, SESSION_DAYS * 86_400, secure) });
       return true;
     }
+    // A logged-in person sets a new password (old one required); that ends the sessions on other devices, this one gets a fresh cookie.
+    if (path === '/api/auth/password' && method === 'POST') {
+      const s = session(req);
+      if (!s) { send(res, 401, { error: 'login' }); return true; }
+      if (limiter.blocked(ip, now())) { send(res, 429, { error: 'rate' }); return true; }
+      let body;
+      try { body = await readJsonBody(req); } catch { send(res, 400, { error: 'body' }); return true; }
+      const user = findUser(store.users(), s.name);
+      if (!user || !(await verifyPassword(String(body?.old ?? ''), user.hash))) { limiter.fail(ip, now()); send(res, 401, { error: 'credentials' }); return true; }
+      try { store.saveUsers(await upsertUser(store.users, { name: user.name, password: String(body?.password ?? '') })); }
+      catch (err) { send(res, 400, { error: err instanceof Error ? err.message : 'error' }); return true; }
+      const fresh = findUser(store.users(), user.name);
+      const token = signSession({ n: fresh.name, r: fresh.role, e: now() + SESSION_DAYS * 86_400_000, v: fresh.v || 1 }, store.secret());
+      send(res, 200, { ok: true }, { 'Set-Cookie': cookieHeader(token, SESSION_DAYS * 86_400, secure) });
+      return true;
+    }
     if (path === '/api/auth/login' && method === 'POST') {
       if (limiter.blocked(ip, now())) { send(res, 429, { error: 'rate' }); return true; }
       let body;

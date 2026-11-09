@@ -131,6 +131,15 @@ import Layout from '../layouts/Layout.astro';
       </div>
     </div>
     <p id="login-qr-err" role="alert" class="mt-2 text-sm text-red-700 dark:text-red-300"></p>
+    <details id="pw-box" hidden class="mt-4">
+      <summary data-i18n="pwChange" class="cursor-pointer text-sm font-medium">Passwort ändern</summary>
+      <form id="pw-form" class="mt-2 max-w-sm space-y-2 text-sm">
+        <input id="pw-old" type="password" autocomplete="current-password" required data-i18n-placeholder="pwOld" placeholder="Aktuelles Passwort" aria-label="Aktuelles Passwort" class="block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-3 py-2" />
+        <input id="pw-new" type="password" autocomplete="new-password" required minlength="10" data-i18n-placeholder="pwNew" placeholder="Neues Passwort (mind. 10 Zeichen)" aria-label="Neues Passwort" class="block w-full rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-3 py-2" />
+        <button type="submit" data-i18n="pwSave" class="rounded-lg bg-green-700 px-3 py-1.5 font-semibold text-white hover:bg-green-800">Passwort speichern</button>
+        <p id="pw-status" role="status" class="font-medium"></p>
+      </form>
+    </details>
   </section>
 
   <section id="daten-section" class="mb-8 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
@@ -343,10 +352,18 @@ import Layout from '../layouts/Layout.astro';
     const box = document.getElementById('login-qr-box')!, left = document.getElementById('login-qr-left')!, err = document.getElementById('login-qr-err')!;
     let url = '', until = 0, tick: ReturnType<typeof setInterval> | undefined;
     const ROLE: Record<string, string> = { expert: 'Beta-Test', team: 'Team', admin: 'Admin' };
+    const pwBox = document.getElementById('pw-box') as HTMLDetailsElement;
+    document.getElementById('pw-form')!.addEventListener('submit', async e => {
+      e.preventDefault();
+      const st = document.getElementById('pw-status')!, oldEl = document.getElementById('pw-old') as HTMLInputElement, newEl = document.getElementById('pw-new') as HTMLInputElement;
+      const res = await fetch('/api/auth/password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ old: oldEl.value, password: newEl.value }) }).catch(() => null);
+      st.textContent = res?.ok ? t('pwDone') : res?.status === 401 ? t('pwWrong') : res?.status === 429 ? t('pwRate') : t('pwErr');
+      if (res?.ok) { oldEl.value = ''; newEl.value = ''; }
+    });
     const showWho = () => {
       const a = getAuth();
       who.textContent = a ? t('loginAs', { name: a.name, role: getLang() === 'en' ? a.role : ROLE[a.role] ?? a.role }) : t('loginOut');
-      go.hidden = !!a; phone.hidden = !a; out.hidden = !a;
+      go.hidden = !!a; phone.hidden = !a; out.hidden = !a; pwBox.hidden = !a;
       if (!a) { box.hidden = true; clearInterval(tick); }
     };
     async function makeCode() {
