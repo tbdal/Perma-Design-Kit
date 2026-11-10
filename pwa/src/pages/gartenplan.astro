@@ -643,8 +643,8 @@ import Layout from '../layouts/Layout.astro';
   import { BOOL_FIELDS } from '../lib/plant-fields';
   import { orthoFor } from '../lib/ortho-sources';
   import { dgmFor, officialHeightsWanted, refineWithDgm } from '../lib/dgm';
-  import { lastGeoOrigin, type GeoGroup } from '../lib/geo-cache';
-  import { fetchElevationGrid, sampleGrid, gridRange, slopeInfo, contourSegments, contourInterval, TERRAIN_ATTRIBUTION, type ElevationGrid } from '../lib/terrain';
+  import { lastGeoOrigin, cachedFetch, DAY_MS, type GeoGroup } from '../lib/geo-cache';
+  import { fetchElevationGrid, gridToResponse, gridFromResponse, sampleGrid, gridRange, slopeInfo, contourSegments, contourInterval, TERRAIN_ATTRIBUTION, type ElevationGrid } from '../lib/terrain';
   import { plantDetailHtml } from '../lib/plant-detail';
   import { compatScore } from '../lib/compat';
   import { newId } from '../lib/id';
@@ -4023,15 +4023,31 @@ import Layout from '../layouts/Layout.astro';
     const dgm = officialHeightsWanted() ? dgmFor(geo.lat, geo.lon) : null;
     const span = maxDim + 2 * m;
     try {
-      let grid = await fetchElevationGrid(geo, { minX: -m, minY: -m, maxX: plan.areaWidthM + m, maxY: plan.areaHeightM + m }, Math.max(span / 800, Math.min(4, Math.max(1, span / (dgm ? 300 : 100)))));
-      if (dgm && terrainKey === key) {
-        terrainInfo.textContent = t('terrainLoadingDgm', { region: dgm.region[lang] });
-        let refined: typeof grid | null = null;
-        try { refined = await refineWithDgm(grid, geo); } catch { /* keep the coarse grid */ }
-        if (refined) grid = refined;
+      const cellM = Math.max(span / 800, Math.min(4, Math.max(1, span / (dgm ? 300 : 100))));
+      // The finished grid is kept on the device (#588/#593); a grid the 1 m model could not refine is not kept.
+      let unkept: ElevationGrid | null = null;
+      const gridKey = `grid:v1:${geo.lat}|${geo.lon}|${geo.rotationDeg}|${plan.areaWidthM}|${plan.areaHeightM}|${m}|${cellM}|${dgm?.region.de ?? ''}`;
+      let grid: ElevationGrid;
+      try {
+        grid = await gridFromResponse(await cachedFetch(gridKey, 90 * DAY_MS, async () => {
+          let g = await fetchElevationGrid(geo, { minX: -m, minY: -m, maxX: plan.areaWidthM + m, maxY: plan.areaHeightM + m }, cellM);
+          if (dgm && terrainKey === key) {
+            terrainInfo.textContent = t('terrainLoadingDgm', { region: dgm.region[lang] });
+            let refined: typeof g | null = null;
+            try { refined = await refineWithDgm(g, geo); } catch { /* keep the coarse grid */ }
+            if (!refined) { unkept = g; throw new Error('not refined'); }
+            g = refined;
+          }
+          return gridToResponse(g);
+        }));
+      } catch (e) {
+        if (!unkept) throw e;
+        grid = unkept;
+      }
+      if (dgm) {
         // Tell the info button which official model was expected but did not come (service down, no data here).
-        terrainInfo.dataset.dgmMissing = refined ? '' : `${dgm.region[lang]} (${dgm.resolutionM} m)`;
-        terrainInfo.dataset.dgmMissingHref = refined ? '' : /href="([^"]+)"/.exec(dgm.attributionHtml)?.[1] ?? '';
+        terrainInfo.dataset.dgmMissing = grid.dgm ? '' : `${dgm.region[lang]} (${dgm.resolutionM} m)`;
+        terrainInfo.dataset.dgmMissingHref = grid.dgm ? '' : /href="([^"]+)"/.exec(dgm.attributionHtml)?.[1] ?? '';
       }
       if (terrainKey !== key || editing !== plan) { // plan changed meanwhile: reopening it must load again
         if (terrainKey === key) { terrainKey = ''; doneLoading(); }
@@ -4918,9 +4934,14 @@ import Layout from '../layouts/Layout.astro';
     renderClimateOut();
   }
   /** Redraws what follows the choice (not the controls, so the year slider can be dragged). */
+  let climateOutPending = false;
+  // drawn when the box comes into view (open, its tab chosen): it is redrawn with every change of the hints (#588/#593)
+  new IntersectionObserver(es => { if (climateOutPending && es.some(e => e.isIntersecting)) renderClimateOut(); }).observe(climateBody);
   function renderClimateOut() {
     const c = currentClimate(), f = currentFuture(), out = climateBody.querySelector<HTMLElement>('[data-clim-out]');
     if (!c || !f || !out || !editing) return;
+    if (!climateBody.offsetParent) { climateOutPending = true; return; }
+    climateOutPending = false;
     const s = scenarioOf(editing), o = currentOutlook()!;
     const nameOf = new Map<string, string>();
     for (const pl of editing.placements) { const p = plantsById.get(pl.plantId); if (p) nameOf.set(p.id, displayName(p) || p.latinName); }

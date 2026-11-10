@@ -30,6 +30,26 @@ export interface ElevationGrid {
   dgm?: { region: Record<'de' | 'en', string>; resolutionM: number; attributionHtml: string };
 }
 
+/** The finished grid of a plan (tiles decoded, resampled, refined with the 1 m model) as one cache entry (#588/#593):
+ *  on a phone, building it again from cached tiles took 20 s on every opening of a big plan. */
+export function gridToResponse(g: ElevationGrid): Response {
+  const { heights, ...head } = g;
+  const h = new TextEncoder().encode(JSON.stringify(head));
+  const buf = new Uint8Array(4 + h.length + ((4 - (h.length % 4)) % 4) + heights.byteLength);
+  new DataView(buf.buffer).setUint32(0, h.length);
+  buf.set(h, 4);
+  buf.set(new Uint8Array(heights.buffer, heights.byteOffset, heights.byteLength), buf.length - heights.byteLength);
+  return new Response(buf, { headers: { 'Content-Type': 'application/octet-stream' } });
+}
+export async function gridFromResponse(res: Response): Promise<ElevationGrid> {
+  const buf = await res.arrayBuffer();
+  const n = new DataView(buf).getUint32(0);
+  const head = JSON.parse(new TextDecoder().decode(new Uint8Array(buf, 4, n))) as Omit<ElevationGrid, 'heights'>;
+  const start = 4 + n + ((4 - (n % 4)) % 4);
+  if ((buf.byteLength - start) / 4 !== head.nx * head.ny) throw new Error('grid cache: wrong size');
+  return { ...head, heights: new Float32Array(buf.slice(start)) };
+}
+
 /** Lowest and highest height of the grid. A loop on purpose: spreading a
  *  1-m grid of a big plan (> 100 000 values) into Math.min/max overflows the stack. */
 export function gridRange(g: Pick<ElevationGrid, 'heights'>): { min: number; max: number } {
