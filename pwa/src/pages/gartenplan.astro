@@ -616,6 +616,7 @@ import Layout from '../layouts/Layout.astro';
   import { DEFAULT_ZONE_RADII, ZONE_COLORS, bearingVector, wedgePath, solsticeSectors } from '../lib/zones-sectors';
   import { cachedSiteClimate, fetchSiteClimate, fetchFutureClimate, futureOutlook, climateCheck, DEFAULT_SCENARIO, LAST_DATA_YEAR, type ClimateScenario, type FutureClimate, type FutureOutlook, type FutureMetric, FUTURE_METRICS, type Ssp, notHardy, blossomFrostRisk, zoneLabel, doyLabel, plantZoneRange, COMPASS16, CLIMATE_ATTRIBUTION, ClimateLimitError, allowDirect, revokeDirect, directAlways, type SiteClimate } from '../lib/site-climate';
   import { installZoomer } from '../lib/zoomer';
+  import { surroundM } from '../lib/surroundings';
   import { normalizeSoil, soilAt, soilCheck, SOIL_TEX, SOIL_WAT, SOIL_NUT, type Soil } from '../lib/soil';
   import { textureClass, triangleSvg } from '../lib/soil-triangle';
   import { explorerControlsHtml, explorerOutHtml, statusTitle, STATUS_COLOR, infoHtml, infoText } from '../lib/climate-explorer';
@@ -3991,8 +3992,10 @@ import Layout from '../layouts/Layout.astro';
   // ── Gelände (Höhendaten) ───────────────────────────────────────────────
   // Loaded once per plan location/size from the open Terrain Tiles; drives
   // the 3D ground, the 2D contour lines and the slope read-out.
-  /** OSM buildings are loaded this far around the plan, the terrain grid reaches as far. */
-  const BUILDINGS_MARGIN_M = 600;
+  /** OSM buildings are loaded this far around the plan, the terrain grid reaches as far; a radius chosen on the device
+   *  (Plan & Hintergrund, #611) counts for both. */
+  const SURROUND_CHOSEN = surroundM(0);
+  const BUILDINGS_MARGIN_M = SURROUND_CHOSEN || 600;
   let terrain: ElevationGrid | null = null;
   let terrainKey = '';
   const contoursToggle = document.getElementById('contours-toggle')!;
@@ -4047,7 +4050,7 @@ import Layout from '../layouts/Layout.astro';
     // ground as the 3D terrain around them.
     // Big plans (up to 5 km) get a margin of at most 1 km and a coarser grid
     // (≤ ~800 samples a side), so the grid stays a few hundred thousand cells.
-    const m = Math.max(BUILDINGS_MARGIN_M + 10, Math.min(maxDim, 1000));
+    const m = SURROUND_CHOSEN ? SURROUND_CHOSEN + 10 : Math.max(BUILDINGS_MARGIN_M + 10, Math.min(maxDim, 1000));
     // With an official 1 m model (dgm.ts) the grid gets finer and is refined
     // with its heights; elsewhere the Terrain Tiles alone (≈ 25–30 m data).
     const dgm = officialHeightsWanted() ? dgmFor(geo.lat, geo.lon) : null;
