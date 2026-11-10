@@ -53,7 +53,7 @@ Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerb
 - [x] **/admin/: „Zugänge“ ist eine Tabelle unter „Funktionen und Modi“** (nicht mehr rechts daneben), mit Spalten für den Beta-Test (Anmeldung, Mailadresse, Rückmeldungen); „Funktionen und Modi“, Zugänge, Einladungen und die Abschnitte der Module klappen ein und merken sich das #minor #prüfen
 
 ## Beta-Test: Anmeldung, Tour, Feedback, Admin 2026-11-02
-- [x] **Seite /beta/**: Anmeldung mit Mailadresse, freiwilliger Angabe „Ich plane …“ und Beta-Bedingungen zum Anhaken; Bestätigungsmail (48 h), danach Einladung oder Warteliste, Abmelden und Umfragen über Links in den Mails #major #prüfen
+- [x] **Seite /beta/**: Anmeldung mit Mailadresse, freiwilliger Angabe „Ich plane …“ und Beta-Bedingungen zum Anhaken; Bestätigungsmail (48 h), danach Einladung oder Warteliste, Abmelden und Umfragen über Links in den Mails #major
 - [x] **Mailversand ohne neue Abhängigkeit** (kleiner SMTP-Client im privaten Server, Einstellungen `smtp.json` + `smtp-pass` im privaten Datenordner), Willkommensmail, Fragen nach 14 Tagen, Abschlussmail, Hinweis auf erledigte Rückmeldungen #major #prüfen
 - [x] **Tour-Schritt „Neu im Beta-Test“** am Ende des Rundgangs, Inhalt vom Server (`/api/beta/vorschau`), bis zu vier Kacheln; Admins pflegen Satz und Bildschirmfoto je Funktion auf /admin/ #minor #prüfen
 - [x] **Feedback im Beta-Modus**: Knopf „Direkt an das Beta-Team“ legt eine Werkstatt-Aufgabe mit #beta an (Konto, nie die Mailadresse); Passwort vergessen per Mail für Beta-Konten; Datenschutz-Abschnitt „Beta-Test“ #minor #prüfen
