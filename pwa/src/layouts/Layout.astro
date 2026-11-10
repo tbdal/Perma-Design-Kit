@@ -448,10 +448,13 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
         { selector: '#btn-view-list', title: 'tourListTitle', text: 'tourListText' },
         { selector: '#btn-view-cards', title: 'tourCardsTitle', text: 'tourCardsText' },
         { selector: 'a[data-nav="/polykulturen"]', title: 'tourGuildsTitle', text: 'tourGuildsText' },
-        { selector: 'a[data-nav="/gartenplan"]', title: 'tourPlanTitle', text: 'tourPlanText' },
-        // Last: start from an example — the loaders sit in the empty plant list ("Womit starten?").
+        // the planner people actually have: the new one (team, beta) comes first in the menu, else the old one (#613)
+        { selector: 'a[href="/gartenplan/#neu"], a[data-nav="/gartenplan"]', title: 'tourPlanTitle', text: 'tourPlanText' },
+        // Start from an example — the loaders sit in the empty plant list ("Womit starten?").
         { selector: '#btn-load-samples-crawford', title: 'tourSamplesTitle', text: 'tourSamplesText',
           link: { href: 'tourSamplesHref', label: 'tourSamplesLink' } },
+        // Last, where the menu has them: the Vorbilder, real forest gardens to learn from (#613).
+        { selector: 'a[href="/intern/#vorbilder"]', title: 'tourVorbilderTitle', text: 'tourVorbilderText' },
       ];
       const visible = (el: Element | null): el is HTMLElement => {
         if (!el) return false;

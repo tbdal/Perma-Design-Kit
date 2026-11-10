@@ -105,6 +105,8 @@ export const layoutDict: Dict = {
   tourGuildsText: { de: 'Stelle Pflanzengemeinschaften zusammen, mit Rollen und Vorschlägen passend zu Sonne, Wasser und Boden.', en: 'Assemble plant communities with roles and suggestions matching sun, water and soil.' },
   tourPlanTitle: { de: '6 · Waldgartenplan', en: '6 · Forest garden plan' },
   tourSamplesTitle: { de: '7 · Mit einem Beispiel starten', en: '7 · Start with an example' },
+  tourVorbilderTitle: { de: '8 · Vorbilder', en: '8 · Role models' },
+  tourVorbilderText: { de: 'Echte Waldgärten zum Abschauen: Pflanzen, Schichten und Pläne bestehender Gärten, die du dir als Plan öffnen und weiterplanen kannst.', en: 'Real forest gardens to learn from: plants, layers and plans of existing gardens that you can open as a plan and carry on with.' },
   tourSamplesText: { de: 'Du kannst auch mit einem Beispiel starten und dafür die „Pflanzen für kleine Gärten“ aus Martin Crawfords Buch „Einen Waldgarten erschaffen“ nutzen. Klicke dafür hier zuerst auf „Beispieldaten laden (Crawford)“ und lade dann unter „Daten ⋮“ die Detailinformationen der Pflanzen mit „Lade alle fehlenden Daten“.', en: 'You can also start with an example: the “Plants for small gardens” from Martin Crawford’s book “Creating a Forest Garden”. Click “Load sample data (Crawford)” here first, then load the plants’ details under “Data ⋮” with “Load all missing data”.' },
   tourSamplesLink: { de: 'Zum Buch „Einen Waldgarten erschaffen“ (OLV-Verlag)', en: 'About the book “Creating a Forest Garden”' },
   tourSamplesHref: { de: 'https://www.olv-verlag.eu/Einen-Waldgarten-erschaffen/', en: 'https://www.agroforestry.co.uk/product/creating-a-forest-garden-2/' },

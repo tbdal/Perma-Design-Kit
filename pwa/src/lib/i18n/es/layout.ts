@@ -100,6 +100,8 @@ export const es: Record<string, string> = {
   tourGuildsText: 'Forma comunidades de plantas con roles y sugerencias adecuadas al sol, el agua y el suelo.',
   tourPlanTitle: '6 · Plan de bosque comestible',
   tourSamplesTitle: '7 · Empezar con un ejemplo',
+  tourVorbilderTitle: '8 · Modelos',
+  tourVorbilderText: 'Bosques comestibles reales de los que aprender: plantas, estratos y planos de jardines existentes que puedes abrir como plano y seguir planificando.',
   tourSamplesText: 'También puedes empezar con un ejemplo: las «plantas para jardines pequeños» del libro de Martin Crawford «Creating a Forest Garden». Haz clic aquí primero en «Cargar datos de ejemplo (Crawford)» y luego carga los detalles de las plantas en «Datos ⋮» con «Cargar todos los datos que faltan».',
   tourSamplesLink: 'Sobre el libro «Creating a Forest Garden»',
   tourPlanText: 'Dibuja tu superficie y coloca plantas a escala, con control de crecimiento y vista 2D y 3D.',

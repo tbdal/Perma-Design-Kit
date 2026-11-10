@@ -45,7 +45,7 @@ export const polyculturesDict: Dict = {
   inPlans: { de: 'In Plänen: {list}', en: 'In plans: {list}' },
   inPlanItem: { de: '{name} {n}×', en: '{name} {n}×' },
   noMembers: { de: 'Keine Mitglieder.', en: 'No members.' },
-  btnSaveGuild: { de: 'Polykultur speichern', en: 'Save polyculture' },
+  btnSaveGuild: { de: 'Speichern', en: 'Save' },
 
   suggestionsHeading: { de: 'Vorschläge', en: 'Suggestions' },
   suggestionsIntro: { de: 'Pflanzen aus deinem Bestand, die freie Rollen füllen und mit der Ankerart in Sonne/Wasser/pH überlappen.', en: 'Plants from your collection that fill open roles and overlap with the anchor species in sun/water/pH.' },
