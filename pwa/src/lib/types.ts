@@ -116,6 +116,8 @@ export interface GardenPlanArea {
   name: string;
   color: string;             // #rrggbb
   points: GardenPlanPoint[]; // ≥ 3, plan meters
+  /** Soil of this area (#600); absent = the plot's (GardenPlan.soil). */
+  soil?: import('./soil').Soil;
 }
 
 export interface GardenPlan {
@@ -145,6 +147,8 @@ export interface GardenPlan {
   startYear?: number;
   /** Permaculture zones around a centre (lib/zones-sectors.ts); absent = never set up. */
   zones?: import('./zones-sectors').PlanZones;
+  /** Soil of the plot, for everything outside an area with its own soil (#600). */
+  soil?: import('./soil').Soil;
   /** Climate outlook the plan's hints and suggestions use (#530); absent = DEFAULT_SCENARIO. */
   climateScenario?: import('./site-climate').ClimateScenario;
   /** Data of optional modules (expert-api.ts setPluginData), by feature id;

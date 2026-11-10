@@ -238,6 +238,34 @@ test('climate explorer: target year, scenario and model drive the hints and stay
   void errors;
 });
 
+test('soil per area (#600): set in the area panel, hints for pH and waterlogging grouped under "Boden"', async ({ page, errors }) => {
+  await stubNetwork(page);
+  // the plot is waterlogged; the area around the apple is neutral and fresh
+  await seedNeighbourPlan(page, { soil: { wat: 's' }, areas: [{ id: 'beet', name: 'Südbeet', color: '#c9a86a', points: [{ xM: 12, yM: 6 }, { xM: 20, yM: 6 }, { xM: 20, yM: 14 }, { xM: 12, yM: 14 }] }] });
+  await withDb(page, `for (const p of await all('plants')) {
+    if (p.latinName === 'Malus domestica') Object.assign(p, { waterDry: false, waterMid: true, waterWet: false, phAcid: true, phNeutral: false });
+    if (p.latinName === 'Elaeagnus umbellata') Object.assign(p, { waterDry: true, waterMid: false, waterWet: false });
+    await put('plants', p); }`);
+  await openPlan(page, 'np');
+  const soil = page.locator('#warnings-list [data-warn-group="so"]');
+  await expect(soil.locator('summary')).toContainText('Boden');
+  await expect(soil).toContainText('Herbst-Ölweide ist in „Grundstück“ ungeeignet: verträgt keine Staunässe');
+  await expect(soil).toContainText('Kulturapfel ist in „Grundstück“ ungeeignet'); // its area has no soil of its own yet
+  // the area's soil in its panel: neutral pH → the apple (acidic only) gets a hint
+  await page.locator('[data-area-id="beet"] .area-name').focus();
+  const editor = page.locator('#selected-panel [data-soil-editor]');
+  await editor.locator('summary').click();
+  await editor.locator('[data-soil-k="ph"][data-soil-v="2"]').click();
+  await expect(editor.locator('[data-soil-k="ph"][data-soil-v="2"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(soil).toContainText('Kulturapfel in „Südbeet“: braucht pH sauer, hier neutral');
+  await expect(soil).not.toContainText('Kulturapfel ist in „Grundstück“');
+  await expect.poll(() => withDb(page, `return (await all('gardenPlans')).find(p => p.id === 'np').areas[0].soil`)).toEqual({ ph: 2 });
+  // a second click clears it again
+  await editor.locator('[data-soil-k="ph"][data-soil-v="2"]').click();
+  await expect(soil).toContainText('Kulturapfel ist in „Grundstück“ ungeeignet');
+  void errors;
+});
+
 test('buildings of the previous plan never show in the next one', async ({ page, errors }) => {
   let delayB = false;
   const fake = (lat: number, lon: number) => ({ elements: [{ type: 'way', tags: { building: 'house' }, geometry: [
