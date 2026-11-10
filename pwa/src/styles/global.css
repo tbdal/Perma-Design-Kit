@@ -530,3 +530,5 @@ html[data-bare] #feedback-fab, html[data-bare] #backup-reminder, html[data-bare]
 /* planner on phones (#592): only the icon, round, so it covers little of the map */
 #feedback-fab.fab-compact > summary { padding: .55rem; border-radius: 9999px; opacity: .85; }
 #feedback-fab.fab-compact > summary > span { display: none; }
+/* the field view has feedback in its own menu ("Mehr") and needs the corner for its zoom buttons */
+html.pdk-feld #feedback-fab { display: none !important; }
