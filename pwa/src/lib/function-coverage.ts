@@ -4,6 +4,7 @@ import { pointInPolygon } from './gartenplan-geometry';
 import { compatScore } from './compat';
 import type { SunClass } from './sun-hours';
 import { ageAt, isPlanted } from './phases';
+import { soilAt, soilCheck } from './soil';
 
 // "Funktions-Abdeckung": where in the garden are the ecological functions
 // (nitrogen, minerals, insects, pest control, ground cover, wildlife, wind)
@@ -111,8 +112,11 @@ export function suggestPlants(fn: CoverFunc, collection: PlantData[], plan: Gard
   const used = new Map<string, number>();
   for (const pl of plan.placements) used.set(pl.plantId, (used.get(pl.plantId) ?? 0) + 1);
   const gapR = Math.sqrt(gapAreaM2 / Math.PI);
+  // Soil at the gap (#616): plants that fit the area's soil first, unsuitable ones out; on poor soil those that take it first.
+  const soil = plan.areas ? soilAt(plan, at)?.soil : undefined;
+  const soilOf = (p: PlantData) => (soil ? soilCheck(p, soil)?.level : undefined);
   return collection
-    .filter(p => Boolean(p[fn]))
+    .filter(p => Boolean(p[fn]) && soilOf(p) !== 'unsuitable')
     .map(p => {
       const compat = near.length ? near.reduce((s, n) => s + compatScore(p, n), 0) / near.length : 3;
       const fits = !p.widthM || p.widthM / 2 <= gapR * 1.5 ? 1 : 0;
@@ -120,7 +124,8 @@ export function suggestPlants(fn: CoverFunc, collection: PlantData[], plan: Gard
       // plants that state other needs down; no sun data → neutral.
       const hasSun = p.sunFull || p.sunMid || p.sunShadow;
       const light = sunKey && hasSun ? (p[sunKey] ? 1.5 : -1.5) : 0;
-      const score = compat + fits + light - Math.min(2, (used.get(p.id) ?? 0) * 0.3);
+      const ground = (soilOf(p) === 'ok' ? 1 : soilOf(p) === 'hint' ? -1.5 : 0) + (soil?.nut === 'poor' && p.soilPoor ? 1 : 0);
+      const score = compat + fits + light + ground - Math.min(2, (used.get(p.id) ?? 0) * 0.3);
       return { p, score };
     })
     .sort((a, b) => b.score - a.score || a.p.latinName.localeCompare(b.p.latinName))

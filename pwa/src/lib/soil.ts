@@ -10,7 +10,9 @@ export type SoilTexture = 'L' | 'M' | 'H';
 export type SoilWater = 'd' | 'm' | 'w' | 's';
 export type SoilNutrients = 'poor' | 'mid' | 'rich';
 /** Every field may stay empty: then it is not checked. ph: 0 very acidic … 4 very alkaline (the plant data's steps). */
-export interface Soil { tex?: SoilTexture; ph?: number; wat?: SoilWater; nut?: SoilNutrients; /** USDA texture class (soil-triangle.ts); sets `tex`. */ cls?: string }
+export interface Soil { tex?: SoilTexture; ph?: number; wat?: SoilWater; nut?: SoilNutrients; /** USDA texture class (soil-triangle.ts); sets `tex`. */ cls?: string;
+  /** Soil type (Braunerde, Pseudogley …), a note that presets empty fields (#616). */ typ?: string;
+  /** Where the values came from: a soil map ('buek', 'soilgrids'); absent = own observation (#616). */ src?: string }
 
 export const SOIL_TEX: SoilTexture[] = ['L', 'M', 'H'];
 export const SOIL_WAT: SoilWater[] = ['d', 'm', 'w', 's'];
@@ -27,7 +29,9 @@ export function normalizeSoil(raw: unknown): Soil | null {
   if (SOIL_NUT.includes(r.nut as SoilNutrients)) s.nut = r.nut as SoilNutrients;
   const c = typeof r.cls === 'string' ? textureClass(r.cls) : undefined;
   if (c) { s.cls = c.k; s.tex = c.z; } // the class decides the step
-  return Object.keys(s).length ? s : null;
+  if (typeof r.typ === 'string' && r.typ.trim()) s.typ = r.typ.trim().slice(0, 60);
+  if (r.src === 'buek' || r.src === 'soilgrids') s.src = r.src;
+  return Object.keys(s).some(k => k !== 'src') ? s : null; // a source alone is no soil
 }
 
 /** The soil at a plan point: the smallest area there that has a soil, else the plot's; with where it comes from. */

@@ -277,6 +277,33 @@ test('soil per area (#600): set in the area panel, hints for pH and waterlogging
   void errors;
 });
 
+test('soil maps (#616): BÜK 200 and SoilGrids suggestions for an area, taken over with their source; soil type', async ({ page, errors }) => {
+  await stubNetwork(page);
+  const asked: string[] = [];
+  await page.route('**/geo/soilgrids/**', r => { asked.push(r.request().url()); const v = { sand: 252, clay: 244, phh2o: 57 }[r.request().url().match(/soilgrids\/(\w+)/)![1] as 'sand']; return r.fulfill({ contentType: 'text/html', body: `<b>Value: </b><span id="value">${v}</span>` }); });
+  await page.route('**/geo/buek?**', r => { asked.push(r.request().url()); return r.fulfill({ contentType: 'application/json', body: JSON.stringify({ results: [{ layerName: 'CC4718 KASSEL', attributes: { Legende: 'SS', Legendentext: 'Überwiegend Pseudogleye aus lehmigem Schluff (Löss)' } }] }) }); });
+  await seedNeighbourPlan(page, { geo: { lat: 51.3, lon: 9.5, rotationDeg: 0, basemap: 'none', opacity: 0.6 }, areas: [{ id: 'beet', name: 'Südbeet', color: '#c9a86a', points: [{ xM: 12, yM: 6 }, { xM: 20, yM: 6 }, { xM: 20, yM: 14 }, { xM: 12, yM: 14 }] }] });
+  await openPlan(page, 'np');
+  await page.locator('[data-area-id="beet"] .area-name').focus();
+  const editor = page.locator('#selected-panel [data-soil-editor]');
+  await editor.locator('summary').click();
+  await editor.locator('[data-soil-maps]').click();
+  await expect(editor.locator('[data-soil-take]')).toHaveCount(2);
+  expect(asked.some(u => /buek\?pt=9\.\d{4},51\.\d{4}$/.test(u))).toBe(true);   // the middle of the area, 4 decimals
+  await expect(editor.locator('[data-soil-point]')).toHaveCount(1);              // SoilGrids' point in the triangle
+  await editor.locator('[data-soil-take="0"]').click();                          // BÜK 200: Pseudogley → waterlogged, loess → medium
+  await expect(editor.locator('[data-soil-k="wat"][data-soil-v="s"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(editor.locator('[data-soil-typ]')).toHaveValue('Pseudogley');
+  await expect(editor.locator('[data-soil-origin]')).toContainText('BÜK 200');
+  await expect.poll(() => withDb(page, `return (await all('gardenPlans')).find(p => p.id === 'np').areas[0].soil`)).toEqual({ wat: 's', tex: 'M', typ: 'Pseudogley', src: 'buek' });
+  // a change by hand makes it own observation; a type presets only empty fields
+  await editor.locator('[data-soil-k="ph"][data-soil-v="1"]').click();
+  await expect(editor.locator('[data-soil-origin]')).toContainText('eigene Angabe');
+  await editor.locator('[data-soil-typ]').selectOption('Podsol');
+  await expect.poll(() => withDb(page, `return (await all('gardenPlans')).find(p => p.id === 'np').areas[0].soil`)).toEqual({ wat: 's', tex: 'M', ph: 1, typ: 'Podsol' });
+  void errors;
+});
+
 test('sun map: computed once, kept on the device and shown again without counting (#593)', async ({ page, errors }) => {
   await stubNetwork(page);
   await seedNeighbourPlan(page);

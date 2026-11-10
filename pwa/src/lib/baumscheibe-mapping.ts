@@ -47,6 +47,12 @@ export const BOOL_FIELDS: Partial<Record<keyof PlantData, string[]>> = {
   phNeutral:      ['phNeutral',      'PH-neutral',   'ph3_neutral1'],
   phAlkaline:     ['phAlkaline',     'PH-alkaline',  'ph5_alk'],
   phVeryAlkaline: ['PH-veralkaline', 'phVeryAlkaline', 'ph6_v_alk'],
+  // Bodenart (#616): the soil triangle of baumscheibe2.5.psd (group "soil", hidden there, spliced in on 2026-11-10):
+  // sand on top = light, loam in the middle and silt bottom left = medium (silt counts as medium in the planner too),
+  // clay bottom right = heavy.
+  soilLight:  ['soilLight',  's_sand'],
+  soilMedium: ['soilMedium', 's_mid', 's_silt'],
+  soilHeavy:  ['soilHeavy',  's_clay'],
   // Nutzung — the trailing single/short label ('e', 'cul', 'med', …) is the
   // color-wedge fill behind the icon (2.3 template's "color" group), added so
   // hiding a field hides its background color along with the icon, not just

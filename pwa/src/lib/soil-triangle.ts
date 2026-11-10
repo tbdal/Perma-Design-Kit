@@ -60,7 +60,7 @@ export const ZONE_FILL: Record<SoilTexture, string> = { L: '#e6cf98', M: '#c9a27
 
 /** The triangle as SVG: classes (button-like, `data-soil-cls`), 20 % lines, corner labels. `cls` = chosen class,
  *  `tex` = chosen step (its classes stay full, the others pale when no class is chosen). */
-export function triangleSvg(opt: { cls?: string; tex?: SoilTexture; lang: 'de' | 'en'; labels: { clay: string; sand: string; silt: string; step: Record<SoilTexture, string>; aria: string } }): string {
+export function triangleSvg(opt: { cls?: string; tex?: SoilTexture; /** a soil map's point (SoilGrids, #616) */ point?: { sand: number; clay: number; title: string }; lang: 'de' | 'en'; labels: { clay: string; sand: string; silt: string; step: Record<SoilTexture, string>; aria: string } }): string {
   const pts = (list: [number, number][]) => list.map(([a, c]) => triXY(a, c).map(v => v.toFixed(1)).join(',')).join(' ');
   const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
   const cls = TEXTURE_CLASSES.map(c => {
@@ -76,5 +76,7 @@ export function triangleSvg(opt: { cls?: string; tex?: SoilTexture; lang: 'de' |
   const txt = (x: number, y: number, s: string, anc: string) => `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="${anc}" font-size="10" fill="currentColor" opacity=".75">${esc(s)}</text>`;
   const ticks = [20, 40, 60, 80].map(v => { const [x, y] = triXY(100 - v, v); return txt(x - 5, y + 3, String(v), 'end'); }).join('');
   return `<svg viewBox="0 0 330 290" role="group" aria-label="${esc(opt.labels.aria)}" class="w-full max-w-[18rem] h-auto">${order.join('')}${grid}${ticks}`
-    + txt(X0 + SIDE / 2, Y0 - H - 8, opt.labels.clay, 'middle') + txt(X0 - 4, Y0 + 15, opt.labels.sand, 'start') + txt(X0 + SIDE + 4, Y0 + 15, opt.labels.silt, 'end') + '</svg>';
+    + txt(X0 + SIDE / 2, Y0 - H - 8, opt.labels.clay, 'middle') + txt(X0 - 4, Y0 + 15, opt.labels.sand, 'start') + txt(X0 + SIDE + 4, Y0 + 15, opt.labels.silt, 'end')
+    + (opt.point ? (([x, y]) => `<circle data-soil-point cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5.5" fill="#3f6f8c" stroke="#fff" stroke-width="1.5" pointer-events="none"><title>${esc(opt.point!.title)}</title></circle>`)(triXY(opt.point.sand, opt.point.clay)) : '')
+    + '</svg>';
 }

@@ -50,6 +50,19 @@ describe('function coverage', () => {
     expect(s.map(x => x.id)).not.toContain('comfrey');
   });
 
+  it('soil of the area at the gap (#616): fitting first, unsuitable out, on poor soil the frugal ones first', () => {
+    const sour = P('sour', { nitrogenFix: true, widthM: 1, phAcid: true });
+    const lime = P('lime', { nitrogenFix: true, widthM: 1, phAlkaline: true });
+    const dryOnly = P('dryOnly', { nitrogenFix: true, widthM: 1, waterDry: true });
+    const p = { ...plan(), areas: [{ id: 'r', name: 'Senke', color: '#00f', points: [{ xM: 14, yM: 0 }, { xM: 20, yM: 0 }, { xM: 20, yM: 10 }, { xM: 14, yM: 10 }], soil: { ph: 1, wat: 's' as const } }] };
+    const ids = suggestPlants('nitrogenFix', [lime, sour, dryOnly], p, plantsById, { xM: 17, yM: 5 }, 40).map(x => x.id);
+    expect(ids[0]).toBe('sour');
+    expect(ids).not.toContain('dryOnly');                    // waterlogged
+    const frugal = P('frugal', { nitrogenFix: true, widthM: 1, soilPoor: true }), rich = P('rich', { nitrogenFix: true, widthM: 1 });
+    const poor = { ...plan(), soil: { nut: 'poor' as const } };
+    expect(suggestPlants('nitrogenFix', [rich, frugal], poor, plantsById, { xM: 17, yM: 5 }, 40, 1)[0].id).toBe('frugal');
+  });
+
   it('prefers plants that suit the light at the gap', () => {
     const shadeN = P('shadeN', { nitrogenFix: true, sunShadow: true, widthM: 1 });
     const sunN = P('sunN', { nitrogenFix: true, sunFull: true, widthM: 1 });

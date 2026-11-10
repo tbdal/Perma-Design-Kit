@@ -618,6 +618,7 @@ import Layout from '../layouts/Layout.astro';
   import { installZoomer } from '../lib/zoomer';
   import { surroundM } from '../lib/surroundings';
   import { normalizeSoil, soilAt, soilCheck, SOIL_TEX, SOIL_WAT, SOIL_NUT, type Soil } from '../lib/soil';
+  import { SOIL_TYPES, typePreset, type SoilSuggestion } from '../lib/soil-maps';
   import { textureClass, triangleSvg } from '../lib/soil-triangle';
   import { explorerControlsHtml, explorerOutHtml, statusTitle, STATUS_COLOR, infoHtml, infoText } from '../lib/climate-explorer';
   import { createEmptyGardenPlan, type GardenPlan, type GardenPlanPlacement, type GardenPlanPoint, type GardenPlanArea, type Polyculture, type PlantData } from '../lib/types';
@@ -2506,28 +2507,48 @@ import Layout from '../layouts/Layout.astro';
    *  name/color, size, perimeter, corners. */
   /** Soil editor opened by hand: stays open when its last value is cleared. */
   let soilEdOpen = false;
+  /** Soil map suggestions per area ('' = plot) while the plan is open (#616): asked on a click, kept for redraws. */
+  const soilMapMemo = new Map<string, SoilSuggestion[] | 'loading' | 'error'>();
   /** Soil of an area or of the plot (#600): four rows of choices, a second click clears; how to tell, below. */
-  function soilEditorHtml(s: Soil | undefined, isArea: boolean) {
+  function soilEditorHtml(s: Soil | undefined, isArea: boolean, memoKey: string) {
     const chip = (k: string, v: string | number, label: string, on: boolean) => `<button type="button" data-soil-k="${k}" data-soil-v="${v}" aria-pressed="${on}" class="rounded-full px-2 py-0.5 text-[11px] ring-1 ring-stone-300 dark:ring-stone-600 aria-pressed:bg-green-700 aria-pressed:text-white aria-pressed:ring-green-700">${escapeHtml(label)}</button>`;
     const row = (label: string, inner: string) => `<div class="flex flex-wrap items-center gap-1"><span class="w-20 shrink-0 text-[11px] text-stone-500 dark:text-stone-400">${escapeHtml(label)}</span>${inner}</div>`;
     return `<details data-soil-editor class="mt-2" ${s || soilEdOpen ? 'open' : ''}><summary class="cursor-pointer text-xs font-semibold text-stone-800 dark:text-stone-100">${escapeHtml(t(isArea ? 'soilTitleArea' : 'soilTitlePlot'))}${s ? '' : ` <span class="font-normal text-stone-500 dark:text-stone-400">– ${escapeHtml(t('soilUnset'))}</span>`}</summary>
       <div class="mt-1 space-y-1">
         ${row(t('soilTex'), SOIL_TEX.map(v => chip('tex', v, t(`soilTex${v}`), s?.tex === v)).join(''))}
-        ${soilTriangleHtml(s)}
+        ${soilTriangleHtml(s, memoKey)}
         ${row(t('soilPh'), [0, 1, 2, 3, 4].map(v => chip('ph', v, t(`soilPh${v}`), s?.ph === v)).join(''))}
         ${row(t('soilWat'), SOIL_WAT.map(v => chip('wat', v, t(`soilWat${v}`), s?.wat === v)).join(''))}
         ${row(t('soilNut'), SOIL_NUT.map(v => chip('nut', v, t(`soilNut${v}`), s?.nut === v)).join(''))}
+        ${row(t('soilTyp'), `<select data-soil-typ class="rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-1 py-0.5 text-[11px]"><option value="">${escapeHtml(t('soilTypNone'))}</option>${[...new Set([...SOIL_TYPES, ...(s?.typ ? [s.typ] : [])])].map(v => `<option${s?.typ === v ? ' selected' : ''}>${escapeHtml(v)}</option>`).join('')}</select>`)}
+        <p data-soil-origin class="text-[10px] text-stone-500 dark:text-stone-400">${escapeHtml(t('soilOrigin', { src: s?.src ? t(`soilSrc_${s.src}`) : t('soilSrcOwn') }))}</p>
+        ${soilMapsHtml(memoKey)}
         <p class="text-[10px] text-stone-500 dark:text-stone-400">${escapeHtml(t(s?.tex ? `soilHow${s.tex}` : 'soilHow'))} ${escapeHtml(t(isArea ? 'soilAreaNote' : 'soilPlotNote'))}</p>
       </div></details>`;
   }
   /** The texture triangle (#600 stage 2): USDA classes coloured by step; the chosen class outlined, else the chosen step. */
-  function soilTriangleHtml(s: Soil | undefined) {
+  /** "Vorschläge aus Bodenkarten" (#616): only with a location; asked on a click (BÜK 200, SoilGrids), each one to take over. */
+  function soilMapsHtml(memoKey: string) {
+    if (!editing?.geo) return '';
+    const m = soilMapMemo.get(memoKey);
+    const btn = 'rounded-md bg-stone-100 dark:bg-stone-700 px-2 py-0.5 text-[11px] ring-1 ring-stone-200 dark:ring-stone-600';
+    const list = Array.isArray(m)
+      ? (m.length ? m.map((x, i) => `<li class="flex items-start gap-2"><span class="min-w-0 flex-1"><b class="font-mono text-[10px] text-stone-500 dark:text-stone-400">${escapeHtml(t(`soilSrc_${x.src}`))}</b> ${escapeHtml(x.text)}</span><button type="button" data-soil-take="${i}" class="${btn} shrink-0">${escapeHtml(t('soilTake'))}</button></li>`).join('')
+        : `<li class="text-stone-500">${escapeHtml(t('soilMapsNone'))}</li>`)
+      : m === 'loading' ? `<li class="text-stone-500">${escapeHtml(t('soilMapsLoading'))}</li>` : m === 'error' ? `<li class="text-red-700 dark:text-red-400">${escapeHtml(t('soilMapsError'))}</li>` : '';
+    return `<div class="mt-1 rounded-md border border-dashed border-stone-300 dark:border-stone-600 p-1.5 text-[11px]">
+      <div class="flex flex-wrap items-center justify-between gap-1"><span class="font-semibold">${escapeHtml(t('soilMaps'))}</span>${Array.isArray(m) || m === 'loading' ? '' : `<button type="button" data-soil-maps class="${btn}">${escapeHtml(t('soilMapsAsk'))}</button>`}</div>
+      ${list ? `<ul class="mt-1 space-y-1">${list}</ul>` : ''}
+      <p class="mt-1 text-[10px] text-stone-500 dark:text-stone-400">${escapeHtml(t('soilMapsNote'))}</p></div>`;
+  }
+  function soilTriangleHtml(s: Soil | undefined, memoKey = '') {
+    const m = soilMapMemo.get(memoKey), sg = Array.isArray(m) ? m.find(x => x.point) : undefined;
     const c = textureClass(s?.cls);
     const step = (z: string) => t(`soilTex${z}`);
     const readout = c ? t('soilClsIs', { name: c.name[lang === 'en' ? 'en' : 'de'], ab: c.ab, step: step(c.z) })
       : s?.tex ? t('soilClsNone', { step: step(s.tex) }) : t('soilClsPick');
     return `<div data-soil-tri class="ml-0 mt-1 text-stone-800 dark:text-stone-100">
-      ${triangleSvg({ cls: s?.cls, tex: s?.tex, lang: lang === 'en' ? 'en' : 'de', labels: { clay: t('soilTriClay'), sand: t('soilTriSand'), silt: t('soilTriSilt'), step: { L: step('L'), M: step('M'), H: step('H') }, aria: t('soilTriAria') } })}
+      ${triangleSvg({ cls: s?.cls, tex: s?.tex, point: sg?.point ? { ...sg.point, title: `${t('soilSrc_soilgrids')}: ${sg.text}` } : undefined, lang: lang === 'en' ? 'en' : 'de', labels: { clay: t('soilTriClay'), sand: t('soilTriSand'), silt: t('soilTriSilt'), step: { L: step('L'), M: step('M'), H: step('H') }, aria: t('soilTriAria') } })}
       <p data-soil-cls-out class="text-[11px] font-medium">${escapeHtml(readout)}</p>
       <p class="text-[10px] text-stone-500 dark:text-stone-400">${escapeHtml(t('soilTriNote'))}</p></div>`;
   }
@@ -2548,7 +2569,7 @@ import Layout from '../layouts/Layout.astro';
         <dt class="text-stone-500 dark:text-stone-400">${t('selCorners')}</dt><dd data-sel="corners" class="font-mono text-stone-800 dark:text-stone-100">${pts.length}</dd>
       </dl>
       <p class="mt-2 text-[11px] text-stone-500 dark:text-stone-400">${t(area ? 'areaEditHint' : 'boundaryEditHint')}</p>
-      ${soilEditorHtml(area?.soil ?? (area ? undefined : editing.soil), !!area)}
+      ${soilEditorHtml(area?.soil ?? (area ? undefined : editing.soil), !!area, `${editing.id}:${area?.id ?? ''}`)}
       ${area ? `<button id="btn-remove-area" class="mt-2 rounded-md bg-red-100 dark:bg-red-900/40 px-2.5 py-1 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/60">${t('areaDelete')}</button>` : ''}`;
     const soilEd = selectedPanel.querySelector<HTMLElement>('[data-soil-editor]');
     const setSoil = (k: keyof Soil, v: string | number) => {
@@ -2557,6 +2578,7 @@ import Layout from '../layouts/Layout.astro';
       const next: Record<string, unknown> = { ...owner.soil };
       next[k] = next[k] === v ? undefined : v;
       if (k === 'tex') delete next.cls; // only the step chosen: no class in the triangle
+      delete next.src;                  // changed by hand: own observation from now on
       const s = normalizeSoil(next);
       if (s) owner.soil = s; else delete owner.soil;
       scheduleAutosave();
@@ -2573,6 +2595,34 @@ import Layout from '../layouts/Layout.astro';
       setSoil(k, k === 'ph' ? Number(b.dataset.soilV) : b.dataset.soilV!);
     });
     soilEd?.addEventListener('toggle', () => { soilEdOpen = (soilEd as HTMLDetailsElement).open; });
+    // #616: soil type (presets the empty fields), map suggestions (asked once per area, taken over field by field)
+    const owner = (): { soil?: Soil } => area ?? editing!;
+    const putSoil = (next: Record<string, unknown>) => {
+      const s = normalizeSoil(next);
+      if (s) owner().soil = s; else delete owner().soil;
+      scheduleAutosave(); scheduleWarnings(); renderSelectedShapePanel();
+    };
+    soilEd?.querySelector<HTMLSelectElement>('[data-soil-typ]')?.addEventListener('change', e => {
+      const typ = (e.target as HTMLSelectElement).value;
+      putSoil({ ...typePreset(typ), ...owner().soil, typ: typ || undefined });
+    });
+    const memoKey = `${editing.id}:${area?.id ?? ''}`;
+    soilEd?.querySelector('[data-soil-maps]')?.addEventListener('click', () => {
+      const geo = editing?.geo;
+      if (!geo) return;
+      const pts2 = area ? area.points : editing!.boundary;
+      const c = pts2.length ? { xM: pts2.reduce((a, p) => a + p.xM, 0) / pts2.length, yM: pts2.reduce((a, p) => a + p.yM, 0) / pts2.length } : { xM: editing!.areaWidthM / 2, yM: editing!.areaHeightM / 2 };
+      const { lat, lon } = planToLatLon(c, geo);
+      soilMapMemo.set(memoKey, 'loading');
+      renderSelectedShapePanel();
+      void import('../lib/soil-maps').then(m => m.soilMapsAt(lat, lon, lang === 'en' ? 'en' : 'de'))
+        .then(list => soilMapMemo.set(memoKey, list), () => soilMapMemo.set(memoKey, 'error'))
+        .then(() => { if (selectedAreaId === (area?.id ?? null)) renderSelectedShapePanel(); });
+    });
+    soilEd?.querySelectorAll<HTMLButtonElement>('[data-soil-take]').forEach(b => b.addEventListener('click', () => {
+      const m = soilMapMemo.get(memoKey), x = Array.isArray(m) ? m[Number(b.dataset.soilTake)] : undefined;
+      if (x) putSoil({ ...owner().soil, ...x.set, src: x.src });
+    }));
     soilEd?.addEventListener('keydown', e => {
       const cls = (e.target as Element).closest<SVGElement>('[data-soil-cls]');
       if (cls && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setSoil('cls', cls.dataset.soilCls!); }
