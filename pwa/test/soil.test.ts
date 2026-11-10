@@ -35,6 +35,18 @@ describe('soil (#600)', () => {
     expect(soilCheck(lavender, { wat: 'w' })!.level).toBe('hint');
     expect(soilCheck(plant({ waterWet: true }), { wat: 'd' })).toEqual({ level: 'hint', issues: [{ kind: 'dry' }] });
     expect(soilCheck(plant({}), { ph: 2, wat: 's' })).toBeNull();
-    expect(soilCheck(lavender, { tex: 'H', nut: 'poor' })).toBeNull();               // texture and nutrients: not checked yet
+    expect(soilCheck(lavender, { tex: 'H', nut: 'poor' })).toBeNull();               // no texture data: not checked
+  });
+  it('checks the texture against light/medium/heavy and waterlogging against "well-drained" (stage 2)', () => {
+    const sandy = plant({ soilLight: true, soilMedium: true });
+    expect(soilCheck(sandy, { tex: 'L' })).toEqual({ level: 'ok', issues: [] });
+    expect(soilCheck(sandy, { tex: 'H' })).toEqual({ level: 'hint', issues: [{ kind: 'tex', have: 'H' }] });
+    // takes wet ground, but needs drainage: waterlogged is unsuitable
+    expect(soilCheck(plant({ waterWet: true, soilWellDrained: true }), { wat: 's' })!.level).toBe('unsuitable');
+    expect(soilCheck(plant({ soilWellDrained: true }), { wat: 'w' })).toBeNull();
+  });
+  it('a texture class sets the step; unknown classes are dropped', () => {
+    expect(normalizeSoil({ cls: 'sl', tex: 'H' })).toEqual({ cls: 'sl', tex: 'L' });
+    expect(normalizeSoil({ cls: 'xx', tex: 'M' })).toEqual({ tex: 'M' });
   });
 });

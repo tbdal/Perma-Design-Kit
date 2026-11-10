@@ -413,6 +413,7 @@ const PROXY_DIRECT_FIELDS = [
   'growSpeedLow', 'growSpeedMid', 'growSpeedHigh',
   'phVeryAcid', 'phAcid', 'phNeutral',
   'phAlkaline', 'phVeryAlkaline',
+  'soilLight', 'soilMedium', 'soilHeavy', 'soilWellDrained', 'soilPoor',
 ] as const;
 
 export interface SourceData {

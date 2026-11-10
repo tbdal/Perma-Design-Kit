@@ -134,6 +134,7 @@ function emptyResult(latinName) {
     growSpeedLow: false, growSpeedMid: false, growSpeedHigh: false,
     phVeryAcid: false, phAcid: false, phNeutral: false,
     phAlkaline: false, phVeryAlkaline: false, phSaline: false,
+    soilLight: false, soilMedium: false, soilHeavy: false, soilWellDrained: false, soilPoor: false,
     fruitMonths: Array(12).fill(false),
     flowerMonths: Array(12).fill(false),
     source: '',

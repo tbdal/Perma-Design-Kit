@@ -58,7 +58,7 @@ export const es: Record<string, string> = {
   fieldSizeHintToggle: '¿Cómo se determinan la altura y la anchura?', fieldSizeHintMore: 'Más en la ayuda →',
   fieldSizeHint: 'Tamaño final de la planta adulta. Al completar datos manda PFAF («growing to 9 m by 6 m»); un valor que falta viene de Edible Forest Gardens: sus rangos en pies se convierten tomando el valor medio (25–35 ft → 9,1 m). Los valores que introduces tú nunca se sobrescriben.',
   fieldClimateZone: 'Zona climática', fieldHabit: 'Forma de crecimiento', habitUnknown: 'desconocida (según la altura)', climateZonePlaceholder: 'p. ej. 5-9',
-  fieldImageUrl: 'URL de la imagen', fieldImageCredit: 'Crédito de la imagen (autor · licencia · fuente)', fieldsetUsage: 'Usos', lblScore: 'Puntuación', fieldsetEcosystem: 'Funciones', fieldsetSun: 'Sol', fieldsetWater: 'Agua', fieldsetGrowth: 'Crecimiento', fieldsetPh: 'pH del suelo',
+  fieldImageUrl: 'URL de la imagen', fieldImageCredit: 'Crédito de la imagen (autor · licencia · fuente)', fieldsetUsage: 'Usos', lblScore: 'Puntuación', fieldsetEcosystem: 'Funciones', fieldsetSun: 'Sol', fieldsetWater: 'Agua', fieldsetGrowth: 'Crecimiento', fieldsetPh: 'pH del suelo', fieldsetSoil: 'Tipo de suelo',
   fieldFruitMonths: 'Meses de fruto', fieldFlowerMonths: 'Meses de floración',
   monthJan: 'Ene', monthFeb: 'Feb', monthMar: 'Mar', monthApr: 'Abr', monthMay: 'May', monthJun: 'Jun', monthJul: 'Jul', monthAug: 'Ago', monthSep: 'Sep', monthOct: 'Oct', monthNov: 'Nov', monthDec: 'Dic',
   autosaved: '✓ guardado automáticamente', autosaveFailed: 'No se pudo guardar', btnCancel: 'Cancelar', btnCloseEditor: 'Cerrar', btnDiscard: 'Descartar', btnAddToMine: 'Añadir a mis plantas', btnSave: 'Guardar', alertMissingLatinName: 'Falta el nombre latino.',

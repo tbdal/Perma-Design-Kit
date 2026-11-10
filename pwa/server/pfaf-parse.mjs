@@ -133,6 +133,15 @@ export function parsePfafHtml(html) {
   result.phVeryAlkaline = /pH:.*very alkaline.*soils\./i.test(phys);
   result.phSaline = /pH:.*saline.*soils\./i.test(phys);
 
+  // Soil (#600): "Suitable for: light (sandy), medium (loamy) and heavy (clay) soils, prefers well-drained soil and can
+  // grow in nutritionally poor soil." — only that sentence (the habitat text also says "well-drained").
+  const suit = phys.match(/Suitable for:([^.]*)/i)?.[1] ?? '';
+  result.soilLight = /light \(sandy\)/i.test(suit);
+  result.soilMedium = /medium \(loamy\)/i.test(suit);
+  result.soilHeavy = /heavy \(clay\)/i.test(suit);
+  result.soilWellDrained = /prefers\s+well[- ]drained/i.test(suit);
+  result.soilPoor = /nutritionally poor/i.test(suit);
+
   result.windBreakingOnSea = /tolerate maritime exposure/i.test(phys);
 
   const flowerMonths = extractMonths(phys, 'flower');

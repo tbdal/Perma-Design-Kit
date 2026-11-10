@@ -262,6 +262,7 @@ export const indexDict: Dict = {
   fieldsetGrowth: { de: 'Wachstum', en: 'Growth' },
 
   fieldsetPh: { de: 'Boden pH', en: 'Soil pH' },
+  fieldsetSoil: { de: 'Bodenart', en: 'Soil' },
 
   fieldFruitMonths: { de: 'Fruchtmonate', en: 'Fruiting months' },
   fieldFlowerMonths: { de: 'Blütemonate', en: 'Flowering months' },

@@ -10,7 +10,7 @@ export type BoolFieldKey = {
   [K in keyof PlantData]-?: PlantData[K] extends boolean ? K : never
 }[keyof PlantData];
 
-export type FieldGroup = 'usage' | 'function' | 'sun' | 'water' | 'ph' | 'growth';
+export type FieldGroup = 'usage' | 'function' | 'sun' | 'water' | 'ph' | 'soil' | 'soilprops' | 'growth';
 
 export interface BoolFieldDef {
   key: BoolFieldKey;
@@ -96,6 +96,13 @@ export const BOOL_FIELDS: readonly BoolFieldDef[] = [
   { key: 'phNeutral', group: 'ph', label: { de: 'Neutral', en: 'Neutral' }, csv: 'pH_neutral', legacyCsv: 'b_ph-neutral_element' },
   { key: 'phAlkaline', group: 'ph', label: { de: 'Alkalisch', en: 'Alkaline' }, csv: 'pH_alkalisch', legacyCsv: 'b_ph-alkaline_element' },
   { key: 'phVeryAlkaline', group: 'ph', label: { de: 'Sehr alk.', en: 'Very alk.' }, csv: 'pH_sehr_alk', legacyCsv: 'b_ph-very-alkaline_element' },
+
+  // ── Boden (#600): Bodenart wie PFAF (leicht/mittel/schwer), Durchlässigkeit, Magerkeit ──
+  { key: 'soilLight', group: 'soil', label: { de: 'Leicht (Sand)', en: 'Light (sandy)' }, csv: 'Boden_leicht' },
+  { key: 'soilMedium', group: 'soil', label: { de: 'Mittel (Lehm)', en: 'Medium (loamy)' }, csv: 'Boden_mittel' },
+  { key: 'soilHeavy', group: 'soil', label: { de: 'Schwer (Ton)', en: 'Heavy (clay)' }, csv: 'Boden_schwer' },
+  { key: 'soilWellDrained', group: 'soilprops', label: { de: 'Braucht durchlässigen Boden', en: 'Needs well-drained soil' }, csv: 'Boden_durchlaessig' },
+  { key: 'soilPoor', group: 'soilprops', label: { de: 'Verträgt mageren Boden', en: 'Tolerates poor soil' }, csv: 'Boden_mager' },
 
   // ── Wuchs ──
   { key: 'growSpeedLow', group: 'growth', label: { de: 'Langsam', en: 'Slow' }, csv: 'Wachstum_langsam', legacyCsv: 'b_grow-speed-low_icon',

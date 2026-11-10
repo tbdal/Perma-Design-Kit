@@ -617,6 +617,7 @@ import Layout from '../layouts/Layout.astro';
   import { cachedSiteClimate, fetchSiteClimate, fetchFutureClimate, futureOutlook, climateCheck, DEFAULT_SCENARIO, LAST_DATA_YEAR, type ClimateScenario, type FutureClimate, type FutureOutlook, type FutureMetric, FUTURE_METRICS, type Ssp, notHardy, blossomFrostRisk, zoneLabel, doyLabel, plantZoneRange, COMPASS16, CLIMATE_ATTRIBUTION, ClimateLimitError, allowDirect, revokeDirect, directAlways, type SiteClimate } from '../lib/site-climate';
   import { installZoomer } from '../lib/zoomer';
   import { normalizeSoil, soilAt, soilCheck, SOIL_TEX, SOIL_WAT, SOIL_NUT, type Soil } from '../lib/soil';
+  import { textureClass, triangleSvg } from '../lib/soil-triangle';
   import { explorerControlsHtml, explorerOutHtml, statusTitle, STATUS_COLOR, infoHtml, infoText } from '../lib/climate-explorer';
   import { createEmptyGardenPlan, type GardenPlan, type GardenPlanPlacement, type GardenPlanPoint, type GardenPlanArea, type Polyculture, type PlantData } from '../lib/types';
   import { displayRadiusM } from '../lib/growth-model';
@@ -2502,18 +2503,32 @@ import Layout from '../layouts/Layout.astro';
 
   /** "Ausgewählt" for a selected area or the garden outline being edited:
    *  name/color, size, perimeter, corners. */
+  /** Soil editor opened by hand: stays open when its last value is cleared. */
+  let soilEdOpen = false;
   /** Soil of an area or of the plot (#600): four rows of choices, a second click clears; how to tell, below. */
   function soilEditorHtml(s: Soil | undefined, isArea: boolean) {
     const chip = (k: string, v: string | number, label: string, on: boolean) => `<button type="button" data-soil-k="${k}" data-soil-v="${v}" aria-pressed="${on}" class="rounded-full px-2 py-0.5 text-[11px] ring-1 ring-stone-300 dark:ring-stone-600 aria-pressed:bg-green-700 aria-pressed:text-white aria-pressed:ring-green-700">${escapeHtml(label)}</button>`;
     const row = (label: string, inner: string) => `<div class="flex flex-wrap items-center gap-1"><span class="w-20 shrink-0 text-[11px] text-stone-500 dark:text-stone-400">${escapeHtml(label)}</span>${inner}</div>`;
-    return `<details data-soil-editor class="mt-2" ${s ? 'open' : ''}><summary class="cursor-pointer text-xs font-semibold text-stone-800 dark:text-stone-100">${escapeHtml(t(isArea ? 'soilTitleArea' : 'soilTitlePlot'))}${s ? '' : ` <span class="font-normal text-stone-500 dark:text-stone-400">– ${escapeHtml(t('soilUnset'))}</span>`}</summary>
+    return `<details data-soil-editor class="mt-2" ${s || soilEdOpen ? 'open' : ''}><summary class="cursor-pointer text-xs font-semibold text-stone-800 dark:text-stone-100">${escapeHtml(t(isArea ? 'soilTitleArea' : 'soilTitlePlot'))}${s ? '' : ` <span class="font-normal text-stone-500 dark:text-stone-400">– ${escapeHtml(t('soilUnset'))}</span>`}</summary>
       <div class="mt-1 space-y-1">
         ${row(t('soilTex'), SOIL_TEX.map(v => chip('tex', v, t(`soilTex${v}`), s?.tex === v)).join(''))}
+        ${soilTriangleHtml(s)}
         ${row(t('soilPh'), [0, 1, 2, 3, 4].map(v => chip('ph', v, t(`soilPh${v}`), s?.ph === v)).join(''))}
         ${row(t('soilWat'), SOIL_WAT.map(v => chip('wat', v, t(`soilWat${v}`), s?.wat === v)).join(''))}
         ${row(t('soilNut'), SOIL_NUT.map(v => chip('nut', v, t(`soilNut${v}`), s?.nut === v)).join(''))}
         <p class="text-[10px] text-stone-500 dark:text-stone-400">${escapeHtml(t(s?.tex ? `soilHow${s.tex}` : 'soilHow'))} ${escapeHtml(t(isArea ? 'soilAreaNote' : 'soilPlotNote'))}</p>
       </div></details>`;
+  }
+  /** The texture triangle (#600 stage 2): USDA classes coloured by step; the chosen class outlined, else the chosen step. */
+  function soilTriangleHtml(s: Soil | undefined) {
+    const c = textureClass(s?.cls);
+    const step = (z: string) => t(`soilTex${z}`);
+    const readout = c ? t('soilClsIs', { name: c.name[lang === 'en' ? 'en' : 'de'], ab: c.ab, step: step(c.z) })
+      : s?.tex ? t('soilClsNone', { step: step(s.tex) }) : t('soilClsPick');
+    return `<div data-soil-tri class="ml-0 mt-1 text-stone-800 dark:text-stone-100">
+      ${triangleSvg({ cls: s?.cls, tex: s?.tex, lang: lang === 'en' ? 'en' : 'de', labels: { clay: t('soilTriClay'), sand: t('soilTriSand'), silt: t('soilTriSilt'), step: { L: step('L'), M: step('M'), H: step('H') }, aria: t('soilTriAria') } })}
+      <p data-soil-cls-out class="text-[11px] font-medium">${escapeHtml(readout)}</p>
+      <p class="text-[10px] text-stone-500 dark:text-stone-400">${escapeHtml(t('soilTriNote'))}</p></div>`;
   }
   function renderSelectedShapePanel() {
     if (!editing) return;
@@ -2534,18 +2549,32 @@ import Layout from '../layouts/Layout.astro';
       <p class="mt-2 text-[11px] text-stone-500 dark:text-stone-400">${t(area ? 'areaEditHint' : 'boundaryEditHint')}</p>
       ${soilEditorHtml(area?.soil ?? (area ? undefined : editing.soil), !!area)}
       ${area ? `<button id="btn-remove-area" class="mt-2 rounded-md bg-red-100 dark:bg-red-900/40 px-2.5 py-1 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/60">${t('areaDelete')}</button>` : ''}`;
-    selectedPanel.querySelector('[data-soil-editor]')?.addEventListener('click', e => {
-      const b = (e.target as Element).closest<HTMLButtonElement>('[data-soil-k]');
-      if (!b || !editing) return;
-      const k = b.dataset.soilK as keyof Soil, v = k === 'ph' ? Number(b.dataset.soilV) : b.dataset.soilV;
+    const soilEd = selectedPanel.querySelector<HTMLElement>('[data-soil-editor]');
+    const setSoil = (k: keyof Soil, v: string | number) => {
+      if (!editing) return;
       const owner: { soil?: Soil } = area ?? editing;
       const next: Record<string, unknown> = { ...owner.soil };
       next[k] = next[k] === v ? undefined : v;
+      if (k === 'tex') delete next.cls; // only the step chosen: no class in the triangle
       const s = normalizeSoil(next);
       if (s) owner.soil = s; else delete owner.soil;
       scheduleAutosave();
       scheduleWarnings();
       renderSelectedShapePanel();
+      if (k === 'cls') selectedPanel.querySelector<SVGElement>(`[data-soil-cls="${v}"]`)?.focus();
+    };
+    soilEd?.addEventListener('click', e => {
+      const cls = (e.target as Element).closest<SVGElement>('[data-soil-cls]');
+      if (cls) { setSoil('cls', cls.dataset.soilCls!); return; }
+      const b = (e.target as Element).closest<HTMLButtonElement>('[data-soil-k]');
+      if (!b) return;
+      const k = b.dataset.soilK as keyof Soil;
+      setSoil(k, k === 'ph' ? Number(b.dataset.soilV) : b.dataset.soilV!);
+    });
+    soilEd?.addEventListener('toggle', () => { soilEdOpen = (soilEd as HTMLDetailsElement).open; });
+    soilEd?.addEventListener('keydown', e => {
+      const cls = (e.target as Element).closest<SVGElement>('[data-soil-cls]');
+      if (cls && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setSoil('cls', cls.dataset.soilCls!); }
     });
     document.getElementById('btn-remove-area')?.addEventListener('click', () => {
       if (!editing || !area || !confirm(t('confirmDeleteArea', { name: area.name || '—' }))) return;
@@ -5392,6 +5421,7 @@ import Layout from '../layouts/Layout.astro';
       for (const { ids, p, where, ck } of groups.values()) {
         const why = ck.issues.map(i => i.kind === 'ph'
           ? t('soilWhyPh', { need: i.need[0] === i.need[1] ? phLabel(i.need[0]) : `${phLabel(i.need[0])} – ${phLabel(i.need[1])}`, have: phLabel(i.have) })
+          : i.kind === 'tex' ? t(`soilWhyTex${i.have}`)
           : t(i.kind === 'dry' ? 'soilWhyDry' : i.kind === 'wet' ? 'soilWhyWet' : 'soilWhyWaterlogged')).join('; ');
         soilItems.push({ ids, text: t(ck.level === 'unsuitable' ? 'warnSoilBad' : 'warnSoil', { name: displayName(p) || p.latinName, where, why }) });
       }

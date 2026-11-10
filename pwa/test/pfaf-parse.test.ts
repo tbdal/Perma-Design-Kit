@@ -51,6 +51,14 @@ describe('parsePfafHtml', () => {
     expect(months(r.fruitMonths)).toEqual([1, 2, 3, 11, 12]);
   });
 
+  it('reads the soil texture, well-drained and poor soil from the "Suitable for" sentence only (#600)', () => {
+    const r = page('Robinia_pseudoacacia');
+    expect([r.soilLight, r.soilMedium, r.soilHeavy, r.soilWellDrained, r.soilPoor]).toEqual([true, true, true, true, true]);
+    const s = page('Sambucus_nigra'); // "well-drained" only in the habitat text
+    expect([s.soilLight, s.soilMedium, s.soilHeavy, s.soilWellDrained, s.soilPoor]).toEqual([true, true, true, false, false]);
+    expect(page('Hedera_helix').soilPoor).toBe(true);
+  });
+
   it('returns an empty result for a name PFAF does not know', () => {
     expect(page('Nonexistus_plantus')).toEqual({});
   });

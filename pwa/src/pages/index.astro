@@ -419,6 +419,18 @@ import Layout from '../layouts/Layout.astro';
           </div>
         </fieldset>
 
+        <!-- Bodenart (#600) -->
+        <fieldset class="rounded-lg border border-stone-200 dark:border-stone-700 p-4">
+          <legend class="px-2 text-sm font-semibold text-green-800 dark:text-green-300" data-i18n="fieldsetSoil">Bodenart</legend>
+          <div class="flex flex-wrap gap-x-4 gap-y-1.5 text-sm">
+            <label class="inline-flex items-center gap-1.5" data-field="soilLight"><input type="checkbox" id="f-soilLight" class="accent-amber-500" /> <span data-i18n="fld_soilLight">Leicht (Sand)</span></label>
+            <label class="inline-flex items-center gap-1.5" data-field="soilMedium"><input type="checkbox" id="f-soilMedium" class="accent-orange-700" /> <span data-i18n="fld_soilMedium">Mittel (Lehm)</span></label>
+            <label class="inline-flex items-center gap-1.5" data-field="soilHeavy"><input type="checkbox" id="f-soilHeavy" class="accent-red-800" /> <span data-i18n="fld_soilHeavy">Schwer (Ton)</span></label>
+            <label class="inline-flex items-center gap-1.5" data-field="soilWellDrained"><input type="checkbox" id="f-soilWellDrained" class="accent-sky-600" /> <span data-i18n="fld_soilWellDrained">Braucht durchlässigen Boden</span></label>
+            <label class="inline-flex items-center gap-1.5" data-field="soilPoor"><input type="checkbox" id="f-soilPoor" class="accent-green-600" /> <span data-i18n="fld_soilPoor">Verträgt mageren Boden</span></label>
+          </div>
+        </fieldset>
+
         <!-- Monate -->
         <div class="grid gap-4 sm:grid-cols-2">
           <fieldset class="rounded-lg border border-stone-200 dark:border-stone-700 p-3">

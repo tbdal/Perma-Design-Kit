@@ -298,6 +298,14 @@ export interface PlantData {
   phNeutral: boolean;
   phAlkaline: boolean;
   phVeryAlkaline: boolean;
+  // Soil texture and character (PFAF "Suitable for: light (sandy), medium (loamy) and heavy (clay) soils …", #600)
+  soilLight: boolean;
+  soilMedium: boolean;
+  soilHeavy: boolean;
+  /** "prefers well-drained soil": takes no waterlogging. */
+  soilWellDrained: boolean;
+  /** "can grow in nutritionally poor soil". */
+  soilPoor: boolean;
   // Growth speed
   growSpeedLow: boolean;
   growSpeedMid: boolean;
@@ -368,6 +376,11 @@ export function createEmptyPlant(): PlantData {
     phNeutral: false,
     phAlkaline: false,
     phVeryAlkaline: false,
+    soilLight: false,
+    soilMedium: false,
+    soilHeavy: false,
+    soilWellDrained: false,
+    soilPoor: false,
     growSpeedLow: false,
     growSpeedMid: false,
     growSpeedHigh: false,

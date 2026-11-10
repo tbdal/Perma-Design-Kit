@@ -243,7 +243,7 @@ test('soil per area (#600): set in the area panel, hints for pH and waterlogging
   // the plot is waterlogged; the area around the apple is neutral and fresh
   await seedNeighbourPlan(page, { soil: { wat: 's' }, areas: [{ id: 'beet', name: 'Südbeet', color: '#c9a86a', points: [{ xM: 12, yM: 6 }, { xM: 20, yM: 6 }, { xM: 20, yM: 14 }, { xM: 12, yM: 14 }] }] });
   await withDb(page, `for (const p of await all('plants')) {
-    if (p.latinName === 'Malus domestica') Object.assign(p, { waterDry: false, waterMid: true, waterWet: false, phAcid: true, phNeutral: false });
+    if (p.latinName === 'Malus domestica') Object.assign(p, { waterDry: false, waterMid: true, waterWet: false, phAcid: true, phNeutral: false, soilLight: true, soilMedium: true, soilHeavy: false });
     if (p.latinName === 'Elaeagnus umbellata') Object.assign(p, { waterDry: true, waterMid: false, waterWet: false });
     await put('plants', p); }`);
   await openPlan(page, 'np');
@@ -263,6 +263,17 @@ test('soil per area (#600): set in the area panel, hints for pH and waterlogging
   // a second click clears it again
   await editor.locator('[data-soil-k="ph"][data-soil-v="2"]').click();
   await expect(soil).toContainText('Kulturapfel ist in „Grundstück“ ungeeignet');
+  // stage 2: the texture triangle; a clay class sets the step "heavy", the apple (light/medium only) gets a hint
+  await editor.locator('[data-soil-cls="c"]').click();
+  await expect(editor.locator('[data-soil-cls="c"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(editor.locator('[data-soil-k="tex"][data-soil-v="H"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(editor.locator('[data-soil-cls-out]')).toContainText('Ton (T) · Stufe schwer');
+  await expect(soil).toContainText('Kulturapfel in „Südbeet“: mag keinen schweren (tonigen) Boden');
+  await expect.poll(() => withDb(page, `return (await all('gardenPlans')).find(p => p.id === 'np').areas[0].soil`)).toEqual({ tex: 'H', cls: 'c' });
+  // choosing only the step drops the class
+  await editor.locator('[data-soil-k="tex"][data-soil-v="L"]').click();
+  await expect(editor.locator('[data-soil-cls-out]')).toContainText('Stufe leicht (Sand) gewählt');
+  await expect(page.locator('#warnings-list')).not.toContainText('Kulturapfel in „Südbeet“');
   void errors;
 });
 
