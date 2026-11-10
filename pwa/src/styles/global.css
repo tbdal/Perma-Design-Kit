@@ -527,3 +527,6 @@ html.pdk-embed dialog { visibility: visible; }
 /* Layout bare (pages for outside visitors, e.g. /baumschule7l): only the logo in the header, no menus, banners or feedback button. */
 html[data-bare] .site-header nav > :not(:first-child),
 html[data-bare] #feedback-fab, html[data-bare] #backup-reminder, html[data-bare] #beta-badge { display: none !important; }
+/* planner on phones (#592): only the icon, round, so it covers little of the map */
+#feedback-fab.fab-compact > summary { padding: .55rem; border-radius: 9999px; opacity: .85; }
+#feedback-fab.fab-compact > summary > span { display: none; }

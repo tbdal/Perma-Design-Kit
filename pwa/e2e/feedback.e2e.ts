@@ -32,3 +32,18 @@ test('feedback "Stelle markieren": click a spot, say what, the report page arriv
   await expect(page.locator('#rp-what')).toHaveValue(/^Überschrift passt nicht\n\nStelle: h1\./);
   void errors;
 });
+
+test('planner on a phone: the feedback button is there, small and above the bottom corner (#592)', async ({ page, errors }) => {
+  await stubNetwork(page);
+  await page.setViewportSize({ width: 390, height: 800 });
+  await page.goto('/gartenplan');
+  const fab = page.locator('#feedback-fab');
+  await expect(fab).toBeVisible();
+  await expect(fab).toHaveClass(/fab-compact/);
+  await expect(fab.locator('summary span')).toBeHidden();
+  const box = (await fab.boundingBox())!;
+  expect(800 - (box.y + box.height)).toBeGreaterThan(70);
+  await fab.locator('summary').click();
+  await expect(page.locator('#feedback-bug')).toBeVisible();
+  void errors;
+});

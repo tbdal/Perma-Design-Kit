@@ -868,8 +868,14 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
         document.querySelectorAll('[data-fb="idea"]').forEach(a => a.setAttribute('href', `/fehler-melden/?art=idee&from=${from}`));
         const menus = [...document.querySelectorAll<HTMLDetailsElement>('#feedback-fab, #beta-badge')];
         const fab = document.getElementById('feedback-fab') as HTMLDetailsElement | null;
-        // Not on the report page itself; in the planner on phones the map and its bottom bar need the corner.
-        if (fab && (location.pathname.startsWith('/fehler-melden') || (location.pathname.startsWith('/gartenplan') && matchMedia('(max-width: 639px)').matches))) fab.hidden = true;
+        // Not on the report page itself. In the planner on phones the map and its bottom bar need the corner: there it is a
+        // small round button a little higher up instead (#592: it was missing there altogether).
+        if (fab && location.pathname.startsWith('/fehler-melden')) fab.hidden = true;
+        else if (fab && location.pathname.startsWith('/gartenplan') && matchMedia('(max-width: 639px)').matches) {
+          fab.classList.add('fab-compact');
+          fab.style.bottom = 'max(5.5rem, calc(env(safe-area-inset-bottom, 0px) + 5rem))';
+          fab.style.right = 'max(0.5rem, env(safe-area-inset-right, 0px))';
+        }
         document.querySelectorAll('[data-fb="pick"]').forEach(b => b.addEventListener('click', () => {
           menus.forEach(m => { m.open = false; });
           void import('../lib/feedback-pick').then(m => m.startPick());
