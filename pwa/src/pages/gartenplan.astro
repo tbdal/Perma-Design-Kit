@@ -3115,6 +3115,7 @@ import Layout from '../layouts/Layout.astro';
     timeLoad(key, label);
     if (label) loadItems.set(key, label); else loadItems.delete(key);
     if (!loadItems.size && warnTimer) scheduleWarnings(); // the hints held back for the map data
+    if (!loadItems.size && sunMapWaiting) scheduleCoverage(); // and the sun map
     loadEl.hidden = !loadItems.size;
     (loadEl.querySelector('[data-loading-text]') as HTMLElement).textContent = loadItems.size ? `${t('loadingLead')} ${[...loadItems.values()].join(' · ')}` : '';
   }
@@ -4320,6 +4321,14 @@ import Layout from '../layouts/Layout.astro';
   const SUN_CLASS_KEY: Record<SunClass, string> = { full: 'sunClassFull', mid: 'sunClassMid', shadow: 'sunClassShadow' };
   const fmtH = (h: number) => new Intl.NumberFormat(lang, { maximumFractionDigits: 1, minimumFractionDigits: 1 }).format(h);
   let sunMapToken = 0;
+  // Sun map (#593): computed once per state of the plan and kept (in memory and, per plan, on the device), so opening
+  // a plan again or redrawing it shows the picture at once; held back while map data still arrives.
+  let sunMapWaiting = false;
+  let sunMapMemo: { sig: string; hours: number[] } | null = null;
+  const sunMapKey = (planId: string) => `pdk-sunmap:${planId}`;
+  const sunMapStored = (planId: string): { sig: string; hours: number[] } | null => {
+    try { const v = JSON.parse(localStorage.getItem(sunMapKey(planId)) ?? 'null') as { sig: string; h: string } | null; return v ? { sig: v.sig, hours: [...v.h].map(c => (c.charCodeAt(0) - 48) / 2) } : null; } catch { return null; }
+  };
   let seasonCache: { key: string; samples: SunSample[] } | null = null;
   // ── Feldmodus (GPS, lib/field-mode.ts) ──
   // On the phone in the garden: own position on the plan, the way to the
@@ -5166,13 +5175,37 @@ import Layout from '../layouts/Layout.astro';
     const { scene } = sunContext();
     const cellM = Math.max(0.5, Math.min(plan.areaWidthM, plan.areaHeightM) / 36, Math.max(plan.areaWidthM, plan.areaHeightM) / 180);
     const cells = planCells(plan, cellM);
-    const hours: number[] = [];
-    // In chunks so the page stays responsive on big plans.
-    for (let i = 0; i < cells.length; i += 150) {
-      for (const c of cells.slice(i, i + 150)) hours.push(sunHoursAt(c.xM, c.yM, scene, samples));
-      await new Promise(r => setTimeout(r, 0));
-      if (token !== sunMapToken || editing !== plan) return;
+    // Everything the picture depends on: day, plan outline, plants (as crowns), buildings, forest, ground.
+    const sig = [mode, mode === 'sun-day' ? sunDateInput.value : new Date().getFullYear(), cells.length, cellM, plan.yearsSincePlanting,
+      terrain ? `${terrain.nx}x${terrain.ny}:${terrain.cellM}:${terrain.dgm ? 1 : 0}` : 0, scene.occluders.length,
+      scene.occluders.reduce((a, o) => a + (o.kind === 'prism' ? o.minX + o.maxY + o.z1 : o.x + o.y + o.r + o.zc), 0).toFixed(1)].join('|');
+    const stored = sunMapMemo?.sig === sig ? sunMapMemo : sunMapStored(plan.id);
+    let hours = stored?.sig === sig ? stored.hours : null;
+    if (!hours) {
+      // Meanwhile the last picture of this plan, if its grid still fits.
+      if (stored && stored.hours.length === cells.length) draw(stored.hours, true);
+      // Terrain, buildings, forest still arriving: each would start the count over (16 s blocked on a phone) – wait for the last.
+      if (loadItems.size) { sunMapWaiting = true; return; }
+      sunMapWaiting = false;
+      const out: number[] = [];
+      // In slices of a few milliseconds, so taps and scrolling get through on a phone.
+      let t0 = performance.now();
+      for (const c of cells) {
+        out.push(Math.round(sunHoursAt(c.xM, c.yM, scene, samples) * 2) / 2);
+        if (performance.now() - t0 > 12) {
+          await new Promise(r => setTimeout(r, 0));
+          if (token !== sunMapToken || editing !== plan) return;
+          t0 = performance.now();
+        }
+      }
+      hours = out;
+      try { localStorage.setItem(sunMapKey(plan.id), JSON.stringify({ sig, h: hours.map(h => String.fromCharCode(48 + Math.round(h * 2))).join('') })); } catch { /* full: it is computed again next time */ }
     }
+    sunMapWaiting = false;
+    sunMapMemo = { sig, hours };
+    draw(hours, false);
+
+    function draw(hours: number[], stale: boolean) {
     // Colour scale up to the open-sky maximum (day length), so shade shows
     // even in summer when nearly every spot gets more than 6 h.
     const maxH = Math.max(1, samples.reduce((a, s) => a + s.hours, 0));
@@ -5185,9 +5218,10 @@ import Layout from '../layouts/Layout.astro';
       buckets.set(color, arr);
       return { xM: c.xM, yM: c.yM, color };
     });
-    layer.innerHTML = [...buckets.entries()].map(([color, d]) => `<path d="${d.join('')}" fill="${color}" fill-opacity="0.45"/>`).join('');
+    layer!.innerHTML = [...buckets.entries()].map(([color, d]) => `<path d="${d.join('')}" fill="${color}" fill-opacity="0.45"/>`).join('');
     coverage3d = { cellM, cells: cells3d, gaps: [] };
     view3d?.setCoverage(coverage3d);
+    if (stale) return; // the figures follow with the fresh count
 
     const n = hours.length || 1;
     const mean = hours.reduce((a, b) => a + b, 0) / n;
@@ -5204,7 +5238,8 @@ import Layout from '../layouts/Layout.astro';
       ${bar('full', 'sunFull', sunColor(Math.max(6, maxH * 0.9), maxH))}${bar('mid', 'sunMid', sunColor(4.5, maxH))}${bar('shadow', 'sunShadow', sunColor(1.5, maxH))}
       <div class="mt-1"><span class="block h-2 rounded" style="background:linear-gradient(90deg, ${[0, 0.25, 0.5, 0.75, 1].map(f => sunColor(f * maxH, maxH)).join(',')})"></span>
         <span class="flex justify-between font-mono text-[10px] text-stone-500">${[0, 0.25, 0.5, 0.75, 1].map((f, i) => `<span>${fmtH(f * maxH)}${i === 0 || i === 4 ? ' h' : ''}</span>`).join('')}</span></div>
-      <p class="text-stone-500 dark:text-stone-400">${escapeHtml(considered.join(', '))}.${editing.geo ? '' : ' ' + escapeHtml(t('sunMapNoLoc'))}${mode === 'sun-day' ? ' ' + escapeHtml(t('sunMapDateHint')) : ''}</p>`;
+      <p class="text-stone-500 dark:text-stone-400">${escapeHtml(considered.join(', '))}.${plan.geo ? '' : ' ' + escapeHtml(t('sunMapNoLoc'))}${mode === 'sun-day' ? ' ' + escapeHtml(t('sunMapDateHint')) : ''}</p>`;
+    }
   }
 
 

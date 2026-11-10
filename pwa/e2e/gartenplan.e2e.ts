@@ -277,6 +277,23 @@ test('soil per area (#600): set in the area panel, hints for pH and waterlogging
   void errors;
 });
 
+test('sun map: computed once, kept on the device and shown again without counting (#593)', async ({ page, errors }) => {
+  await stubNetwork(page);
+  await seedNeighbourPlan(page);
+  await openPlan(page, 'np');
+  await page.selectOption('#g-coverage', 'sun-season');
+  await expect(page.locator('#coverage-layer path').first()).toBeAttached();
+  await expect(page.locator('#coverage-body')).toContainText('%');
+  const kept = await page.evaluate(() => localStorage.getItem('pdk-sunmap:np'));
+  expect(JSON.parse(kept!).h.length).toBeGreaterThan(100);
+  // opened again: the same picture from the device, the kept entry unchanged
+  await page.reload();
+  await expect(page.locator('#coverage-layer path').first()).toBeAttached();
+  await expect(page.locator('#coverage-body')).toContainText('%');
+  expect(await page.evaluate(() => localStorage.getItem('pdk-sunmap:np'))).toBe(kept);
+  void errors;
+});
+
 test('buildings of the previous plan never show in the next one', async ({ page, errors }) => {
   let delayB = false;
   const fake = (lat: number, lon: number) => ({ elements: [{ type: 'way', tags: { building: 'house' }, geometry: [
