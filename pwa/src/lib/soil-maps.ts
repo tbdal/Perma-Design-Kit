@@ -104,8 +104,9 @@ async function text(url: string): Promise<string> {
 
 /** All map suggestions at a point; a source that fails or knows nothing is left out. */
 export async function soilMapsAt(lat: number, lon: number, lang: 'de' | 'en'): Promise<SoilSuggestion[]> {
-  // a tiny box around the point (about 10 m), the middle pixel is asked
-  const d = 0.0001, bbox = [lon - d, lat - d, lon + d, lat + d].map(f4).join(',');
+  // a small box around the point (about 200 m), its middle pixel is asked; SoilGrids answers nothing for a box smaller
+  // than its 250 m pixels
+  const d = 0.001, bbox = [lon - d, lat - d, lon + d, lat + d].map(f4).join(',');
   const grids = (async () => {
     const [sand, clay, ph] = await Promise.all(['sand', 'clay', 'phh2o'].map(p => text(`/geo/soilgrids/${p}?bbox=${bbox}`).then(parseSoilGridsValue)));
     return sand != null && clay != null ? soilGridsSuggestion(sand, clay, ph, lang) : null;
