@@ -383,6 +383,9 @@ export interface SyncTarget {
   remoteExportedAt(): Promise<string | null>;
   /** Uploads; throws on failure. Auto-sync remembers the new remote state afterwards. */
   push(backup: BuiltBackup, keepalive: boolean): Promise<unknown>;
+  /** Whether the backup there has exactly this content (another device uploaded the same state, #607): then it is no
+   *  conflict, this device just takes note of it. */
+  sameAsRemote?(backup: BuiltBackup): Promise<boolean>;
 }
 
 const targets: SyncTarget[] = [];
@@ -404,6 +407,7 @@ async function autoSyncTo(
   remoteExportedAt: () => Promise<string | null>,
   push: (backup: BuiltBackup) => Promise<unknown>,
   build: () => Promise<BuiltBackup> = buildBackup,
+  sameAsRemote?: (backup: BuiltBackup) => Promise<boolean>,
 ): Promise<SyncResult> {
   try {
     const backup = await build();
@@ -413,6 +417,11 @@ async function autoSyncTo(
     }
     const remote = await remoteExportedAt();
     if (remote !== null && !remoteIsKnown(provider, remote)) {
+      // A backup this device does not know, but with the same content: nothing to resolve (#607).
+      if (sameAsRemote && backup.fingerprint && await sameAsRemote(backup)) {
+        rememberRemote(provider, remote, backup.fingerprint);
+        return { ok: true, provider, skipped: true };
+      }
       setSyncProblem('conflict', provider, '');
       return { ok: false, provider, conflict: true };
     }
@@ -450,7 +459,7 @@ async function runAutoSync(): Promise<SyncResult> {
     return autoSyncTo(target.id, () => target.remoteExportedAt(), async b => {
       await target.push(b, true);
       rememberRemote(target.id, b.exportedAt, b.fingerprint);
-    }, target.build ? () => target.build!() : undefined);
+    }, target.build ? () => target.build!() : undefined, target.sameAsRemote ? b => target.sameAsRemote!(b) : undefined);
   }
   if (!isAutoSyncEnabled()) return { ok: true, provider: null };
 

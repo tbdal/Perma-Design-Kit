@@ -304,6 +304,26 @@ describe('auto-sync (registered target)', () => {
     expect(getSyncProblem()).toMatchObject({ kind: 'error', provider: 'extra' });
   });
 
+  it('a foreign stamp with the same content is no conflict (#607)', async () => {
+    const t = target();
+    const same = vi.fn(async () => true);
+    registerSyncTarget({
+      id: 'extra', label: 'Extra-Speicher', enabled: () => true,
+      remoteExportedAt: async () => '2030-01-01T00:00:00.000Z',
+      push: async (b) => { t.pushes++; t.remote = b; },
+      sameAsRemote: same,
+    });
+    reportSyncConflict('extra');                                   // an old alarm goes too
+    expect(await autoSyncIfConfigured()).toMatchObject({ ok: true, provider: 'extra', skipped: true });
+    expect(same).toHaveBeenCalledOnce();
+    expect(t.pushes).toBe(0);
+    expect(syncMarker('extra')).toBe('2030-01-01T00:00:00.000Z');
+    expect(getSyncProblem()).toBeNull();
+    same.mockResolvedValue(false);
+    store['sync-marker-extra'] = 'old'; delete store['sync-fingerprint-extra']; // something changed here meanwhile
+    expect(await autoSyncIfConfigured()).toMatchObject({ ok: false, conflict: true });
+  });
+
   it('a target can report a conflict; its fingerprint is readable', async () => {
     const t = target();
     await autoSyncIfConfigured();
