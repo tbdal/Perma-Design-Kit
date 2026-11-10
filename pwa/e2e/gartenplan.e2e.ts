@@ -274,6 +274,13 @@ test('hint click: first jumps to the area and marks it, second selects the plant
   await seedNeighbourPlan(page);
   await openPlan(page, 'np');
   const hint = page.locator('#warnings-list button', { hasText: 'schlechte Nachbarn' });
+  // grouped by kind (#606): a folding group with its count; folding it hides the hint, opening shows it again
+  const group = page.locator('#warnings-list [data-warn-group="nb"]');
+  await expect(group.locator('summary')).toContainText('Schlechte Nachbarn (');
+  await group.locator('summary').click();
+  await expect(hint).toBeHidden();
+  await group.locator('summary').click();
+  await expect(hint).toBeVisible();
   const viewBefore = await page.getAttribute('#plan-svg', 'viewBox');
   await hint.click();
   await expect(hint).toHaveAttribute('aria-pressed', 'true');

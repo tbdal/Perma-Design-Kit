@@ -5166,6 +5166,10 @@ import Layout from '../layouts/Layout.astro';
   // an allelopathic plant, the full-grown crowns that collide … A second
   // click on the same hint selects its plants; Esc clears the pin.
   type WarnMark = { xM: number; yM: number; rM: number; kind: 'zone' | 'crown' };
+  /** Kinds of hints (#606), by the prefix of their key, in the order shown. */
+  const WARN_GROUPS = ['cl', 'cr', 'nb', 'sh'] as const;
+  const WARN_GROUP_LABEL: Record<(typeof WARN_GROUPS)[number], string> = { cl: 'warnGroupClimate', cr: 'warnGroupCrowd', nb: 'warnGroupNeighbor', sh: 'warnGroupShade' };
+  const warnFolds = new Map<string, boolean>();
   type WarnItem = { key: string; ids: string[]; text: string; marks: WarnMark[]; tone: 'bad' | 'good'; replace?: boolean };
   /** "Ersetzen …" on climate hints, when a module offers replacing (setReplaceHandler). */
   let replaceHandler: ((placementIds: string[]) => void) | null = null;
@@ -5361,8 +5365,17 @@ import Layout from '../layouts/Layout.astro';
     ignoredEl.hidden = ignoredCount === 0;
     document.getElementById('warn-ignored-n')!.textContent = t('warnIgnoredN', { n: ignoredCount });
     warningsCount.textContent = String(items.length);
-    warningsList.innerHTML = items.slice(0, 30).map(i => `
-      <li class="flex items-start gap-1"><button type="button" data-key="${escapeHtml(i.key)}" data-tone="bad" aria-pressed="false" class="min-w-0 flex-1 rounded px-1.5 py-1 text-left hover:bg-red-50 dark:hover:bg-red-900/30">${escapeHtml(i.text)}</button>${i.replace && replaceHandler ? `<button type="button" data-warn-replace="${escapeHtml(i.key)}" class="shrink-0 rounded px-1.5 py-1 text-[11px] underline text-red-900 dark:text-red-200 hover:bg-red-50 dark:hover:bg-red-900/30">${escapeHtml(t('warnReplace'))}</button>` : ''}<button type="button" data-warn-ignore="${escapeHtml(i.key)}" title="${escapeHtml(t('warnIgnore'))}" aria-label="${escapeHtml(t('warnIgnore'))}" class="shrink-0 rounded px-1.5 py-1 text-stone-400 hover:bg-stone-100 hover:text-stone-700 dark:hover:bg-stone-800">×</button></li>`).join('') + (items.length > 30 ? `<li class="px-1.5 py-1 text-[11px] text-stone-500 dark:text-stone-400">${escapeHtml(t('warnListMore', { n: items.length - 30 }))}</li>` : '');
+    // Grouped by kind (#606): one folding group per kind with its count; big groups start folded, a fold the user
+    // set stays while the plan is open.
+    const row = (i: WarnItem) => `
+      <li class="flex items-start gap-1"><button type="button" data-key="${escapeHtml(i.key)}" data-tone="bad" aria-pressed="false" class="min-w-0 flex-1 rounded px-1.5 py-1 text-left hover:bg-red-50 dark:hover:bg-red-900/30">${escapeHtml(i.text)}</button>${i.replace && replaceHandler ? `<button type="button" data-warn-replace="${escapeHtml(i.key)}" class="shrink-0 rounded px-1.5 py-1 text-[11px] underline text-red-900 dark:text-red-200 hover:bg-red-50 dark:hover:bg-red-900/30">${escapeHtml(t('warnReplace'))}</button>` : ''}<button type="button" data-warn-ignore="${escapeHtml(i.key)}" title="${escapeHtml(t('warnIgnore'))}" aria-label="${escapeHtml(t('warnIgnore'))}" class="shrink-0 rounded px-1.5 py-1 text-stone-400 hover:bg-stone-100 hover:text-stone-700 dark:hover:bg-stone-800">×</button></li>`;
+    const groups = WARN_GROUPS.map(g => ({ g, list: items.filter(i => i.key.startsWith(g + ':')) })).filter(x => x.list.length);
+    warningsList.innerHTML = groups.map(({ g, list }) => `<li data-warn-group="${g}"><details${(warnFolds.get(g) ?? list.length <= 6) ? ' open' : ''}>
+      <summary class="cursor-pointer rounded px-1.5 py-1 font-semibold text-red-900 hover:bg-red-50 dark:text-red-200 dark:hover:bg-red-900/30">${escapeHtml(t(WARN_GROUP_LABEL[g]))} <span class="font-normal text-stone-500 dark:text-stone-400">(${list.length})</span></summary>
+      <ul class="space-y-0.5 pl-2">${list.slice(0, 30).map(row).join('')}${list.length > 30 ? `<li class="px-1.5 py-1 text-[11px] text-stone-500 dark:text-stone-400">${escapeHtml(t('warnListMore', { n: list.length - 30 }))}</li>` : ''}</ul></details></li>`).join('');
+    warningsList.querySelectorAll<HTMLDetailsElement>('[data-warn-group] > details').forEach(d => d.addEventListener('toggle', () => {
+      warnFolds.set(d.parentElement!.dataset.warnGroup!, d.open);
+    }));
     goodNeighborsHeading.hidden = goodItems.length === 0;
     goodNeighborsList.innerHTML = goodItems.slice(0, 20).map(i => `
       <li><button type="button" data-key="${escapeHtml(i.key)}" data-tone="good" aria-pressed="false" class="w-full rounded px-1.5 py-1 text-left hover:bg-green-50 dark:hover:bg-green-900/30"><span aria-hidden="true" class="text-green-700 dark:text-green-400">✓ </span>${escapeHtml(i.text)}</button></li>`).join('');
