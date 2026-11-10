@@ -79,7 +79,7 @@ export const es2: Record<string, string> = {
   soilTyp: 'Tipo de suelo', soilTypNone: '– sin definir –', soilOrigin: 'Origen de los valores: {src}', soilSrcOwn: 'observación propia',
   soilSrc_buek: 'BÜK 200 (BGR)', soilSrc_soilgrids: 'SoilGrids (ISRIC)', soilMaps: 'Sugerencias de mapas de suelos', soilMapsAsk: 'Consultar mapas',
   soilMapsLoading: 'Consultando mapas de suelos …', soilMapsNone: 'Sin valores de mapa para este lugar.', soilMapsError: 'Mapas de suelos no disponibles.', soilTake: 'Usar',
-  soilMapsNote: 'Se consulta el centro de la zona. Los mapas son más bastos que un jardín (BÜK 200: 1 : 200 000, solo Alemania; SoilGrids: 250 m, CC BY 4.0): la observación propia va primero. «Usar» solo pone los valores que el mapa conoce.',
+  soilMapsNote: 'Se consulta el centro de la zona. Los mapas son más bastos que un jardín (BÜK 200: 1 : 200 000, solo Alemania; SoilGrids: 250 m, CC BY 4.0): la observación propia va primero. «Usar» solo pone los valores que el mapa conoce. Fuente: BÜK200, (c) BGR, Hannover, 2018; SoilGrids © ISRIC.',
   soilTriNote: 'Clases USDA como en SoilGrids (límite arena/limo en 50 µm). Amarillo ligero, marrón medio, rojo pesado: las plantas se comprueban en estos tres niveles, porque los datos de plantas (PFAF) no son más finos.',
   soilPlot: 'parcela', soilTitleArea: 'Suelo de esta zona', soilTitlePlot: 'Suelo de la parcela', soilUnset: 'sin indicar',
   soilTex: 'Textura', soilTexL: 'ligero (arena)', soilTexM: 'medio (franco)', soilTexH: 'pesado (arcilla)',
