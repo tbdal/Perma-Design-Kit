@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync, existsSync } from 'node:fs';
 import { usdaZone, zoneLabel, summarizeClimate, plantZoneRange, notHardy, blossomFrostRisk, climateRequestUrl, fetchSiteClimate, allowDirect, revokeDirect, directAllowed, directUrl, ClimateLimitError, summarizeFuture, futureOutlook, modelDelta, scaleFactor, koeppen, normalizeScenario, LAST_DATA_YEAR, climateCheck, type SiteClimate, type ClimateScenario } from '../src/lib/site-climate';
-import { explorerOutHtml } from '../src/lib/climate-explorer';
+import { explorerOutHtml, richText, infoText } from '../src/lib/climate-explorer';
 
 describe('usdaZone', () => {
   it('maps the mean yearly minimum to USDA zones', () => {
@@ -184,6 +184,13 @@ describe('future climate (#530)', () => {
     expect(r.html).not.toContain('grid-cols-4');
     expect(explorerOutHtml(site, f, s2045, 'tann', 'de', [], true).html).toContain('grid-cols-4'); // zoomer layout (#602)
     expect(explorerOutHtml(site, f, { year: 2080, ssp: 'SSP1-2.6', model: 'all' }, 'hot', 'de', []).mode).toBe('Hochrechnung SSP1-2.6');
+  });
+  it('explanations: paragraphs, bullet lists, bold and source links', () => {
+    expect(richText('A <x>\n- **B**: [c](https://e.org/?a=1)\n- d\nE')).toBe('<p>A &lt;x&gt;</p><ul class="list-disc space-y-0.5 pl-5"><li><b>B</b>: <a class="underline" href="https://e.org/?a=1" target="_blank" rel="noopener">c</a></li><li>d</li></ul><p>E</p>');
+    expect(richText('[x](javascript:alert(1))')).not.toContain('<a');
+    expect(infoText('models', 'de')).toContain('href="https://www.wdc-climate.de/ui/cmip6?input=CMIP6.HighResMIP.MPI-M.MPI-ESM1-2-XR"');
+    expect(infoText('ssp', 'en')).toContain('>SSP5-8.5</a>');
+    expect(infoText('metric', 'de')).toContain('<li><b>Hitzetage</b>');
   });
   it('zone ruler: same names grouped, all plants, fixed order with the most critical on top', () => {
     const ps = [

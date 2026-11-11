@@ -10,6 +10,17 @@ import {
 } from './site-climate';
 
 type Lang = 'de' | 'en';
+// Sources linked from the explanations (checked 2026-11: DOIs via Crossref, model pages in the WDCC/DKRZ CMIP6 catalogue)
+const SRC = {
+  ipcc: 'https://www.ipcc.ch/report/ar6/wg1/chapter/summary-for-policymakers/', ssps: 'https://doi.org/10.1016/j.gloenvcha.2016.05.009',
+  'SSP1-2.6': 'https://doi.org/10.1016/j.gloenvcha.2016.05.008', 'SSP2-4.5': 'https://doi.org/10.1016/j.gloenvcha.2016.06.004',
+  'SSP3-7.0': 'https://doi.org/10.1016/j.gloenvcha.2016.06.009', 'SSP5-8.5': 'https://doi.org/10.1016/j.gloenvcha.2016.05.015',
+  highresmip: 'https://doi.org/10.5194/gmd-9-4185-2016', openMeteo: 'https://open-meteo.com/en/docs/climate-api', kottek: 'https://doi.org/10.1127/0941-2948/2006/0130',
+};
+const MODEL_SRC: Record<string, string> = {
+  'EC-Earth3P-HR': 'EC-Earth-Consortium', 'MPI-ESM1-2-XR': 'MPI-M', 'CMCC-CM2-VHR4': 'CMCC', 'MRI-AGCM3-2-S': 'MRI', 'HiRAM-SIT-HR': 'AS-RCEC', 'NICAM16-8S': 'MIROC', 'FGOALS-f3-H': 'CAS',
+};
+const modelUrl = (m: string) => `https://www.wdc-climate.de/ui/cmip6?input=CMIP6.HighResMIP.${MODEL_SRC[m]}.${m}`;
 const T = {
   de: {
     year: 'Zieljahr', ssp: 'Szenario', sspHint: 'zählt ab {y}', model: 'Modell', metric: 'Merkmal',
@@ -31,16 +42,16 @@ const T = {
     fan: 'Szenarien im Vergleich', fanNote: 'Globale Erwärmung gegenüber 1850–1900, Median und sehr wahrscheinlicher Bereich (5–95 %), IPCC AR6 WG1, Tabelle SPM.1. Über Land und in Mitteleuropa fällt die Erwärmung höher aus. Die Modelldaten folgen etwa SSP5-8.5 und enden 2050.',
     more: 'Mehr dazu', twin: 'Klimatische Zwillingsstädte (UBA)', dwd: 'Deutscher Klimaatlas (DWD)', geo: 'Verschiebung der Klimazonen (GeoSphere Austria)',
     info: 'Erklärung',
-    infoZone: 'USDA-Winterhärtezone: eingeteilt nach der tiefsten Temperatur, die im Mittel einmal im Winter erreicht wird, in Schritten von 5,6 K (a/b je halbe Zone). 6b heißt etwa −20,6 bis −17,8 °C, 7b −14,9 bis −12,2 °C. Pflanzenlisten geben einen Bereich an („5–9“): unter der unteren Zone erfriert die Pflanze, über der oberen fehlt oft der Kältereiz für Blüte und Frucht, seltener ist es Hitze. „Um <Jahr>“: die Zone, die der Standort mit der Erwärmung der Klimamodelle bekommt – eine pro Modell.',
-    infoModels: 'Sieben Klimamodelle aus dem Projekt CMIP6 HighResMIP (besonders feine Gitter), von Open-Meteo auf 10 km herunterskaliert und je Monat an gemessene Werte angeglichen. Alle rechnen mit hohen Emissionen bis 2050. Gezeigt wird je Modell nur die Änderung gegenüber 1994–2023 im selben Modell, aufgeschlagen auf das gemessene Klima. „Alle“: Median der Modelle, die Fläche zeigt ihre Spanne.',
+    infoZone: '**USDA-Winterhärtezone**: eingeteilt nach der tiefsten Temperatur, die im Mittel einmal im Winter erreicht wird, in Schritten von 5,6 K (a/b je halbe Zone), z. B.:\n- **6b**: etwa −20,6 bis −17,8 °C\n- **7b**: etwa −14,9 bis −12,2 °C\nPflanzenlisten geben einen Bereich an („5–9“):\n- **unter der unteren Zone** erfriert die Pflanze\n- **über der oberen Zone** fehlt oft der Kältereiz für Blüte und Frucht, seltener ist es Hitze\n**„Um <Jahr>“**: die Zone, die der Standort mit der Erwärmung der Klimamodelle bekommt – eine pro Modell.',
+    infoModels: `Sieben Klimamodelle aus dem Projekt [CMIP6 HighResMIP](${SRC.highresmip}) (besonders feine Gitter), von [Open-Meteo](${SRC.openMeteo}) auf 10 km herunterskaliert und je Monat an gemessene Werte angeglichen. Alle rechnen mit hohen Emissionen bis 2050.\nGezeigt wird je Modell nur die Änderung gegenüber 1994–2023 im selben Modell, aufgeschlagen auf das gemessene Klima. **„Alle“**: Median der Modelle, die Fläche zeigt ihre Spanne.`,
     models: [['EC-Earth3P-HR', 'Europa (SMHI u. a.), 29 km, gekoppelt'], ['MPI-ESM1-2-XR', 'Deutschland (MPI-M Hamburg), 51 km, gekoppelt'], ['CMCC-CM2-VHR4', 'Italien (CMCC), 30 km, gekoppelt'], ['MRI-AGCM3-2-S', 'Japan (MRI), 20 km, Atmosphäre'], ['HiRAM-SIT-HR', 'Taiwan (AS-RCEC), 25 km, Atmosphäre + einfacher Ozean'], ['NICAM16-8S', 'Japan (JAMSTEC), 31 km, Atmosphäre'], ['FGOALS-f3-H', 'China (CAS), 28 km, Atmosphäre']],
-    modelsNote: '„Gekoppelt“: das Modell rechnet Ozean und Meereis mit; „Atmosphäre“: künftige Meerestemperaturen sind vorgegeben. Quelle: Open-Meteo Climate API (CC BY 4.0).',
-    infoSsp: 'Emissionsszenarien des Weltklimarats (IPCC AR6): SSP1-2.6 starker Klimaschutz, SSP2-4.5 mittlerer Weg, SSP3-7.0 Rivalität und hohe Emissionen, SSP5-8.5 fossiler Ausbau. Bis {y} folgen die Modelldaten etwa SSP5-8.5; danach wird die Änderung der Modelle mit der globalen Erwärmung des gewählten Szenarios hochgerechnet (Tabelle SPM.1). Für Bäume, die 2080 noch tragen sollen, ist das der wichtigere Teil.',
-    infoMetric: 'Jahresmittel: Mittel der Tagesmitteltemperatur. Tiefste Temperatur: kältester Wert eines Jahres (Grundlage der Winterhärtezone). Hitzetage: Tage mit mindestens 30 °C. Frosttage: Tage, an denen es unter 0 °C abkühlt. Sommerregen: Niederschlag Juni–August in Prozent gegenüber 1994–2023. Alle als 11-Jahres-Mittel um das Jahr.',
-    infoMode: 'Modelldaten: Werte direkt aus den Klimamodellen (bis {y}, dem letzten Jahr mit vollem 11-Jahres-Fenster). Hochrechnung: danach skaliert die Änderung um {y} mit der globalen Erwärmung des Szenarios – grob, Hitze und Trockenheit steigen in Wirklichkeit eher stärker.',
-    infoRange: 'Median: der mittlere Wert der Modelle (die Hälfte liegt darüber, die Hälfte darunter). Spanne: kleinster bis größter Wert der Modelle; bei einer Hochrechnung zusätzlich der sehr wahrscheinliche Bereich (5–95 %) des Szenarios. Je breiter die Spanne, desto unsicherer.',
-    infoKoeppen: 'Köppen-Geiger-Klasse (Kottek u. a. 2006) aus Monatsmitteln von Temperatur und Niederschlag. 1. Buchstabe Hauptklima: A tropisch, B trocken, C gemäßigt, D kontinental (kalte Winter), E polar. 2. Buchstabe Niederschlag: f ganzjährig feucht, s trockene Sommer, w trockene Winter (bei B: W Wüste, S Steppe). 3. Buchstabe Sommer: a heiß (wärmster Monat ≥ 22 °C), b warm, c kühl. Cfb → Cfa heißt: aus warmen werden heiße Sommer. Berechnet aus den Modellen (Mehrheit).',
-    infoWarm: '„zu warm 3/7“: in 3 von 7 Modellen liegt die Zone des Standorts im Zieljahr über der oberen Zone der Pflanze. „wird möglich 2/7“: heute zu kalt, im Zieljahr in 2 Modellen im Bereich. Klick auf eine Pflanze öffnet sie zum Bearbeiten.',
+    modelsNote: `**Gekoppelt**: das Modell rechnet Ozean und Meereis mit; **Atmosphäre**: künftige Meerestemperaturen sind vorgegeben.\nQuelle: [Open-Meteo Climate API](${SRC.openMeteo}) (CC BY 4.0). Die Modellnamen führen zu den Daten im CMIP6-Katalog des DKRZ.`,
+    infoSsp: `Emissionsszenarien des Weltklimarats ([IPCC AR6](${SRC.ipcc}), [Überblick der SSP](${SRC.ssps})):\n- **[SSP1-2.6](${SRC['SSP1-2.6']})**: starker Klimaschutz\n- **[SSP2-4.5](${SRC['SSP2-4.5']})**: mittlerer Weg\n- **[SSP3-7.0](${SRC['SSP3-7.0']})**: Rivalität und hohe Emissionen\n- **[SSP5-8.5](${SRC['SSP5-8.5']})**: fossiler Ausbau\nBis {y} folgen die Modelldaten etwa SSP5-8.5; danach wird die Änderung der Modelle mit der globalen Erwärmung des gewählten Szenarios hochgerechnet (Tabelle SPM.1).\nFür Bäume, die 2080 noch tragen sollen, ist das der wichtigere Teil.`,
+    infoMetric: 'Alle als 11-Jahres-Mittel um das Jahr:\n- **Jahresmittel**: Mittel der Tagesmitteltemperatur\n- **Tiefste Temperatur**: kältester Wert eines Jahres (Grundlage der Winterhärtezone)\n- **Hitzetage**: Tage mit mindestens 30 °C\n- **Frosttage**: Tage, an denen es unter 0 °C abkühlt\n- **Sommerregen**: Niederschlag Juni–August in Prozent gegenüber 1994–2023',
+    infoMode: '- **Modelldaten**: Werte direkt aus den Klimamodellen (bis {y}, dem letzten Jahr mit vollem 11-Jahres-Fenster)\n- **Hochrechnung**: danach skaliert die Änderung um {y} mit der globalen Erwärmung des Szenarios\nDas ist grob: Hitze und Trockenheit steigen in Wirklichkeit eher stärker.',
+    infoRange: '- **Median**: der mittlere Wert der Modelle (die Hälfte liegt darüber, die Hälfte darunter)\n- **Spanne**: kleinster bis größter Wert der Modelle; bei einer Hochrechnung zusätzlich der sehr wahrscheinliche Bereich (5–95 %) des Szenarios\nJe breiter die Spanne, desto unsicherer.',
+    infoKoeppen: `Köppen-Geiger-Klasse ([Kottek u. a. 2006](${SRC.kottek})) aus Monatsmitteln von Temperatur und Niederschlag, berechnet aus den Modellen (Mehrheit).\n- **1. Buchstabe, Hauptklima**: A tropisch, B trocken, C gemäßigt, D kontinental (kalte Winter), E polar\n- **2. Buchstabe, Niederschlag**: f ganzjährig feucht, s trockene Sommer, w trockene Winter (bei B: W Wüste, S Steppe)\n- **3. Buchstabe, Sommer**: a heiß (wärmster Monat ≥ 22 °C), b warm, c kühl\nBeispiel: Cfb → Cfa heißt, aus warmen werden heiße Sommer.`,
+    infoWarm: '- **„zu warm 3/7“**: in 3 von 7 Modellen liegt die Zone des Standorts im Zieljahr über der oberen Zone der Pflanze\n- **„wird möglich 2/7“**: heute zu kalt, im Zieljahr in 2 Modellen im Bereich\n**Reihenfolge**: heute zu kalte Pflanzen zuerst, dann nach Spielraum über der heutigen Standortzone (wenigster zuerst). Sie bleibt beim Wechsel von Jahr, Szenario und Modell gleich. Gleichnamige Pflanzen stehen in einer Zeile (×Anzahl).\nKlick auf eine Pflanze öffnet sie zum Bearbeiten.',
     note: 'Bis {y}: sieben Klimamodelle (CMIP6 HighResMIP, hoher Emissionspfad, Open-Meteo, CC BY 4.0), je Modell die Änderung gegenüber 1994–2023 als 11-Jahres-Mittel, auf das gemessene Klima aufgeschlagen. Danach grobe Hochrechnung: die Änderung um {y} wird mit der globalen Erwärmung des Szenarios skaliert (IPCC AR6). Eine Bandbreite, keine Prognose. Hinweise und Vorschläge des Plans nutzen diese Auswahl.',
   },
   en: {
@@ -63,16 +74,16 @@ const T = {
     fan: 'Scenarios compared', fanNote: 'Global warming against 1850–1900, median and very likely range (5–95 %), IPCC AR6 WG1, table SPM.1. Warming over land and in Central Europe is higher. The model data follow roughly SSP5-8.5 and end in 2050.',
     more: 'More', twin: 'Climate twin cities (UBA)', dwd: 'German climate atlas (DWD)', geo: 'Shifting climate zones (GeoSphere Austria)',
     info: 'Explanation',
-    infoZone: 'USDA hardiness zone: by the lowest temperature reached once a winter on average, in steps of 5.6 K (a/b half zones). 6b is about −20.6 to −17.8 °C, 7b −14.9 to −12.2 °C. Plant lists give a range (“5–9”): below the lowest zone the plant freezes, above the highest it often lacks the winter chill for flowers and fruit, more rarely it is heat. “Around <year>”: the zone the site gets with each climate model’s warming – one per model.',
-    infoModels: 'Seven climate models of the CMIP6 HighResMIP project (very fine grids), downscaled by Open-Meteo to 10 km and adjusted to measured values per month. All follow high emissions up to 2050. Shown is each model’s change against 1994–2023 in the same model, added to the measured climate. “All”: median of the models, the band shows their range.',
+    infoZone: '**USDA hardiness zone**: by the lowest temperature reached once a winter on average, in steps of 5.6 K (a/b half zones), e.g.:\n- **6b**: about −20.6 to −17.8 °C\n- **7b**: about −14.9 to −12.2 °C\nPlant lists give a range (“5–9”):\n- **below the lowest zone** the plant freezes\n- **above the highest zone** it often lacks the winter chill for flowers and fruit, more rarely it is heat\n**“Around <year>”**: the zone the site gets with each climate model’s warming – one per model.',
+    infoModels: `Seven climate models of the [CMIP6 HighResMIP](${SRC.highresmip}) project (very fine grids), downscaled by [Open-Meteo](${SRC.openMeteo}) to 10 km and adjusted to measured values per month. All follow high emissions up to 2050.\nShown is each model’s change against 1994–2023 in the same model, added to the measured climate. **“All”**: median of the models, the band shows their range.`,
     models: [['EC-Earth3P-HR', 'Europe (SMHI et al.), 29 km, coupled'], ['MPI-ESM1-2-XR', 'Germany (MPI-M Hamburg), 51 km, coupled'], ['CMCC-CM2-VHR4', 'Italy (CMCC), 30 km, coupled'], ['MRI-AGCM3-2-S', 'Japan (MRI), 20 km, atmosphere'], ['HiRAM-SIT-HR', 'Taiwan (AS-RCEC), 25 km, atmosphere + simple ocean'], ['NICAM16-8S', 'Japan (JAMSTEC), 31 km, atmosphere'], ['FGOALS-f3-H', 'China (CAS), 28 km, atmosphere']],
-    modelsNote: '“Coupled”: the model computes ocean and sea ice too; “atmosphere”: future sea temperatures are given. Source: Open-Meteo Climate API (CC BY 4.0).',
-    infoSsp: 'Emission scenarios of the IPCC (AR6): SSP1-2.6 strong climate protection, SSP2-4.5 middle of the road, SSP3-7.0 rivalry and high emissions, SSP5-8.5 fossil growth. Up to {y} the model data follow roughly SSP5-8.5; after that the models’ change is scaled with the chosen scenario’s global warming (table SPM.1). For trees that should still bear in 2080 that is the more important part.',
-    infoMetric: 'Annual mean: mean of the daily mean temperature. Lowest temperature: the coldest value of a year (basis of the hardiness zone). Hot days: days with at least 30 °C. Frost days: days that cool below 0 °C. Summer rain: rain June–August in percent against 1994–2023. All as 11-year means around the year.',
-    infoMode: 'Model data: values straight from the climate models (up to {y}, the last year with a full 11-year window). Projection: after that the change around {y} is scaled with the scenario’s global warming – rough; heat and drought tend to rise faster in reality.',
-    infoRange: 'Median: the middle value of the models (half above, half below). Range: lowest to highest model; for a projection also the scenario’s very likely range (5–95 %). The wider the range, the less certain.',
-    infoKoeppen: 'Köppen-Geiger class (Kottek et al. 2006) from monthly temperature and rain. 1st letter main climate: A tropical, B dry, C temperate, D continental (cold winters), E polar. 2nd letter rain: f wet all year, s dry summers, w dry winters (for B: W desert, S steppe). 3rd letter summer: a hot (warmest month ≥ 22 °C), b warm, c cool. Cfb → Cfa means warm summers become hot. Computed from the models (majority).',
-    infoWarm: '“too warm 3/7”: in 3 of 7 models the site’s zone in the target year is above the plant’s highest zone. “becomes possible 2/7”: too cold today, within range in 2 models in the target year. A click on a plant opens it for editing.',
+    modelsNote: `**Coupled**: the model computes ocean and sea ice too; **atmosphere**: future sea temperatures are given.\nSource: [Open-Meteo Climate API](${SRC.openMeteo}) (CC BY 4.0). The model names link to the data in the DKRZ CMIP6 catalogue.`,
+    infoSsp: `Emission scenarios of the IPCC ([AR6](${SRC.ipcc}), [overview of the SSPs](${SRC.ssps})):\n- **[SSP1-2.6](${SRC['SSP1-2.6']})**: strong climate protection\n- **[SSP2-4.5](${SRC['SSP2-4.5']})**: middle of the road\n- **[SSP3-7.0](${SRC['SSP3-7.0']})**: rivalry and high emissions\n- **[SSP5-8.5](${SRC['SSP5-8.5']})**: fossil growth\nUp to {y} the model data follow roughly SSP5-8.5; after that the models’ change is scaled with the chosen scenario’s global warming (table SPM.1).\nFor trees that should still bear in 2080 that is the more important part.`,
+    infoMetric: 'All as 11-year means around the year:\n- **Annual mean**: mean of the daily mean temperature\n- **Lowest temperature**: the coldest value of a year (basis of the hardiness zone)\n- **Hot days**: days with at least 30 °C\n- **Frost days**: days that cool below 0 °C\n- **Summer rain**: rain June–August in percent against 1994–2023',
+    infoMode: '- **Model data**: values straight from the climate models (up to {y}, the last year with a full 11-year window)\n- **Projection**: after that the change around {y} is scaled with the scenario’s global warming\nThat is rough: heat and drought tend to rise faster in reality.',
+    infoRange: '- **Median**: the middle value of the models (half above, half below)\n- **Range**: lowest to highest model; for a projection also the scenario’s very likely range (5–95 %)\nThe wider the range, the less certain.',
+    infoKoeppen: `Köppen-Geiger class ([Kottek et al. 2006](${SRC.kottek})) from monthly temperature and rain, computed from the models (majority).\n- **1st letter, main climate**: A tropical, B dry, C temperate, D continental (cold winters), E polar\n- **2nd letter, rain**: f wet all year, s dry summers, w dry winters (for B: W desert, S steppe)\n- **3rd letter, summer**: a hot (warmest month ≥ 22 °C), b warm, c cool\nExample: Cfb → Cfa means warm summers become hot.`,
+    infoWarm: '- **“too warm 3/7”**: in 3 of 7 models the site’s zone in the target year is above the plant’s highest zone\n- **“becomes possible 2/7”**: too cold today, within range in 2 models in the target year\n**Order**: plants too cold today first, then by the zones left above today’s site zone (fewest first). It stays the same when year, scenario or model change. Plants with the same name share one row (×count).\nA click on a plant opens it for editing.',
     note: 'Up to {y}: seven climate models (CMIP6 HighResMIP, high emission path, Open-Meteo, CC BY 4.0), per model the change against 1994–2023 as an 11-year mean, added to the measured climate. After that a rough projection: the change around {y} scaled with the scenario’s global warming (IPCC AR6). A range, not a forecast. The plan’s hints and suggestions use this choice.',
   },
 };
@@ -81,15 +92,28 @@ const fill = (s: string, v: Record<string, string | number>) => s.replace(/\{(\w
 /** An "i" that opens a short explanation (native popover, #603); `html` is already escaped markup. */
 export function infoHtml(key: string, html: string, label: string): string {
   return `<button type="button" popovertarget="clim-i-${key}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}" class="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full align-middle text-[10px] font-semibold italic text-stone-500 ring-1 ring-stone-300 hover:bg-stone-200 hover:text-stone-800 dark:text-stone-400 dark:ring-stone-600 dark:hover:bg-stone-700">i</button>`
-    + `<div id="clim-i-${key}" popover class="m-auto max-w-md rounded-lg bg-white p-4 text-sm leading-relaxed text-stone-700 shadow-xl ring-1 ring-stone-200 dark:bg-stone-800 dark:text-stone-200 dark:ring-stone-700">${html}</div>`;
+    + `<div id="clim-i-${key}" popover class="m-auto max-w-md rounded-lg bg-white p-4 text-sm leading-relaxed text-stone-700 shadow-xl ring-1 ring-stone-200 dark:bg-stone-800 dark:text-stone-200 dark:ring-stone-700 space-y-2">${html}</div>`;
 }
-const para = (s: string) => `<p>${escapeHtml(s)}</p>`;
+/** Explanation text → markup: each line a paragraph, "- " lines a bullet list, **bold**, [text](https://…). */
+export function richText(s: string): string {
+  const inline = (t: string) => escapeHtml(t)
+    .replace(/\[([^\]]+)\]\((https:\/\/[^)\s]+)\)/g, '<a class="underline" href="$2" target="_blank" rel="noopener">$1</a>')
+    .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  let h = '', li = '';
+  const flush = () => { if (li) h += `<ul class="list-disc space-y-0.5 pl-5">${li}</ul>`; li = ''; };
+  for (const line of s.split('\n')) {
+    if (line.startsWith('- ')) li += `<li>${inline(line.slice(2))}</li>`;
+    else { flush(); if (line.trim()) h += `<p>${inline(line)}</p>`; }
+  }
+  flush();
+  return h;
+}
 /** The explanations as markup, by key (the page uses 'zone' beside "Zone um <Jahr>"). */
 export function infoText(key: 'zone' | 'models' | 'ssp' | 'metric' | 'mode' | 'range' | 'koeppen' | 'warm', lang: Lang): string {
   const L = T[lang];
-  if (key === 'models') return para(L.infoModels) + `<ul class="my-2 list-disc pl-5">${L.models.map(([n, d]) => `<li><b>${escapeHtml(n)}</b>: ${escapeHtml(d)}</li>`).join('')}</ul>` + para(L.modelsNote);
+  if (key === 'models') return richText([L.infoModels, ...L.models.map(([n, d]) => `- **[${n}](${modelUrl(n)})**: ${d}`), L.modelsNote].join('\n'));
   const txt = { zone: L.infoZone, ssp: L.infoSsp, metric: L.infoMetric, mode: L.infoMode, range: L.infoRange, koeppen: L.infoKoeppen, warm: L.infoWarm }[key];
-  return para(fill(txt, { y: LAST_DATA_YEAR }));
+  return richText(fill(txt, { y: LAST_DATA_YEAR }));
 }
 const info = (key: Parameters<typeof infoText>[0], lang: Lang) => infoHtml(key, infoText(key, lang), T[lang].info);
 
