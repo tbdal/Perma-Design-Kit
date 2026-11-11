@@ -1,12 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { parsePfafHtml, pfafNameCandidates } from '../server/pfaf-parse.mjs';
+import { parsePfafHtml, pfafLatinName, pfafNameCandidates } from '../server/pfaf-parse.mjs';
 
 // Real PFAF pages saved on 2026-09-29. When PFAF changes its markup, refresh a
 // fixture with curl (browser User-Agent, see plant-proxy-server.mjs) and see
 // which of these break.
 const page = (name: string) => parsePfafHtml(readFileSync(new URL(`./fixtures/pfaf/${name}.html`, import.meta.url), 'utf8'));
 const months = (m: boolean[] | undefined) => (m ?? []).flatMap((on, i) => on ? [i + 1] : []);
+
+describe('pfafLatinName', () => {
+  const html = (name: string) => readFileSync(new URL(`./fixtures/pfaf/${name}.html`, import.meta.url), 'utf8');
+  it('reads the name the page is about, without the author', () => {
+    expect(pfafLatinName(html('Sambucus_nigra'))).toBe('Sambucus nigra');
+    expect(pfafLatinName(html('Nonexistus_plantus'))).toBe('');
+  });
+});
 
 describe('parsePfafHtml', () => {
   it('reads a shade plant as shade only — not full sun (sun.jpg is a substring of partsun/fullsun.jpg)', () => {

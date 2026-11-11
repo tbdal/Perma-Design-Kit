@@ -67,6 +67,13 @@ function hasIcon(html, file) {
   return new RegExp(`[/"']${file.replace('.', '\\.')}`, 'i').test(html);
 }
 
+// The Latin name the PFAF page is about ("Rubus fruticosus - L." → "Rubus fruticosus"); '' if none.
+/** @param {string} html */
+export function pfafLatinName(html) {
+  const m = html.match(/id="ContentPlaceHolder1_lbldisplatinname"[^>]*>([^<]*)/i);
+  return m ? m[1].replace(/&nbsp;/g, ' ').split(' - ')[0].trim() : '';
+}
+
 /**
  * Parse a PFAF Plant.aspx page. Returns {} when the page carries no plant data.
  * @param {string} html

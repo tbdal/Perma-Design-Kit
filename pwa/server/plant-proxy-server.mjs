@@ -9,7 +9,7 @@
 import { createServer } from 'node:http';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { parsePfafHtml, pfafNameCandidates } from './pfaf-parse.mjs';
+import { parsePfafHtml, pfafLatinName, pfafNameCandidates } from './pfaf-parse.mjs';
 import { lookupEfg, efgIndex } from './efg.mjs';
 import { createAuthHandler, createStore } from './auth.mjs';
 import { createBeispiele, createBeispieleHandler } from './beispiele.mjs';
@@ -152,7 +152,12 @@ async function fetchPfafExact(name) {
       signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
     });
     if (!res.ok) return null;
-    return parsePfafHtml(await res.text());
+    const html = await res.text();
+    const r = parsePfafHtml(html);
+    // PFAF answers a name typed half ("Rubus fru") with the page of the plant it starts: say which one (#34).
+    const full = pfafLatinName(html);
+    if (Object.keys(r).length > 1 && full.length > name.length && full.toLowerCase().startsWith(name.toLowerCase())) r.fullName = full;
+    return r;
   } catch {
     return null;
   }
@@ -264,7 +269,7 @@ async function lookup(name, ip) {
   if (pfaf && Object.keys(pfaf).length > 1) bySource.pfaf = fieldsOf(pfaf);
   // Set when PFAF had the plant only under a synonym (shown as a note, not merged).
   const pfafMatchedName = pfaf?.matchedName;
-  if (bySource.pfaf) delete bySource.pfaf.matchedName;
+  if (bySource.pfaf) { delete bySource.pfaf.matchedName; delete bySource.pfaf.fullName; }
   if (Object.keys(efg).length > 1) bySource.efg = fieldsOf(efg);
   if (naturaDb && Object.keys(naturaDb).length > 1) bySource.naturadb = fieldsOf(naturaDb);
 
@@ -281,6 +286,7 @@ async function lookup(name, ip) {
   result.source = sources.join('+');
   result.sources = bySource;
   if (pfafMatchedName) result.pfafMatchedName = pfafMatchedName;
+  if (pfaf?.fullName) result.latinName = pfaf.fullName;
   const upstreamFailed = pfaf === null || naturaDb === null;
   return { body: JSON.stringify(result), found: sources.length > 0, upstreamFailed };
 }
