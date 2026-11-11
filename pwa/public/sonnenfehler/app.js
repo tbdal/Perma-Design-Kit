@@ -60,7 +60,7 @@ async function show(p) {
   $('out').textContent = 'Lade Wetterdaten …';
   try { localStorage.setItem('ort', JSON.stringify(p)); } catch {}
   try {
-    data = await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${p.latitude}&longitude=${p.longitude}&hourly=sunshine_duration&current=sunshine_duration&past_days=${DAYS}&forecast_days=1&timezone=auto`);
+    data = await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${p.latitude}&longitude=${p.longitude}&hourly=sunshine_duration&daily=daylight_duration&current=sunshine_duration&past_days=${DAYS}&forecast_days=1&timezone=auto`);
     place = p;
     render();
   } catch (err) { $('out').textContent = 'Fehler beim Laden: ' + err.message; }
@@ -83,7 +83,13 @@ function render() {
   // Durchschnitt über die letzten BAR_DAYS × 24 Stunden bis jetzt
   const month = sun.slice(Math.max(0, nowIdx + 1 - BAR_DAYS * 24), nowIdx + 1);
   html += `<p>Ø Sonne pro Tag in den letzten ${BAR_DAYS} Tagen: <b>${hm(avgPerDay(month, min))}</b>
-    <span class="muted">(nur Stunden ab ${min / 60} min Sonne) · ohne Schwelle ${hm(avgPerDay(month, 0))}</span></p>`;
+    <span class="muted">(nur Stunden ab ${min / 60} min Sonne) · ohne Schwelle ${hm(avgPerDay(month, 0))}</span>`;
+  // Mögliche Sonne = Tageslicht von Sonnenauf- bis -untergang, Ø der letzten BAR_DAYS Tage bis heute
+  const di = data.daily.time.indexOf(data.current.time.slice(0, 10));
+  const light = data.daily.daylight_duration.slice(Math.max(0, di + 1 - BAR_DAYS), di + 1);
+  const possible = light.reduce((s, v) => s + v, 0) / 60 / light.length;
+  html += di < 0 ? '</p>' : `<br>Ø möglich (heller Tag, Sonnenauf- bis -untergang): <b>${hm(possible)}</b>
+    <span class="muted">· davon schien die Sonne ${Math.round(avgPerDay(month, 0) / possible * 100)} %</span></p>`;
 
   // Grafik: letzte BAR_DAYS Tage, eine Zeile pro Tag, eine Zelle pro Stunde
   const from = Math.max(0, nowIdx - nowIdx % 24 - (BAR_DAYS - 1) * 24); // ab Mitternacht, Daten starten um 00:00
