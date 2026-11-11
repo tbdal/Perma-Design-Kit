@@ -179,6 +179,9 @@ describe('future climate (#530)', () => {
     expect(r.html).toContain('<svg');
     expect(r.html).toContain('Grauerle');
     expect(r.html).toContain('zu warm 2/2');
+    expect(r.html).toContain('data-clim-today');                         // dashed line for today in the course chart
+    expect(r.html).toMatch(/data-clim-course="[\d.]+,[\d.]+,1999,2100,340"/);   // draggable target-year line
+    expect(r.html).toMatch(/data-clim-value.*2045: \+[\d,]+ °C \(/);        // value at the line with the models' range
     expect(r.html).toContain('data-plant-id="g"');                       // a click opens the plant (#603)
     expect(r.html).toContain('popovertarget="clim-i-koeppen"');            // explanations (#603)
     expect(r.html).not.toContain('grid-cols-4');

@@ -187,9 +187,18 @@ export function explorerOutHtml(c: SiteClimate, f: FutureClimate, s: ClimateScen
   g += `<polyline points="${pts(line)}" fill="none" stroke="${ACCENT}" stroke-width="2"/>`;
   const projLine = projYears.map(y => [y, one ? at(one, y) ?? 0 : median(ms.map(m => at(m, y) ?? 0))] as [number, number]);
   g += `<polyline points="${pts(projLine)}" fill="none" stroke="${WARM}" stroke-width="1.8" stroke-dasharray="4 3"/>`;
-  g += `<line x1="${X(s.year)}" x2="${X(s.year)}" y1="${Ty}" y2="${H - B}" stroke="currentColor" stroke-opacity=".7"/><circle cx="${X(s.year)}" cy="${Y(main)}" r="3.5" fill="currentColor"/>`;
+  const now = new Date().getFullYear();
+  g += `<line data-clim-today x1="${X(now)}" x2="${X(now)}" y1="${Ty}" y2="${H - B}" stroke="currentColor" stroke-opacity=".5" stroke-dasharray="3 3"/><text x="${X(now) - 3}" y="${Ty + 9 * k}" text-anchor="end" fill-opacity=".6">${escapeHtml(L.today)}</text>`;
+  g += `<line x1="${X(s.year)}" x2="${X(s.year)}" y1="${Ty}" y2="${H - B}" stroke="currentColor" stroke-opacity=".7" stroke-width="1.5"/><circle cx="${X(s.year)}" cy="${Y(main)}" r="3.5" fill="currentColor"/>`;
+  // value at the (draggable) target-year line: median or the one model, range of the models
+  const val = `${s.year}: ${nf(main, d)} ${unit}${targets.length > 1 ? ` (${nf(Math.min(...targets), d)} … ${nf(Math.max(...targets), d)})` : ''}`;
+  const right = X(s.year) < (Lx + W) / 2, tw = val.length * Z.fs * 0.55, tx = right ? X(s.year) + 6 : X(s.year) - 6 - tw;
+  const ty = Math.max(Ty + Z.fs + 2, Y(main) - 6);
+  g += `<g data-clim-value><rect x="${tx - 2}" y="${ty - Z.fs}" width="${tw + 4}" height="${Z.fs + 4}" rx="2" class="fill-white dark:fill-stone-900" fill-opacity=".85"/><text x="${tx}" y="${ty}" font-weight="600">${escapeHtml(val)}</text></g>`;
   g += `<text x="${Lx}" y="${Ty - 4}" fill-opacity=".7">${escapeHtml(fill(L.delta, { m: L.metrics[metric], u: unit }))}</text>`;
-  const chart = SVG(W, H, fill(L.delta, { m: L.metrics[metric], u: unit }), g, Z.fs);
+  // data-clim-course: the page lets the target-year line be dragged (viewBox x of 1999 and 2100, width)
+  const chart = SVG(W, H, fill(L.delta, { m: L.metrics[metric], u: unit }), g, Z.fs)
+    .replace('<svg ', `<svg data-clim-course="${X(x0)},${X(x1)},${x0},${x1},${W}" style="cursor:ew-resize;touch-action:pan-y" `);
 
   // ── key figures ──
   const o = futureOutlook(c, f, s);

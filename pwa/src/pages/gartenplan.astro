@@ -5083,6 +5083,20 @@ import Layout from '../layouts/Layout.astro';
     const el = e.target as HTMLInputElement;
     if (el.matches('[data-clim-year]')) setScenario({ year: Number(el.value) }, false);
   });
+  // drag on the course chart moves the target-year line, through the year slider (the chart is redrawn while dragging)
+  let climDrag = false;
+  const climDragTo = (e: PointerEvent, ev: 'input' | 'change') => {
+    const svg = climateBody.querySelector<SVGSVGElement>('[data-clim-course]'), slider = climateBody.querySelector<HTMLInputElement>('[data-clim-year]');
+    if (!svg || !slider) return;
+    const [a, b, y0, y1, w] = svg.dataset.climCourse!.split(',').map(Number), r = svg.getBoundingClientRect();
+    const year = Math.round(y0 + ((e.clientX - r.left) / r.width * w - a) / (b - a) * (y1 - y0));
+    slider.value = String(Math.min(Number(slider.max), Math.max(Number(slider.min), year)));
+    slider.dispatchEvent(new Event(ev, { bubbles: true }));
+  };
+  climateBody.addEventListener('pointerdown', e => { if ((e.target as Element).closest('[data-clim-course]')) { climDrag = true; climDragTo(e, 'input'); } });
+  window.addEventListener('pointermove', e => { if (climDrag) climDragTo(e, 'input'); });
+  window.addEventListener('pointerup', e => { if (climDrag) { climDrag = false; climDragTo(e, 'change'); } });
+  window.addEventListener('pointercancel', () => { climDrag = false; });
   climateBody.addEventListener('change', e => {
     const el = e.target as HTMLInputElement | HTMLSelectElement;
     if (el.matches('[data-clim-year]')) setScenario({ year: Number(el.value) }, true);

@@ -194,6 +194,19 @@ test('climate explorer: target year, scenario and model drive the hints and stay
   await expect(box.locator('[data-clim-mode]')).toContainText('Modelldaten');
   await expect(page.locator('#warnings-list')).toContainText('um 2045 in 1 von 2 Klimamodellen zu warm');
   await expect(box.locator('[data-clim-out]')).toContainText('zu warm 1/2');
+  // dragging in the course chart moves the target-year line; its value is shown there
+  const course = box.locator('[data-clim-course]');
+  await course.scrollIntoViewIfNeeded();
+  const cb = (await course.boundingBox())!;
+  await page.mouse.move(cb.x + cb.width * 0.9, cb.y + cb.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(cb.x + cb.width * 0.95, cb.y + cb.height / 2);
+  await page.mouse.up();
+  const dragged = Number(await box.locator('[data-clim-year]').inputValue());
+  expect(dragged).toBeGreaterThan(2085);
+  await expect(box.locator('[data-clim-year-out]')).toHaveText(String(dragged));
+  await expect(box.locator('[data-clim-value]')).toContainText(`${dragged}:`);
+  await box.locator('[data-clim-year]').fill('2045');
   // zoomer: the box enlarged in a dialog, closed by Esc, × or a click outside; the controls keep working inside
   const zoomer = page.locator('dialog.zoomer');
   await page.click('#btn-climate-zoomer');
