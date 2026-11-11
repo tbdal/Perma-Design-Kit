@@ -55,7 +55,7 @@ fi
 
 # Faster deploys (Werkstatt #591): browser tests tagged @slow (3D, phone overflow) run every night
 # (scripts/nightly-e2e.sh) and in a deploy only when something in their scope changed since the last deploy.
-# DEPLOY_QUICK=1 is for text/layout changes only (refused otherwise): just the browser tests of the touched pages.
+# DEPLOY_QUICK=1 is for text/layout changes and the static page public/sonnenfehler/ only (refused otherwise): just the browser tests of the touched pages.
 STAMP="$HOME/.pdk-deployed"   # line 1: public commit of the last deploy, line 2: expert commit
 SLOW_SCOPE='^(\*|src/lib/[^/]*3d[^/]*|src/layouts/|src/styles/|e2e/|package-lock\.json|playwright\.config\.ts|scripts/serve-dist\.mjs)'
 # Files changed since the last deploy (paths relative to pwa/, expert ones with src/expert/); "*" = unknown, i.e. everything.
@@ -69,7 +69,7 @@ changed() {
 }
 CHANGED="$(changed)"
 if [[ "${DEPLOY_QUICK:-}" == "1" ]]; then
-  bad="$(grep -Ev '\.(astro|md|css|svg|png|jpe?g|webp)$|^src/lib/i18n/' <<<"$CHANGED" || true)"
+  bad="$(grep -Ev '\.(astro|md|css|svg|png|jpe?g|webp)$|^src/lib/i18n/|^public/sonnenfehler/' <<<"$CHANGED" || true)"
   if [[ -n "$bad" ]]; then echo "Refusing DEPLOY_QUICK: more than text/layout changed since the last deploy:" >&2; echo "$bad" >&2; exit 1; fi
 fi
 

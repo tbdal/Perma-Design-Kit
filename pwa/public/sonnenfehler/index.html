@@ -20,7 +20,7 @@
   .big { font-size:2.6rem; font-weight:700; line-height:1.1; }
   .muted { color:var(--muted); }
   #bar { display:grid; grid-template-columns:repeat(24,1fr); gap:1px; margin-top:16px; }
-  #bar div { height:10px; background:var(--off); }
+  #bar div { height:6px; background:var(--off); }
   #bar div.s { background:var(--sun); }
   small { display:block; margin-top:32px; }
   a { color:inherit; }
@@ -34,6 +34,7 @@
     <input id="q" placeholder="Ort, z. B. Hamburg" autocomplete="off" required>
     <button>Suchen</button>
   </form>
+  <p class="muted"><label>Als Sonne zählt eine Stunde ab <input id="min" type="number" min="1" max="60" value="10" inputmode="numeric" style="width:4.5em"> Minuten Sonnenschein.</label></p>
   <div id="hits"></div>
   <div id="out" aria-live="polite"></div>
   <small class="muted">Daten: <a href="https://open-meteo.com/">Open-Meteo</a> (Modell, stündlich, letzte 92 Tage). Nachtstunden zählen mit.</small>

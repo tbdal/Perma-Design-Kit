@@ -1,10 +1,13 @@
-const MIN_SUN_SEC = 600; // weniger als 10 min/Std. gilt als Modellrauschen
-const DAYS = 92;
+const DAYS = 92;     // so weit reicht die Abfrage zurück
+const BAR_DAYS = 30; // so viele Tage zeigt die Grafik
 const $ = id => document.getElementById(id);
 
-// Index der letzten Stunde mit Sonne bis einschließlich nowIdx, sonst -1
-function lastSun(values, nowIdx) {
-  for (let i = nowIdx; i >= 0; i--) if (values[i] >= MIN_SUN_SEC) return i;
+// Ab so vielen Sonnenminuten pro Stunde zählt eine Stunde als sonnig (vom Nutzer einstellbar)
+const minSec = () => Math.min(60, Math.max(1, Number($('min').value) || 10)) * 60;
+
+// Index der letzten Stunde mit mindestens min Sekunden Sonne bis einschließlich nowIdx, sonst -1
+function lastSun(values, nowIdx, min) {
+  for (let i = nowIdx; i >= 0; i--) if (values[i] >= min) return i;
   return -1;
 }
 
@@ -43,37 +46,53 @@ $('f').onsubmit = async e => {
   } catch (err) { $('out').textContent = 'Fehler bei der Suche: ' + err.message; }
 };
 
+let place, data; // zuletzt geladener Ort und seine Wetterdaten, für Neuberechnung ohne Abruf
+
 async function show(p) {
   $('hits').textContent = '';
   $('out').textContent = 'Lade Wetterdaten …';
   try { localStorage.setItem('ort', JSON.stringify(p)); } catch {}
   try {
-    const d = await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${p.latitude}&longitude=${p.longitude}&hourly=sunshine_duration&current=sunshine_duration&past_days=${DAYS}&forecast_days=1&timezone=auto`);
-    const { time, sunshine_duration: sun } = d.hourly;
-    const nowHour = d.current.time.slice(0, 13) + ':00';
-    const nowIdx = time.indexOf(nowHour);
-    if (nowIdx < 0) throw new Error('aktuelle Stunde fehlt');
-    const i = lastSun(sun, nowIdx);
-
-    let html;
-    if (i === nowIdx) html = `<div class="big">☀️ Gerade scheint die Sonne!</div>`;
-    else if (i < 0) html = `<div class="big">über ${DAYS} Tage</div><p>In ${esc(label(p))} hat seit über ${DAYS} Tagen keine Sonne geschienen.</p>`;
-    else html = `<div class="big">seit ${ago(t(d.current.time) - t(time[i]) - 36e5)}</div>
-      <p>ohne Sonne in <b>${esc(label(p))}</b>.<br><span class="muted">Zuletzt Sonne: ${fmt(time[i])} Uhr (Ortszeit)</span></p>`;
-
-    // Leiste: letzte 7 Tage, eine Zelle pro Stunde
-    const from = Math.max(0, nowIdx - nowIdx % 24 - 6 * 24); // ab Mitternacht vor 6 Tagen, Daten starten um 00:00
-    const cells = sun.slice(from, nowIdx + 1).map(v => `<div class="${v >= MIN_SUN_SEC ? 's' : ''}"></div>`).join('');
-    $('out').innerHTML = html + `<div class="muted">Letzte 7 Tage (eine Zeile pro Tag, 0–23 Uhr, gelb = Sonne):</div><div id="bar">${cells}</div>`;
+    data = await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${p.latitude}&longitude=${p.longitude}&hourly=sunshine_duration&current=sunshine_duration&past_days=${DAYS}&forecast_days=1&timezone=auto`);
+    place = p;
+    render();
   } catch (err) { $('out').textContent = 'Fehler beim Laden: ' + err.message; }
 }
 
+function render() {
+  if (!data) return;
+  const p = place, min = minSec();
+  const { time, sunshine_duration: sun } = data.hourly;
+  const nowIdx = time.indexOf(data.current.time.slice(0, 13) + ':00');
+  if (nowIdx < 0) { $('out').textContent = 'Fehler: aktuelle Stunde fehlt in den Daten.'; return; }
+  const i = lastSun(sun, nowIdx, min);
+
+  let html;
+  if (i === nowIdx) html = `<div class="big">☀️ Gerade scheint die Sonne!</div>`;
+  else if (i < 0) html = `<div class="big">über ${DAYS} Tage</div><p>In ${esc(label(p))} hat seit über ${DAYS} Tagen keine Sonne geschienen.</p>`;
+  else html = `<div class="big">seit ${ago(t(data.current.time) - t(time[i]) - 36e5)}</div>
+    <p>ohne Sonne in <b>${esc(label(p))}</b>.<br><span class="muted">Zuletzt Sonne: ${fmt(time[i])} Uhr (Ortszeit)</span></p>`;
+
+  // Grafik: letzte BAR_DAYS Tage, eine Zeile pro Tag, eine Zelle pro Stunde
+  const from = Math.max(0, nowIdx - nowIdx % 24 - (BAR_DAYS - 1) * 24); // ab Mitternacht, Daten starten um 00:00
+  const cells = sun.slice(from, nowIdx + 1).map((v, k) =>
+    `<div class="${v >= min ? 's' : ''}" title="${fmt(time[from + k])}: ${Math.round(v / 60)} min"></div>`).join('');
+  $('out').innerHTML = html + `<div class="muted">Letzte ${BAR_DAYS} Tage (eine Zeile pro Tag, 0–23 Uhr, gelb = Sonne):</div><div id="bar">${cells}</div>`;
+}
+
+$('min').oninput = () => {
+  try { localStorage.setItem('min', $('min').value); } catch {}
+  render();
+};
+
+try { const m = localStorage.getItem('min'); if (m) $('min').value = m; } catch {}
 try { const p = JSON.parse(localStorage.getItem('ort')); if (p) { $('q').value = p.name; show(p); } } catch {}
 
 // Self-Check
-console.assert(lastSun([0, 700, 0], 2) === 1, 'Sonne vor 1 h');
-console.assert(lastSun([0, 0, 900], 2) === 2, 'Sonne jetzt');
-console.assert(lastSun([0, 0, 0], 2) === -1, 'nie Sonne');
-console.assert(lastSun([599, 0], 1) === -1, 'unter Schwelle');
-console.assert(lastSun([700, 0, 800], 1) === 0, 'Zukunft ignoriert');
+console.assert(lastSun([0, 700, 0], 2, 600) === 1, 'Sonne vor 1 h');
+console.assert(lastSun([0, 0, 900], 2, 600) === 2, 'Sonne jetzt');
+console.assert(lastSun([0, 0, 0], 2, 600) === -1, 'nie Sonne');
+console.assert(lastSun([599, 0], 1, 600) === -1, 'unter Schwelle');
+console.assert(lastSun([599, 0], 1, 60) === 0, 'niedrigere Schwelle');
+console.assert(lastSun([700, 0, 800], 1, 600) === 0, 'Zukunft ignoriert');
 console.assert(ago(30 * 36e5) === '1 Tag 6 Std.', 'ago');
