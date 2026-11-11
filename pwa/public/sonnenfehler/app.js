@@ -11,6 +11,13 @@ function lastSun(values, nowIdx, min) {
   return -1;
 }
 
+// Minuten Sonne pro Tag; nur Stunden ab min Sekunden zählen (min = 0: alle)
+function avgPerDay(values, min) {
+  const sec = values.reduce((s, v) => s + (v >= min ? v : 0), 0);
+  return values.length ? sec / 60 / (values.length / 24) : 0;
+}
+const hm = m => (m = Math.round(m)) >= 60 ? `${Math.floor(m / 60)} Std. ${m % 60} min` : `${m} min`;
+
 function ago(ms) {
   const h = Math.max(0, Math.round(ms / 36e5)), d = Math.floor(h / 24), r = h % 24;
   return d ? `${d} ${d === 1 ? 'Tag' : 'Tagen'} ${r} Std.` : `${r} Std.`;
@@ -73,6 +80,11 @@ function render() {
   else html = `<div class="big">seit ${ago(t(data.current.time) - t(time[i]) - 36e5)}</div>
     <p>ohne Sonne in <b>${esc(label(p))}</b>.<br><span class="muted">Zuletzt Sonne: ${fmt(time[i])} Uhr (Ortszeit)</span></p>`;
 
+  // Durchschnitt über die letzten BAR_DAYS × 24 Stunden bis jetzt
+  const month = sun.slice(Math.max(0, nowIdx + 1 - BAR_DAYS * 24), nowIdx + 1);
+  html += `<p>Ø Sonne pro Tag in den letzten ${BAR_DAYS} Tagen: <b>${hm(avgPerDay(month, min))}</b>
+    <span class="muted">(nur Stunden ab ${min / 60} min Sonne) · ohne Schwelle ${hm(avgPerDay(month, 0))}</span></p>`;
+
   // Grafik: letzte BAR_DAYS Tage, eine Zeile pro Tag, eine Zelle pro Stunde
   const from = Math.max(0, nowIdx - nowIdx % 24 - (BAR_DAYS - 1) * 24); // ab Mitternacht, Daten starten um 00:00
   const cells = sun.slice(from, nowIdx + 1).map((v, k) =>
@@ -96,3 +108,6 @@ console.assert(lastSun([599, 0], 1, 600) === -1, 'unter Schwelle');
 console.assert(lastSun([599, 0], 1, 60) === 0, 'niedrigere Schwelle');
 console.assert(lastSun([700, 0, 800], 1, 600) === 0, 'Zukunft ignoriert');
 console.assert(ago(30 * 36e5) === '1 Tag 6 Std.', 'ago');
+console.assert(avgPerDay(Array(48).fill(0).fill(3600, 0, 2), 0) === 60, 'Ø ohne Schwelle');
+console.assert(avgPerDay([600, 300, ...Array(22).fill(0)], 600) === 10, 'Ø mit Schwelle');
+console.assert(hm(125) === '2 Std. 5 min' && hm(7) === '7 min', 'hm');
