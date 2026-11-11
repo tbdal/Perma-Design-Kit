@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seit wann keine Sonne?</title>
+<style>
+  :root { --bg:#fbfaf6; --fg:#1d1d1b; --muted:#6b6b66; --sun:#f2b705; --off:#d9d8d2; --line:#e3e2dc; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#16171a; --fg:#ececea; --muted:#9a9a96; --sun:#f2b705; --off:#33353a; --line:#2a2c30; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.5 system-ui, sans-serif; }
+  main { max-width:640px; margin:0 auto; padding:32px 16px; }
+  h1 { font-size:1.4rem; margin:0 0 16px; }
+  form { display:flex; gap:8px; }
+  input, button { font:inherit; padding:8px 12px; border:1px solid var(--line); border-radius:8px; background:transparent; color:inherit; }
+  input { flex:1; min-width:0; }
+  button { cursor:pointer; }
+  #hits { display:flex; flex-wrap:wrap; gap:6px; margin:12px 0; }
+  #out { margin-top:24px; }
+  .big { font-size:2.6rem; font-weight:700; line-height:1.1; }
+  .muted { color:var(--muted); }
+  #bar { display:grid; grid-template-columns:repeat(24,1fr); gap:1px; margin-top:16px; }
+  #bar div { height:10px; background:var(--off); }
+  #bar div.s { background:var(--sun); }
+  small { display:block; margin-top:32px; }
+  a { color:inherit; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Seit wann keine Sonne?</h1>
+  <form id="f">
+    <label for="q" class="muted" hidden>Ort</label>
+    <input id="q" placeholder="Ort, z. B. Hamburg" autocomplete="off" required>
+    <button>Suchen</button>
+  </form>
+  <div id="hits"></div>
+  <div id="out" aria-live="polite"></div>
+  <small class="muted">Daten: <a href="https://open-meteo.com/">Open-Meteo</a> (Modell, stündlich, letzte 92 Tage). Nachtstunden zählen mit.</small>
+</main>
+<script src="/sonnenfehler/app.js"></script>
+</body>
+</html>
