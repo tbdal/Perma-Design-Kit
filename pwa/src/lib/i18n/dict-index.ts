@@ -125,6 +125,7 @@ export const indexDict: Dict = {
   filterCompletenessAll: { de: 'Vollst.: Alle', en: 'Complete: All' },
   filterGroupsLabel: { de: 'Gruppen', en: 'Groups' },
   filterGroupsNone: { de: '(ohne Gruppe)', en: '(no group)' },
+  groupShowTitle: { de: 'Nur diese Gruppe anzeigen', en: 'Show only this group' },
   printCountAllLabel: { de: 'Druckanzahl:', en: 'Print count:' },
   printCountAllBtn: { de: 'für {n} gefilterte setzen', en: 'set for {n} filtered' },
   filterClear: { de: 'Zurücksetzen ×', en: 'Reset ×' },

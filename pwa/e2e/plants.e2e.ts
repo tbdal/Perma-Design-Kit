@@ -121,3 +121,15 @@ test('key f jumps into the name filter', async ({ page, errors }) => {
   await expect(page.locator('#filter-text')).toBeFocused();
   void errors;
 });
+
+test('a group pill on a tile shows only that group, without opening the editor', async ({ page, errors }) => {
+  await stubNetwork(page);
+  await loadSamples(page);
+  await withDb(page, `const ps = await all('plants'); ps[0].groups = ['Hecke']; ps[1].groups = ['Teich']; for (const p of ps.slice(0, 2)) await put('plants', p);`);
+  await page.goto('/?view=grid');
+  await page.locator('#plant-list [data-show-group="Hecke"]').click();
+  await expect(page.locator('#plant-list [data-id]')).toHaveCount(1);
+  await expect(page.locator('#plant-list [data-show-group="Hecke"]')).toHaveCount(1);
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  void errors;
+});

@@ -35,7 +35,7 @@ export const es: Record<string, string> = {
   btnPrintFromPlan: 'Cantidad de impresión desde el plan', btnPrintFromPlanTitle: 'Pone la cantidad de impresión de cada planta según cuántas veces está en el plan',
   toastPrintFromPlan: 'Cantidad de impresión tomada del plan para {n} plantas', undoInPlans: '{msg} – estaba en {plans} plan(es), {n}× colocada',
   btnNewPolyculture: 'Policultivo con esta planta como ancla',
-  filterUsageLabel: 'Usos', filterFunctionLabel: 'Funciones', filterHeightAll: 'Al: todas', filterCompletenessAll: 'Completas: todas', filterGroupsLabel: 'Grupos', filterGroupsNone: '(sin grupo)',
+  filterUsageLabel: 'Usos', filterFunctionLabel: 'Funciones', filterHeightAll: 'Al: todas', filterCompletenessAll: 'Completas: todas', filterGroupsLabel: 'Grupos', filterGroupsNone: '(sin grupo)', groupShowTitle: 'Mostrar solo este grupo',
   printCountAllLabel: 'Cantidad de impresión:', printCountAllBtn: 'poner para {n} filtradas', filterClear: 'Restablecer ×', filterCount: '{shown} de {total} mostradas',
   month0: 'Enero', month1: 'Febrero', month2: 'Marzo', month3: 'Abril', month4: 'Mayo', month5: 'Junio', month6: 'Julio', month7: 'Agosto', month8: 'Septiembre', month9: 'Octubre', month10: 'Noviembre', month11: 'Diciembre',
   bulkSelectedCount: '{n} seleccionadas', bulkSelectAll: 'Todas', bulkDeselect: 'Quitar selección', bulkEnrich: 'Completar', bulkDelete: 'Eliminar', bulkJson: 'JSON', bulkGroup: 'A un grupo',

@@ -1135,7 +1135,7 @@ import Layout from '../layouts/Layout.astro';
               ${p.climateZone ? `<span>${escapeHtml(t('zoneLabel', { zone: p.climateZone }))}</span>` : ''}
             </div>` : ''}
             ${(() => { const b = badges(p); return b ? `<div class="flex flex-wrap gap-1">${b}</div>` : ''; })()}
-            ${groupPillsHtml(p, 'mt-1')}
+            ${groupPillsHtml(p, 'mt-1', t('groupShowTitle'))}
             ${planChipsHtml(p, 'mt-1')}
           </div>
           <!-- Footer: completeness bar + source chips -->
@@ -1192,7 +1192,7 @@ import Layout from '../layouts/Layout.astro';
                 <div class="min-w-0">
                   <p class="truncate text-sm font-semibold text-stone-800 dark:text-stone-100">${escapeHtml(displayName(p))}</p>
                   <p class="truncate text-xs italic text-stone-500 dark:text-stone-400">${escapeHtml(p.latinName)}</p>
-                  ${groupPillsHtml(p, 'mt-0.5')}
+                  ${groupPillsHtml(p, 'mt-0.5', t('groupShowTitle'))}
                   ${planChipsHtml(p, 'mt-0.5')}
                 </div>
                 <div class="flex shrink-0 gap-1">${actionBtns(p)}</div>
@@ -1319,6 +1319,15 @@ import Layout from '../layouts/Layout.astro';
     const starter = hit('#btn-load-samples, #btn-load-samples-crawford, #btn-load-master');
     if (starter) { await startWith[starter.id](); return; }
     if (hit('[data-show-more]')) { showLimit += PAGE_SIZE; void renderList(); return; }
+    // A group pill on a tile: show only that group.
+    if ((el = hit('[data-show-group]'))) {
+      filters.groups.clear();
+      filters.groups.add(el.dataset.showGroup!);
+      persistFacet('groups');
+      syncCheckboxStates();
+      void renderList();
+      return;
+    }
 
     // Sort column headers (desktop table only)
     if ((el = hit('[data-sort]'))) {

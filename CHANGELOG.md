@@ -4,6 +4,9 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Gruppe in der Pflanzenkachel 2026-11-11
+- [x] **Klick auf eine Gruppe in der Pflanzenkachel zeigt nur diese Gruppe** (setzt den Filter „Gruppen“ auf sie; auch in der Handy-Liste) #minor #prüfen
+
 ## Höhenmodell bei großen Plänen 2026-11-04
 - [x] **Höhenlinien bei großen Plänen**: war das Gelände samt Umgebung größer als 16 Karten-Kacheln, brach das Laden mit „Höhendaten nicht verfügbar: AWS“ ab und die amtlichen Höhen kamen gar nicht dazu; jetzt nimmt es dafür gröbere Kacheln #bugs #prüfen
 

@@ -64,11 +64,14 @@ export function plantBadgesHtml(p: PlantData, t: Translate): string {
 }
 
 /** Small grey pills for the user's own group names. */
-export function groupPillsHtml(p: PlantData, extraClass = ''): string {
+/** `showTitle` makes each pill a button (data-show-group) that filters the list to that group. */
+export function groupPillsHtml(p: PlantData, extraClass = '', showTitle = ''): string {
   const groups = p.groups ?? [];
   if (groups.length === 0) return '';
-  return `<div class="flex flex-wrap gap-1 ${extraClass}">${groups.map(g =>
-    `<span class="inline-block rounded-full bg-stone-100 dark:bg-stone-700 px-2 py-0.5 text-[10px] font-medium text-stone-600 dark:text-stone-300">${escapeHtml(g)}</span>`,
+  const cls = 'inline-block rounded-full bg-stone-100 dark:bg-stone-700 px-2 py-0.5 text-[10px] font-medium text-stone-600 dark:text-stone-300';
+  return `<div class="flex flex-wrap gap-1 ${extraClass}">${groups.map(g => showTitle
+    ? `<button type="button" data-show-group="${escapeHtml(g)}" title="${escapeHtml(showTitle)}" class="${cls} cursor-pointer hover:bg-green-100 hover:text-green-800 dark:hover:bg-green-900/60 dark:hover:text-green-200">${escapeHtml(g)}</button>`
+    : `<span class="${cls}">${escapeHtml(g)}</span>`,
   ).join('')}</div>`;
 }
 
