@@ -185,4 +185,18 @@ describe('future climate (#530)', () => {
     expect(explorerOutHtml(site, f, s2045, 'tann', 'de', [], true).html).toContain('grid-cols-4'); // zoomer layout (#602)
     expect(explorerOutHtml(site, f, { year: 2080, ssp: 'SSP1-2.6', model: 'all' }, 'hot', 'de', []).mode).toBe('Hochrechnung SSP1-2.6');
   });
+  it('zone ruler: same names grouped, all plants, fixed order with the most critical on top', () => {
+    const ps = [
+      { id: 'a', name: 'Apfel', ...plant('4-9') }, { id: 'w1', name: 'Echte Walnuss', ...plant('5-8') }, { id: 'w2', name: 'Echte Walnuss', ...plant('5-8') },
+      { id: 'g', name: 'Grauerle', ...plant('2-7') }, { id: 'm', name: 'Mango', ...plant('10-11') },
+      ...Array.from({ length: 14 }, (_, i) => ({ id: `f${i}`, name: `Fit ${i}`, ...plant('3') })),
+    ];
+    const html = (s: ClimateScenario) => explorerOutHtml(site, f, s, 'tann', 'de', ps).html;
+    const order = (s: ClimateScenario) => [...html(s).matchAll(/data-plant-id="([^"]+)"/g)].map(m => m[1]);
+    const now = order(s2045);
+    expect(now.slice(0, 4)).toEqual(['m', 'g', 'w1', 'a']);                // too cold, then fewest zones left above 7
+    expect(now).toHaveLength(18);                                          // walnuts as one row, nothing cut off
+    expect(html(s2045)).toContain('Echte Walnuss ×2');
+    expect(order({ year: 2025, ssp: 'SSP2-4.5', model: 'all' })).toEqual(now);   // same place in another year
+  });
 });

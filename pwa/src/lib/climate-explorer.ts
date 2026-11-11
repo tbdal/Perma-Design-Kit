@@ -20,7 +20,6 @@ const T = {
     valueAt: '{m} um {y}, {who}', median: 'Median der {n} Modelle', range: 'Spanne der {n} Modelle', rangeProj: 'Spanne der Modelle ({s})',
     zone: 'USDA-Winterhärtezone', koeppen: 'Köppen-Geiger-Klasse',
     ruler: 'Pflanzen im Zonenlineal', site: 'Standort', today: 'heute', unknownMax: 'obere Grenze unbekannt', noPlants: 'Keine Pflanze im Plan hat einen Zonenbereich.',
-    moreFit: '+ {n} weitere klimafest',
     status: { fit: 'klimafest', becomesPossible: 'wird möglich', underPressure: 'unter Druck', notHardy: 'nicht winterhart' } as Record<ClimateStatus, string>,
     warmN: 'zu warm {n}/{of}', drier: 'trockener', possibleN: 'wird möglich {n}/{of}',
     legend: {
@@ -53,7 +52,6 @@ const T = {
     valueAt: '{m} around {y}, {who}', median: 'median of {n} models', range: 'range of {n} models', rangeProj: 'range of the models ({s})',
     zone: 'USDA hardiness zone', koeppen: 'Köppen-Geiger class',
     ruler: 'Plants on the zone ruler', site: 'Site', today: 'today', unknownMax: 'upper limit unknown', noPlants: 'No plant in the plan has a zone range.',
-    moreFit: '+ {n} more climate-proof',
     status: { fit: 'climate-proof', becomesPossible: 'becomes possible', underPressure: 'under pressure', notHardy: 'not hardy' } as Record<ClimateStatus, string>,
     warmN: 'too warm {n}/{of}', drier: 'drier', possibleN: 'becomes possible {n}/{of}',
     legend: {
@@ -194,16 +192,21 @@ export function explorerOutHtml(c: SiteClimate, f: FutureClimate, s: ClimateScen
 }
 
 const ORDER: Record<ClimateStatus, number> = { underPressure: 0, notHardy: 1, becomesPossible: 2, fit: 3 };
-const MAX_ROWS = 12;
 
 /** Site today (blue) and per model in the target year (orange), each plant's zone range coloured by its status. */
 function rulerHtml(c: SiteClimate, o: ReturnType<typeof futureOutlook>, plants: RulerPlant[], lang: Lang, Z: Size): string {
   const L = T[lang];
+  // Fixed order, independent of year/scenario/model, so a plant keeps its place: too cold today first (the colder the higher),
+  // then by zones left above today's site zone (fewest first), no upper limit last.
+  const site = Math.floor(c.zone);
+  const risk = ({ r, ck }: { r: [number, number]; ck: { maxZone: number | null } }) => site < r[0] ? site - r[0] : (ck.maxZone ?? 99) - site;
   const rows = plants.map(p => ({ p, r: plantZoneRange(p.climateZone), ck: climateCheck(p, c, o) }))
     .filter((x): x is { p: RulerPlant; r: [number, number]; ck: NonNullable<ReturnType<typeof climateCheck>> } => !!x.r && !!x.ck)
-    .sort((a, b) => ORDER[a.ck.status] - ORDER[b.ck.status] || a.p.name.localeCompare(b.p.name, lang));
-  const shown = rows.length > MAX_ROWS ? rows.filter((x, i) => x.ck.status !== 'fit' || i < MAX_ROWS) : rows;
-  const hidden = rows.length - shown.length;
+    .sort((a, b) => risk(a) - risk(b) || a.p.name.localeCompare(b.p.name, lang));
+  // same name (e.g. several walnut entries) → one row with a count, the most critical one stands for the group
+  const groups = new Map<string, (typeof rows)[number] & { n: number }>();
+  for (const x of rows) { const g = groups.get(x.p.name); if (g) g.n++; else groups.set(x.p.name, { ...x, n: 1 }); }
+  const shown = [...groups.values()];
   const k = Z.fs / 9, W = Z.W, z0 = 2, z1 = 11, xa = 104 * k, xb = W - 72 * k, X = (z: number) => xa + (z - z0) / (z1 - z0) * (xb - xa);
   const top = 50 * k, rh = Z.rh, H = top + Math.max(shown.length, 1) * rh + 4;
   const zs = o.zones, tMin = zs[0] ?? c.zone, tMax = (zs[zs.length - 1] ?? c.zone) + 0.5;
@@ -219,9 +222,9 @@ function rulerHtml(c: SiteClimate, o: ReturnType<typeof futureOutlook>, plants: 
     g += `<circle cx="${X(z + 0.25) + (i % 2 ? 1 : -1) * Math.ceil(i / 2) * 6 * k}" cy="${30 * k}" r="${3 * k}" fill="${WARM}" stroke="#fff" stroke-width=".7"><title>${zoneLabel(z)} (${o.scenario.year})</title></circle>`;
   }
   g += `<line x1="0" x2="${W}" y1="${top - 8}" y2="${top - 8}" stroke="currentColor" stroke-opacity=".15"/>`;
-  shown.forEach(({ p, r, ck }, i) => {
-    const y = top + i * rh, col = STATUS_COLOR[ck.status];
-    const name = p.name.length > 20 ? p.name.slice(0, 19) + '…' : p.name;
+  shown.forEach(({ p, r, ck, n }, i) => {
+    const y = top + i * rh, col = STATUS_COLOR[ck.status], cnt = n > 1 ? ` ×${n}` : '', max = 20 - cnt.length;
+    const name = (p.name.length > max ? p.name.slice(0, max - 1) + '…' : p.name) + cnt;
     // a click opens the plant for editing (#603)
     g += `<g data-plant-id="${escapeHtml(p.id)}" tabindex="0" role="button" aria-label="${escapeHtml(p.name)}" style="cursor:pointer"><rect x="0" y="${y - 3 * k}" width="${W}" height="${rh}" fill="transparent"/><text x="0" y="${y + 8 * k}" font-size="${Z.fs + 1}"><title>${escapeHtml(p.name)}</title>${escapeHtml(name)}</text><text x="${xa - 6}" y="${y + 8 * k}" text-anchor="end" fill-opacity=".6">${r[0]}–${ck.maxZone ?? '?'}</text>`;
     const x1 = X(r[0]), x2 = ck.maxZone != null ? X(ck.maxZone + 1) : X(z1);
@@ -234,7 +237,6 @@ function rulerHtml(c: SiteClimate, o: ReturnType<typeof futureOutlook>, plants: 
   const legend = (Object.keys(ORDER) as ClimateStatus[]).sort((a, b) => ORDER[b] - ORDER[a])
     .map(k => `<span class="inline-flex items-start gap-1"><i class="mt-0.5 inline-block h-2 w-2 shrink-0 rounded-full" style="background:${STATUS_COLOR[k]}"></i>${escapeHtml(L.legend[k])}</span>`).join('');
   return `<p class="flex items-center gap-1 pt-1 text-xs font-semibold">${escapeHtml(L.ruler)} ${info('warm', lang)}</p>${SVG(W, H, L.ruler, g, Z.fs)}
-    ${hidden ? `<p class="text-[10px] text-stone-500 dark:text-stone-400">${escapeHtml(fill(L.moreFit, { n: hidden }))}</p>` : ''}
     <div class="grid gap-0.5 text-[10px] text-stone-500 dark:text-stone-400">${legend}</div>`;
 }
 
