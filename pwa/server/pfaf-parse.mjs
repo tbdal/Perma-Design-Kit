@@ -67,11 +67,13 @@ function hasIcon(html, file) {
   return new RegExp(`[/"']${file.replace('.', '\\.')}`, 'i').test(html);
 }
 
-// The Latin name the PFAF page is about ("Rubus fruticosus - L." → "Rubus fruticosus"); '' if none.
+// The Latin name the PFAF page is about; '' if it cannot be told. Read from the picture's file name
+// (RubusFruticosus.jpg, Robinia_pseudoacacia1.JPEG): the name shown on the page only repeats the query,
+// also when that was typed half ("Rubus fru").
 /** @param {string} html */
 export function pfafLatinName(html) {
-  const m = html.match(/id="ContentPlaceHolder1_lbldisplatinname"[^>]*>([^<]*)/i);
-  return m ? m[1].replace(/&nbsp;/g, ' ').split(' - ')[0].trim() : '';
+  const m = html.match(/PlantImages\/([A-Z][a-z]+)(?:_|(?=[A-Z]))([A-Za-z][a-z-]+)\d*\.[A-Za-z]+/);
+  return m ? `${m[1]} ${m[2].toLowerCase()}` : '';
 }
 
 /**

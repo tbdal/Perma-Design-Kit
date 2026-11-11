@@ -758,6 +758,8 @@ import Layout from '../layouts/Layout.astro';
     p._sources = orig?._sources ? { ...orig._sources } : {};
     // Editing must not reset the add date ('' stays '' for older plants).
     if (editingPlant) p.createdAt = editingPlant.createdAt ?? '';
+    // Not in the form: without this every edit set the print count back to 1.
+    if (editingPlant) p.printCount = editingPlant.printCount ?? p.printCount;
 
     for (const f of textFields) {
       const val = el(f).value;

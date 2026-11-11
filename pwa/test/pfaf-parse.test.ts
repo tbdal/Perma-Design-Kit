@@ -10,8 +10,10 @@ const months = (m: boolean[] | undefined) => (m ?? []).flatMap((on, i) => on ? [
 
 describe('pfafLatinName', () => {
   const html = (name: string) => readFileSync(new URL(`./fixtures/pfaf/${name}.html`, import.meta.url), 'utf8');
-  it('reads the name the page is about, without the author', () => {
+  it('reads the name the page is about from its picture', () => {
     expect(pfafLatinName(html('Sambucus_nigra'))).toBe('Sambucus nigra');
+    expect(pfafLatinName(html('Robinia_pseudoacacia'))).toBe('Robinia pseudoacacia');
+    expect(pfafLatinName("<img src='../Admin/PlantImages/RubusFruticosus2.jpg' alt='Rubus frut Blackberry'>")).toBe('Rubus fruticosus');
     expect(pfafLatinName(html('Nonexistus_plantus'))).toBe('');
   });
 });
