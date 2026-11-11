@@ -821,22 +821,28 @@ import Layout from '../layouts/Layout.astro';
   function cancelAutosave(planId: string) {
     if (autosaveTimer && autosavePlanId === planId) { clearTimeout(autosaveTimer); autosaveTimer = null; }
   }
+  async function writeAutosave(plan: GardenPlan, ro: boolean) {
+    if (ro) return;
+    const json = contentJson(plan);
+    if (savedJson.get(plan) === json) return;
+    savedJson.set(plan, json);
+    plan.updatedAt = new Date().toISOString();
+    try {
+      await saveGardenPlan(plan);
+    } catch (err) {
+      savedJson.delete(plan); // not saved: the next change tries again
+      showToast(`${t('toastAutosaveFailed')} (${err instanceof Error ? err.message : String(err)})`);
+      return;
+    }
+    notifyPlanSaved(plan);
+    if (plan === editing) renderPlantPicker(); // the "3×" per plant follows the plan
+  }
   function scheduleAutosave() {
     if (!editing) return;
     if (autosaveTimer) clearTimeout(autosaveTimer);
     const plan = editing, ro = readOnly; // captured: after closing, editing is null and the read-only check would pass
     autosavePlanId = plan.id;
-    autosaveTimer = setTimeout(async () => {
-      autosaveTimer = null;
-      if (ro) return;
-      const json = contentJson(plan);
-      if (savedJson.get(plan) === json) return;
-      savedJson.set(plan, json);
-      plan.updatedAt = new Date().toISOString();
-      await saveGardenPlan(plan);
-      notifyPlanSaved(plan);
-      if (plan === editing) renderPlantPicker(); // the "3×" per plant follows the plan
-    }, 500);
+    autosaveTimer = setTimeout(() => { autosaveTimer = null; void writeAutosave(plan, ro); }, 500);
     if (!restoringHistory) scheduleHistory();
     scheduleWarnings();
   }
@@ -1262,6 +1268,8 @@ import Layout from '../layouts/Layout.astro';
   })));
 
   function closeEditor() {
+    // A save still waiting would be dropped by the next plan's timer: write it now.
+    if (autosaveTimer && editing && autosavePlanId === editing.id) { clearTimeout(autosaveTimer); autosaveTimer = null; void writeAutosave(editing, readOnly); }
     finishPick(null);
     saveViewState();
     stopSunPlay();
@@ -1276,6 +1284,15 @@ import Layout from '../layouts/Layout.astro';
     editorView.hidden = true;
     try { localStorage.removeItem(LAST_PLAN_KEY); } catch {}
     notifyPlanChange();
+  }
+
+  /** Back to the list by button or key: a plan made just now is only in the database so far, and the tiles show old names and counts. */
+  function leaveEditor() {
+    const plan = editing;
+    if (plan && !readOnly && plan.boundary.length && !plans.some(p => p.id === plan.id)) plans.push(plan);
+    closeEditor();
+    renderList();
+    window.scrollTo({ top: 0 });
   }
 
   // ── Karte: Standort, Ausrichtung, Hintergrund ───────────────────────────
@@ -3657,12 +3674,10 @@ import Layout from '../layouts/Layout.astro';
     if (!twice) return;
     lastEscAt = 0;
     e.stopPropagation();
-    closeEditor();
-    renderList();
-    window.scrollTo({ top: 0 });
+    leaveEditor();
   }, true);
   document.addEventListener('keydown', e => {
-    if (e.key !== 'Escape') return;
+    if (e.key !== 'Escape' || e.defaultPrevented || document.querySelector('dialog[open]')) return;
     if (measurePts.length) clearMeasure();
     else if (rowDraft) endRowDraw();
     else if (packageArmed) setPackageArmed(null);
@@ -3841,8 +3856,13 @@ import Layout from '../layouts/Layout.astro';
       // A file exported from an existing plan can update it in place.
       const existing = r.sourcePlanId ? plans.find(p => p.id === r.sourcePlanId) : undefined;
       if (existing && confirm(t('confirmGeojsonUpdate', { name: existing.name || t('planUnnamed') }))) {
-        r.plan.createdAt = existing.createdAt;
-        r.plan.polycultureId = existing.polycultureId;
+        // The file carries geometry and plants only: everything else (soil, prices, start year, module data,
+        // planted/died years per plant) stays. Zones do not: their centre no longer fits a new frame.
+        const old = new Map(existing.placements.map(pl => [pl.id, pl]));
+        r.plan.placements = r.plan.placements.map(pl => ({ ...old.get(pl.id), ...pl }));
+        const oldAreas = new Map(existing.areas.map(a => [a.id, a]));
+        r.plan.areas = r.plan.areas.map(a => ({ ...oldAreas.get(a.id), ...a }));
+        r.plan = { ...existing, ...r.plan, createdAt: existing.createdAt, polycultureId: existing.polycultureId, zones: undefined };
       } else {
         r.plan.id = newId();
         r.plan.areas.forEach(a => { a.id = newId(); });
@@ -6360,15 +6380,13 @@ import Layout from '../layouts/Layout.astro';
 
   document.getElementById('btn-new-plan')!.addEventListener('click', () => openEditor(null));
   document.getElementById('btn-empty-new')!.addEventListener('click', () => openEditor(null));
-  document.getElementById('btn-back-to-list')!.addEventListener('click', closeEditor);
+  document.getElementById('btn-back-to-list')!.addEventListener('click', leaveEditor);
   // Alt+4 or the „Waldgartenplan“ nav link while a plan is open: back to the
   // project list instead of reloading into the same plan (Layout.astro).
   document.addEventListener('pdk:nav-same', (e) => {
     if (!editing) return;
     e.preventDefault();
-    closeEditor();
-    renderList();   // names and counts as just edited
-    window.scrollTo({ top: 0 });
+    leaveEditor();
   });
 
   /** Form fields sync into `editing` on every change (for autosave) as well

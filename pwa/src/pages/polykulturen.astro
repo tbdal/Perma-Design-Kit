@@ -261,7 +261,8 @@ import Layout from '../layouts/Layout.astro';
   registerCommands(() => polycultures.map(g => ({ label: g.name, group: tLayout('cmdkGPoly'), run: () => openEditor(g.id) })));
 
   function openEditor(id: string | null) {
-    editing = id ? (polycultures.find(g => g.id === id) ?? createEmptyPolyculture()) : createEmptyPolyculture();
+    const found = id ? polycultures.find(g => g.id === id) : undefined;
+    editing = found ? structuredClone(found) : createEmptyPolyculture(); // a copy: "back" without saving drops member changes too
     fName.value = editing.name;
     fDescription.value = editing.description;
     fNotes.value = editing.notes;
@@ -419,9 +420,11 @@ import Layout from '../layouts/Layout.astro';
         btn.disabled = true;
         btn.textContent = '…';
         try {
+          const target = editing;
           const plant = await importByLatin(latin);
           if (!plant) throw new Error('keine Treffer');
-          editing!.members.push({ plantId: plant.id, role, notes: '' });
+          if (!target || editing !== target) return; // left or switched meanwhile: the plant is in the list, nothing more
+          target.members.push({ plantId: plant.id, role, notes: '' });
           renderMembers();
           renderSuggestions();
           showToast(t('toastImported', { name: displayName(plant) }));

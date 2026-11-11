@@ -236,8 +236,8 @@ import Layout from '../layouts/Layout.astro';
     const flowerCounts = Array(12).fill(0);
     const fruitCounts  = Array(12).fill(0);
     plants.forEach(p => {
-      p.flowerMonths?.forEach((v, i) => { if (v) flowerCounts[i]++; });
-      p.fruitMonths?.forEach((v, i) => { if (v) fruitCounts[i]++; });
+      if (filterFlower.checked) p.flowerMonths?.forEach((v, i) => { if (v) flowerCounts[i]++; });
+      if (filterFruit.checked) p.fruitMonths?.forEach((v, i) => { if (v) fruitCounts[i]++; });
     });
     const maxCount = Math.max(...flowerCounts, ...fruitCounts, 1);
 

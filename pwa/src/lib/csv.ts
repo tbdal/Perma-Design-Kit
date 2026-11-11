@@ -107,7 +107,8 @@ export function parseCSV(input: string): Record<string, string>[] {
       else if (ch === '"') inQuotes = false;
       else if (ch === '\r' && textIn[i + 1] === '\n') { /* CRLF inside a field → LF */ }
       else field += ch;
-    } else if (ch === '"') {
+    } else if (ch === '"' && field.trim() === '') {
+      // only at the start of a cell: a stray quote inside one (5" Topf) used to swallow the following rows
       inQuotes = true;
     } else if (ch === delimiter) {
       record.push(field.trim()); field = '';

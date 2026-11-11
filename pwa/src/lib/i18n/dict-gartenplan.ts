@@ -20,6 +20,7 @@ export const gartenplanDict: Dict = {
   btnSavePlan: { de: 'Waldgartenplan speichern', en: 'Save forest garden plan' },
   confirmDeletePlan: { de: 'Waldgartenplan „{name}" wirklich löschen?', en: 'Really delete forest garden plan "{name}"?' },
   toastPlanSaved: { de: 'Waldgartenplan gespeichert', en: 'Forest garden plan saved' },
+  toastAutosaveFailed: { de: 'Speichern fehlgeschlagen – die letzte Änderung ist noch nicht gesichert', en: 'Saving failed – the last change is not stored yet' },
   planSortLabel: { de: 'Sortieren', en: 'Sort' },
   planSortCreated: { de: 'Neueste Planung', en: 'Newest plan' },
   planSortUpdated: { de: 'Zuletzt bearbeitet', en: 'Last edited' },

@@ -3,6 +3,10 @@ import { buildCSV, buildCSVTemplate, importFromCSV, parseCSV } from '../src/lib/
 import { createEmptyPlant } from '../src/lib/types';
 
 describe('CSV export/import', () => {
+  it('a quote inside a cell does not swallow the following rows', () => {
+    const rows = parseCSV('Lateinisch;Deutsch\nMalus domestica;Apfel 5" Topf\nPyrus communis;Birne\nRibes;"Johannis;beere"');
+    expect(rows.map(r => r.Deutsch)).toEqual(['Apfel 5" Topf', 'Birne', 'Johannis;beere']);
+  });
   it('round-trips every exported field', () => {
     const p = createEmptyPlant();
     Object.assign(p, {

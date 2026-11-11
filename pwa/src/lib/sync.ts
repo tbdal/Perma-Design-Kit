@@ -84,6 +84,8 @@ export function reportSyncConflict(provider: SyncProvider) {
 export function forgetSyncState(provider: SyncProvider) {
   ls.del(markerKey(provider));
   ls.del(fingerprintKey(provider));
+  // otherwise remoteIsKnown() takes whatever backup the next credentials point to as this device's own
+  if (ls.get('last-auto-sync-provider') === provider) ls.del('last-auto-sync-provider');
   if (getSyncProblem()?.provider === provider) clearSyncProblem();
 }
 
