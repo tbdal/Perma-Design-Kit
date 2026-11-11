@@ -105,6 +105,8 @@ test('care calendar downloads as iCal', async ({ page, errors }) => {
 });
 
 test('site climate panel and hints from (stubbed) Open-Meteo data', async ({ page, errors }) => {
+  // the future climate is beta (feature climate-future)
+  await page.addInitScript(() => { try { localStorage.setItem('pdk-mode', 'team'); localStorage.setItem('pdk-auth', JSON.stringify({ name: 'Andi', role: 'team' })); } catch { /* ignore */ } });
   // 3 years of synthetic weather: yearly low −20 °C (zone 6b), frost until mid-April
   const time: string[] = [], tmin: number[] = [], pr: number[] = [], wd: number[] = [];
   for (let y = 2000; y < 2003; y++) {
@@ -136,6 +138,8 @@ test('site climate panel and hints from (stubbed) Open-Meteo data', async ({ pag
 });
 
 test('server at Open-Meteo’s daily limit: the browser asks Open-Meteo itself only after consent (#610)', async ({ page, errors }) => {
+  // the future climate is beta (feature climate-future)
+  await page.addInitScript(() => { try { localStorage.setItem('pdk-mode', 'team'); localStorage.setItem('pdk-auth', JSON.stringify({ name: 'Andi', role: 'team' })); } catch { /* ignore */ } });
   const time: string[] = [], tmin: number[] = [], pr: number[] = [], wd: number[] = [];
   for (let y = 2000; y < 2003; y++) {
     for (let d = new Date(Date.UTC(y, 0, 1)); d.getUTCFullYear() === y; d.setUTCDate(d.getUTCDate() + 1)) {
@@ -164,7 +168,18 @@ test('server at Open-Meteo’s daily limit: the browser asks Open-Meteo itself o
   void errors;
 });
 
+test('climate explorer: only in beta and team mode, not in the public app', async ({ page, errors }) => {
+  let futureCalls = 0;
+  await stubNetwork(page, { climateFuture: route => { futureCalls++; return route.fulfill({ status: 404, body: '' }); } });
+  await seedNeighbourPlan(page, { geo: { lat: 51.3, lon: 9.5, rotationDeg: 0, basemap: 'none', opacity: 0.6 } });
+  await openPlan(page, 'np');
+  await expect(page.locator('#climate-section')).toBeAttached();
+  await expect(page.locator('[data-climate-future], [data-climate-future-failed], [data-climate-direct]')).toHaveCount(0);
+  expect(futureCalls).toBe(0);
+});
+
 test('climate explorer: target year, scenario and model drive the hints and stay with the plan (#530)', async ({ page, errors }) => {
+  await page.addInitScript(() => { try { localStorage.setItem('pdk-mode', 'team'); localStorage.setItem('pdk-auth', JSON.stringify({ name: 'Andi', role: 'team' })); } catch { /* ignore */ } });
   // today: yearly low −20 °C (zone 6b); two models: +6 K and +8 K from 2040 on
   const time: string[] = [], tmin: number[] = [], pr: number[] = [], wd: number[] = [];
   for (let y = 2000; y < 2003; y++) for (let d = new Date(Date.UTC(y, 0, 1)); d.getUTCFullYear() === y; d.setUTCDate(d.getUTCDate() + 1)) {

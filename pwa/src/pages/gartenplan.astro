@@ -4953,7 +4953,8 @@ import Layout from '../layouts/Layout.astro';
   const directAskHtml = () => `<div data-climate-direct class="space-y-1.5 rounded-md bg-amber-50 dark:bg-amber-950/40 p-2 ring-1 ring-amber-200 dark:ring-amber-800">
       <p class="text-[11px] text-amber-900 dark:text-amber-200">${escapeHtml(t('climateLimitAsk'))}</p>
       <div class="flex flex-wrap gap-1.5"><button type="button" data-clim-direct="once" class="rounded-md bg-white dark:bg-stone-800 px-2 py-0.5 text-xs ring-1 ring-stone-300 dark:ring-stone-600">${escapeHtml(t('climateDirectOnce'))}</button><button type="button" data-clim-direct="always" class="rounded-md bg-white dark:bg-stone-800 px-2 py-0.5 text-xs ring-1 ring-stone-300 dark:ring-stone-600">${escapeHtml(t('climateDirectAlways'))}</button></div></div>`;
-  const currentFuture = () => (futureClimate && editing && futureKey === climateKeyOf(editing) ? futureClimate : null);
+  // the explorer and everything using the future climate is beta (feature climate-future)
+  const currentFuture = () => (featureOn('climate-future') && futureClimate && editing && futureKey === climateKeyOf(editing) ? futureClimate : null);
   // Explorer (#530): the measure shown is a view choice per device; year, scenario and model belong to the plan.
   let climateMetric: FutureMetric = (() => { try { const m = localStorage.getItem('pdk-climate-metric') as FutureMetric; return FUTURE_METRICS.includes(m) ? m : 'tann'; } catch { return 'tann'; } })();
   const scenarioOf = (plan: GardenPlan | null): ClimateScenario => plan?.climateScenario ?? DEFAULT_SCENARIO;
@@ -4973,7 +4974,7 @@ import Layout from '../layouts/Layout.astro';
     for (const cb of climateListeners) { try { cb(); } catch (err) { console.error(err); } }
   }
   async function loadFuture(key: string) {
-    if (key === futureRequestKey) return;
+    if (key === futureRequestKey || !featureOn('climate-future')) return;
     futureRequestKey = key;
     try {
       const f = await fetchFutureClimate(editing!.geo!.lat, editing!.geo!.lon);
@@ -5734,6 +5735,10 @@ import Layout from '../layouts/Layout.astro';
     void loadBuildings();
     afterBuildingsChanged();
     scheduleWarnings();
+    const ck = climateKeyOf(editing);
+    if (!featureOn('climate-future')) futureFailedKey = '';
+    else if (ck && !currentFuture()) void loadFuture(ck);
+    renderClimatePanel(); afterClimateChange();
   });
 
   // ── Schnittstelle für private Experten-Module (lib/expert-api.ts) ───────
