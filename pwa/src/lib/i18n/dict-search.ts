@@ -3,9 +3,10 @@ import { es as esTexts } from './es/search';
 
 // Plant search (hero on the plant page and on the garden plan page), see lib/plant-search-ui.ts.
 export const searchDict: Dict = {
-  heroTitle: { de: 'Was wächst in deinem Waldgarten?', en: 'What grows in your forest garden?' },
+  heroTitle: { de: 'Agroforst und Waldgärten fachlich planen', en: 'Plan agroforestry and forest gardens professionally' },
+  heroSubtitle: { de: 'Pflanzen nach Funktion und Standort wählen, Fläche zeichnen, in 3D prüfen, als PDF weitergeben.', en: 'Choose plants by function and site, draw the area, check it in 3D, hand it on as PDF.' },
   searchSubtitle: { de: 'Pflanzendatenbank durchsuchen', en: 'Search the plant database' },
-  searchPlaceholder: { de: 'Pflanze suchen — lat. oder dt. Name, z.B. Sambucus nigra', en: 'Search for a plant — Latin or English name, e.g. Sambucus nigra' },
+  searchPlaceholder: { de: 'Pflanze suchen, z. B. Holunder', en: 'Search for a plant, e.g. elder' },
   searchBtn: { de: 'Suchen', en: 'Search' },
   searchLoading: { de: 'Suche…', en: 'Searching…' },
   searchNoResults: { de: 'Keine Ergebnisse.', en: 'No results.' },

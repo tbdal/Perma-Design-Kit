@@ -4,6 +4,13 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Webseite für Fachleute (Entwürfe zum Prüfbericht November) 2026-11-14
+- [x] **Startseite mit klarem Einstieg**: Überschrift „Agroforst und Waldgärten fachlich planen“, drei Wege (Pflanzen recherchieren, Fläche planen, Referenzprojekt öffnen), die fünf Arbeitsschritte und „Was du weitergeben kannst“ mit sechs Vorschaubildern; solange die Liste weniger als fünf Pflanzen hat, ohne Filter bei leerer Liste #minor #prüfen
+- [x] **Kopfzeile aufgeräumt**: rechts nur noch Beta, „?“ (Einführung, Anleitung, Quellen, Beispielprojekt, Shortcuts, Fehler melden) und ein Konto-Menü mit Anmelden, Ansicht, Sprache, Schriftgröße, Kontrast, Hell/Dunkel und Einstellungen; angemeldet zeigt Beta einen Haken #minor #prüfen
+- [x] **Handy: die vier Bereiche als feste Leiste unten** (nicht im geöffneten Plan, dort hat die Karte ihre eigene Leiste) #minor #prüfen
+- [x] **Waldgartenplan als Hauptsache**: Menüpunkt so hell wie die anderen, Etikett „Beta“ statt Warnkasten, leere Seite zeigt, was der Planer kann, mit „Ersten Plan anlegen“ und „Referenzprojekt öffnen“ #minor #prüfen
+- [x] **Große Baumreihe nur auf der Startseite**, sonst ein schmaler Streifen derselben Bäume #minor #prüfen
+
 ## Gruppe in der Pflanzenkachel 2026-11-11
 - [x] **Klick auf eine Gruppe in der Pflanzenkachel zeigt nur diese Gruppe** (setzt den Filter „Gruppen“ auf sie; auch in der Handy-Liste) #minor #prüfen
 

@@ -134,6 +134,10 @@ html[data-design="horizont"] {
   --color-stone-950: #161c09;
 }
 html[data-design="horizont"] body { background: var(--hz-ground-color); }
+/* The big tree line only on the start page; elsewhere a narrow strip of the same trees,
+   repeated across the width (the picture is too narrow at this height), so the work gets the room. */
+html[data-design="horizont"]:not([data-home]) { --hz-trees: 56px; }
+html[data-design="horizont"]:not([data-home]) .hz-sky { background-repeat: no-repeat, repeat-x, no-repeat; }
 
 /* Headings in the display face, as in the design. */
 html[data-design="horizont"] :is(h1, h2, .hz-hero-title) {
@@ -194,23 +198,18 @@ html[data-design="horizont"] .site-header .hz-wordmark {
   color: #0f1208;
   text-shadow: 0 0 5px #e6f58a, 0 0 1px #e6f58a;
 }
-html[data-design="horizont"] .site-header :where(a[data-nav], #mode-toggle, .header-extra-toggle:not(.header-extra-accent), #lang-toggle, #display-toggle, #theme-toggle, a[href="/settings"]) {
+html[data-design="horizont"] .site-header :where(a[data-nav], .header-extra-toggle:not(.header-extra-accent)) {
   color: var(--hz-ink);
   font-weight: 600;
   border-radius: 999px;
 }
-html[data-design="horizont"] .site-header :where(a[data-nav], #mode-toggle, .header-extra-toggle:not(.header-extra-accent), #lang-toggle, #display-toggle, #theme-toggle, a[href="/settings"]):hover {
+html[data-design="horizont"] .site-header :where(a[data-nav], .header-extra-toggle:not(.header-extra-accent)):hover {
   background: rgb(255 255 255 / 0.35);
   color: #0f1208;
 }
-html[data-design="horizont"] .site-header a[data-nav="/gartenplan"] { color: #4f5b30; }
-/* The account menu is a light/dark panel of its own: the header link colours above must not reach its settings link (unreadable in dark mode). */
-html[data-design="horizont"] #user-menu a[href="/settings"] { color: inherit; font-weight: inherit; border-radius: 0.375rem; }
-html[data-design="horizont"] #user-menu a[href="/settings"]:hover { background: var(--color-stone-100); color: inherit; }
-html[data-design="horizont"].dark #user-menu a[href="/settings"]:hover { background: var(--color-stone-700); }
 @media (max-width: 639px) {
   html[data-design="horizont"] .site-header .hz-wordmark { font-size: 11px; }
-  html[data-design="horizont"] .site-header :where(a[data-nav], #mode-toggle, .header-extra-toggle:not(.header-extra-accent), #lang-toggle, #display-toggle, #theme-toggle, a[href="/settings"]) {
+  html[data-design="horizont"] .site-header :where(a[data-nav], .header-extra-toggle:not(.header-extra-accent)) {
     font-weight: 500;
     padding-left: 0.45rem;
     padding-right: 0.45rem;
@@ -222,8 +221,6 @@ html[data-design="horizont"] .site-header a[data-nav].bg-green-800 {
   color: #0f1208;
   font-weight: 700;
 }
-html[data-design="horizont"] #lang-menu button { color: var(--color-stone-700); }
-html[data-design="horizont"].dark #lang-menu button { color: var(--color-stone-200); }
 
 /* ── Content: below the tree line ─────────────────────────────────────── */
 html[data-design="horizont"] .site-main {
@@ -272,7 +269,7 @@ html[data-design="horizont"] .hz-hero-title {
   line-height: 1.05;
   color: #0f1208;
 }
-html[data-design="horizont"] [data-hz-sky] > p[data-i18n="searchSubtitle"] {
+html[data-design="horizont"] [data-hz-sky] > p:is([data-i18n="searchSubtitle"], [data-i18n="heroSubtitle"]) {
   margin-bottom: 1.25rem;
   font-size: 1rem;
   font-weight: 400;
@@ -348,9 +345,6 @@ html[data-design="horizont"].dark[data-contrast="more"] {
   --color-stone-600: #a3ab84;
 }
 html[data-contrast="more"] :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible { outline-width: 3px; }
-/* "Gartenplan" (in development) is dimmed in the menu — not in high contrast. */
-html[data-contrast="more"] .site-header a[data-nav="/gartenplan"] { color: var(--color-green-100); }
-html[data-design="horizont"][data-contrast="more"] .site-header a[data-nav="/gartenplan"] { color: #1f2710; }
 
 /* data-font: larger text. Tailwind sizes are rem-based, so the whole UI
    scales with the root font size. */
@@ -532,3 +526,73 @@ html[data-bare] #feedback-fab, html[data-bare] #backup-reminder, html[data-bare]
 #feedback-fab.fab-compact > summary > span { display: none; }
 /* the field view has feedback in its own menu ("Mehr") and needs the corner for its zoom buttons */
 html.pdk-feld #feedback-fab { display: none !important; }
+
+/* ══ Header controls (Layout.astro): Beta, help "?", the account menu ══════
+   Standard design: light on the dark green bar; Horizont: dark ink in the sky. */
+.hdr-pill, .hdr-round, .hdr-account {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;
+  height: 2.25rem; border-radius: 999px; color: #fff; border: 1px solid rgb(255 255 255 / 0.45);
+  font-size: 0.875rem; font-weight: 600; transition: background-color .15s;
+}
+.hdr-pill:hover, .hdr-round:hover, .hdr-account:hover { background: rgb(255 255 255 / 0.12); }
+.hdr-round { width: 2.25rem; font-size: 1rem; font-weight: 700; }
+.hdr-account { padding: 0 0.6rem 0 0.4rem; background: rgb(255 255 255 / 0.08); }
+.hdr-initial { display: inline-grid; place-items: center; width: 1.5rem; height: 1.5rem; border-radius: 999px; background: rgb(255 255 255 / 0.2); font-weight: 700; }
+.hdr-beta { padding: 0 0.8rem; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #fde68a; border-color: rgb(253 230 138 / 0.7); }
+.hdr-beta-on { background: #fde68a; color: #3d2f00; border-color: #fde68a; }
+.hdr-beta-on:hover { background: #fcd34d; }
+html[data-design="horizont"] .site-header :is(.hdr-pill, .hdr-round, .hdr-account) { color: var(--hz-ink); border-color: rgb(31 39 16 / 0.35); }
+html[data-design="horizont"] .site-header :is(.hdr-pill, .hdr-round, .hdr-account):hover { background: rgb(255 255 255 / 0.35); }
+html[data-design="horizont"] .site-header .hdr-account { background: #f6f5e6; }
+html[data-design="horizont"] .site-header .hdr-initial { background: #33401a; color: #f6f5e6; }
+html[data-design="horizont"] .site-header .hdr-beta { color: #3d2f00; border-color: #4d3b00; }
+html[data-design="horizont"] .site-header .hdr-beta-on { background: #33401a; color: #f6f5e6; border-color: #33401a; }
+.hdr-panel {
+  padding: 0.5rem; border-radius: 0.75rem; background: #fff; color: var(--color-stone-700);
+  font-size: 0.875rem; font-weight: 400; text-align: left; box-shadow: 0 10px 30px rgb(15 18 8 / 0.18); outline: 1px solid var(--color-stone-200);
+}
+.dark .hdr-panel { background: var(--color-stone-800); color: var(--color-stone-200); outline-color: var(--color-stone-700); }
+.hdr-item { display: block; width: 100%; padding: 0.5rem; border-radius: 0.5rem; text-align: left; color: inherit; }
+.hdr-item.flex { display: flex; }
+.hdr-item:hover { background: var(--color-stone-100); }
+.dark .hdr-item:hover { background: var(--color-stone-700); }
+.hdr-opt[aria-pressed="true"] { background: var(--color-green-100); }
+.dark .hdr-opt[aria-pressed="true"] { background: rgb(20 83 45 / 0.5); }
+html[data-design="horizont"].dark .hdr-opt[aria-pressed="true"] { background: var(--color-green-900); }
+.hdr-head { padding: 0.25rem 0.5rem; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-stone-500); }
+.dark .hdr-head { color: var(--color-stone-400); }
+.hdr-sep { margin-top: 0.4rem; padding-top: 0.4rem; border-top: 1px solid var(--color-stone-200); }
+.dark .hdr-sep { border-top-color: var(--color-stone-700); }
+.hdr-seg { flex: 1 1 0; min-height: 2.25rem; padding: 0.25rem 0.4rem; border-radius: 0.5rem; font-size: 0.8rem; font-weight: 500; outline: 1px solid var(--color-stone-200); }
+.dark .hdr-seg { outline-color: var(--color-stone-600); }
+.hdr-seg:hover { background: var(--color-stone-100); }
+.dark .hdr-seg:hover { background: var(--color-stone-700); }
+.hdr-seg[aria-pressed="true"] { background: var(--color-green-700); color: #fff; outline-color: var(--color-green-700); }
+
+/* ══ Bottom bar on phones: the four areas (and module links) fixed at the bottom ══
+   Not in the open plan (the map has its own bar there), the new planer, or bare pages. */
+.nav-icon { display: none; }
+@media (max-width: 639px) {
+  html:not([data-bare]):not(.pdk-neu):not(:has(#plan-editor-view:not([hidden]))) {
+    --bottom-bar-h: calc(3.9rem + env(safe-area-inset-bottom, 0px));
+  }
+  html:not([data-bare]):not(.pdk-neu):not(:has(#plan-editor-view:not([hidden]))) body { padding-bottom: var(--bottom-bar-h); }
+  html:not([data-bare]):not(.pdk-neu):not(:has(#plan-editor-view:not([hidden]))) .site-header #nav-links {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 45; order: 0;
+    margin: 0; width: auto; height: var(--bottom-bar-h); gap: 0;
+    display: flex; align-items: stretch; justify-content: space-around; overflow-x: auto;
+    padding: 0 0.25rem env(safe-area-inset-bottom, 0px);
+    background: #fff; border-top: 1px solid var(--color-stone-200); box-shadow: 0 -4px 14px rgb(15 18 8 / 0.08);
+  }
+  html.dark:not([data-bare]):not(.pdk-neu):not(:has(#plan-editor-view:not([hidden]))) .site-header #nav-links { background: var(--color-stone-900); border-top-color: var(--color-stone-700); }
+  html:not([data-bare]):not(.pdk-neu):not(:has(#plan-editor-view:not([hidden]))) .site-header #nav-links > a {
+    flex: 1 0 4.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.15rem;
+    padding: 0.25rem 0.2rem; border-radius: 0; background: transparent !important;
+    font-size: 0.72rem; font-weight: 500; color: var(--color-stone-600) !important;
+  }
+  html.dark:not([data-bare]):not(.pdk-neu):not(:has(#plan-editor-view:not([hidden]))) .site-header #nav-links > a { color: var(--color-stone-300) !important; }
+  html:not([data-bare]):not(.pdk-neu):not(:has(#plan-editor-view:not([hidden]))) .site-header #nav-links > a[aria-current="page"] { color: var(--color-stone-900) !important; font-weight: 700; box-shadow: inset 0 3px 0 var(--color-green-700); }
+  html.dark:not([data-bare]):not(.pdk-neu):not(:has(#plan-editor-view:not([hidden]))) .site-header #nav-links > a[aria-current="page"] { color: #fff !important; box-shadow: inset 0 3px 0 var(--color-green-400); }
+  html:not([data-bare]):not(.pdk-neu):not(:has(#plan-editor-view:not([hidden]))) .nav-icon { display: block; width: 1.4rem; height: 1.4rem; }
+  html:not([data-bare]):not(.pdk-neu):not(:has(#plan-editor-view:not([hidden]))) #feedback-fab:not(.fab-compact) { bottom: calc(var(--bottom-bar-h) + 0.75rem) !important; }
+}

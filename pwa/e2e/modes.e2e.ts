@@ -28,15 +28,15 @@ test('new visitors start in simple mode; returning ones keep the full app', asyn
   await fresh.close();
 });
 
-test('sign-in is a visible link in the header until someone is logged in', async ({ page, errors }) => {
+test('the account button says "Anmelden" and holds the sign-in until someone is logged in', async ({ page, errors }) => {
   await stubNetwork(page);
   await setMode(page, 'classic');
   await page.goto('/');
-  const link = page.locator('#header-login');
-  await expect(link).toBeVisible();
-  await link.click();
+  await expect(page.locator('#user-label')).toHaveText('Anmelden');
+  await expect(page.locator('#header-beta')).toBeVisible();
+  await page.click('#user-toggle');
+  await page.click('#user-login');
   await expect(page).toHaveURL(/\/anmelden\/\?next=/);
-  await expect(page.locator('#header-login')).toBeHidden();
   void errors;
 });
 
@@ -60,8 +60,8 @@ test('simple mode: steps, layers and one tip instead of the tool boxes', async (
   await page.keyboard.press('f');
   await expect(page.locator('#area-draw-bar')).toBeHidden();
 
-  // switch to classic from the header menu: everything is back, no reload
-  await page.click('#mode-toggle');
+  // switch to classic from the account menu: everything is back, no reload
+  await page.click('#user-toggle');
   await page.click('[data-mode-opt="classic"]');
   await expect(page.locator('html')).toHaveAttribute('data-mode', 'classic');
   await expect(page.locator('#btn-draw-area')).toBeVisible();
@@ -75,7 +75,7 @@ test('simple mode: steps, layers and one tip instead of the tool boxes', async (
 test('expert mode needs a login', async ({ page, errors }) => {
   await stubNetwork(page);
   await page.goto('/gartenplan');
-  await page.click('#mode-toggle');
+  await page.click('#user-toggle');
   await expect(page.locator('#mode-expert-lock')).toBeVisible();
   await page.click('[data-mode-opt="expert"]');
   await expect(page).toHaveURL(/\/anmelden\/\?next=%2Fgartenplan(%2F)?&mode=expert/);
@@ -154,12 +154,16 @@ test('only one header menu is open at a time', async ({ page }) => {
   await stubNetwork(page);
   await page.addInitScript(() => { try { localStorage.setItem('pdk-welcome-seen', '1'); } catch { /* ignore */ } });
   await page.goto('/');
-  await page.click('#lang-toggle');
-  await expect(page.locator('#lang-menu')).toBeVisible();
-  await page.click('#display-toggle');
-  await expect(page.locator('#display-menu')).toBeVisible();
-  await expect(page.locator('#lang-menu')).toBeHidden();
-  await page.click('#mode-toggle');
-  await expect(page.locator('#mode-menu')).toBeVisible();
-  await expect(page.locator('#display-menu')).toBeHidden();
+  await page.click('#help-toggle');
+  await expect(page.locator('#help-menu')).toBeVisible();
+  await page.click('#user-toggle');
+  await expect(page.locator('#user-menu')).toBeVisible();
+  await expect(page.locator('#help-menu')).toBeHidden();
+  // view, language, text size and light/dark all sit in the account menu
+  for (const sel of ['#mode-menu', '#lang-menu', '[data-font-opt="115"]', '[data-theme-opt="dark"]']) await expect(page.locator(sel), sel).toBeVisible();
+  await page.click('[data-theme-opt="dark"]');
+  await expect(page.locator('html')).toHaveClass(/dark/);
+  await expect(page.locator('[data-theme-opt="dark"]')).toHaveAttribute('aria-pressed', 'true');
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#user-menu')).toBeHidden();
 });

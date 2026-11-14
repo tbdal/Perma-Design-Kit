@@ -27,10 +27,12 @@ const fbItems = [
   { fb: 'idea', href: '/fehler-melden/?art=idee', label: 'feedbackIdea', de: 'Idee einreichen', hint: 'feedbackIdeaHint', deHint: 'Was fehlt, was wäre besser?' },
   { fb: 'mail', href: 'mailto:info@permadesignkit.org', label: 'feedbackMail', de: 'Mail ans Team', hint: 'feedbackMailHint', deHint: 'info@permadesignkit.org' },
 ];
+// The start page keeps the big tree line; every other page gets a narrow strip (global.css, data-home).
+const home = Astro.url.pathname.replace(/\/$/, '') === '';
 const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 dark:hover:bg-stone-800';
 ---
 <!doctype html>
-<html lang="de" class="h-full" data-design="horizont" data-feature-defaults={featureDefaultsJson} data-bare={bare ? '' : undefined}>
+<html lang="de" class="h-full" data-design="horizont" data-feature-defaults={featureDefaultsJson} data-bare={bare ? '' : undefined} data-home={home ? '' : undefined}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -126,114 +128,110 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
           <span class="hz-std hidden sm:inline">Perma Design Kit</span>
         </a>
         <div id="nav-links" class="order-last -mx-2.5 flex w-[calc(100%+1.25rem)] items-center gap-1 overflow-x-auto text-sm font-medium sm:order-none sm:mx-0 sm:ml-3 sm:w-auto sm:overflow-visible">
-          <a href="/" data-nav="/" data-i18n="navPlants" class="rounded-md px-2.5 py-1 text-green-100 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900">Pflanzen</a>
-          <a href="/kalender" data-nav="/kalender" data-i18n="navCalendar" class="rounded-md px-2.5 py-1 text-green-100 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900">Kalender</a>
-          <a href="/polykulturen" data-nav="/polykulturen" data-i18n="navGuilds" class="rounded-md px-2.5 py-1 text-green-100 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900">Polykulturen</a>
-          <a href="/gartenplan" data-nav="/gartenplan" data-i18n="navGardenPlan" class="rounded-md px-2.5 py-1 text-green-100/75 transition hover:bg-green-800 hover:text-green-100 dark:hover:bg-green-900">Waldgartenplan</a>
+          <!-- On phones this row is the fixed bar at the bottom of the screen (global.css, "Bottom bar"); the icons show only there. -->
+          <a href="/" data-nav="/" class="rounded-md px-2.5 py-1 text-green-100 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 21V11"/><path d="M12 11C12 6 8 4 4 4c0 5 3 7 8 7z"/><path d="M12 13c0-4 3-6 8-6 0 4-3 6-8 6z"/></svg><span data-i18n="navPlants">Pflanzen</span></a>
+          <a href="/kalender" data-nav="/kalender" class="rounded-md px-2.5 py-1 text-green-100 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span data-i18n="navCalendar">Kalender</span></a>
+          <a href="/polykulturen" data-nav="/polykulturen" class="rounded-md px-2.5 py-1 text-green-100 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"/><circle cx="5" cy="7" r="2"/><circle cx="19" cy="7" r="2"/><circle cx="12" cy="20" r="2"/></svg><span data-i18n="navGuilds">Polykulturen</span></a>
+          <a href="/gartenplan" data-nav="/gartenplan" class="rounded-md px-2.5 py-1 text-green-100 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/></svg><span data-i18n="navGardenPlan">Waldgartenplan</span></a>
         </div>
 
-        <div class="ml-auto flex items-center gap-1">
+        <!-- Right side: module menus, Beta, help and one account menu that holds everything else (sign-in, view, language, text size, contrast, light/dark, settings). -->
+        <div class="ml-auto flex items-center gap-1.5">
           <!-- Menus added by expert modules (lib/expert-api.ts, LayoutApi.addHeaderMenu) -->
           <div id="header-extra" class="contents"></div>
-          <!-- Visible sign-in for visitors without an account (hidden once logged in, kept in the Ansicht menu too) -->
-          <!-- Beta signup for visitors without an account (logged in, the Beta shield below takes over; too narrow below 390 px, the footer has it) -->
-          <a id="header-beta" href="/beta/" data-i18n-title="betaJoinTitle" title="Beta-Test: jetzt anmelden" class="max-[389px]:hidden rounded-md border border-amber-300/80 px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-amber-200 transition hover:bg-green-800 dark:hover:bg-green-900"><span data-i18n="betaBadge">Beta</span></a>
-          <a id="header-login" href="/anmelden/" data-i18n="modeLogin" class="rounded-lg border border-green-300/60 px-2.5 py-1 text-sm font-semibold text-white transition hover:bg-green-800 dark:hover:bg-green-900">Anmelden</a>
-          <!-- Ansicht: Einfach / Klassisch / Experte (src/lib/ui-mode.ts) -->
-          <div class="relative">
-            <button id="mode-toggle" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="mode-menu" data-i18n-title="modeMenuLabel" title="Ansicht: Einfach, Klassisch oder Beta-Test" class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm font-medium text-green-100 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900">
-              <span id="mode-current">Ansicht</span>
-              <svg class="h-3 w-3" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7.5l5 5 5-5"/></svg>
-            </button>
-            <div id="mode-menu" hidden class="absolute right-0 z-50 mt-1 w-72 space-y-0.5 rounded-lg bg-white dark:bg-stone-800 p-2 text-sm text-stone-700 dark:text-stone-200 shadow-lg ring-1 ring-stone-200 dark:ring-stone-700">
-              <p class="px-2 pb-1 text-xs font-semibold" data-i18n="modeMenuHeading">Ansicht</p>
-              <button type="button" data-mode-opt="simple" aria-pressed="false" class="block w-full rounded-md px-2 py-1.5 text-left hover:bg-stone-100 dark:hover:bg-stone-700 aria-pressed:bg-green-100 dark:aria-pressed:bg-green-900/50">
-                <span class="block font-medium" data-i18n="modeSimple">Einfach</span>
-                <span class="block text-xs text-stone-500 dark:text-stone-400" data-i18n="modeSimpleDesc">Fläche zeichnen, Pflanzen setzen, in 3D ansehen</span>
-              </button>
-              <button type="button" data-mode-opt="classic" aria-pressed="false" class="block w-full rounded-md px-2 py-1.5 text-left hover:bg-stone-100 dark:hover:bg-stone-700 aria-pressed:bg-green-100 dark:aria-pressed:bg-green-900/50">
-                <span class="block font-medium" data-i18n="modeClassic">Klassisch</span>
-                <span class="block text-xs text-stone-500 dark:text-stone-400" data-i18n="modeClassicDesc">Alle Werkzeuge, wie bisher</span>
-              </button>
-              <button type="button" data-mode-opt="expert" aria-pressed="false" class="block w-full rounded-md px-2 py-1.5 text-left hover:bg-stone-100 dark:hover:bg-stone-700 aria-pressed:bg-green-100 dark:aria-pressed:bg-green-900/50">
-                <span class="flex items-center gap-1.5 font-medium"><span data-i18n="modeExpert">Beta-Test</span><svg id="mode-expert-lock" class="h-3.5 w-3.5 text-stone-500 dark:text-stone-400" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="9" width="12" height="8" rx="1.5"/><path d="M7 9V6.5a3 3 0 0 1 6 0V9"/></svg></span>
-                <span class="block text-xs text-stone-500 dark:text-stone-400" data-i18n="modeExpertDesc">Klassisch plus Funktionen in Erprobung (mit Zugang)</span>
-              </button>
-              <button type="button" data-mode-opt="team" hidden aria-pressed="false" class="block w-full rounded-md px-2 py-1.5 text-left hover:bg-stone-100 dark:hover:bg-stone-700 aria-pressed:bg-green-100 dark:aria-pressed:bg-green-900/50">
-                <span class="block font-medium" data-i18n="modeTeam">Team</span>
-                <span class="block text-xs text-stone-500 dark:text-stone-400" data-i18n="modeTeamDesc">Alle Funktionen zum Testen (nur Team)</span>
-              </button>
-              <div class="mt-1 border-t border-stone-200 dark:border-stone-700 px-2 pt-2 text-xs">
-                <a id="mode-login" href="/anmelden/" class="font-medium text-green-700 dark:text-green-400 hover:underline" data-i18n="modeLogin">Anmelden</a>
-                <p id="mode-auth" hidden class="flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <span id="mode-auth-name" class="text-stone-500 dark:text-stone-400"></span>
-                  <button id="mode-logout" type="button" class="font-medium text-green-700 dark:text-green-400 hover:underline" data-i18n="modeLogout">Abmelden</button>
-                </p>
-              </div>
-            </div>
-          </div>
-          <div class="relative">
-            <button id="lang-toggle" type="button" data-i18n-aria-label="langSwitchLabel" data-i18n-title="langSwitchLabel" aria-label="Sprache wechseln" title="Sprache wechseln" class="rounded-lg px-2.5 py-1.5 text-sm font-medium uppercase tracking-wide text-green-100 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900">
-              <span id="lang-current">DE</span>
-            </button>
-            <div id="lang-menu" hidden class="absolute right-0 z-50 mt-1 w-32 overflow-hidden rounded-lg bg-white dark:bg-stone-800 py-1 text-sm text-stone-700 dark:text-stone-200 shadow-lg ring-1 ring-stone-200 dark:ring-stone-700">
-              <button type="button" data-lang="de" class="lang-option block w-full px-3 py-1.5 text-left hover:bg-stone-100 dark:hover:bg-stone-700">Deutsch</button>
-              <button type="button" data-lang="en" class="lang-option block w-full px-3 py-1.5 text-left hover:bg-stone-100 dark:hover:bg-stone-700">English</button>
-              <button type="button" data-lang="es" class="lang-option block w-full px-3 py-1.5 text-left hover:bg-stone-100 dark:hover:bg-stone-700">Español</button>
-            </div>
-          </div>
-          <!-- Display options: contrast + text size (also in Einstellungen). -->
-          <div class="relative">
-            <button id="display-toggle" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="display-menu" data-i18n-aria-label="displayMenuLabel" data-i18n-title="displayMenuLabel" aria-label="Darstellung: Kontrast und Schriftgröße" title="Darstellung: Kontrast und Schriftgröße" class="rounded-lg px-2.5 py-1.5 text-sm font-bold text-green-100 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900">Aa</button>
-            <div id="display-menu" hidden class="absolute right-0 z-50 mt-1 w-60 space-y-3 rounded-lg bg-white dark:bg-stone-800 p-3 text-sm text-stone-700 dark:text-stone-200 shadow-lg ring-1 ring-stone-200 dark:ring-stone-700">
-              <div role="group" aria-labelledby="display-contrast-label">
-                <p id="display-contrast-label" class="mb-1.5 text-xs font-semibold" data-i18n="contrastLabel">Kontrast</p>
-                <div class="flex gap-1.5">
-                  <button type="button" class="display-opt rounded-md px-2 py-1 text-xs font-medium ring-1 ring-stone-200 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700 aria-pressed:bg-green-700 aria-pressed:text-white aria-pressed:ring-green-700" data-contrast-opt="system" aria-pressed="false" data-i18n="contrastSystem">System</button>
-                  <button type="button" class="display-opt rounded-md px-2 py-1 text-xs font-medium ring-1 ring-stone-200 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700 aria-pressed:bg-green-700 aria-pressed:text-white aria-pressed:ring-green-700" data-contrast-opt="normal" aria-pressed="false" data-i18n="contrastNormal">Normal</button>
-                  <button type="button" class="display-opt rounded-md px-2 py-1 text-xs font-medium ring-1 ring-stone-200 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700 aria-pressed:bg-green-700 aria-pressed:text-white aria-pressed:ring-green-700" data-contrast-opt="more" aria-pressed="false" data-i18n="contrastMore">Hoch</button>
-                </div>
-              </div>
-              <div role="group" aria-labelledby="display-font-label">
-                <p id="display-font-label" class="mb-1.5 text-xs font-semibold" data-i18n="fontSizeLabel">Schriftgröße</p>
-                <div class="flex gap-1.5">
-                  <button type="button" class="display-opt rounded-md px-2 py-1 text-xs font-medium ring-1 ring-stone-200 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700 aria-pressed:bg-green-700 aria-pressed:text-white aria-pressed:ring-green-700" data-font-opt="100" aria-pressed="false" data-i18n-aria-label="fontSize100">A</button>
-                  <button type="button" class="display-opt rounded-md px-2 py-1 text-xs font-medium ring-1 ring-stone-200 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700 aria-pressed:bg-green-700 aria-pressed:text-white aria-pressed:ring-green-700" data-font-opt="115" aria-pressed="false" data-i18n-aria-label="fontSize115">A+</button>
-                  <button type="button" class="display-opt rounded-md px-2 py-1 text-xs font-medium ring-1 ring-stone-200 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700 aria-pressed:bg-green-700 aria-pressed:text-white aria-pressed:ring-green-700" data-font-opt="130" aria-pressed="false" data-i18n-aria-label="fontSize130">A++</button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <button id="theme-toggle" type="button" data-i18n-aria-label="themeToggleLabel" aria-label="Theme umschalten" title="Theme: Automatisch (OS)" class="rounded-lg px-3 py-1.5 text-sm font-medium text-green-100 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900">
-            <!-- 3-state: Auto (monitor) → Hell (sun) → Dunkel (moon) → Auto … -->
-            <svg id="theme-icon-auto" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path stroke-linecap="round" d="M8 20h8M12 16v4"/></svg>
-            <svg id="theme-icon-light" class="h-4 w-4 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path stroke-linecap="round" d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-            <svg id="theme-icon-dark" class="h-4 w-4 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-          </button>
-          <!-- Beta shield (only in the beta mode): the same feedback menu as the Feedback button -->
+          <!-- Beta, not signed in: leads to the beta signup (too narrow below 390 px, the footer has it) -->
+          <a id="header-beta" href="/beta/" data-i18n-title="betaJoinTitle" title="Beta-Test: jetzt anmelden" class="hdr-pill hdr-beta max-[389px]:hidden"><span data-i18n="betaBadge">Beta</span></a>
+          <!-- Beta, signed in: shows that the beta is on; opens feedback and the info about the beta access -->
           <details id="beta-badge" hidden class="relative">
-            <summary data-i18n-title="betaBadgeTitle" title="Beta-Test: Wir brauchen deine Meinung" class="cursor-pointer list-none rounded-md border border-amber-300/80 px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-amber-200 transition hover:bg-green-800 dark:hover:bg-green-900 [&::-webkit-details-marker]:hidden"><span data-i18n="betaBadge">Beta</span></summary>
+            <summary data-i18n-title="betaBadgeTitle" title="Beta-Test: Wir brauchen deine Meinung" class="hdr-pill hdr-beta hdr-beta-on cursor-pointer list-none [&::-webkit-details-marker]:hidden"><svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M4 12l5 5L20 6"/></svg><span data-i18n="betaBadge">Beta</span></summary>
             <div class="absolute right-0 top-full z-50 mt-2 w-64 rounded-xl bg-white dark:bg-stone-900 p-2 text-sm normal-case tracking-normal shadow-2xl ring-1 ring-stone-200 dark:ring-stone-700">
               <p class="px-2 pb-1.5 pt-1 text-xs text-stone-500 dark:text-stone-400" data-i18n="feedbackIntro">Was sollen wir wissen?</p>
               {fbItems.map(i => i.href
           ? <a data-fb={i.fb} href={i.href} class={fbItem}><span class="font-semibold text-stone-800 dark:text-stone-100" data-i18n={i.label}>{i.de}</span><span class="block text-xs text-stone-500 dark:text-stone-400" data-i18n={i.hint}>{i.deHint}</span></a>
           : <button data-fb={i.fb} type="button" class={fbItem}><span class="font-semibold text-stone-800 dark:text-stone-100" data-i18n={i.label}>{i.de}</span><span class="block text-xs text-stone-500 dark:text-stone-400" data-i18n={i.hint}>{i.deHint}</span></button>)}
+              <a href="/beta/" class={`${fbItem} mt-1 border-t border-stone-200 dark:border-stone-700`}><span class="font-semibold text-stone-800 dark:text-stone-100" data-i18n="betaInfoLink">Über deinen Beta-Zugang</span></a>
             </div>
           </details>
-          <!-- Account and settings: one button at the far right (name, settings, phone sign-in, sign in / out) -->
+          <!-- Help: one place for tour, guide, example project, shortcuts and bug reports -->
           <div class="relative">
-            <button id="user-toggle" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="user-menu" data-i18n-aria-label="userMenuLabel" data-i18n-title="userMenuLabel" aria-label="Konto und Einstellungen" title="Konto und Einstellungen" class="ml-0.5 flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold text-green-100 ring-1 ring-green-300/60 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900">
-              <span id="user-initial" hidden></span>
-              <svg id="user-icon" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path stroke-linecap="round" d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
+            <button id="help-toggle" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="help-menu" data-i18n-aria-label="helpMenuLabel" data-i18n-title="helpMenuLabel" aria-label="Hilfe" title="Hilfe" class="hdr-round">?</button>
+            <div id="help-menu" hidden class="hdr-panel absolute right-0 z-50 mt-1 w-64">
+              <button id="help-intro" type="button" class="hdr-item" data-i18n="helpIntro">Einführung und Rundgang</button>
+              <a href="/hilfe" class="hdr-item" data-i18n="footerHelp">Anleitung</a>
+              <a href="/hilfe#quellen" class="hdr-item" data-i18n="helpSources">Quellen und Methode</a>
+              <a href="/beispiel" class="hdr-item" data-i18n="welcomeExample">Beispielprojekt ansehen</a>
+              <button id="help-shortcuts" type="button" class="hdr-item" data-i18n="shortcutsTitle">Tastatur-Shortcuts</button>
+              <div class="hdr-sep"><a data-fb="bug" href="/fehler-melden/" class="hdr-item" data-i18n="feedbackBug">Fehler melden</a></div>
+            </div>
+          </div>
+          <!-- Account and everything about the display: one button at the far right -->
+          <div class="relative">
+            <button id="user-toggle" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="user-menu" data-i18n-aria-label="userMenuLabel" data-i18n-title="userMenuLabel" aria-label="Konto, Sprache und Darstellung" title="Konto, Sprache und Darstellung" class="hdr-account">
+              <span id="user-initial" hidden class="hdr-initial"></span>
+              <svg id="user-icon" class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path stroke-linecap="round" d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
+              <span id="user-label" class="hidden sm:inline" data-i18n="modeLogin">Anmelden</span>
+              <svg class="hidden h-3 w-3 sm:block" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7.5l5 5 5-5"/></svg>
             </button>
-            <div id="user-menu" hidden class="absolute right-0 z-50 mt-1 w-64 space-y-0.5 rounded-lg bg-white dark:bg-stone-800 p-2 text-sm text-stone-700 dark:text-stone-200 shadow-lg ring-1 ring-stone-200 dark:ring-stone-700">
+            <div id="user-menu" hidden class="hdr-panel absolute right-0 z-50 mt-1 w-72 max-h-[calc(100dvh-5rem)] overflow-y-auto">
               <p id="user-who" class="px-2 pb-1 text-xs font-semibold text-stone-500 dark:text-stone-400"></p>
-              <a href="/settings" class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left hover:bg-stone-100 dark:hover:bg-stone-700"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg><span data-i18n="navSettings">Einstellungen</span></a>
-              <a id="user-phone" href="/settings#login-section" hidden class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left hover:bg-stone-100 dark:hover:bg-stone-700"><span aria-hidden="true">📱</span><span data-i18n="userPhone">Auf dem Handy anmelden (QR)</span></a>
-              <div class="mt-1 border-t border-stone-200 dark:border-stone-700 pt-1">
-                <a id="user-login" href="/anmelden/" class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left hover:bg-stone-100 dark:hover:bg-stone-700 font-medium text-green-700 dark:text-green-400"><span data-i18n="modeLogin">Anmelden</span></a>
-                <button id="user-logout" type="button" hidden class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left hover:bg-stone-100 dark:hover:bg-stone-700"><span data-i18n="modeLogout">Abmelden</span></button>
+              <a id="user-login" href="/anmelden/" class="hdr-item font-semibold text-green-700 dark:text-green-400"><span data-i18n="modeLogin">Anmelden</span></a>
+              <a id="user-phone" href="/settings#login-section" hidden class="hdr-item"><span data-i18n="userPhone">Auf dem Handy anmelden (QR)</span></a>
+              <button id="user-logout" type="button" hidden class="hdr-item"><span data-i18n="modeLogout">Abmelden</span></button>
+              <!-- Ansicht: Einfach / Klassisch / Beta-Test / Team (src/lib/ui-mode.ts) -->
+              <div id="mode-menu" role="group" aria-labelledby="mode-menu-heading" class="hdr-sep">
+                <p id="mode-menu-heading" class="hdr-head" data-i18n="modeMenuHeading">Ansicht</p>
+                <button type="button" data-mode-opt="simple" aria-pressed="false" class="hdr-item hdr-opt">
+                  <span class="block font-medium" data-i18n="modeSimple">Einfach</span>
+                  <span class="block text-xs text-stone-500 dark:text-stone-400" data-i18n="modeSimpleDesc">Fläche zeichnen, Pflanzen setzen, in 3D ansehen</span>
+                </button>
+                <button type="button" data-mode-opt="classic" aria-pressed="false" class="hdr-item hdr-opt">
+                  <span class="block font-medium" data-i18n="modeClassic">Klassisch</span>
+                  <span class="block text-xs text-stone-500 dark:text-stone-400" data-i18n="modeClassicDesc">Alle Werkzeuge, wie bisher</span>
+                </button>
+                <button type="button" data-mode-opt="expert" aria-pressed="false" class="hdr-item hdr-opt">
+                  <span class="flex items-center gap-1.5 font-medium"><span data-i18n="modeExpert">Beta-Test</span><svg id="mode-expert-lock" class="h-3.5 w-3.5 text-stone-500 dark:text-stone-400" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="9" width="12" height="8" rx="1.5"/><path d="M7 9V6.5a3 3 0 0 1 6 0V9"/></svg></span>
+                  <span class="block text-xs text-stone-500 dark:text-stone-400" data-i18n="modeExpertDesc">Klassisch plus Funktionen in Erprobung (mit Zugang)</span>
+                </button>
+                <button type="button" data-mode-opt="team" hidden aria-pressed="false" class="hdr-item hdr-opt">
+                  <span class="block font-medium" data-i18n="modeTeam">Team</span>
+                  <span class="block text-xs text-stone-500 dark:text-stone-400" data-i18n="modeTeamDesc">Alle Funktionen zum Testen (nur Team)</span>
+                </button>
               </div>
+              <div class="hdr-sep space-y-2 px-2 pb-1">
+                <div role="group" aria-labelledby="lang-menu-label">
+                  <p id="lang-menu-label" class="hdr-head px-0" data-i18n="langLabel">Sprache</p>
+                  <div id="lang-menu" class="flex gap-1.5">
+                    <button type="button" data-lang="de" aria-pressed="false" class="lang-option display-opt hdr-seg">Deutsch</button>
+                    <button type="button" data-lang="en" aria-pressed="false" class="lang-option display-opt hdr-seg">English</button>
+                    <button type="button" data-lang="es" aria-pressed="false" class="lang-option display-opt hdr-seg">Español</button>
+                  </div>
+                </div>
+                <div role="group" aria-labelledby="display-font-label">
+                  <p id="display-font-label" class="hdr-head px-0" data-i18n="fontSizeLabel">Schriftgröße</p>
+                  <div class="flex gap-1.5">
+                    <button type="button" class="display-opt hdr-seg" data-font-opt="100" aria-pressed="false" data-i18n-aria-label="fontSize100">A</button>
+                    <button type="button" class="display-opt hdr-seg" data-font-opt="115" aria-pressed="false" data-i18n-aria-label="fontSize115">A+</button>
+                    <button type="button" class="display-opt hdr-seg" data-font-opt="130" aria-pressed="false" data-i18n-aria-label="fontSize130">A++</button>
+                  </div>
+                </div>
+                <div role="group" aria-labelledby="display-contrast-label">
+                  <p id="display-contrast-label" class="hdr-head px-0" data-i18n="contrastLabel">Kontrast</p>
+                  <div class="flex gap-1.5">
+                    <button type="button" class="display-opt hdr-seg" data-contrast-opt="system" aria-pressed="false" data-i18n="contrastSystem">System</button>
+                    <button type="button" class="display-opt hdr-seg" data-contrast-opt="normal" aria-pressed="false" data-i18n="contrastNormal">Normal</button>
+                    <button type="button" class="display-opt hdr-seg" data-contrast-opt="more" aria-pressed="false" data-i18n="contrastMore">Hoch</button>
+                  </div>
+                </div>
+                <div role="group" aria-labelledby="theme-label">
+                  <p id="theme-label" class="hdr-head px-0" data-i18n="themeLabel">Hell / Dunkel</p>
+                  <div class="flex gap-1.5">
+                    <button type="button" class="display-opt hdr-seg" data-theme-opt="auto" aria-pressed="false" data-i18n="themeOptAuto">System</button>
+                    <button type="button" class="display-opt hdr-seg" data-theme-opt="light" aria-pressed="false" data-i18n="themeOptLight">Hell</button>
+                    <button type="button" class="display-opt hdr-seg" data-theme-opt="dark" aria-pressed="false" data-i18n="themeOptDark">Dunkel</button>
+                  </div>
+                </div>
+              </div>
+              <div class="hdr-sep"><a href="/settings" class="hdr-item flex items-center gap-2"><svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg><span data-i18n="settingsAndBackup">Einstellungen und Backup</span></a></div>
             </div>
           </div>
         </div>
@@ -585,6 +583,7 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
         modal.addEventListener('cancel', markSeen);
         const open = () => { if (!modal.open) modal.showModal(); };
         document.getElementById('open-welcome')?.addEventListener('click', open);
+        document.getElementById('help-intro')?.addEventListener('click', open);
         let seen = false;
         try { seen = !!localStorage.getItem(WELCOME_KEY); } catch {}
         const legal = /^\/(impressum|datenschutz|hilfe|anmelden|admin|beta)\/?$/.test(location.pathname) || document.documentElement.hasAttribute('data-bare');
@@ -692,7 +691,7 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
     <script>
       import { getLang, getUiLang, setLang, createT, applyStaticI18n, type UiLang } from '../lib/i18n/core';
       import { onForeignChange, staleAction } from '../lib/data-channel';
-      import { getContrast, setContrast, applyContrast, getFontSize, setFontSize, applyFontSize, type ContrastPref, type FontSizePref } from '../lib/settings';
+      import { getContrast, setContrast, applyContrast, getFontSize, setFontSize, applyFontSize, getTheme, setTheme, applyTheme, type ContrastPref, type FontSizePref, type ThemePref } from '../lib/settings';
       import { layoutDict } from '../lib/i18n/dict-layout';
       import { installBrokenImageCleanup } from '../lib/html';
       import { installImageZoom } from '../lib/image-zoom';
@@ -704,27 +703,14 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
       installImageZoom(t('closeBtn'));
       installCommandPalette(t);
 
-      // ── Language switcher ────────────────────────────────────────────────
-      // Display options menu ("Aa"): contrast + text size, applied at once.
-      const displayToggle = document.getElementById('display-toggle');
-      const displayMenu = document.getElementById('display-menu');
+      // Display options in the account menu: contrast + text size, applied at once.
       const syncDisplayButtons = () => {
         const c = getContrast(), f = getFontSize();
         document.querySelectorAll<HTMLElement>('[data-contrast-opt]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.contrastOpt === c)));
         document.querySelectorAll<HTMLElement>('[data-font-opt]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.fontOpt === f)));
       };
-      const setDisplayOpen = (open: boolean) => {
-        displayMenu?.toggleAttribute('hidden', !open);
-        displayToggle?.setAttribute('aria-expanded', String(open));
-      };
       syncDisplayButtons();
       window.addEventListener('pdk-display-change', syncDisplayButtons);
-      displayToggle?.addEventListener('click', (e) => { e.stopPropagation(); setDisplayOpen(!!displayMenu?.hidden); });
-      displayMenu?.addEventListener('click', (e) => e.stopPropagation());
-      document.addEventListener('click', () => setDisplayOpen(false));
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && displayMenu && !displayMenu.hidden) { setDisplayOpen(false); displayToggle?.focus(); }
-      });
       document.querySelectorAll<HTMLElement>('[data-contrast-opt]').forEach(b => b.addEventListener('click', () => {
         const c = b.dataset.contrastOpt as ContrastPref;
         setContrast(c); applyContrast(c);
@@ -750,17 +736,9 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
         });
       }, true);
 
-      const langToggle = document.getElementById('lang-toggle');
-      const langMenu = document.getElementById('lang-menu');
-      const langCurrent = document.getElementById('lang-current');
-      if (langCurrent) langCurrent.textContent = getUiLang().toUpperCase();
-
-      langToggle?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        langMenu?.toggleAttribute('hidden');
-      });
-      document.addEventListener('click', () => langMenu?.setAttribute('hidden', ''));
-      langMenu?.querySelectorAll<HTMLButtonElement>('.lang-option').forEach(btn => {
+      // Language: three buttons in the account menu; a change reloads the page.
+      document.querySelectorAll<HTMLButtonElement>('#lang-menu .lang-option').forEach(btn => {
+        btn.setAttribute('aria-pressed', String(btn.dataset.lang === getUiLang()));
         btn.addEventListener('click', () => {
           const lang = btn.dataset.lang as UiLang;
           if (lang && lang !== getUiLang()) {
@@ -891,7 +869,7 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
       (function () {
         const path = location.pathname.replace(/\/$/, '') || '/';
         document.querySelectorAll<HTMLAnchorElement>('a[data-nav]').forEach(a => {
-          if (a.dataset.nav === path) a.classList.add('bg-green-800', 'dark:bg-green-900', 'text-white');
+          if (a.dataset.nav === path) { a.classList.add('bg-green-800', 'dark:bg-green-900', 'text-white'); a.setAttribute('aria-current', 'page'); }
         });
       })();
 
@@ -942,41 +920,16 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
         banner.hidden = false;
         dismiss?.addEventListener('click', () => { banner.hidden = true; lsSet2('backup-reminder-dismissed-on', todayKey); });
       })();
-      // ── 3-state theme toggle: Auto (OS) → Hell → Dunkel → Auto … ─────────
-      const themeBtn = document.getElementById('theme-toggle');
-      const iconAuto = document.getElementById('theme-icon-auto');
-      const iconLight = document.getElementById('theme-icon-light');
-      const iconDark = document.getElementById('theme-icon-dark');
-
-      const readTheme = (): 'auto' | 'light' | 'dark' => {
-        try { const v = localStorage.getItem('theme'); return v === 'light' || v === 'dark' ? v : 'auto'; }
-        catch { return 'auto'; }
+      // ── Light / dark: three buttons in the account menu (also in Einstellungen) ──
+      const syncThemeButtons = () => {
+        const cur = getTheme();
+        document.querySelectorAll<HTMLElement>('[data-theme-opt]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themeOpt === cur)));
       };
-      const applyThemeClass = (t: 'auto' | 'light' | 'dark') => {
-        const isDark = t === 'dark'
-          || (t === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-        document.documentElement.classList.toggle('dark', isDark);
-      };
-      const syncThemeIcon = (mode: 'auto' | 'light' | 'dark') => {
-        iconAuto?.classList.toggle('hidden', mode !== 'auto');
-        iconLight?.classList.toggle('hidden', mode !== 'light');
-        iconDark?.classList.toggle('hidden', mode !== 'dark');
-        themeBtn?.setAttribute('title',
-          mode === 'auto' ? t('themeAuto') : mode === 'light' ? t('themeLight') : t('themeDark'));
-      };
-      const setTheme = (t: 'auto' | 'light' | 'dark') => {
-        try {
-          if (t === 'auto') localStorage.removeItem('theme');
-          else localStorage.setItem('theme', t);
-        } catch {}
-        applyThemeClass(t);
-        syncThemeIcon(t);
-      };
-      syncThemeIcon(readTheme());
-      themeBtn?.addEventListener('click', () => {
-        const cur = readTheme();
-        setTheme(cur === 'auto' ? 'light' : cur === 'light' ? 'dark' : 'auto');
-      });
+      syncThemeButtons();
+      document.querySelectorAll<HTMLElement>('[data-theme-opt]').forEach(b => b.addEventListener('click', () => {
+        const th = b.dataset.themeOpt as ThemePref;
+        setTheme(th); applyTheme(th); syncThemeButtons();
+      }));
 
       // ── Shortcut-Cheatsheet (?, Esc, Klick auf Backdrop) ─────────────────
       const shortcutsModal = document.getElementById('shortcuts-modal') as HTMLDialogElement | null;
@@ -1015,16 +968,20 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
           if (a.dataset.nav === here && navSame()) e.preventDefault();
         });
       });
+      const showShortcuts = () => {
+        // Show the shortcuts of the page you're on (garden plan vs. plant page).
+        const page = location.pathname.startsWith('/gartenplan') ? 'gartenplan' : 'plants';
+        shortcutsModal?.querySelectorAll<HTMLElement>('[data-shortcuts-for]').forEach(tb => { tb.hidden = tb.dataset.shortcutsFor !== page; });
+        shortcutsModal?.showModal();
+      };
+      document.getElementById('help-shortcuts')?.addEventListener('click', showShortcuts);
       document.addEventListener('keydown', (e) => {
         if (e.key !== '?') return;
         const t = e.target as HTMLElement | null;
         if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
         e.preventDefault();
         if (shortcutsModal?.open) { shortcutsModal.close(); return; }
-        // Show the shortcuts of the page you're on (garden plan vs. plant page).
-        const page = location.pathname.startsWith('/gartenplan') ? 'gartenplan' : 'plants';
-        shortcutsModal?.querySelectorAll<HTMLElement>('[data-shortcuts-for]').forEach(tb => { tb.hidden = tb.dataset.shortcutsFor !== page; });
-        shortcutsModal?.showModal();
+        showShortcuts();
       });
 
       // ── PWA install prompts ──────────────────────────────────────────────
@@ -1097,35 +1054,26 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
       import { pageApi, providePageApi } from '../lib/expert-api';
 
       const t = createT(layoutDict);
-      const toggle = document.getElementById('mode-toggle')!;
       const menu = document.getElementById('mode-menu')!;
-      const MODE_LABEL: Record<UiMode, string> = { simple: 'modeSimple', classic: 'modeClassic', expert: 'modeExpert', team: 'modeTeam' };
       const loginHref = (mode?: UiMode) =>
         `/anmelden/?next=${encodeURIComponent(location.pathname + location.search)}${mode ? `&mode=${mode}` : ''}`;
 
       function sync() {
         const mode = currentMode();
         const auth = getAuth();
-        document.getElementById('mode-current')!.textContent = t(MODE_LABEL[mode]);
-        document.getElementById('beta-badge')!.hidden = mode !== 'expert';
+        // Beta in the header: signed out a link to the signup, signed in a sign that the beta is on (with feedback)
+        document.getElementById('beta-badge')!.hidden = !auth;
         menu.querySelectorAll<HTMLElement>('[data-mode-opt]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.modeOpt === mode)));
         document.getElementById('mode-expert-lock')!.toggleAttribute('hidden', !!auth);
         // Team: only offered to accounts that may use it.
         (menu.querySelector('[data-mode-opt="team"]') as HTMLElement).hidden = !modeAllowed('team', auth?.role ?? null);
-        const login = document.getElementById('mode-login') as HTMLAnchorElement;
-        login.hidden = !!auth;
-        login.href = loginHref();
-        const headerLogin = document.getElementById('header-login') as HTMLAnchorElement;
-        headerLogin.hidden = !!auth || /^\/anmelden\/?$/.test(location.pathname);
-        headerLogin.href = loginHref();
         document.getElementById('header-beta')!.hidden = !!auth || /^\/beta\/?$/.test(location.pathname);
-        document.getElementById('mode-auth')!.hidden = !auth;
-        document.getElementById('mode-auth-name')!.textContent = auth ? t('modeLoggedInAs', { name: auth.name }) : '';
-        // the account button: initial when logged in, its menu by state
+        // the account button: "Anmelden" when signed out, the initial and name when signed in
         const initial = document.getElementById('user-initial')!;
         initial.textContent = auth ? auth.name.slice(0, 1).toUpperCase() : '';
         initial.hidden = !auth;
         document.getElementById('user-icon')!.toggleAttribute('hidden', !!auth);
+        document.getElementById('user-label')!.textContent = auth ? auth.name : t('modeLogin');
         document.getElementById('user-who')!.textContent = auth ? t('modeLoggedInAs', { name: auth.name }) : t('userLoggedOut');
         document.getElementById('user-phone')!.hidden = !auth;
         const userLogin = document.getElementById('user-login') as HTMLAnchorElement;
@@ -1133,32 +1081,25 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
         userLogin.href = loginHref();
         document.getElementById('user-logout')!.hidden = !auth;
       }
-      const setOpen = (open: boolean) => {
-        menu.hidden = !open;
-        toggle.setAttribute('aria-expanded', String(open));
+      // The two header menus (help, account): a click outside or Esc closes them.
+      const headerMenu = (toggleId: string, panelId: string) => {
+        const btn = document.getElementById(toggleId)!, panel = document.getElementById(panelId)!;
+        const setOpen = (open: boolean) => { panel.hidden = !open; btn.setAttribute('aria-expanded', String(open)); };
+        btn.addEventListener('click', e => { e.stopPropagation(); setOpen(!!panel.hidden); });
+        panel.addEventListener('click', e => { e.stopPropagation(); if ((e.target as Element).closest('a, #help-intro, #help-shortcuts')) setOpen(false); });
+        document.addEventListener('click', () => setOpen(false));
+        document.addEventListener('keydown', e => { if (e.key === 'Escape' && !panel.hidden) { setOpen(false); btn.focus(); } });
+        return setOpen;
       };
-      toggle.addEventListener('click', e => { e.stopPropagation(); setOpen(!!menu.hidden); });
-      menu.addEventListener('click', e => e.stopPropagation());
-      document.addEventListener('click', () => setOpen(false));
-      document.addEventListener('keydown', e => {
-        if (e.key === 'Escape' && !menu.hidden) { setOpen(false); toggle.focus(); }
-      });
+      headerMenu('help-toggle', 'help-menu');
+      const setUserOpen = headerMenu('user-toggle', 'user-menu');
       menu.querySelectorAll<HTMLElement>('[data-mode-opt]').forEach(b => b.addEventListener('click', () => {
         const mode = b.dataset.modeOpt as UiMode;
         if (!modeAllowed(mode, getAuth()?.role ?? null)) { location.href = loginHref(mode); return; }
-        setOpen(false);
+        setUserOpen(false);
         setMode(mode);
       }));
-      document.getElementById('mode-logout')!.addEventListener('click', () => void logout());
-      {
-        const userToggle = document.getElementById('user-toggle')!, userMenu = document.getElementById('user-menu')!;
-        const setUserOpen = (open: boolean) => { userMenu.hidden = !open; userToggle.setAttribute('aria-expanded', String(open)); };
-        userToggle.addEventListener('click', e => { e.stopPropagation(); setOpen(false); setUserOpen(!!userMenu.hidden); });
-        userMenu.addEventListener('click', e => { e.stopPropagation(); if ((e.target as Element).closest('a')) setUserOpen(false); });
-        document.addEventListener('click', () => setUserOpen(false));
-        document.addEventListener('keydown', e => { if (e.key === 'Escape' && !userMenu.hidden) { setUserOpen(false); userToggle.focus(); } });
-        document.getElementById('user-logout')!.addEventListener('click', () => { setUserOpen(false); void logout(); });
-      }
+      document.getElementById('user-logout')!.addEventListener('click', () => { setUserOpen(false); void logout(); });
 
       // Header menus for expert modules: same look as the menus here, hidden with the feature.
       const headerMenus: HTMLElement[] = [];

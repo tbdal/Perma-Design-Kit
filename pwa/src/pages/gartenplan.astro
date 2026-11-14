@@ -12,7 +12,7 @@ import Layout from '../layouts/Layout.astro';
       <svg class="ml-4 h-5 w-5 shrink-0 text-stone-500 dark:text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="m21 21-4.35-4.35"/>
       </svg>
-      <input type="text" id="plant-search" role="combobox" aria-controls="search-results" aria-autocomplete="list" data-i18n-placeholder="searchPlaceholder" placeholder="Pflanze suchen — lat. oder dt. Name, z.B. Sambucus nigra"
+      <input type="text" id="plant-search" role="combobox" aria-controls="search-results" aria-autocomplete="list" data-i18n-placeholder="searchPlaceholder" placeholder="Pflanze suchen, z. B. Holunder"
         class="min-w-0 flex-1 bg-transparent py-3.5 pl-3 pr-2 text-sm text-stone-800 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:outline-none" autocomplete="off" />
       <button id="btn-search" data-i18n="searchBtn" class="shrink-0 rounded-xl m-1.5 bg-green-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-green-800 active:scale-95">Suchen</button>
     </div>
@@ -23,7 +23,10 @@ import Layout from '../layouts/Layout.astro';
   <!-- ── Listenansicht ─────────────────────────────────────────────────── -->
   <section id="plan-list-view">
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-      <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-100" data-i18n="pageTitle">Waldgartenplan</h1>
+      <div class="flex items-center gap-3">
+        <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-100" data-i18n="pageTitle">Waldgartenplan</h1>
+        <span class="rounded-md border border-stone-500 dark:border-stone-400 px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-stone-200" data-i18n-title="betaLabelTitle" title="Der Planer wird laufend erweitert"><span data-i18n="betaLabel">Beta</span></span>
+      </div>
       <label data-feature="export" class="cursor-pointer rounded-lg bg-stone-100 dark:bg-stone-800 px-3.5 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700" data-i18n-title="importGeojsonTitle" title="GeoJSON aus QGIS & Co. als Waldgartenplan übernehmen">
         <span data-i18n="btnImportGeojson">⤒ GeoJSON importieren</span>
         <input id="geojson-input" type="file" accept=".geojson,.json,application/geo+json,application/json" class="hidden" />
@@ -31,7 +34,6 @@ import Layout from '../layouts/Layout.astro';
       <button id="btn-new-plan" data-i18n="btnNewPlan" class="rounded-lg bg-green-700 px-3.5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">+ Neuer Waldgartenplan</button>
     </div>
     <p class="mb-4 text-sm text-stone-500 dark:text-stone-400" data-i18n="introText">Zeichne eine Fläche, platziere Pflanzen darauf und sieh mit dem Schieberegler, wie groß sie nach x Jahren ungefähr werden.</p>
-    <p class="mb-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 px-3 py-2 text-sm text-amber-800 dark:text-amber-200 ring-1 ring-amber-200 dark:ring-amber-800" data-i18n="experimentalNotice">Experimentell — diese Funktion befindet sich noch in der Entwicklung.</p>
     <div id="plan-sort-bar" hidden class="mb-3 flex flex-wrap items-center gap-2 text-sm">
       <label for="plan-sort-field" class="text-stone-600 dark:text-stone-300" data-i18n="planSortLabel">Sortieren</label>
       <select id="plan-sort-field" class="rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2 py-1.5 text-sm shadow-sm focus:border-green-500 focus:outline-none">
@@ -44,9 +46,43 @@ import Layout from '../layouts/Layout.astro';
       <button id="plan-sort-dir" type="button" data-i18n-title="planSortDirTitle" data-i18n-aria-label="planSortDirTitle" aria-label="Sortierrichtung umkehren" title="Sortierrichtung umkehren" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-2.5 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700">↓</button>
     </div>
     <div id="plan-list" class="grid gap-4 sm:grid-cols-2 2xl:grid-cols-3"></div>
-    <div id="plan-empty" class="hidden rounded-xl border-2 border-dashed border-stone-300 dark:border-stone-600 py-16 text-center">
-      <p class="text-stone-500 dark:text-stone-400" data-i18n="emptyStateText">Noch keine Waldgartenpläne angelegt.</p>
-      <button id="btn-empty-new" data-i18n="btnEmptyNew" class="mt-3 inline-block rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white shadow hover:bg-green-800">Ersten Waldgartenplan anlegen</button>
+    <!-- No plan yet: what the planner does, with the two ways in (new plan, example project) -->
+    <div id="plan-empty" class="hidden">
+    <div class="grid items-center gap-8 rounded-xl bg-white dark:bg-stone-900 p-6 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 md:grid-cols-2 md:p-8">
+      <div class="overflow-hidden rounded-xl bg-[#e3e8c4]">
+        <svg class="block h-auto w-full" viewBox="0 0 568 360" role="img" data-i18n-aria-label="emptyPictureAlt" aria-label="Ein fertiger Plan: links der Grundriss in 2D, rechts die 3D-Ansicht" style="font-family: inherit">
+          <polygon points="24,60 250,40 262,300 40,320" fill="#f6f5e6" stroke="#33401a" stroke-width="2" stroke-dasharray="8 5"/>
+          <path d="M115 80L119 292M185 74L189 288" stroke="#8fa552" stroke-width="7" stroke-linecap="round" stroke-dasharray="1 13"/>
+          <g fill="#8fa552" stroke="#33401a" stroke-width="1.5"><circle cx="78" cy="100" r="15"/><circle cx="80" cy="155" r="15"/><circle cx="82" cy="210" r="15"/><circle cx="84" cy="265" r="15"/><circle cx="150" cy="94" r="15"/><circle cx="152" cy="149" r="15"/><circle cx="154" cy="204" r="15"/><circle cx="156" cy="259" r="15"/><circle cx="220" cy="88" r="15"/><circle cx="222" cy="143" r="15"/><circle cx="224" cy="198" r="15"/><circle cx="226" cy="253" r="15"/></g>
+          <path d="M40 336V342H100V336" fill="none" stroke="#33401a" stroke-width="1.5"/>
+          <text x="24" y="32" font-size="13" font-weight="700" fill="#33401a">2D</text>
+          <path d="M284 20V340" stroke="#59633d" stroke-width="1" stroke-dasharray="3 5"/>
+          <text x="304" y="32" font-size="13" font-weight="700" fill="#33401a">3D</text>
+          <circle cx="520" cy="62" r="16" fill="#e0a93a"/>
+          <polygon points="300,250 436,306 556,240 424,196" fill="#c9d49a" stroke="#59633d" stroke-width="1.5"/>
+          <g fill="#1f2710" opacity=".15"><ellipse cx="442" cy="224" rx="20" ry="6"/><ellipse cx="480" cy="238" rx="20" ry="6"/><ellipse cx="517" cy="250" rx="20" ry="6"/><ellipse cx="394" cy="241" rx="24" ry="7"/><ellipse cx="434" cy="256" rx="24" ry="7"/><ellipse cx="470" cy="270" rx="24" ry="7"/></g>
+          <path d="M430 222V180M468 236V194M505 248V206" stroke="#59633d" stroke-width="4" stroke-linecap="round"/>
+          <g fill="#a3b866" stroke="#33401a" stroke-width="1.5"><ellipse cx="430" cy="166" rx="18" ry="22"/><ellipse cx="468" cy="180" rx="18" ry="22"/><ellipse cx="505" cy="192" rx="18" ry="22"/></g>
+          <path d="M380 238V186M420 253V201M456 267V215" stroke="#59633d" stroke-width="5" stroke-linecap="round"/>
+          <g fill="#8fa552" stroke="#33401a" stroke-width="1.5"><ellipse cx="380" cy="168" rx="23" ry="28"/><ellipse cx="420" cy="183" rx="23" ry="28"/><ellipse cx="456" cy="197" rx="23" ry="28"/></g>
+        </svg>
+      </div>
+      <div class="flex flex-col gap-3.5">
+        <h2 class="text-2xl font-bold text-stone-900 dark:text-stone-100" data-i18n="emptyStateText">Noch kein eigener Plan</h2>
+        <ul class="list-disc space-y-1.5 pl-5 text-base text-stone-700 dark:text-stone-200">
+          <li data-i18n="emptyCan1">Fläche auf Karte oder Luftbild zeichnen</li>
+          <li data-i18n="emptyCan2">Boden und Klima des Standorts übernehmen</li>
+          <li data-i18n="emptyCan3">Pflanzen, Reihen und Polykulturen setzen</li>
+          <li data-i18n="emptyCan4">Wachstum über die Jahre in 3D ansehen</li>
+          <li data-i18n="emptyCan5">Als PDF, GeoJSON oder Teilen-Link weitergeben</li>
+        </ul>
+        <div class="mt-1 flex flex-wrap gap-2.5">
+          <button id="btn-empty-new" data-i18n="btnEmptyNew" class="rounded-lg bg-green-700 px-5 py-2.5 text-sm font-semibold text-white shadow hover:bg-green-800">Ersten Plan anlegen</button>
+          <a href="/beispiel" data-i18n="emptyExample" class="rounded-lg px-5 py-2.5 text-sm font-semibold text-green-800 dark:text-green-300 ring-1 ring-green-700 dark:ring-green-500 hover:bg-green-50 dark:hover:bg-green-950">Referenzprojekt öffnen</a>
+        </div>
+        <p class="text-sm text-stone-500 dark:text-stone-400" data-i18n="emptyBetaNote">Beta: Der Planer wird laufend erweitert. Rückmeldungen über „Feedback“ → „Fehler melden“.</p>
+      </div>
+    </div>
     </div>
   </section>
 
@@ -6376,7 +6412,11 @@ import Layout from '../layouts/Layout.astro';
     const q = new URLSearchParams(location.search);
     const linkedPlan = q.get('plan');
     if (linkedPlan && plans.some(p => p.id === linkedPlan)) { lastId = linkedPlan; stuck = false; }
-    if (stuck) showToast(t('toastReopenSkipped'));
+    if (q.get('neu') !== null && !linkedPlan) {   // "Neuen Plan anlegen" on the start page
+      const url = new URL(location.href); url.searchParams.delete('neu');
+      window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash);
+      openEditor(null);
+    } else if (stuck) showToast(t('toastReopenSkipped'));
     else if (lastId && plans.some(p => p.id === lastId)) {
       try { localStorage.setItem(REOPEN_KEY, lastId); } catch {}
       openEditor(lastId);
