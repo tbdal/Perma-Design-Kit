@@ -184,8 +184,8 @@ export interface PflanzenApi {
 export interface LayoutApi {
   /** A menu button in the header, left of the view menu; returns the (empty) drop-down panel. Hidden whenever the feature is off. accent = a colour set apart from the regular menus. */
   addHeaderMenu(featureId: string, label: string, opts?: { accent?: boolean }): HTMLElement;
-  /** A link in the main navigation, after the link to `after` (a `data-nav` path, default: last). Hidden whenever the feature is off; highlighted while `href` (path and #hash) is the current page. */
-  addNavLink(featureId: string, label: string, href: string, opts?: { after?: string }): HTMLAnchorElement;
+  /** A link in the main navigation, after the link to `after` (a `data-nav` path, default: last). Hidden whenever the feature is off; highlighted while `href` (path and #hash) is the current page. icon = inner markup of a 24×24 stroke SVG, shown in the phone's bottom bar. */
+  addNavLink(featureId: string, label: string, href: string, opts?: { after?: string; icon?: string }): HTMLAnchorElement;
 }
 
 /** What the settings page offers plugins. */

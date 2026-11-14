@@ -1152,7 +1152,8 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
         const mode = currentMode();
         const auth = getAuth();
         // Beta in the header: signed out a link to the signup, signed in a sign that the beta is on (with feedback)
-        document.getElementById('beta-badge')!.hidden = !auth;
+        // (not for admins: they are no beta testers)
+        document.getElementById('beta-badge')!.hidden = !auth || auth.role === 'admin';
         menu.querySelectorAll<HTMLElement>('[data-mode-opt]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.modeOpt === mode)));
         document.getElementById('mode-expert-lock')!.toggleAttribute('hidden', !!auth);
         // Team: only offered to accounts that may use it.
@@ -1240,7 +1241,9 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
           // Look of the regular links (the first one; the forest-garden link is dimmed as experimental).
           const base = document.querySelector<HTMLAnchorElement>('a[data-nav]')!;
           a.className = base.className.split(/\s+/).filter(c => !['bg-green-800', 'dark:bg-green-900', 'text-white'].includes(c)).join(' ');
-          a.textContent = label;
+          // like the regular links: icon (phone bottom bar only) + label in its own span
+          if (opts.icon) a.innerHTML = `<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">${opts.icon}</svg>`;
+          a.append(Object.assign(document.createElement('span'), { textContent: label }));
           ref.after(a);
           const url = new URL(href, location.href);
           const mark = () => {
