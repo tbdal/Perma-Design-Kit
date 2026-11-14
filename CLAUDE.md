@@ -10,6 +10,8 @@ This is a fork (`tbdal/Perma-Design-Kit`, formerly `tbdal/Perma-Guild-Forge`) of
 
 **New features are built in the private repo `pwa/src/expert/`, never here** (rule since 2026-10-06, details in `src/expert/README.md`). This public repo gets only bug fixes to existing public features and small neutral interfaces the private code needs (e.g. a method on `GartenplanApi` in `src/lib/expert-api.ts`), without the feature's name or logic. A Werkstatt task tagged `#intern` or `#beta` is always private — also its UI texts, docs and changelog lines. Everything pushed here lands on GitHub.
 
+Exception, decided 2026-11-14: the climate explorer (future climate, zone ruler, climate hints; feature `climate-future`) stays public and is developed here, but is only on in the beta and team modes, and its data route `/geo/climate-future` needs a login (nginx `auth_request`).
+
 Before extending existing code, check where it lives: if a private (`#intern`/`#beta`) feature turns up in public code, stop, tell the user and don't push further changes to it here.
 
 ## Build & Dev
