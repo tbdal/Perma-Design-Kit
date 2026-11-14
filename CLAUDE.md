@@ -6,6 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a fork (`tbdal/Perma-Design-Kit`, formerly `tbdal/Perma-Guild-Forge`) of the upstream `js32/Perma-Guild-Forge`. `origin` points to the fork; push there with plain `git`.
 
+## Where new code goes (read before writing any feature)
+
+**New features are built in the private repo `pwa/src/expert/`, never here** (rule since 2026-10-06, details in `src/expert/README.md`). This public repo gets only bug fixes to existing public features and small neutral interfaces the private code needs (e.g. a method on `GartenplanApi` in `src/lib/expert-api.ts`), without the feature's name or logic. A Werkstatt task tagged `#intern` or `#beta` is always private — also its UI texts, docs and changelog lines. Everything pushed here lands on GitHub.
+
+Before extending existing code, check where it lives: if a private (`#intern`/`#beta`) feature turns up in public code, stop, tell the user and don't push further changes to it here.
+
 ## Build & Dev
 
 All commands run from `pwa/` with Node ≥ 22 (managed via nvm; run `nvm use` to pick up `.nvmrc`):
