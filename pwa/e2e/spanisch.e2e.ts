@@ -13,7 +13,7 @@ test('language menu: Español switches the pages to Spanish', async ({ page }) =
   await expect(page.locator('.lang-option[data-lang="es"]')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('#btn-search')).toHaveText('Buscar');
   await page.goto('/gartenplan');
-  await expect(page.locator('body')).toContainText('Plan de bosque comestible');
+  await expect(page.locator('body')).toContainText('Planificador');
   await page.goto('/hilfe');
   await expect(page.locator('.hilfe .lang-es')).toBeVisible();
   await expect(page.locator('.hilfe .lang-en')).toBeHidden();

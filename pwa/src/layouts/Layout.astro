@@ -132,7 +132,7 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
           <a href="/" data-nav="/" class="rounded-md px-2.5 py-1 text-green-100 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 21V11"/><path d="M12 11C12 6 8 4 4 4c0 5 3 7 8 7z"/><path d="M12 13c0-4 3-6 8-6 0 4-3 6-8 6z"/></svg><span data-i18n="navPlants">Pflanzen</span></a>
           <a href="/kalender" data-nav="/kalender" class="rounded-md px-2.5 py-1 text-green-100 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span data-i18n="navCalendar">Kalender</span></a>
           <a href="/polykulturen" data-nav="/polykulturen" class="rounded-md px-2.5 py-1 text-green-100 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"/><circle cx="5" cy="7" r="2"/><circle cx="19" cy="7" r="2"/><circle cx="12" cy="20" r="2"/></svg><span data-i18n="navGuilds">Polykulturen</span></a>
-          <a href="/gartenplan" data-nav="/gartenplan" class="rounded-md px-2.5 py-1 text-green-100 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/></svg><span data-i18n="navGardenPlan">Waldgartenplan</span></a>
+          <a href="/gartenplan" data-nav="/gartenplan" class="rounded-md px-2.5 py-1 text-green-100 transition hover:bg-green-800 hover:text-white dark:hover:bg-green-900"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/></svg><span data-i18n="navPlanner">Planer</span></a>
         </div>
 
         <!-- Right side: module menus, Beta, help and one account menu that holds everything else (sign-in, view, language, text size, contrast, light/dark, settings). -->
@@ -330,6 +330,83 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
       </div>
     </dialog>
 
+    <!-- "Womit möchtest du anfangen?": once, right after the welcome is closed (or its tour ended); any link or × closes it for good. -->
+    <dialog id="start-modal" aria-labelledby="start-title" class="m-auto w-[min(64rem,calc(100vw-1.5rem))] max-w-none max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-[22px] bg-stone-50 dark:bg-stone-900 p-5 sm:p-8 text-stone-800 dark:text-stone-100 shadow-2xl backdrop:bg-black/50">
+          <button id="start-close" type="button" data-i18n-aria-label="closeBtn" aria-label="Schließen" class="float-right -mr-1 -mt-1 h-9 w-9 rounded-full text-2xl leading-none text-stone-500 hover:bg-stone-200 dark:hover:bg-stone-800">×</button>
+      <div class="space-y-8">
+    <div class="space-y-3.5">
+          <h2 class="text-xl font-bold text-stone-900 dark:text-stone-100" id="start-title" data-i18n="startHeading">Womit möchtest du anfangen?</h2>
+          <div class="grid gap-4 md:grid-cols-3">
+            <a href="/#suche" class="start-card flex flex-col gap-2 rounded-[18px] bg-white dark:bg-stone-900 p-5 ring-1 ring-stone-200 dark:ring-stone-700 transition hover:ring-green-600">
+              <svg class="h-7 w-7 text-green-800 dark:text-green-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 21V11"/><path d="M12 11C12 6 8 4 4 4c0 5 3 7 8 7z"/><path d="M12 13c0-4 3-6 8-6 0 4-3 6-8 6z"/></svg>
+              <strong class="text-lg text-stone-900 dark:text-stone-100" data-i18n="startPlantsTitle">Pflanzen recherchieren</strong>
+              <span class="text-[15px] text-stone-600 dark:text-stone-300" data-i18n="startPlantsText">Arten nach Nutzung, Funktion, Schicht und Standort filtern. Werte mit Quelle je Feld.</span>
+              <span class="mt-auto pt-1 font-bold text-green-800 dark:text-green-300"><span data-i18n="startPlantsLink">Pflanze suchen</span> →</span>
+            </a>
+            <a href="/gartenplan?neu=1" class="start-card flex flex-col gap-2 rounded-[18px] bg-white dark:bg-stone-900 p-5 ring-1 ring-stone-200 dark:ring-stone-700 transition hover:ring-green-600">
+              <svg class="h-7 w-7 text-green-800 dark:text-green-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg>
+              <strong class="text-lg text-stone-900 dark:text-stone-100" data-i18n="startPlanTitle">Fläche planen</strong>
+              <span class="text-[15px] text-stone-600 dark:text-stone-300" data-i18n="startPlanText">Grenze auf der Karte zeichnen, Boden und Klima des Standorts übernehmen, Pflanzen und Reihen setzen.</span>
+              <span class="mt-auto pt-1 font-bold text-green-800 dark:text-green-300"><span data-i18n="startPlanLink">Neuen Plan anlegen</span> →</span>
+            </a>
+            <a href="/beispiel" class="start-card flex flex-col gap-2 rounded-[18px] bg-white dark:bg-stone-900 p-5 ring-1 ring-stone-200 dark:ring-stone-700 transition hover:ring-green-600">
+              <svg class="h-7 w-7 text-green-800 dark:text-green-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 20l6-9 4 5 3-4 5 8z"/><circle cx="17" cy="6" r="2"/></svg>
+              <strong class="text-lg text-stone-900 dark:text-stone-100" data-i18n="startExampleTitle">Referenzprojekt öffnen</strong>
+              <span class="text-[15px] text-stone-600 dark:text-stone-300" data-i18n="startExampleText">Ein fertiger Plan mit Pflanzliste, 3D und Besonnung zum Ansehen und Ausprobieren.</span>
+              <span class="mt-auto pt-1 font-bold text-green-800 dark:text-green-300"><span data-i18n="startExampleLink">Projekt ansehen</span> →</span>
+            </a>
+      </div>
+          <div class="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl bg-green-50 dark:bg-stone-900 px-4 py-2.5 text-sm ring-1 ring-green-100 dark:ring-stone-700">
+            <strong class="text-stone-900 dark:text-stone-100" data-i18n="startStepsLabel">So kannst du vorgehen:</strong>
+            <ol class="flex flex-1 flex-wrap items-center gap-x-4 gap-y-1.5 font-semibold text-stone-800 dark:text-stone-200">
+              <li class="flex items-center gap-1.5"><span class="flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full bg-green-800 text-xs font-bold text-white" aria-hidden="true">1</span><span data-i18n="startStep1">Pflanzen wählen</span></li>
+              <li class="flex items-center gap-1.5"><span class="flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full bg-green-800 text-xs font-bold text-white" aria-hidden="true">2</span><span data-i18n="startStep2">Fläche zeichnen</span></li>
+              <li class="flex items-center gap-1.5"><span class="flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full bg-green-800 text-xs font-bold text-white" aria-hidden="true">3</span><span data-i18n="startStep3">Pflanzen und Reihen setzen</span></li>
+              <li class="flex items-center gap-1.5"><span class="flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full bg-green-800 text-xs font-bold text-white" aria-hidden="true">4</span><span data-i18n="startStep4">In 3D prüfen</span></li>
+              <li class="flex items-center gap-1.5"><span class="flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full bg-green-800 text-xs font-bold text-white" aria-hidden="true">5</span><span data-i18n="startStep5">Als PDF weitergeben</span></li>
+            </ol>
+            <a href="/hilfe" class="font-bold text-green-800 dark:text-green-300 hover:underline"><span data-i18n="startStepsGuide">Ganze Anleitung</span> →</a>
+      </div>
+    </div>
+    <div class="space-y-3.5">
+          <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <h2 class="text-xl font-bold text-stone-900 dark:text-stone-100" data-i18n="startOutHeading">Was du weitergeben kannst</h2>
+            <span class="text-sm text-stone-500 dark:text-stone-400" data-i18n="startOutNote">Beispiele aus dem Referenzprojekt</span>
+      </div>
+          <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
+            <figure class="m-0 flex flex-col gap-2">
+              <div class="overflow-hidden rounded-xl bg-[#e3e8c4]"><svg class="block h-auto w-full" viewBox="0 0 276 120" role="img" data-i18n-aria-label="startOut1Alt" aria-label="Standortprofil mit Klima und Bodenschichten, daneben passende Pflanzen mit Haken"><rect x="58" y="12" width="160" height="96" rx="4" fill="#ffffff" stroke="#c9cfa6"/><circle cx="80" cy="30" r="8" fill="#e0a93a"/><path d="M96 26H120M96 34H112" stroke="#59633d" stroke-width="3" stroke-linecap="round"/><rect x="68" y="48" width="52" height="12" fill="#6b5a3a"/><rect x="68" y="60" width="52" height="14" fill="#8c7650"/><rect x="68" y="74" width="52" height="24" fill="#b8a27a"/><g stroke-linecap="round" stroke-linejoin="round" fill="none" stroke-width="2.5"><path d="M134 30l4 4 8-8" stroke="#33401a"/><path d="M134 52l4 4 8-8" stroke="#33401a"/><path d="M134 74l4 4 8-8" stroke="#33401a"/><path d="M135 92l8 8M143 92l-8 8" stroke="#8c4a2f"/></g><path d="M154 30H206M154 52H198M154 74H202M154 96H190" stroke="#59633d" stroke-width="3" stroke-linecap="round"/></svg></div>
+              <figcaption class="text-[15px] leading-snug"><strong class="text-stone-900 dark:text-stone-100" data-i18n="startOut1">Standortgerechte Pflanzenwahl</strong><br><span class="text-stone-600 dark:text-stone-300" data-i18n="startOut1Sub">passend zu Klima, Boden und Lage</span></figcaption>
+            </figure>
+            <figure class="m-0 flex flex-col gap-2">
+              <div class="overflow-hidden rounded-xl bg-[#e3e8c4]"><svg class="block h-auto w-full" viewBox="0 0 276 120" role="img" data-i18n-aria-label="startOut2Alt" aria-label="Plan als PDF mit Legende und Maßstab"><rect x="88" y="10" width="100" height="100" rx="3" fill="#ffffff" stroke="#c9cfa6"/><polygon points="98,22 172,18 178,70 102,76" fill="#eef0d6" stroke="#33401a" stroke-width="1.5"/><g fill="#8fa552" stroke="#33401a" stroke-width="1"><circle cx="115" cy="35" r="6"/><circle cx="135" cy="34" r="6"/><circle cx="155" cy="33" r="6"/><circle cx="117" cy="58" r="6"/><circle cx="137" cy="57" r="6"/><circle cx="157" cy="56" r="6"/></g><circle cx="100" cy="88" r="3" fill="#8fa552"/><circle cx="100" cy="98" r="3" fill="#33401a"/><path d="M108 88H140M108 98H132" stroke="#59633d" stroke-width="3" stroke-linecap="round"/><path d="M150 96V100H178V96" fill="none" stroke="#33401a" stroke-width="1.5"/></svg></div>
+              <figcaption class="text-[15px] leading-snug"><strong class="text-stone-900 dark:text-stone-100" data-i18n="startOut2">Plan als PDF</strong><br><span class="text-stone-600 dark:text-stone-300" data-i18n="startOut2Sub">maßstäblich, mit Legende</span></figcaption>
+            </figure>
+            <figure class="m-0 flex flex-col gap-2">
+              <div class="overflow-hidden rounded-xl bg-[#e3e8c4]"><svg class="block h-auto w-full" viewBox="0 0 276 120" role="img" data-i18n-aria-label="startOut3Alt" aria-label="Pflanz- und Bestellliste als Tabelle"><rect x="88" y="10" width="100" height="100" rx="3" fill="#ffffff" stroke="#c9cfa6"/><rect x="96" y="18" width="84" height="9" rx="2" fill="#33401a"/><g fill="#8fa552"><circle cx="100" cy="40" r="3"/><circle cx="100" cy="54" r="3"/><circle cx="100" cy="68" r="3"/><circle cx="100" cy="82" r="3"/><circle cx="100" cy="96" r="3"/></g><path d="M108 40H150M108 54H142M108 68H154M108 82H138M108 96H148" stroke="#59633d" stroke-width="3" stroke-linecap="round"/><path d="M166 40H178M166 54H178M166 68H178M166 82H178M166 96H178" stroke="#8fa552" stroke-width="3" stroke-linecap="round"/></svg></div>
+              <figcaption class="text-[15px] leading-snug"><strong class="text-stone-900 dark:text-stone-100" data-i18n="startOut3">Pflanz- und Bestellliste</strong><br><span class="text-stone-600 dark:text-stone-300" data-i18n="startOut3Sub">Stückzahlen je Art und Sorte</span></figcaption>
+            </figure>
+            <figure class="m-0 flex flex-col gap-2">
+              <div class="overflow-hidden rounded-xl bg-[#e3e8c4]"><svg class="block h-auto w-full" viewBox="0 0 276 120" role="img" data-i18n-aria-label="startOut4Alt" aria-label="Diagramm zu Kosten und Ertrag über die Jahre"><g fill="#8fa552"><rect x="84" y="80" width="14" height="16"/><rect x="108" y="68" width="14" height="28"/><rect x="132" y="54" width="14" height="42"/><rect x="156" y="40" width="14" height="56"/><rect x="180" y="28" width="14" height="68"/></g><polyline points="78,48 103,56 127,62 151,67 175,71 200,74" fill="none" stroke="#33401a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M70 20V96H210" fill="none" stroke="#59633d" stroke-width="1.5"/></svg></div>
+              <figcaption class="text-[15px] leading-snug"><strong class="text-stone-900 dark:text-stone-100" data-i18n="startOut4">Wirtschaftlichkeit</strong><br><span class="text-stone-600 dark:text-stone-300" data-i18n="startOut4Sub">Kosten, Ertrag, Risiko und Pflege</span></figcaption>
+            </figure>
+            <figure class="m-0 flex flex-col gap-2">
+              <div class="overflow-hidden rounded-xl bg-[#e3e8c4]"><svg class="block h-auto w-full" viewBox="0 0 276 120" role="img" data-i18n-aria-label="startOut5Alt" aria-label="3D-Ansicht mit Baumkronen und Sonnenstand"><circle cx="226" cy="26" r="10" fill="#e0a93a"/><polygon points="44,92 150,110 236,84 136,68" fill="#c9d49a" stroke="#59633d" stroke-width="1.5"/><g fill="#1f2710" opacity=".15"><ellipse cx="112" cy="94" rx="14" ry="4"/><ellipse cx="154" cy="100" rx="14" ry="4"/><ellipse cx="160" cy="81" rx="10" ry="3"/><ellipse cx="195" cy="87" rx="10" ry="3"/></g><path d="M152 80V64M187 86V70M100 92V70M142 98V76" stroke="#59633d" stroke-width="3" stroke-linecap="round"/><g fill="#a3b866" stroke="#33401a" stroke-width="1"><ellipse cx="152" cy="56" rx="10" ry="12"/><ellipse cx="187" cy="62" rx="10" ry="12"/></g><g fill="#8fa552" stroke="#33401a" stroke-width="1"><ellipse cx="100" cy="58" rx="14" ry="17"/><ellipse cx="142" cy="64" rx="14" ry="17"/></g></svg></div>
+              <figcaption class="text-[15px] leading-snug"><strong class="text-stone-900 dark:text-stone-100" data-i18n="startOut5">3D und Besonnung</strong><br><span class="text-stone-600 dark:text-stone-300" data-i18n="startOut5Sub">Kronen nach Jahren</span></figcaption>
+            </figure>
+            <figure class="m-0 flex flex-col gap-2">
+              <div class="overflow-hidden rounded-xl bg-[#e3e8c4]"><svg class="block h-auto w-full" viewBox="0 0 276 120" role="img" data-i18n-aria-label="startOut6Alt" aria-label="Pflegekalender mit Arbeiten je Monat"><rect x="48" y="12" width="180" height="96" rx="4" fill="#ffffff" stroke="#c9cfa6"/><rect x="48" y="12" width="180" height="16" rx="4" fill="#33401a"/><path d="M63 28V108M78 28V108M93 28V108M108 28V108M123 28V108M138 28V108M153 28V108M168 28V108M183 28V108M198 28V108M213 28V108" stroke="#e3e8c4" stroke-width="1"/><g stroke-linecap="round" stroke-width="7"><path d="M54 42H88" stroke="#59633d"/><path d="M190 42H222" stroke="#59633d"/><path d="M84 58H118" stroke="#8fa552"/><path d="M114 74H176" stroke="#a3b866"/><path d="M144 90H206" stroke="#e0a93a"/></g></svg></div>
+              <figcaption class="text-[15px] leading-snug"><strong class="text-stone-900 dark:text-stone-100" data-i18n="startOut6">Pflegekalender</strong><br><span class="text-stone-600 dark:text-stone-300" data-i18n="startOut6Sub">Schnitt, Mulch, Ernte je Monat</span></figcaption>
+            </figure>
+      </div>
+    </div>
+    <p class="flex items-center gap-2 text-sm text-stone-600 dark:text-stone-300">
+          <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+          <span><span data-i18n="startPrivacy">Deine Daten bleiben in deinem Browser.</span> <a href="/hilfe#quellen" class="font-medium text-green-800 dark:text-green-300 underline underline-offset-2 hover:no-underline" data-i18n="startSources">Datenquellen und Methoden</a></span>
+    </p>
+      </div>
+    </dialog>
+
     <!-- Rundgang: abgedunkelte Seite, Spotlight auf dem jeweiligen Bereich -->
     <div id="tour-block" hidden class="fixed inset-0 z-[60]"></div>
     <div id="tour-spot" hidden class="pointer-events-none fixed z-[61] rounded-lg transition-all duration-200" style="box-shadow:0 0 0 200vmax rgba(15,23,42,.72), 0 0 0 3px rgba(74,222,128,.9);"></div>
@@ -357,7 +434,7 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
           <tbody class="divide-y divide-stone-200 dark:divide-stone-700">
             <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">?</kbd></td><td data-i18n="shortcutsOverview">Diese Übersicht</td></tr>
             <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Strg</kbd>/<kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">⌘</kbd>+<kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">O</kbd></td><td data-i18n="shortcutsPalette">Alles auf der Seite suchen: Seiten, Menüs, Knöpfe, Schalter, Pflanzen …</td></tr>
-            <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Alt</kbd>+<kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">1</kbd>…<kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">9</kbd></td><td data-i18n="shortcutsNav">Menüpunkte der Reihe nach: Pflanzen, Kalender, Polykulturen, Waldgartenplan …</td></tr>
+            <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Alt</kbd>+<kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">1</kbd>…<kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">9</kbd></td><td data-i18n="shortcutsNav">Menüpunkte der Reihe nach: Pflanzen, Kalender, Polykulturen, Planer …</td></tr>
           </tbody>
           <tbody data-shortcuts-for="plants" class="divide-y divide-stone-200 dark:divide-stone-700">
             <tr><td class="py-1.5 pr-4"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">/</kbd></td><td data-i18n="shortcutsFocusSearch">Suche fokussieren</td></tr>
@@ -369,7 +446,7 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
           </tbody>
           <tbody data-shortcuts-for="gartenplan" hidden class="divide-y divide-stone-200 dark:divide-stone-700">
             <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">2</kbd> / <kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">3</kbd></td><td data-i18n="scGpView">2D- / 3D-Ansicht</td></tr>
-            <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Alt</kbd>+<kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">4</kbd></td><td data-i18n="scGpProjects">Zurück zur Projektübersicht (auch Klick auf „Waldgartenplan“)</td></tr>
+            <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Alt</kbd>+<kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">4</kbd></td><td data-i18n="scGpProjects">Zurück zur Projektübersicht (auch Klick auf „Planer“)</td></tr>
             <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Esc</kbd> <kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">Esc</kbd></td><td data-i18n="scGpEscTwice">Zweimal schnell: zurück zur Projektübersicht</td></tr>
             <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">←</kbd> <kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">↑</kbd> <kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">↓</kbd> <kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">→</kbd></td><td data-i18n="scGpArrows">Karte bewegen (mit Umschalt weiter)</td></tr>
             <tr><td class="py-1.5 pr-4 whitespace-nowrap"><kbd class="rounded bg-stone-200 dark:bg-stone-700 px-1.5 py-0.5 text-xs font-mono">H</kbd></td><td data-i18n="scGpPan">Bewegen (Karte verschieben)</td></tr>
@@ -438,6 +515,18 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
       const tt = createT(layoutDict);
       const WELCOME_KEY = 'pdk-welcome-seen';
       const markSeen = () => { try { localStorage.setItem(WELCOME_KEY, '1'); } catch {} };
+      // "Womit möchtest du anfangen?" — once per device, after the welcome (or its tour); a link or × ends it for good.
+      const START_KEY = 'pdk-start-seen';
+      function showStart() {
+        const dlg = document.getElementById('start-modal') as HTMLDialogElement | null;
+        if (!dlg || dlg.open) return;
+        try { if (localStorage.getItem(START_KEY)) return; localStorage.setItem(START_KEY, '1'); } catch { return; }
+        dlg.showModal();
+      }
+      {
+        const dlg = document.getElementById('start-modal') as HTMLDialogElement | null;
+        dlg?.addEventListener('click', e => { if (e.target === dlg || (e.target as Element).closest('a, #start-close')) dlg.close(); });
+      }
 
       type TourStep = { selector: string; closest?: string; dummy?: boolean; fallback?: string; title: string; text: string; fallbackText?: string; link?: { href: string; label: string } }; // link: i18n keys (URL differs per language)
       const TOUR_STEPS: TourStep[] = [
@@ -523,6 +612,7 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
         };
         const end = () => {
           markSeen();
+          showStart();
           for (const el of [block, spot, card]) el.hidden = true;
           dummy?.remove();
           window.removeEventListener('resize', place);
@@ -577,10 +667,10 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
         void fillBeta();
         const startTour = () => { markSeen(); modal.close(); runTour(); };
         document.getElementById('welcome-next')?.addEventListener('click', startTour);
-        document.getElementById('welcome-skip')?.addEventListener('click', () => { markSeen(); modal.close(); });
-        document.getElementById('welcome-close')?.addEventListener('click', () => { markSeen(); modal.close(); });
+        document.getElementById('welcome-skip')?.addEventListener('click', () => { markSeen(); modal.close(); showStart(); });
+        document.getElementById('welcome-close')?.addEventListener('click', () => { markSeen(); modal.close(); showStart(); });
         for (const id of ['welcome-example', 'welcome-support']) document.getElementById(id)?.addEventListener('click', markSeen);
-        modal.addEventListener('cancel', markSeen);
+        modal.addEventListener('cancel', () => { markSeen(); setTimeout(showStart); });
         const open = () => { if (!modal.open) modal.showModal(); };
         document.getElementById('open-welcome')?.addEventListener('click', open);
         document.getElementById('help-intro')?.addEventListener('click', open);

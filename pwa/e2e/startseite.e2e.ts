@@ -1,20 +1,36 @@
-// Start page for professionals (Prüfbericht Nov., proposals 3, 4, 6, 7, 8): three ways in and the outputs while
-// the list is small, the planner's empty page without the warning box, the narrow tree line elsewhere,
+// Start page for professionals (Prüfbericht Nov., proposals 3, 4, 6, 7, 8): three ways in and the outputs once after
+// the welcome, the planner's empty page without the warning box, the narrow tree line elsewhere,
 // and on phones the four areas as a bar at the bottom.
 import { test, expect, stubNetwork } from './helpers';
 
 const seen = () => { try { localStorage.setItem('pdk-welcome-seen', '1'); localStorage.setItem('pdk-persist-later', String(Date.now())); } catch { /* ignore */ } };
 
-test('empty plant list: start block instead of filters, "Fläche planen" opens a new plan', async ({ page, errors }) => {
+test('after the welcome: "Womit möchtest du anfangen?" once, gone after a link', async ({ page, errors }) => {
   await stubNetwork(page);
-  await page.addInitScript(seen);
-  await page.goto('/');
-  await expect(page.locator('#start-intro')).toBeVisible();
-  await expect(page.locator('#start-intro figure')).toHaveCount(6);
-  await expect(page.locator('#filter-bar')).toBeHidden();
-  await page.click('#start-intro a[href="#plant-search"]');
+  // a first visit: the welcome opens; the start page must not have been seen yet
+  await page.addInitScript(() => { if (!sessionStorage.getItem('init')) { sessionStorage.setItem('init', '1'); localStorage.removeItem('pdk-welcome-seen'); localStorage.removeItem('pdk-start-seen'); } });
+  await page.goto('/kalender');
+  await expect(page.locator('#welcome-modal')).toBeVisible();
+  await expect(page.locator('#start-modal')).toBeHidden();
+  await page.click('#welcome-skip');
+  const start = page.locator('#start-modal');
+  await expect(start).toBeVisible();
+  await expect(start.locator('figure')).toHaveCount(6);
+  await start.locator('a[href="/#suche"]').click();
+  await expect(page).toHaveURL(/\/$/);
   await expect(page.locator('#plant-search')).toBeFocused();
-  await page.click('#start-intro a[href="/gartenplan?neu=1"]');
+  await expect(page.locator('#start-modal')).toBeHidden();
+  await page.reload();
+  await expect(page.locator('#welcome-modal')).toBeHidden();
+  await expect(page.locator('#start-modal')).toBeHidden();
+  // not on the plant page itself
+  await expect(page.locator('#plant-list')).toBeVisible();
+  void errors;
+});
+
+test('"Fläche planen" opens a new plan', async ({ page, errors }) => {
+  await stubNetwork(page);
+  await page.goto('/gartenplan?neu=1');
   await expect(page.locator('#plan-editor-view')).toBeVisible();
   await expect(page).not.toHaveURL(/neu=/);
   void errors;

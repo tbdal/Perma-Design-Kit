@@ -1,6 +1,6 @@
 // Spanish texts of dict-gartenplan.ts, part 1.
 export const es1: Record<string, string> = {
-  pageTitle: 'Plan de bosque comestible', btnNewPlan: '+ Nuevo plan de bosque comestible', introText: 'Dibuja una superficie, coloca plantas en ella y usa el control deslizante para ver aproximadamente lo grandes que serán dentro de x años.',
+  pageTitle: 'Planificador', btnNewPlan: '+ Nuevo plan', introText: 'Dibuja una superficie, coloca plantas en ella y usa el control deslizante para ver aproximadamente lo grandes que serán dentro de x años.',
   betaLabel: 'Beta', betaLabelTitle: 'El planificador se amplía continuamente', emptyStateText: 'Aún no tienes un plan propio', btnEmptyNew: 'Crear tu primer plan',
   emptyPictureAlt: 'Un plan terminado: a la izquierda la planta en 2D, a la derecha la vista 3D', emptyCan1: 'Dibujar la superficie en un mapa o una ortofoto', emptyCan2: 'Adoptar el suelo y el clima del lugar', emptyCan3: 'Colocar plantas, hileras y policultivos', emptyCan4: 'Ver el crecimiento a lo largo de los años en 3D', emptyCan5: 'Compartirlo como PDF, GeoJSON o enlace', emptyExample: 'Abrir el proyecto de referencia', emptyBetaNote: 'Beta: el planificador se amplía continuamente. Comentarios en «Opinión» → «Informar de un problema».', planUnnamed: 'Plan de bosque comestible sin nombre',
   linkedPolycultureLabel: 'Policultivo:', placementCount: '{count} planta(s) colocada(s)', areaSizeLabel: 'marco {w} m × {h} m', btnBackToList: '← Volver a la lista', btnDeletePlan: 'Eliminar', btnSavePlan: 'Guardar plan de bosque comestible',

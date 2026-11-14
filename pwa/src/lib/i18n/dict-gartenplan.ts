@@ -3,8 +3,8 @@ import { es as esTexts } from './es/gartenplan';
 
 export const gartenplanDict: Dict = {
   // ── List view ──────────────────────────────────────────────────────────
-  pageTitle: { de: 'Waldgartenplan', en: 'Forest garden plan' },
-  btnNewPlan: { de: '+ Neuer Waldgartenplan', en: '+ New forest garden plan' },
+  pageTitle: { de: 'Planer', en: 'Planner' },
+  btnNewPlan: { de: '+ Neuer Plan', en: '+ New plan' },
   introText: { de: 'Zeichne eine Fläche, platziere Pflanzen darauf und sieh mit dem Schieberegler, wie groß sie nach x Jahren ungefähr werden.', en: 'Draw an area, place plants on it, and use the slider to see roughly how large they’ll be after x years.' },
   betaLabel: { de: 'Beta', en: 'Beta' },
   betaLabelTitle: { de: 'Der Planer wird laufend erweitert', en: 'The planner is growing all the time' },

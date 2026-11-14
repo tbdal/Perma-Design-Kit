@@ -5,7 +5,8 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
 ## Webseite für Fachleute (Entwürfe zum Prüfbericht November) 2026-11-14
-- [x] **Startseite mit klarem Einstieg**: Überschrift „Agroforst und Waldgärten fachlich planen“, drei Wege (Pflanzen recherchieren, Fläche planen, Referenzprojekt öffnen), die fünf Arbeitsschritte und „Was du weitergeben kannst“ mit sechs Vorschaubildern; solange die Liste weniger als fünf Pflanzen hat, ohne Filter bei leerer Liste #minor #prüfen
+- [x] **„Womit möchtest du anfangen?“ einmal nach dem Willkommen**: nach dem Schließen (oder am Ende des Rundgangs) erscheinen einmalig drei Wege (Pflanzen recherchieren, Fläche planen, Referenzprojekt öffnen), die fünf Arbeitsschritte und „Was du weitergeben kannst“ mit sechs Vorschaubildern; ein Klick auf einen Link oder × schließt es für immer. Die Pflanzenseite hat die Überschrift „Agroforst und Waldgärten fachlich planen“ #minor #prüfen
+- [x] **„Waldgartenplan“ heißt jetzt „Planer“** (Menü, Seitentitel, „+ Neuer Plan“, Rundgang, Shortcuts) #minor #prüfen
 - [x] **Kopfzeile aufgeräumt**: rechts nur noch Beta, „?“ (Einführung, Anleitung, Quellen, Beispielprojekt, Shortcuts, Fehler melden) und ein Konto-Menü mit Anmelden, Ansicht, Sprache, Schriftgröße, Kontrast, Hell/Dunkel und Einstellungen; angemeldet zeigt Beta einen Haken #minor #prüfen
 - [x] **Handy: die vier Bereiche als feste Leiste unten** (nicht im geöffneten Plan, dort hat die Karte ihre eigene Leiste) #minor #prüfen
 - [x] **Waldgartenplan als Hauptsache**: Menüpunkt so hell wie die anderen, Etikett „Beta“ statt Warnkasten, leere Seite zeigt, was der Planer kann, mit „Ersten Plan anlegen“ und „Referenzprojekt öffnen“ #minor #prüfen

@@ -41,7 +41,7 @@ export const test = base.extend<{ errors: string[] }>({
     page.on('pageerror', e => errors.push(e.message));
     page.on('dialog', d => d.accept());
     await page.addInitScript(() => {
-      try { localStorage.setItem('pdk-welcome-seen', '1'); localStorage.setItem('pdk-persist-later', String(Date.now())); } catch { /* ignore */ }
+      try { localStorage.setItem('pdk-welcome-seen', '1'); localStorage.setItem('pdk-start-seen', '1'); localStorage.setItem('pdk-persist-later', String(Date.now())); } catch { /* ignore */ }
     });
     await use(errors);
     expect(errors, 'uncaught page errors').toEqual([]);

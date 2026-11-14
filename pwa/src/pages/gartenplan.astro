@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 ---
-<Layout title="Perma Design Kit — Waldgartenplan" full>
+<Layout title="Perma Design Kit — Planer" full>
   <!-- Search hero (same as on the plant page; logic in lib/plant-search-ui.ts).
        Only shown while placing plants (phase B), not in the plan list or
        while the outline is drawn. -->
@@ -24,14 +24,14 @@ import Layout from '../layouts/Layout.astro';
   <section id="plan-list-view">
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3">
-        <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-100" data-i18n="pageTitle">Waldgartenplan</h1>
+        <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-100" data-i18n="pageTitle">Planer</h1>
         <span class="rounded-md border border-stone-500 dark:border-stone-400 px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-stone-700 dark:text-stone-200" data-i18n-title="betaLabelTitle" title="Der Planer wird laufend erweitert"><span data-i18n="betaLabel">Beta</span></span>
       </div>
       <label data-feature="export" class="cursor-pointer rounded-lg bg-stone-100 dark:bg-stone-800 px-3.5 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700" data-i18n-title="importGeojsonTitle" title="GeoJSON aus QGIS & Co. als Waldgartenplan übernehmen">
         <span data-i18n="btnImportGeojson">⤒ GeoJSON importieren</span>
         <input id="geojson-input" type="file" accept=".geojson,.json,application/geo+json,application/json" class="hidden" />
       </label>
-      <button id="btn-new-plan" data-i18n="btnNewPlan" class="rounded-lg bg-green-700 px-3.5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">+ Neuer Waldgartenplan</button>
+      <button id="btn-new-plan" data-i18n="btnNewPlan" class="rounded-lg bg-green-700 px-3.5 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">+ Neuer Plan</button>
     </div>
     <p class="mb-4 text-sm text-stone-500 dark:text-stone-400" data-i18n="introText">Zeichne eine Fläche, platziere Pflanzen darauf und sieh mit dem Schieberegler, wie groß sie nach x Jahren ungefähr werden.</p>
     <div id="plan-sort-bar" hidden class="mb-3 flex flex-wrap items-center gap-2 text-sm">
