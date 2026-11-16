@@ -496,6 +496,7 @@ import Layout from '../layouts/Layout.astro';
   import { normalizePlant } from '../lib/plant-normalize';
   import { samplePlants } from '../lib/sample-data';
   import { crawfordPlants } from '../lib/sample-data-crawford';
+  import { getEinstieg } from '../lib/einstieg';
   import { importFromCSV, buildCSV, buildCSVTemplate } from '../lib/csv';
   import { applyFilters, emptyFilters, sortPlants, allGroups, type ListFilters, type SortField } from '../lib/plant-list';
   import { getAllGardenPlans, saveGardenPlan } from '../lib/db';
@@ -1026,22 +1027,27 @@ import Layout from '../layouts/Layout.astro';
 
     if (cachedPlants.length === 0) {
       listEl.className = 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3';
+      // Empty list (Entwurf S1): what to do, three sample sets, and the steps of the way chosen in the welcome.
+      const way = getEinstieg() ?? 'garten';
+      const set = (id: string, title: string, sub: string) => `<button type="button" id="${id}" class="${'btn-start-set flex w-full flex-col rounded-2xl bg-white dark:bg-stone-800 px-4 py-3 text-left ring-1 ring-stone-200 dark:ring-stone-700 transition hover:ring-2 hover:ring-green-600'}"><strong class="text-[15px] text-stone-900 dark:text-stone-100">${escapeHtml(title)}</strong><span class="text-sm text-stone-600 dark:text-stone-300">${escapeHtml(sub)}</span></button>`;
+      const steps = [1, 2, 3].map(n => `<li>${t(`way_${way}_${n}`)}</li>`).join('');
       listEl.innerHTML = `
-        <div class="col-span-full flex flex-col items-center py-20 text-center">
-          <svg class="mb-4 h-16 w-16 text-stone-200" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-            <polyline points="16,11 20.1,14 16,19.2 9.7,14 16,6.6 24.5,14 16,23.6 16,27"
-              fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="16" cy="11" r="1.2" fill="currentColor"/>
-          </svg>
-          <p class="mb-1 text-base font-semibold text-stone-500 dark:text-stone-400">${escapeHtml(t('emptyStateTitle'))}</p>
-          <p class="mb-4 text-sm text-stone-500 dark:text-stone-400">${escapeHtml(t('emptyStateSubtitle'))}</p>
-          <button type="button" data-focus-search class="rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">${escapeHtml(t('emptyStateBtn'))}</button>
-          <p class="mb-2 mt-8 text-sm font-semibold text-stone-600 dark:text-stone-300">${escapeHtml(t('emptyStartWith'))}</p>
-          <div class="flex flex-wrap justify-center gap-2">
-            <button type="button" id="btn-load-samples" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-700">${escapeHtml(t('menuLoadSamples'))}</button>
-            <button type="button" id="btn-load-samples-crawford" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-700">${escapeHtml(t('menuLoadSamplesCrawford'))}</button>
-            <button type="button" id="btn-load-master" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-700">${escapeHtml(t('menuLoadMaster'))}</button>
-          </div>
+        <div class="col-span-full grid items-start gap-8 py-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+          <section class="flex max-w-xl flex-col gap-3">
+            <h2 class="text-2xl font-bold text-stone-900 dark:text-stone-100">${escapeHtml(t('emptyTitle2'))}</h2>
+            <p class="text-base text-stone-600 dark:text-stone-300">${escapeHtml(t('emptyText2'))}</p>
+            <p class="mt-2 text-sm font-bold text-stone-700 dark:text-stone-200">${escapeHtml(t('emptySetsLegend'))}</p>
+            <div id="sample-sets" class="flex flex-col gap-2">
+              ${set('btn-load-samples-crawford', t('setCrawford'), t('setCrawfordSub', { n: crawfordPlants.length }))}
+              ${set('btn-load-master', t('setMaster'), t('setMasterSub'))}
+              ${set('btn-load-samples', t('setTry'), t('setTrySub', { n: samplePlants.length }))}
+            </div>
+          </section>
+          <aside class="flex flex-col gap-2.5 rounded-2xl bg-[#eef0d6] dark:bg-stone-800 p-5 text-stone-800 dark:text-stone-200">
+            <span class="text-xs font-bold uppercase tracking-wider text-[#59633d] dark:text-stone-400">${escapeHtml(t('wayBoxHead'))} ${escapeHtml(t(`way_${way}`))}</span>
+            <ol class="list-decimal space-y-1.5 pl-5 text-[15px] [&_a]:font-semibold [&_a]:text-green-800 dark:[&_a]:text-green-300 [&_a]:underline">${steps}</ol>
+            <p class="text-sm text-stone-600 dark:text-stone-400">${t('wayBoxChange')}</p>
+          </aside>
         </div>`;
       displayPlants = [];
       return;
@@ -1834,6 +1840,14 @@ import Layout from '../layouts/Layout.astro';
       alert(t('alertSampleImportFailed', { error: err instanceof Error ? err.message : String(err) }));
     }
   };
+  // "Mit Beispielpflanzen starten" (start dialog, empty calendar): /#beispielpflanzen loads the Crawford plants.
+  const samplesFromHash = () => {
+    if (location.hash !== '#beispielpflanzen') return;
+    history.replaceState(history.state, '', location.pathname + location.search);
+    void startWith['btn-load-samples-crawford']();
+  };
+  samplesFromHash();
+  window.addEventListener('hashchange', samplesFromHash);
   document.getElementById('btn-enrich-all')!.addEventListener('click', async () => {
     const b = document.getElementById('btn-enrich-all') as HTMLButtonElement;
     const origText = b.textContent;

@@ -62,7 +62,7 @@ test('login page: password reset link sets a new password', async ({ page }) => 
   expect(sent).toEqual({ token: 'ein-langer-token-ein-langer-token', password: 'ein sehr langes passwort' });
 });
 
-test('welcome page: "Neu im Beta-Test" with the tiles from the server, not part of the tour', async ({ page }) => {
+test('welcome, way for professionals: beta signup, "Neu im Beta-Test" tiles from the server', async ({ page }) => {
   await stubNetwork(page);
   await page.route('**/api/beta/vorschau**', r => r.fulfill(json({ items: [
     { id: 'qgis', title: 'QGIS', text: 'Exportiere deinen Plan als GeoPackage.' },
@@ -71,28 +71,25 @@ test('welcome page: "Neu im Beta-Test" with the tiles from the server, not part 
   await page.addInitScript(() => { try { localStorage.removeItem('pdk-welcome-seen'); } catch { /* ignore */ } });
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/');
-  const box = page.locator('#welcome-modal #welcome-beta');
-  await expect(box).toBeVisible();
-  await expect(box.locator('.w-beta-item')).toHaveCount(2);
-  await expect(box.locator('.w-beta-item').first()).toContainText('QGIS');
-  await expect(box.locator('#welcome-beta-join')).toHaveAttribute('href', '/beta/');
-  // the button top right scrolls to it
-  await expect(page.locator('#welcome-beta-jump')).toContainText('Interesse an erweiterten Funktionen und Teilnahme am Beta-Test?');
-  await page.click('#welcome-beta-jump');
-  await expect(box).toBeInViewport();
-  // the tour itself has no beta step
-  await page.click('#welcome-next');
-  const total = Number((await page.locator('#tour-progress').textContent())!.split('/')[1]);
-  expect(total).toBe(7);
+  await page.click('#welcome-way-beruflich');
+  const pro = page.locator('#w-beruflich');
+  await expect(pro).toBeVisible();
+  await expect(pro.locator('#welcome-beta-join')).toHaveAttribute('href', '/beta/?interest=beruflich#signup-form');
+  await expect(pro.locator('#w-pro-figures figure')).toHaveCount(6);
+  await expect(pro.locator('#welcome-beta .w-beta-item')).toHaveCount(2);
+  await expect(pro.locator('#welcome-beta .w-beta-item').first()).toContainText('QGIS');
+  // back to the three ways
+  await pro.locator('[data-w-back]').click();
+  await expect(page.locator('#w-choose')).toBeVisible();
+  expect(await page.evaluate(() => localStorage.getItem('pdk-einstieg'))).toBe('beruflich');
 });
 
-test('welcome page: without news the text and the button stay, only the tiles are missing', async ({ page }) => {
+test('welcome, way for professionals: without news no tiles box', async ({ page }) => {
   await stubNetwork(page);
   await page.route('**/api/beta/vorschau**', r => r.fulfill(json({ items: [] })));
   await page.addInitScript(() => { try { localStorage.removeItem('pdk-welcome-seen'); } catch { /* ignore */ } });
   await page.goto('/');
-  await expect(page.locator('#welcome-modal')).toBeVisible();
-  await expect(page.locator('#welcome-beta')).toBeVisible();
-  await expect(page.locator('#welcome-beta-jump')).toBeVisible();
-  await expect(page.locator('#welcome-beta .w-beta-item')).toHaveCount(0);
+  await page.click('#welcome-way-beruflich');
+  await expect(page.locator('#w-beruflich')).toBeVisible();
+  await expect(page.locator('#welcome-beta')).toBeHidden();
 });

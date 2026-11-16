@@ -60,15 +60,19 @@ test('simple mode: steps, layers and one tip instead of the tool boxes', async (
   await page.keyboard.press('f');
   await expect(page.locator('#area-draw-bar')).toBeHidden();
 
-  // switch to classic from the account menu: everything is back, no reload
+  // classic is not in the account menu any more (Entwurf S3): the settings switch it on and off, no reload;
+  // while it is on, the account menu shows it as chosen
   await page.click('#user-toggle');
-  await page.click('[data-mode-opt="classic"]');
+  await expect(page.locator('[data-mode-opt="classic"]')).toBeHidden();
+  await page.keyboard.press('Escape');
+  await page.goto('/settings');
+  await page.check('#classic-view');
   await expect(page.locator('html')).toHaveAttribute('data-mode', 'classic');
-  await expect(page.locator('#btn-draw-area')).toBeVisible();
-  await expect(page.locator('#tool-lasso')).toBeVisible();
-  await expect(page.locator('#guide-steps')).toBeHidden();
-  await expect(page.locator('#simple-guide')).toBeHidden();
-  await expect(page.locator('#warnings-section')).toBeVisible();
+  await page.click('#user-toggle');
+  await expect(page.locator('[data-mode-opt="classic"]')).toHaveAttribute('aria-pressed', 'true');
+  await page.keyboard.press('Escape');
+  await page.uncheck('#classic-view');
+  await expect(page.locator('html')).toHaveAttribute('data-mode', 'simple');
   void errors;
 });
 

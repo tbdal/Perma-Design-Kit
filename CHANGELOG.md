@@ -4,6 +4,11 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Einstieg neu: einfach, einladend, für alle drei Gruppen 2026-11-16
+- [x] **Willkommen mit drei Wegen**: „Ich plane meinen Garten“ (Ansicht Einfach, Rundgang, danach einfache Startwege und Anregungen), „Wir planen gemeinsam“ (eigene Seite: Baumscheiben drucken, Polykultur, Plan teilen, Vorbilder, dann Rundgang) und „Ich plane professionell“ (Beta-Test: was man weitergeben kann, Zugang als Geschenk, Anmelden); „Erst mal umschauen“ schließt alles. Auf dem Handy als Zeilen mit Bild links. Die Wahl wird gemerkt #minor #prüfen
+- [x] **Leere Seiten**: Pflanzenliste mit drei Beispiel-Auswahlen und den Schritten des gewählten Wegs; Kalender und Polykulturen mit Bild, Erklärung und zwei Knöpfen (Kalender-Filter und PDF-Knöpfe erst mit Pflanzen) #minor #prüfen
+- [x] **Einstellungen → Einstieg und Ansicht**: Weg ändern, „Klassische Ansicht“ ein/aus (steht nicht mehr im Konto-Menü), Willkommen und Rundgang wieder zeigen; „?“ mit „Rundgang für diese Seite“, „Willkommen wieder zeigen“ und den Feedback-Wegen #minor #prüfen
+
 ## Webseite für Fachleute (Entwürfe zum Prüfbericht November) 2026-11-14
 - [x] **„Womit möchtest du anfangen?“ einmal nach dem Willkommen**: nach dem Schließen (oder am Ende des Rundgangs) erscheinen einmalig drei Wege (Pflanzen recherchieren, Fläche planen, Referenzprojekt öffnen), die fünf Arbeitsschritte und „Was du weitergeben kannst“ mit sechs Vorschaubildern; ein Klick auf einen Link oder × schließt es für immer. Die Pflanzenseite hat die Überschrift „Agroforst und Waldgärten fachlich planen“ #minor #prüfen
 - [x] **„Waldgartenplan“ heißt jetzt „Planer“** (Menü, Seitentitel, „+ Neuer Plan“, Rundgang, Shortcuts) #minor #prüfen

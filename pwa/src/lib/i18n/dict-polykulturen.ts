@@ -20,7 +20,6 @@ export const polyculturesDict: Dict = {
   toastFromGroup: { de: 'Polykultur „{name}“ mit {count} Pflanzen angelegt', en: 'Polyculture “{name}” created with {count} plants' },
   introText: { de: 'Eine Polykultur ist eine benannte Gruppe von Pflanzen rund um eine Ankerart, die sich gegenseitig fördert. Mehr in der', en: 'A polyculture is a named group of plants around an anchor species that support each other. More in the' },
   introHelpLink: { de: 'Hilfe', en: 'help' },
-  emptyStateText: { de: 'Noch keine Polykulturen angelegt.', en: 'No polycultures created yet.' },
   btnEmptyNew: { de: 'Erste Polykultur anlegen', en: 'Create your first polyculture' },
 
   btnBackToList: { de: '← Zurück zur Liste', en: '← Back to list' },
@@ -82,6 +81,12 @@ export const polyculturesDict: Dict = {
   rolePestConfuser: { de: 'Duftverwirrer', en: 'Pest confuser' },
   roleFruitProducer: { de: 'Obst/Beere', en: 'Fruit/berry' },
   roleOther: { de: 'Sonstiges', en: 'Other' },
+  polyEmptyKicker: { de: 'Polykulturen', en: 'Polycultures' },
+  polyEmptyTitle: { de: 'Pflanzen, die sich gegenseitig helfen', en: 'Plants that help each other' },
+  polyEmptyText: { de: 'Eine Polykultur ist eine Gruppe rund um eine Ankerpflanze: Stickstoff, Insekten, Bodendecker. Drucke sie als Karten oder Baumscheiben.', en: 'A polyculture is a group around an anchor plant: nitrogen, insects, ground cover. Print it as cards or canopy discs.' },
+  polyEmptyExamples: { de: 'Beispiel-Polykultur ansehen', en: 'See a sample polyculture' },
+  polyEmptyTerm: { de: 'Begriff: Polykultur = räumlich begrenzte Pflanzengemeinschaft; Gilde = Funktion über Systeme hinweg.', en: 'Term: polyculture = a plant community in one place; guild = a function across systems.' },
+  polyEmptyAlt: { de: 'Ein Baum in der Mitte, umgeben von Sträuchern und Bodendeckern', en: 'A tree in the middle, surrounded by shrubs and ground cover' },
 };
 
 addEs(polyculturesDict, esTexts);

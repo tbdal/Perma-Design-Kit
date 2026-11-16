@@ -117,6 +117,10 @@ const card = 'space-y-3 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring
       });
     } else {
       fetch('/api/beta/status', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then((s: { frei?: boolean } | null) => { $('signup-full').hidden = !s || s.frei !== false; }).catch(() => {});
+      // ?interest=beruflich (from the welcome's way for professionals) preselects the answer
+      const interest = new URLSearchParams(location.search).get('interest');
+      const pick = $<HTMLSelectElement>('signup-interest');
+      if (interest && [...pick.options].some(o => o.value === interest)) pick.value = interest;
       $('signup-form').addEventListener('submit', async e => {
         e.preventDefault();
         const status = $('signup-status'), submit = $<HTMLButtonElement>('signup-submit');
