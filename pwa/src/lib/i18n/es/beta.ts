@@ -9,6 +9,7 @@ export const es: Record<string, string> = {
   btTerm3: 'Los resultados (planes, listas, impresiones) son ayudas de planificación, no asesoramiento profesional. Antes de plantar, cavar o construir compruebas tú mismo, p. ej. distancias a lindes, conducciones, toxicidad.',
   btTerm4: 'Algunos servicios de datos y mapas tienen licencias cuyas condiciones para la beta aún se están revisando. No publiques ni uses comercialmente contenidos de funciones beta salvo que esté permitido expresamente.',
   btTerm5: 'La responsabilidad se rige por la ley; en servicios gratuitos solo se aplica a dolo y negligencia grave.',
+  btTerm6: 'Aceptas que te enviemos correos durante la beta: preguntas sobre tus comentarios y novedades de la beta (funciones nuevas, cambios, fin). Cada correo tiene un enlace para darte de baja.',
   btAccept: 'He leído las condiciones de la beta y las acepto.', btPrivacy: 'Guardamos tu dirección de correo solo para la prueba beta y la borramos cuando te das de baja. Más en el', btPrivacyLink: 'aviso de privacidad',
   btSend: 'Apuntarse', btSending: 'Enviando…', btSent: 'Revisa tu buzón: te hemos enviado un correo con un enlace de confirmación (mira también en la carpeta de spam).',
   btErrEmail: 'Esta dirección de correo no parece correcta.', btErrAccept: 'Acepta las condiciones de la beta.', btErrRate: 'Demasiados intentos. Inténtalo de nuevo más tarde.', btErrServer: 'Ahora mismo no se puede contactar con el servidor. ¿Tienes conexión?',
