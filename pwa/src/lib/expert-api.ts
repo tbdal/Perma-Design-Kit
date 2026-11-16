@@ -143,6 +143,8 @@ export interface GartenplanApi {
   setRowPath(fn: ((points: GardenPlanPoint[]) => GardenPlanPoint[]) | null): void;
   /** Redraws the row tool's preview (after `setRowPath`'s output changed). */
   refreshRowDraft(): void;
+  /** True when there is an agroforestry row the row tool can lay out without a chosen plant. */
+  hasRowPatterns(): boolean;
 }
 
 /** What the plant list (index.astro) offers plugins. */
