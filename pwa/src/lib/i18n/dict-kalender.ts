@@ -33,11 +33,8 @@ export const kalenderDict: Dict = {
   tableOutputFormatLabel: { de: 'Ausgabeformat', en: 'Output format' },
   menuTablePdf: { de: 'Tabelle als PDF (Farbe)', en: 'Table as PDF (color)' },
   menuTablePdfGray: { de: 'Tabelle als PDF (Graustufen)', en: 'Table as PDF (grayscale)' },
-  emptyTitle: { de: 'Wann blüht und reift was?', en: 'What flowers and ripens when?' },
-  emptyPicAlt: { de: 'Monatsleiste mit Balken für Blüte und Ernte', en: 'Month strip with bars for flowering and harvest' },
-  emptySamples: { de: 'Beispielpflanzen laden', en: 'Load example plants' },
-  emptyNoData: { de: 'Sobald du Pflanzen in deiner Liste hast, zeigt der Kalender Blüte und Ernte je Monat, auch als PDF für die Pinnwand.', en: 'As soon as you have plants in your list, the calendar shows flowering and harvest per month, also as a PDF for the pinboard.' },
-  emptyNoDataLink: { de: 'Pflanzen hinzufügen', en: 'Add plants' },
+  emptyNoData: { de: 'Noch keine Pflanzen mit Blüte- oder Erntedaten.', en: 'No plants with bloom or harvest data yet.' },
+  emptyNoDataLink: { de: 'Pflanzen anlegen oder importieren →', en: 'Add or import plants →' },
   emptyNoMatch: { de: 'Keine Pflanzen entsprechen dem Filter.', en: 'No plants match the filter.' },
 
   monthJan: { de: 'Jan', en: 'Jan' },

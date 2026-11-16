@@ -2,7 +2,7 @@
 export const es: Record<string, string> = {
   pageTitle: 'Policultivos',
   introText: 'Un policultivo es un grupo de plantas con nombre en torno a una especie ancla, que se apoyan entre sí. Más en la',
-  emptyStateText: 'Un policultivo es un grupo en torno a una planta ancla: nitrógeno, insectos, cobertura. Imprímelo como tarjetas o discos.', btnEmptyNew: 'Crear tu primer policultivo', btnBackToList: '← Volver a la lista', alertEnterName: 'Introduce un nombre.',
+  emptyStateText: 'Aún no has creado policultivos.', btnEmptyNew: 'Crear tu primer policultivo', btnBackToList: '← Volver a la lista', alertEnterName: 'Introduce un nombre.',
   labelName: 'Nombre', placeholderName: 'p. ej. policultivo del manzano, jardín sur', labelDescription: 'Descripción', labelNotes: 'Notas', placeholderNotes: 'Lugar, objetivos, observaciones…',
   suggestionsHeading: 'Sugerencias', suggestionsIntro: 'Plantas de tu colección que cubren roles abiertos y coinciden con la especie ancla en sol/agua/pH.', sunWaterPhTitle: 'Coincidencia sol/agua/pH', btnAdd: '+ añadir',
   btnExamples: 'Cargar ejemplos', examplesTitle: 'Policultivos de ejemplo', examplesIntro: 'Elige uno: se copia con sus plantas en tus listas y después puedes cambiarlo libremente.',
@@ -20,7 +20,4 @@ export const es: Record<string, string> = {
   memberCountSingular: '{count} miembro', memberCountPlural: '{count} miembros', rolesFilled: '{filled} de {total} roles cubiertos', confirmDeleteGuild: '¿Eliminar de verdad el policultivo «{name}»?',
   toastGuildSaved: 'Policultivo guardado', toastGuildDeleted: 'Policultivo eliminado', toastImported: '{name} importada', alertImportFailed: 'La importación de «{latin}» ha fallado: {error}',
   roleCompanion: 'Acompañante', roleGroundCover: 'Cubresuelos', roleNFixer: 'Fijadora de nitrógeno', roleMineralFixer: 'Acumuladora de minerales', roleInsectary: 'Planta insectario', rolePestConfuser: 'Confunde plagas', roleFruitProducer: 'Fruta/baya', roleOther: 'Otra',
-  emptyTitle: 'Plantas que se ayudan entre sí',
-  emptyPicAlt: 'Un árbol en el centro, rodeado de arbustos y cobertura',
-  btnEmptyExamples: 'Ver policultivos de ejemplo',
 };

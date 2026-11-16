@@ -11,9 +11,6 @@ export const es: Record<string, string> = {
   scopeLabel: 'Plantas de', scopeAll: 'Todas las plantas', scopePlans: 'Plan de bosque comestible', scopePolys: 'Policultivo', scopeUnnamed: '(sin nombre)',
   pageSubtitle: 'Qué florece cuándo, qué madura cuándo: a partir de tus datos de plantas.', legendFlower: 'Floración', legendFruit: 'Cosecha', overviewHeading: 'Resumen', searchPlaceholder: 'Buscar planta…',
   sortName: 'Nombre (A-Z)', sortFlowerEarliest: 'Floración más temprana', sortFlowerLatest: 'Floración más tardía', sortFruitEarliest: 'Fruto más temprano', sortFruitLatest: 'Fruto más tardío',
-  filterFlower: 'Floración', filterFruit: 'Cosecha', filterNoData: 'Mostrar plantas sin datos de calendario', emptyNoData: 'En cuanto tengas plantas en tu lista, el calendario muestra floración y cosecha por mes, también en PDF para el tablón.', emptyNoDataLink: 'Añadir plantas',
+  filterFlower: 'Floración', filterFruit: 'Cosecha', filterNoData: 'Mostrar plantas sin datos de calendario', emptyNoData: 'Aún no hay plantas con datos de floración o cosecha.', emptyNoDataLink: 'Añadir o importar plantas →',
   emptyNoMatch: 'Ninguna planta coincide con el filtro.', overviewFloweringTitle: '{count} en flor', overviewRipeTitle: '{count} maduras', tableHeaderPlant: 'Planta', countAll: '{count} plantas', countFiltered: '{filtered} / {total} plantas',
-  emptyTitle: '¿Qué florece y madura cuándo?',
-  emptyPicAlt: 'Barra de meses con barras de floración y cosecha',
-  emptySamples: 'Cargar plantas de ejemplo',
 };

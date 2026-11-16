@@ -5,26 +5,26 @@ import { test, expect, stubNetwork } from './helpers';
 
 const seen = () => { try { localStorage.setItem('pdk-welcome-seen', '1'); localStorage.setItem('pdk-persist-later', String(Date.now())); } catch { /* ignore */ } };
 
-test('help menu: tour, welcome, guide, examples and all four feedback ways', async ({ page, errors }) => {
+test('after the welcome: "Womit möchtest du anfangen?" once, gone after a link', async ({ page, errors }) => {
   await stubNetwork(page);
+  // a first visit: the welcome opens; the start page must not have been seen yet
+  await page.addInitScript(() => { if (!sessionStorage.getItem('init')) { sessionStorage.setItem('init', '1'); localStorage.removeItem('pdk-welcome-seen'); localStorage.removeItem('pdk-start-seen'); } });
   await page.goto('/kalender');
-  await page.click('#help-toggle');
-  const menu = page.locator('#help-menu');
-  for (const sel of ['#help-tour', '#help-intro', 'a[href="/hilfe"]', 'a[href="/beispiel"]', '#help-shortcuts']) await expect(menu.locator(sel), sel).toBeVisible();
-  await expect(menu.locator('[data-fb]')).toHaveCount(4);
-  void errors;
-});
-
-test('empty pages: plants with three example sets and the next steps, calendar and polycultures with one sentence and a button', async ({ page, errors }) => {
-  await stubNetwork(page);
-  await page.goto('/');
-  for (const id of ['#btn-load-samples', '#btn-load-samples-crawford', '#btn-load-master']) await expect(page.locator(id)).toBeVisible();
-  await expect(page.locator('#plant-list aside ol li')).toHaveCount(3);
-  await page.goto('/kalender');
-  await expect(page.locator('#empty-no-data')).toBeVisible();
-  await expect(page.locator('#kal-filters')).toBeHidden();
-  await page.goto('/polykulturen');
-  await expect(page.locator('#btn-empty-examples')).toBeVisible();
+  await expect(page.locator('#welcome-modal')).toBeVisible();
+  await expect(page.locator('#start-modal')).toBeHidden();
+  await page.click('#welcome-skip');
+  const start = page.locator('#start-modal');
+  await expect(start).toBeVisible();
+  await expect(start.locator('figure')).toHaveCount(6);
+  await start.locator('a[href="/#suche"]').click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.locator('#plant-search')).toBeFocused();
+  await expect(page.locator('#start-modal')).toBeHidden();
+  await page.reload();
+  await expect(page.locator('#welcome-modal')).toBeHidden();
+  await expect(page.locator('#start-modal')).toBeHidden();
+  // not on the plant page itself
+  await expect(page.locator('#plant-list')).toBeVisible();
   void errors;
 });
 

@@ -20,10 +20,7 @@ export const polyculturesDict: Dict = {
   toastFromGroup: { de: 'Polykultur „{name}“ mit {count} Pflanzen angelegt', en: 'Polyculture “{name}” created with {count} plants' },
   introText: { de: 'Eine Polykultur ist eine benannte Gruppe von Pflanzen rund um eine Ankerart, die sich gegenseitig fördert. Mehr in der', en: 'A polyculture is a named group of plants around an anchor species that support each other. More in the' },
   introHelpLink: { de: 'Hilfe', en: 'help' },
-  emptyTitle: { de: 'Pflanzen, die sich gegenseitig helfen', en: 'Plants that help each other' },
-  emptyPicAlt: { de: 'Ein Baum in der Mitte, umgeben von Sträuchern und Bodendeckern', en: 'A tree in the middle, surrounded by shrubs and ground cover' },
-  btnEmptyExamples: { de: 'Beispiel-Polykulturen ansehen', en: 'Look at example polycultures' },
-  emptyStateText: { de: 'Eine Polykultur ist eine Gruppe rund um eine Ankerpflanze: Stickstoff, Insekten, Bodendecker. Drucke sie als Karten oder Baumscheiben.', en: 'A polyculture is a group around an anchor plant: nitrogen, insects, ground cover. Print it as cards or tree discs.' },
+  emptyStateText: { de: 'Noch keine Polykulturen angelegt.', en: 'No polycultures created yet.' },
   btnEmptyNew: { de: 'Erste Polykultur anlegen', en: 'Create your first polyculture' },
 
   btnBackToList: { de: '← Zurück zur Liste', en: '← Back to list' },

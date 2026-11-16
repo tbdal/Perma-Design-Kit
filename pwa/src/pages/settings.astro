@@ -22,31 +22,6 @@ import Layout from '../layouts/Layout.astro';
     </div>
   </section>
 
-  <!-- Einstieg und Ansicht: the way chosen in the welcome, the classic view (moved here from the account menu), welcome and tour again -->
-  <section id="einstieg-section" class="mb-8 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
-    <h2 class="text-lg font-semibold text-stone-800 dark:text-stone-100" data-i18n="sectionStart">Einstieg und Ansicht</h2>
-    <fieldset class="mt-3">
-      <legend class="text-sm font-medium text-stone-700 dark:text-stone-200" data-i18n="startPathLegend">Ich nutze das Kit vor allem …</legend>
-      <div class="mt-1.5 space-y-0.5">
-        <label class="flex min-h-9 items-center gap-2.5 text-sm text-stone-700 dark:text-stone-200"><input type="radio" name="start-path" value="garten" class="h-4 w-4 accent-green-700" /> <span data-i18n="startPathGarden">für meinen eigenen Garten</span></label>
-        <label class="flex min-h-9 items-center gap-2.5 text-sm text-stone-700 dark:text-stone-200"><input type="radio" name="start-path" value="gemeinsam" class="h-4 w-4 accent-green-700" /> <span data-i18n="startPathGroup">gemeinsam mit einer Gruppe, einem Verein oder einer Gemeinde</span></label>
-        <label class="flex min-h-9 items-center gap-2.5 text-sm text-stone-700 dark:text-stone-200"><input type="radio" name="start-path" value="profi" class="h-4 w-4 accent-green-700" /> <span data-i18n="startPathPro">beruflich (Beta-Test)</span></label>
-      </div>
-      <p class="mt-1 text-xs text-stone-500 dark:text-stone-400" data-i18n="startPathHint">Bestimmt die Hinweise auf leeren Seiten und die Startseite nach dem Rundgang.</p>
-    </fieldset>
-    <label class="mt-4 flex items-start gap-2 border-t border-stone-200 dark:border-stone-700 pt-4 text-sm">
-      <input type="checkbox" id="classic-mode" class="mt-0.5 h-4 w-4 accent-green-700" />
-      <span>
-        <span class="font-medium text-stone-700 dark:text-stone-200" data-i18n="classicLabel">Klassische Ansicht (wie früher)</span>
-        <span class="block text-xs text-stone-500 dark:text-stone-400" data-i18n="classicHint">Alle Werkzeuge auf einmal, für alle, die das Kit von früher kennen. Im Konto-Menü stehen sonst nur „Einfach“ und „Beta-Test“.</span>
-      </span>
-    </label>
-    <div class="mt-4 flex flex-wrap gap-2 border-t border-stone-200 dark:border-stone-700 pt-4">
-      <button id="btn-show-welcome" type="button" data-i18n="btnShowWelcome" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Willkommen wieder zeigen</button>
-      <a href="/?rundgang=1" data-i18n="btnStartTour" class="rounded-lg bg-stone-100 dark:bg-stone-700 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-600">Rundgang starten</a>
-    </div>
-  </section>
-
   <!-- Ansicht -->
   <section class="mb-8 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
     <h2 class="text-lg font-semibold text-stone-800 dark:text-stone-100" data-i18n="sectionView">Ansicht</h2>
@@ -366,8 +341,7 @@ import Layout from '../layouts/Layout.astro';
   import { providePageApi } from '../lib/expert-api';
   import { createT, applyStaticI18n, getLang } from '../lib/i18n/core';
   import { settingsDict } from '../lib/i18n/dict-settings';
-  import { getAuth, logout, refreshAuth, currentMode, setMode, onFeaturesChange } from '../lib/ui-mode';
-  import { getPath, setPath, type StartPath } from '../lib/start-path';
+  import { getAuth, logout, refreshAuth } from '../lib/ui-mode';
 
   const t = createT(settingsDict);
 
@@ -421,21 +395,6 @@ import Layout from '../layouts/Layout.astro';
     void refreshAuth().then(showWho);
   }
   applyStaticI18n(settingsDict);
-
-  // Einstieg und Ansicht
-  {
-    const cur = getPath();
-    document.querySelectorAll<HTMLInputElement>('input[name="start-path"]').forEach(r => {
-      r.checked = r.value === cur;
-      r.addEventListener('change', () => { if (r.checked) setPath(r.value as StartPath); });
-    });
-    const classic = document.getElementById('classic-mode') as HTMLInputElement;
-    const syncClassic = () => { classic.checked = currentMode() === 'classic'; };
-    syncClassic();
-    onFeaturesChange(syncClassic);
-    classic.addEventListener('change', () => setMode(classic.checked ? 'classic' : 'simple'));
-    document.getElementById('btn-show-welcome')!.addEventListener('click', () => document.dispatchEvent(new Event('pdk:welcome')));
-  }
 
   // DEFAULT_SOURCES' name/description (src/lib/settings.ts) are German-only —
   // that file is shared runtime data, not display markup, so we translate at

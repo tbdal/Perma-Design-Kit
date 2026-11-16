@@ -18,20 +18,9 @@ import Layout from '../layouts/Layout.astro';
       gegenseitig fördert. Mehr in der</span> <a href="/hilfe#polykulturen" data-i18n="introHelpLink" class="text-green-700 dark:text-green-400 underline underline-offset-2 hover:no-underline">Hilfe</a>.
     </p>
     <div id="polyculture-list" class="grid gap-4 sm:grid-cols-2"></div>
-    <div id="polyculture-empty" class="hidden">
-      <div class="mx-auto max-w-xl space-y-4 rounded-[18px] bg-white dark:bg-stone-800 p-6 ring-1 ring-stone-200 dark:ring-stone-700">
-        <h2 class="text-xl font-bold text-stone-900 dark:text-stone-100" data-i18n="emptyTitle">Pflanzen, die sich gegenseitig helfen</h2>
-        <svg class="block h-auto w-full" viewBox="0 0 520 120" role="img" data-i18n-aria-label="emptyPicAlt" aria-label="Ein Baum in der Mitte, umgeben von Sträuchern und Bodendeckern">
-          <circle cx="260" cy="60" r="44" fill="#8fa552" stroke="#33401a" stroke-width="2"/>
-          <g fill="#a3b866" stroke="#33401a" stroke-width="1.5"><circle cx="180" cy="40" r="20"/><circle cx="340" cy="40" r="20"/><circle cx="190" cy="94" r="16"/><circle cx="330" cy="94" r="16"/></g>
-          <g fill="#e0a93a"><circle cx="140" cy="70" r="7"/><circle cx="380" cy="72" r="7"/><circle cx="260" cy="112" r="6"/></g>
-        </svg>
-        <p class="text-stone-600 dark:text-stone-300" data-i18n="emptyStateText">Eine Polykultur ist eine Gruppe rund um eine Ankerpflanze: Stickstoff, Insekten, Bodendecker. Drucke sie als Karten oder Baumscheiben.</p>
-        <div class="flex flex-wrap gap-2">
-          <button id="btn-empty-new" data-i18n="btnEmptyNew" class="rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white shadow hover:bg-green-800">Erste Polykultur anlegen</button>
-          <button id="btn-empty-examples" type="button" data-i18n="btnEmptyExamples" class="rounded-lg px-4 py-2 text-sm font-medium text-green-800 dark:text-green-300 ring-1 ring-green-700 dark:ring-green-500 hover:bg-green-50 dark:hover:bg-green-950">Beispiel-Polykulturen ansehen</button>
-        </div>
-      </div>
+    <div id="polyculture-empty" class="hidden rounded-xl border-2 border-dashed border-stone-300 dark:border-stone-600 py-16 text-center">
+      <p class="text-stone-500 dark:text-stone-400" data-i18n="emptyStateText">Noch keine Polykulturen angelegt.</p>
+      <button id="btn-empty-new" data-i18n="btnEmptyNew" class="mt-3 inline-block rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white shadow hover:bg-green-800">Erste Polykultur anlegen</button>
     </div>
   </section>
 
@@ -612,7 +601,6 @@ import Layout from '../layouts/Layout.astro';
         </div>
       </article>`).join('');
   }
-  document.getElementById('btn-empty-examples')!.addEventListener('click', () => document.getElementById('btn-examples')!.click());
   document.getElementById('btn-examples')!.addEventListener('click', async () => {
     examplesDialog.showModal();
     if (examples) return;

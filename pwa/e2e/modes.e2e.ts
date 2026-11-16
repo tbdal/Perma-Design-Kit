@@ -16,9 +16,8 @@ async function seedPlan(page: Page) {
   `, { m9: months(9), plan: planRecord('mp', { yearsSincePlanting: 15 }) });
 }
 
-// once: only on the first page load of the test, so a later switch (e.g. in Einstellungen) survives the next one
-const setMode = (page: Page, mode: string, once = false) =>
-  page.addInitScript(([m, o]) => { try { if (o && sessionStorage.getItem('mode-set')) return; sessionStorage.setItem('mode-set', '1'); localStorage.setItem('pdk-mode', m as string); } catch { /* ignore */ } }, [mode, once] as const);
+const setMode = (page: Page, mode: string) =>
+  page.addInitScript(m => { try { localStorage.setItem('pdk-mode', m); } catch { /* ignore */ } }, mode);
 
 test('new visitors start in simple mode; returning ones keep the full app', async ({ browser }) => {
   const fresh = await browser.newPage();
@@ -43,7 +42,7 @@ test('the account button says "Anmelden" and holds the sign-in until someone is 
 
 test('simple mode: steps, layers and one tip instead of the tool boxes', async ({ page, errors }) => {
   await stubNetwork(page);
-  await setMode(page, 'simple', true);
+  await setMode(page, 'simple');
   await seedPlan(page);
   await openPlan(page, 'mp');
   await expect(page.locator('#guide-steps')).toBeVisible();
@@ -61,14 +60,10 @@ test('simple mode: steps, layers and one tip instead of the tool boxes', async (
   await page.keyboard.press('f');
   await expect(page.locator('#area-draw-bar')).toBeHidden();
 
-  // the account menu offers only Einfach / Beta-Test; the classic view is in Einstellungen → Einstieg und Ansicht
+  // switch to classic from the account menu: everything is back, no reload
   await page.click('#user-toggle');
-  await expect(page.locator('[data-mode-opt="classic"]')).toHaveCount(0);
-  await page.goto('/settings');
-  await page.check('#classic-mode');
+  await page.click('[data-mode-opt="classic"]');
   await expect(page.locator('html')).toHaveAttribute('data-mode', 'classic');
-  await page.goto('/gartenplan');   // reopens the last plan
-  await expect(page.locator('#phase-b')).not.toHaveClass(/hidden/);
   await expect(page.locator('#btn-draw-area')).toBeVisible();
   await expect(page.locator('#tool-lasso')).toBeVisible();
   await expect(page.locator('#guide-steps')).toBeHidden();
