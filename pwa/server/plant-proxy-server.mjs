@@ -43,6 +43,8 @@ const OUTBOUND_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:130.0)
 // same-host reverse proxy) can reach it. Kept anyway as defense in depth in case that
 // ever changes (e.g. a reverse-proxy misconfiguration exposing the port directly).
 const ALLOWED_ORIGIN_HOSTS = new Set(['localhost', '127.0.0.1', 'permadesignkit.org', 'www.permadesignkit.org']);
+// A second instance (dev.permadesignkit.org, Werkstatt #656) names its own host in PDK_BASE_URL; only that process accepts it.
+try { if (process.env.PDK_BASE_URL) ALLOWED_ORIGIN_HOSTS.add(new URL(process.env.PDK_BASE_URL).hostname); } catch { /* bad URL: allowlist unchanged */ }
 
 function isAllowedOrigin(origin) {
   if (!origin) return true; // same-origin / non-browser / proxied request, no Origin header
