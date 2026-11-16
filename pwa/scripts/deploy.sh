@@ -156,6 +156,10 @@ flock -u 9
 # the previous build (the service worker holds it until "Neu laden") would
 # otherwise get a 404 for its chunks and lose the whole expert module. Its
 # public chunks are in the worker's cache; /x/ never is. Old ones go after 30 days.
+# Dev: the tab icon in the fuchsia of the dev band, so dev and live tabs are told apart at a glance.
+if [[ $TARGET == dev ]]; then
+  sed -i 's/fill="#166534"/fill="#a21caf"/' dist/favicon.svg
+fi
 mkdir -p "$WEBROOT"
 rsync -a --delete --exclude '/x/' dist/ "$WEBROOT/"
 if [[ -d dist/x ]]; then
