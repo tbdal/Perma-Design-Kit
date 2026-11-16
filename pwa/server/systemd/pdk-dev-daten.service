@@ -4,4 +4,4 @@ Description=Perma Design Kit dev instance: copy live data
 
 [Service]
 Type=oneshot
-ExecStart=/root/pdk/pwa/scripts/dev-daten.sh
+ExecStart=/root/pdk-dev/pwa/scripts/dev-daten.sh
