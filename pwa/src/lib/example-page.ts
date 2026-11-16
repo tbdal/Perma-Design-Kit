@@ -40,13 +40,13 @@ export const PUBLIC_VORBILDER: Card[] = [
 const T = {
   de: {
     title: 'Beispiele', intro: 'Das Beispielprojekt und zwei Vorbilder: Waldgärten mit langer Erfahrung, als Waldgartenpläne nachgebaut. Ein Klick öffnet sie im Planer.',
-    example: 'Beispielprojekt', exampleText: 'Ein kleines Projekt zum Ausprobieren: Pflanzen, Plan, 3D und Sonne.',
+    example: 'Referenzprojekt', exampleText: 'Der Waldgarten in Dartington als fertiges Projekt zum Ausprobieren: Pflanzen, Plan, 3D und Sonne.',
     open: 'Im Waldgartenplan öffnen', learn: 'Lernen', sources: 'Quellen', failed: 'Der Plan konnte nicht geladen werden.',
     attribution: 'Umriss © OpenStreetMap-Mitwirkende (ODbL 1.0), Höhen aus den Terrain Tiles (AWS Open Data), Pflanzendaten PFAF (CC BY 4.0) und Edible Forest Gardens. Die Pläne sind Nachbauten zum Lernen, keine Vermessung; Bepflanzung schematisch nach veröffentlichten Beschreibungen.',
   },
   en: {
     title: 'Examples', intro: 'The example project and two role models: forest gardens with long experience, rebuilt as forest garden plans. One click opens them in the planner.',
-    example: 'Example project', exampleText: 'A small project to try out: plants, plan, 3D and sun.',
+    example: 'Reference project', exampleText: 'The forest garden in Dartington as a finished project to try out: plants, plan, 3D and sun.',
     open: 'Open in the planner', learn: 'Learn', sources: 'Sources', failed: 'The plan could not be loaded.',
     attribution: 'Outline © OpenStreetMap contributors (ODbL 1.0), heights from Terrain Tiles (AWS Open Data), plant data PFAF (CC BY 4.0) and Edible Forest Gardens. The plans are rebuilds for learning, not surveys; planting is schematic after published descriptions.',
   },

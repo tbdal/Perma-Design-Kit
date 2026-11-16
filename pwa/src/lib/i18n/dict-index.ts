@@ -160,10 +160,10 @@ export const indexDict: Dict = {
   bulkEnrichDone: { de: '✓ {done} ergänzt', en: '✓ {done} enriched' },
 
   // ── Empty state ──────────────────────────────────────────────────────
-  emptyStateTitle: { de: 'Noch keine Pflanzen', en: 'No plants yet' },
-  emptyStateSubtitle: { de: 'Suche nach einer Pflanze oder lade Beispieldaten.', en: 'Search for a plant or load sample data.' },
-  emptyStateBtn: { de: 'Erste Pflanze suchen', en: 'Search for your first plant' },
-  emptyStartWith: { de: 'Oder womit starten?', en: 'Or start with:' },
+  emptyStateTitle: { de: 'Noch keine Pflanzen in deiner Liste', en: 'No plants in your list yet' },
+  emptyStateSubtitle: { de: 'Suche eine Pflanze: ihr Steckbrief kommt mit Quelle je Feld. Oder fang mit einer fertigen Auswahl an, du kannst sie jederzeit ändern oder löschen.', en: 'Search for a plant: its profile comes with a source for every field. Or start with a ready-made selection; you can change or delete it any time.' },
+  emptyStateBtn: { de: 'Pflanze suchen', en: 'Search a plant' },
+  emptyStartWith: { de: 'Mit Beispielpflanzen starten', en: 'Start with example plants' },
 
   // ── Grid/list card chrome ────────────────────────────────────────────
   btnEnrichTitle: { de: 'Daten ergänzen', en: 'Fetch data' },
@@ -308,6 +308,25 @@ export const indexDict: Dict = {
   alertEnrichAllFailed: { de: ' {failed} fehlgeschlagen (siehe Konsole).', en: ' {failed} failed (see console).' },
   alertNoCsvPlants: { de: 'Keine Pflanzen in der CSV gefunden.', en: 'No plants found in the CSV.' },
   enrichSourcesStatus: { de: 'Lade Daten…', en: 'Loading data…' },
+  emptySetSmall: { de: 'Ein kleiner Waldgarten', en: 'A small forest garden' },
+  emptySetSmallText: { de: 'Ein paar bewährte Pflanzen über alle Schichten', en: 'A few proven plants across all layers' },
+  emptySetCrawford: { de: 'Nach Martin Crawford', en: 'After Martin Crawford' },
+  emptySetCrawfordText: { de: 'Bewährte Arten aus dem Waldgarten in Dartington', en: 'Proven species from the forest garden in Dartington' },
+  emptySetMaster: { de: 'Standard-Artenliste', en: 'Default species list' },
+  emptySetMasterText: { de: 'Rund 190 Arten, für die Planung', en: 'About 190 species, for planning' },
+  emptyWay_garten: { de: 'Dein Weg: Ich plane meinen Garten', en: 'Your way: I am planning my garden' },
+  emptyWay_gemeinsam: { de: 'Dein Weg: Wir planen gemeinsam', en: 'Your way: we plan together' },
+  emptyWay_profi: { de: 'Dein Weg: Ich plane professionell', en: 'Your way: I plan professionally' },
+  emptyNext_garten_1: { de: 'Pflanzen wählen: hier', en: 'Choose plants: here' },
+  emptyNext_garten_2: { de: 'Fläche im Planer zeichnen', en: 'Draw the area in the planner' },
+  emptyNext_garten_3: { de: 'Pflanzen setzen und in 3D ansehen', en: 'Place plants and look at them in 3D' },
+  emptyNext_gemeinsam_1: { de: 'Pflanzen wählen: hier', en: 'Choose plants: here' },
+  emptyNext_gemeinsam_2: { de: 'Als Baumscheiben oder Karten drucken (Ansicht „Karten“)', en: 'Print them as tree discs or cards (“Cards” view)' },
+  emptyNext_gemeinsam_3: { de: 'Gemeinsam auslegen, dann als Plan festhalten und teilen', en: 'Lay them out together, then keep and share them as a plan' },
+  emptyNext_profi_1: { de: 'Pflanzen nach Funktion und Standort wählen', en: 'Choose plants by function and site' },
+  emptyNext_profi_2: { de: 'Fläche zeichnen, Boden und Klima übernehmen', en: 'Draw the area, take over soil and climate' },
+  emptyNext_profi_3: { de: 'In 3D prüfen und als PDF weitergeben', en: 'Check in 3D and hand on as PDF' },
+  emptyWayChange: { de: 'Anderen Weg wählen (Einstellungen)', en: 'Choose another way (settings)' },
 };
 
 addEs(indexDict, esTexts);

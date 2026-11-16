@@ -517,6 +517,7 @@ import Layout from '../layouts/Layout.astro';
   import { imageSrc } from '../lib/commons-image';
   import { renderBaumscheibeCardHtml } from '../lib/baumscheibe-render';
   import { createT, applyStaticI18n, getLang } from '../lib/i18n/core';
+  import { getPath } from '../lib/start-path';
   import { indexDict } from '../lib/i18n/dict-index';
   import { providePageApi } from '../lib/expert-api';
   import { searchDict } from '../lib/i18n/dict-search';
@@ -1026,22 +1027,28 @@ import Layout from '../layouts/Layout.astro';
 
     if (cachedPlants.length === 0) {
       listEl.className = 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3';
+      // Empty list (Prüfbericht S1): one sentence, the search, one set of example plants to start from, and the next steps of the chosen way.
+      const path = getPath() ?? 'garten';
+      const steps = [1, 2, 3].map(i => `<li>${escapeHtml(t(`emptyNext_${path}_${i}`))}</li>`).join('');
+      listEl.className = 'block';
       listEl.innerHTML = `
-        <div class="col-span-full flex flex-col items-center py-20 text-center">
-          <svg class="mb-4 h-16 w-16 text-stone-200" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-            <polyline points="16,11 20.1,14 16,19.2 9.7,14 16,6.6 24.5,14 16,23.6 16,27"
-              fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="16" cy="11" r="1.2" fill="currentColor"/>
-          </svg>
-          <p class="mb-1 text-base font-semibold text-stone-500 dark:text-stone-400">${escapeHtml(t('emptyStateTitle'))}</p>
-          <p class="mb-4 text-sm text-stone-500 dark:text-stone-400">${escapeHtml(t('emptyStateSubtitle'))}</p>
-          <button type="button" data-focus-search class="rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">${escapeHtml(t('emptyStateBtn'))}</button>
-          <p class="mb-2 mt-8 text-sm font-semibold text-stone-600 dark:text-stone-300">${escapeHtml(t('emptyStartWith'))}</p>
-          <div class="flex flex-wrap justify-center gap-2">
-            <button type="button" id="btn-load-samples" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-700">${escapeHtml(t('menuLoadSamples'))}</button>
-            <button type="button" id="btn-load-samples-crawford" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-700">${escapeHtml(t('menuLoadSamplesCrawford'))}</button>
-            <button type="button" id="btn-load-master" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-200 dark:hover:bg-stone-700">${escapeHtml(t('menuLoadMaster'))}</button>
-          </div>
+        <div class="grid gap-8 py-6 md:grid-cols-[minmax(0,1fr)_22rem] md:items-start">
+          <section class="space-y-4">
+            <h2 class="text-2xl font-bold text-stone-900 dark:text-stone-100">${escapeHtml(t('emptyStateTitle'))}</h2>
+            <p class="max-w-xl text-stone-600 dark:text-stone-300">${escapeHtml(t('emptyStateSubtitle'))}</p>
+            <button type="button" data-focus-search class="rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white shadow transition hover:bg-green-800 active:scale-95">${escapeHtml(t('emptyStateBtn'))}</button>
+            <p class="pt-2 text-sm font-semibold text-stone-700 dark:text-stone-200">${escapeHtml(t('emptyStartWith'))}</p>
+            <div class="grid max-w-xl gap-2">
+              <button type="button" id="btn-load-samples" class="flex w-full flex-col rounded-[14px] bg-white dark:bg-stone-800 px-4 py-3 text-left ring-1 ring-stone-200 dark:ring-stone-700 transition hover:ring-2 hover:ring-green-600"><strong class="text-sm text-stone-900 dark:text-stone-100">${escapeHtml(t('emptySetSmall'))}</strong><span class="text-xs text-stone-600 dark:text-stone-300">${escapeHtml(t('emptySetSmallText'))}</span></button>
+              <button type="button" id="btn-load-samples-crawford" class="flex w-full flex-col rounded-[14px] bg-white dark:bg-stone-800 px-4 py-3 text-left ring-1 ring-stone-200 dark:ring-stone-700 transition hover:ring-2 hover:ring-green-600"><strong class="text-sm text-stone-900 dark:text-stone-100">${escapeHtml(t('emptySetCrawford'))}</strong><span class="text-xs text-stone-600 dark:text-stone-300">${escapeHtml(t('emptySetCrawfordText'))}</span></button>
+              <button type="button" id="btn-load-master" class="flex w-full flex-col rounded-[14px] bg-white dark:bg-stone-800 px-4 py-3 text-left ring-1 ring-stone-200 dark:ring-stone-700 transition hover:ring-2 hover:ring-green-600"><strong class="text-sm text-stone-900 dark:text-stone-100">${escapeHtml(t('emptySetMaster'))}</strong><span class="text-xs text-stone-600 dark:text-stone-300">${escapeHtml(t('emptySetMasterText'))}</span></button>
+            </div>
+          </section>
+          <aside class="rounded-[18px] bg-green-50 dark:bg-stone-800 p-5 text-sm ring-1 ring-green-100 dark:ring-stone-700">
+            <p class="text-xs font-bold uppercase tracking-wider text-green-800 dark:text-green-300">${escapeHtml(t(`emptyWay_${path}`))}</p>
+            <ol class="mt-2 list-decimal space-y-1.5 pl-5 text-stone-800 dark:text-stone-200">${steps}</ol>
+            <a href="/settings#einstieg-section" class="mt-3 inline-block text-xs text-stone-600 dark:text-stone-300 underline underline-offset-2">${escapeHtml(t('emptyWayChange'))}</a>
+          </aside>
         </div>`;
       displayPlants = [];
       return;
@@ -2230,9 +2237,14 @@ import Layout from '../layouts/Layout.astro';
   const embedded = window.name === 'pdk-edit' && window.parent !== window;
   const tellParent = (type: 'pdk-edit-open' | 'pdk-edit-closed') => { if (embedded) window.parent.postMessage({ type }, location.origin); };
   if (embedded) document.documentElement.classList.add('pdk-embed');
-  void renderList().then(() => {
+  void renderList().then(async () => {
     const url = new URL(location.href);
     const q = url.searchParams;
+    if (q.get('laden') === 'beispiel') {
+      q.delete('laden');
+      history.replaceState(history.state, '', url.pathname + url.search + url.hash);
+      await startWith['btn-load-samples']();
+    }
     const id = q.get('edit');
     const isNew = q.get('new') === '1';
     if (!id && !isNew) { tellParent('pdk-edit-closed'); return; }

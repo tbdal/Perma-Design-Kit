@@ -4,6 +4,13 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Einstieg neu: drei Wege für drei Gruppen 2026-11-16
+- [x] **Willkommen mit drei Wegen** statt der langen Einführung: „Ich plane meinen Garten“ (Ansicht Einfach, Rundgang, danach die einfache Startseite „Dein Waldgarten beginnt hier“), „Wir planen gemeinsam“ (Baumscheiben und Karten drucken, Polykultur, Plan teilen, Vorbilder, Rundgang) und „Ich plane professionell“ (Beta-Test mit „Was du weitergeben kannst“, nach der Anmeldung einmal „Womit möchtest du anfangen?“); Fotos, Himmel, Datenschutz und Unterstützen aus dem alten Willkommen bleiben #minor #prüfen
+- [x] **Leere Seiten** mit einem Satz zum Nutzen und einem Knopf: Pflanzen (drei Beispiel-Auswahlen und die nächsten Schritte des gewählten Wegs), Kalender (ohne Filter, solange keine Pflanzen da sind), Polykulturen #minor #prüfen
+- [x] **„Klassisch“ in den Einstellungen** (Einstieg und Ansicht, dort auch der gewählte Weg, Willkommen und Rundgang); im Konto-Menü nur noch Einfach und Beta-Test #minor #prüfen
+- [x] **„?“-Menü** mit Rundgang, Willkommen, Anleitung, Quellen, Referenzprojekt und Vorbildern, Shortcuts und allen vier Feedback-Wegen wie beim Feedback-Knopf #minor #prüfen
+- [x] **Beispielprojekt ist jetzt Dartington** (Vorbild von Martin Crawford, ohne Testreste) #minor #prüfen
+
 ## Webseite für Fachleute (Entwürfe zum Prüfbericht November) 2026-11-14
 - [x] **„Womit möchtest du anfangen?“ einmal nach dem Willkommen**: nach dem Schließen (oder am Ende des Rundgangs) erscheinen einmalig drei Wege (Pflanzen recherchieren, Fläche planen, Referenzprojekt öffnen), die fünf Arbeitsschritte und „Was du weitergeben kannst“ mit sechs Vorschaubildern; ein Klick auf einen Link oder × schließt es für immer. Die Pflanzenseite hat die Überschrift „Agroforst und Waldgärten fachlich planen“ #minor #prüfen
 - [x] **„Waldgartenplan“ heißt jetzt „Planer“** (Menü, Seitentitel, „+ Neuer Plan“, Rundgang, Shortcuts) #minor #prüfen

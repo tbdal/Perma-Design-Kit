@@ -1,5 +1,4 @@
 ---
-import BetaPitch from './BetaPitch.astro';
 import '../styles/global.css';
 import { featureDefaults } from '../lib/features';
 interface Props {
@@ -29,6 +28,15 @@ const fbItems = [
 ];
 // The start page keeps the big tree line; every other page gets a narrow strip (global.css, data-home).
 const home = Astro.url.pathname.replace(/\/$/, '') === '';
+// What comes out at the end (start dialog, welcome → professional): thumbnail, title, line.
+const outputs = [
+  { key: 'startOut1', alt: 'startOut1Alt', altDe: 'Standortprofil mit Klima und Bodenschichten, daneben passende Pflanzen mit Haken', svg: '<rect x="58" y="12" width="160" height="96" rx="4" fill="#ffffff" stroke="#c9cfa6"/><circle cx="80" cy="30" r="8" fill="#e0a93a"/><path d="M96 26H120M96 34H112" stroke="#59633d" stroke-width="3" stroke-linecap="round"/><rect x="68" y="48" width="52" height="12" fill="#6b5a3a"/><rect x="68" y="60" width="52" height="14" fill="#8c7650"/><rect x="68" y="74" width="52" height="24" fill="#b8a27a"/><g stroke-linecap="round" stroke-linejoin="round" fill="none" stroke-width="2.5"><path d="M134 30l4 4 8-8" stroke="#33401a"/><path d="M134 52l4 4 8-8" stroke="#33401a"/><path d="M134 74l4 4 8-8" stroke="#33401a"/><path d="M135 92l8 8M143 92l-8 8" stroke="#8c4a2f"/></g><path d="M154 30H206M154 52H198M154 74H202M154 96H190" stroke="#59633d" stroke-width="3" stroke-linecap="round"/>', de: 'Standortgerechte Pflanzenwahl', sub: 'startOut1Sub', subDe: 'passend zu Klima, Boden und Lage' },
+  { key: 'startOut2', alt: 'startOut2Alt', altDe: 'Plan als PDF mit Legende und Maßstab', svg: '<rect x="88" y="10" width="100" height="100" rx="3" fill="#ffffff" stroke="#c9cfa6"/><polygon points="98,22 172,18 178,70 102,76" fill="#eef0d6" stroke="#33401a" stroke-width="1.5"/><g fill="#8fa552" stroke="#33401a" stroke-width="1"><circle cx="115" cy="35" r="6"/><circle cx="135" cy="34" r="6"/><circle cx="155" cy="33" r="6"/><circle cx="117" cy="58" r="6"/><circle cx="137" cy="57" r="6"/><circle cx="157" cy="56" r="6"/></g><circle cx="100" cy="88" r="3" fill="#8fa552"/><circle cx="100" cy="98" r="3" fill="#33401a"/><path d="M108 88H140M108 98H132" stroke="#59633d" stroke-width="3" stroke-linecap="round"/><path d="M150 96V100H178V96" fill="none" stroke="#33401a" stroke-width="1.5"/>', de: 'Plan als PDF', sub: 'startOut2Sub', subDe: 'maßstäblich, mit Legende' },
+  { key: 'startOut3', alt: 'startOut3Alt', altDe: 'Pflanz- und Bestellliste als Tabelle', svg: '<rect x="88" y="10" width="100" height="100" rx="3" fill="#ffffff" stroke="#c9cfa6"/><rect x="96" y="18" width="84" height="9" rx="2" fill="#33401a"/><g fill="#8fa552"><circle cx="100" cy="40" r="3"/><circle cx="100" cy="54" r="3"/><circle cx="100" cy="68" r="3"/><circle cx="100" cy="82" r="3"/><circle cx="100" cy="96" r="3"/></g><path d="M108 40H150M108 54H142M108 68H154M108 82H138M108 96H148" stroke="#59633d" stroke-width="3" stroke-linecap="round"/><path d="M166 40H178M166 54H178M166 68H178M166 82H178M166 96H178" stroke="#8fa552" stroke-width="3" stroke-linecap="round"/>', de: 'Pflanz- und Bestellliste', sub: 'startOut3Sub', subDe: 'Stückzahlen je Art und Sorte' },
+  { key: 'startOut4', alt: 'startOut4Alt', altDe: 'Diagramm zu Kosten und Ertrag über die Jahre', svg: '<g fill="#8fa552"><rect x="84" y="80" width="14" height="16"/><rect x="108" y="68" width="14" height="28"/><rect x="132" y="54" width="14" height="42"/><rect x="156" y="40" width="14" height="56"/><rect x="180" y="28" width="14" height="68"/></g><polyline points="78,48 103,56 127,62 151,67 175,71 200,74" fill="none" stroke="#33401a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M70 20V96H210" fill="none" stroke="#59633d" stroke-width="1.5"/>', de: 'Wirtschaftlichkeit', sub: 'startOut4Sub', subDe: 'Kosten, Ertrag, Risiko und Pflege' },
+  { key: 'startOut5', alt: 'startOut5Alt', altDe: '3D-Ansicht mit Baumkronen und Sonnenstand', svg: '<circle cx="226" cy="26" r="10" fill="#e0a93a"/><polygon points="44,92 150,110 236,84 136,68" fill="#c9d49a" stroke="#59633d" stroke-width="1.5"/><g fill="#1f2710" opacity=".15"><ellipse cx="112" cy="94" rx="14" ry="4"/><ellipse cx="154" cy="100" rx="14" ry="4"/><ellipse cx="160" cy="81" rx="10" ry="3"/><ellipse cx="195" cy="87" rx="10" ry="3"/></g><path d="M152 80V64M187 86V70M100 92V70M142 98V76" stroke="#59633d" stroke-width="3" stroke-linecap="round"/><g fill="#a3b866" stroke="#33401a" stroke-width="1"><ellipse cx="152" cy="56" rx="10" ry="12"/><ellipse cx="187" cy="62" rx="10" ry="12"/></g><g fill="#8fa552" stroke="#33401a" stroke-width="1"><ellipse cx="100" cy="58" rx="14" ry="17"/><ellipse cx="142" cy="64" rx="14" ry="17"/></g>', de: '3D und Besonnung', sub: 'startOut5Sub', subDe: 'Kronen nach Jahren' },
+  { key: 'startOut6', alt: 'startOut6Alt', altDe: 'Pflegekalender mit Arbeiten je Monat', svg: '<rect x="48" y="12" width="180" height="96" rx="4" fill="#ffffff" stroke="#c9cfa6"/><rect x="48" y="12" width="180" height="16" rx="4" fill="#33401a"/><path d="M63 28V108M78 28V108M93 28V108M108 28V108M123 28V108M138 28V108M153 28V108M168 28V108M183 28V108M198 28V108M213 28V108" stroke="#e3e8c4" stroke-width="1"/><g stroke-linecap="round" stroke-width="7"><path d="M54 42H88" stroke="#59633d"/><path d="M190 42H222" stroke="#59633d"/><path d="M84 58H118" stroke="#8fa552"/><path d="M114 74H176" stroke="#a3b866"/><path d="M144 90H206" stroke="#e0a93a"/></g>', de: 'Pflegekalender', sub: 'startOut6Sub', subDe: 'Schnitt, Mulch, Ernte je Monat' },
+];
 const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 dark:hover:bg-stone-800';
 ---
 <!doctype html>
@@ -155,13 +163,20 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
           <!-- Help: one place for tour, guide, example project, shortcuts and bug reports -->
           <div class="relative">
             <button id="help-toggle" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="help-menu" data-i18n-aria-label="helpMenuLabel" data-i18n-title="helpMenuLabel" aria-label="Hilfe" title="Hilfe" class="hdr-round">?</button>
-            <div id="help-menu" hidden class="hdr-panel absolute right-0 z-50 mt-1 w-64">
-              <button id="help-intro" type="button" class="hdr-item" data-i18n="helpIntro">Einführung und Rundgang</button>
+            <div id="help-menu" hidden class="hdr-panel absolute right-0 z-50 mt-1 w-72 max-h-[calc(100dvh-5rem)] overflow-y-auto">
+              <button id="help-tour" type="button" class="hdr-item font-semibold" data-i18n="helpTour">Rundgang starten</button>
+              <button id="help-intro" type="button" class="hdr-item" data-i18n="helpIntro">Willkommen wieder zeigen</button>
               <a href="/hilfe" class="hdr-item" data-i18n="footerHelp">Anleitung</a>
               <a href="/hilfe#quellen" class="hdr-item" data-i18n="helpSources">Quellen und Methode</a>
-              <a href="/beispiel" class="hdr-item" data-i18n="welcomeExample">Beispielprojekt ansehen</a>
+              <a href="/beispiel" class="hdr-item" data-i18n="helpExamples">Referenzprojekt und Vorbilder</a>
               <button id="help-shortcuts" type="button" class="hdr-item" data-i18n="shortcutsTitle">Tastatur-Shortcuts</button>
-              <div class="hdr-sep"><a data-fb="bug" href="/fehler-melden/" class="hdr-item" data-i18n="feedbackBug">Fehler melden</a></div>
+              <!-- the same feedback ways as the Feedback button (bottom right) -->
+              <div class="hdr-sep">
+                <p class="hdr-head" data-i18n="feedbackButton">Feedback</p>
+                {fbItems.map(i => i.href
+                  ? <a data-fb={i.fb} href={i.href} class="hdr-item"><span class="block font-medium" data-i18n={i.label}>{i.de}</span><span class="block text-xs text-stone-500 dark:text-stone-400" data-i18n={i.hint}>{i.deHint}</span></a>
+                  : <button data-fb={i.fb} type="button" class="hdr-item"><span class="block font-medium" data-i18n={i.label}>{i.de}</span><span class="block text-xs text-stone-500 dark:text-stone-400" data-i18n={i.hint}>{i.deHint}</span></button>)}
+              </div>
             </div>
           </div>
           <!-- Account and everything about the display: one button at the far right -->
@@ -184,14 +199,11 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
                   <span class="block font-medium" data-i18n="modeSimple">Einfach</span>
                   <span class="block text-xs text-stone-500 dark:text-stone-400" data-i18n="modeSimpleDesc">Fläche zeichnen, Pflanzen setzen, in 3D ansehen</span>
                 </button>
-                <button type="button" data-mode-opt="classic" aria-pressed="false" class="hdr-item hdr-opt">
-                  <span class="block font-medium" data-i18n="modeClassic">Klassisch</span>
-                  <span class="block text-xs text-stone-500 dark:text-stone-400" data-i18n="modeClassicDesc">Alle Werkzeuge, wie bisher</span>
-                </button>
                 <button type="button" data-mode-opt="expert" aria-pressed="false" class="hdr-item hdr-opt">
                   <span class="flex items-center gap-1.5 font-medium"><span data-i18n="modeExpert">Beta-Test</span><svg id="mode-expert-lock" class="h-3.5 w-3.5 text-stone-500 dark:text-stone-400" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="9" width="12" height="8" rx="1.5"/><path d="M7 9V6.5a3 3 0 0 1 6 0V9"/></svg></span>
                   <span class="block text-xs text-stone-500 dark:text-stone-400" data-i18n="modeExpertDesc">Klassisch plus Funktionen in Erprobung (mit Zugang)</span>
                 </button>
+                <a id="mode-classic-hint" href="/settings#einstieg-section" class="hdr-item text-xs text-stone-500 dark:text-stone-400" data-i18n="modeClassicHint">Klassische Ansicht (wie früher): in den Einstellungen</a>
                 <button type="button" data-mode-opt="team" hidden aria-pressed="false" class="hdr-item hdr-opt">
                   <span class="block font-medium" data-i18n="modeTeam">Team</span>
                   <span class="block text-xs text-stone-500 dark:text-stone-400" data-i18n="modeTeamDesc">Alle Funktionen zum Testen (nur Team)</span>
@@ -260,80 +272,96 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
       </div>
     </footer>
 
-    <!-- Willkommens-Tour beim ersten Besuch (erklärt u.a. das lokale Speichern im Browser) -->
-    <dialog id="welcome-modal" aria-labelledby="welcome-title">
+    <!-- Welcome (first visit): one page, three ways in — own garden (tour, then the simple start page), together (groups,
+         workshops), professional (beta signup). "Erst mal umschauen", × and Esc close it for good; "?" shows it again. -->
+    <dialog id="welcome-modal" aria-labelledby="welcome-title" data-step="choose">
       <button id="welcome-close" type="button" data-i18n-aria-label="closeBtn" aria-label="Schließen" class="w-close">×</button>
       <div class="w-body">
-        <div class="w-sky"><div class="w-wordmark" aria-label="Perma Design Kit">PERMA<br>DESIGN<br>KIT</div>
-          <button id="welcome-beta-jump" type="button" class="w-beta-jump"><span class="w-beta-spark" aria-hidden="true">✦</span><span data-i18n="welcomeBetaJump">Interesse an erweiterten Funktionen und Teilnahme am Beta-Test?</span><span class="w-beta-arrow" aria-hidden="true">↓</span></button></div>
-        <div class="w-content">
-          <header class="w-welcome">
+        <div class="w-sky"><div class="w-wordmark" aria-label="Perma Design Kit">PERMA<br>DESIGN<br>KIT</div></div>
+
+        <section class="w-content" data-for="choose">
+          <header class="w-welcome w-center">
             <h2 id="welcome-title" data-i18n="welcomeTitle">Willkommen im Perma Design Kit</h2>
-            <p data-i18n="welcomeIntro">Ein Werkzeug, mit dem Menschen Polykulturen und Waldgärten planen: nach den Funktionen, dem Nutzen und dem Standort der Pflanzen.</p>
+            <p data-i18n="welcomeIntro">Waldgärten und Agroforst planen: nach Funktion, Nutzen und Standort der Pflanzen. Wie möchtest du starten?</p>
           </header>
+          <div class="w-paths">
+            <button type="button" class="w-path" data-path="garten">
+              <svg class="w-path-pic" viewBox="0 0 320 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="320" height="150" fill="#e3e8c4"/><circle cx="262" cy="38" r="18" fill="#f2d27a"/><path d="M0 110 Q80 80 170 100 T320 92 V150 H0 Z" fill="#a9bd6a"/><path d="M70 116V70" stroke="#59633d" stroke-width="5"/><ellipse cx="70" cy="56" rx="30" ry="36" fill="#8fa552"/><path d="M190 112V76" stroke="#59633d" stroke-width="5"/><ellipse cx="190" cy="62" rx="26" ry="32" fill="#8fa552"/><path d="M130 124V102" stroke="#4a5432" stroke-width="4"/><ellipse cx="130" cy="94" rx="20" ry="18" fill="#6f8540"/><path d="M250 124V104" stroke="#4a5432" stroke-width="4"/><ellipse cx="250" cy="96" rx="18" ry="16" fill="#6f8540"/><path d="M0 136 Q40 118 80 134 Q120 118 160 136 Q200 118 240 134 Q280 120 320 132 V150 H0 Z" fill="#4a5a22"/><g fill="#e0a93a"><circle cx="40" cy="130" r="4"/><circle cx="150" cy="128" r="4"/><circle cx="290" cy="130" r="4"/></g></svg>
+              <span class="w-path-body"><strong data-i18n="welcomePathGarden">Ich plane meinen Garten</strong><span data-i18n="welcomePathGardenText">Ein kurzer Rundgang, dann Pflanzen suchen, Fläche zeichnen und den Garten wachsen sehen.</span><span class="w-path-go" data-i18n="welcomePathGardenGo">Los geht’s →</span></span>
+            </button>
+            <button type="button" class="w-path" data-path="gemeinsam">
+              <img class="w-path-pic" src="/einfuehrung-baumscheiben.jpg" width="1000" height="900" loading="lazy" decoding="async" alt="" />
+              <span class="w-path-body"><strong data-i18n="welcomePathGroup">Wir planen gemeinsam</strong><span data-i18n="welcomePathGroupText">Für Gruppen, Vereine, Gemeinden und Workshops: Pflanzen als Karten und Baumscheiben drucken und gemeinsam am Boden planen.</span><span class="w-path-go" data-i18n="welcomePathGroupGo">Gemeinsam starten →</span></span>
+            </button>
+            <button type="button" class="w-path w-path-dark" data-path="profi">
+              <img class="w-path-pic" src="/einfuehrung-dartington.jpg" width="1400" height="933" loading="lazy" decoding="async" alt="" />
+              <span class="w-path-body"><span class="flex items-center gap-2"><strong data-i18n="welcomePathPro">Ich plane professionell</strong><span class="w-badge">Beta</span></span><span data-i18n="welcomePathProText">Planer, 3D, Wirtschaftlichkeit, Erträge, Bodendaten und Klimasimulation. Vorerst im Beta-Test.</span><span class="w-path-go" data-i18n="welcomePathProGo">Am Beta-Test teilnehmen →</span></span>
+            </button>
+          </div>
+        </section>
 
-          <section class="w-pics">
-            <figure>
-              <img src="/einfuehrung-baumscheiben.jpg" width="1000" height="900" loading="lazy" decoding="async" alt="Baumscheiben aus Papier, ausgelegt auf einem mit Klebeband markierten Gartenplan auf Holzdielen" data-i18n-alt="welcomeAlt1">
-              <figcaption data-i18n="welcomeCap1">Baumscheiben auf einem ausgelegten Gartenplan. Jede Scheibe ist eine Pflanze mit ihren Eigenschaften.</figcaption>
-            </figure>
-            <figure>
-              <img src="/einfuehrung-dartington.jpg" width="1400" height="933" loading="lazy" decoding="async" alt="Der Waldgartenplan mit dem Vorbild-Garten Dartington in 3D: Bäume, Gebäude und Höhenlinien, links die Werkzeugleiste" data-i18n-alt="welcomeAlt2">
-              <figcaption data-i18n="welcomeCap2">Der Waldgartenplan in 3D: Fläche zeichnen, Pflanzen setzen, den Garten über die Jahre wachsen sehen.</figcaption>
-            </figure>
-          </section>
+        <section class="w-content" data-for="gemeinsam" hidden>
+          <header class="w-welcome">
+            <p class="w-eyebrow" data-i18n="welcomeGroupEyebrow">Gruppen, Vereine, Gemeinden, Workshops</p>
+            <h2 data-i18n="welcomeGroupTitle">Gemeinsam planen</h2>
+            <p data-i18n="welcomeGroupText">Erst auf dem Boden, dann am Bildschirm: Pflanzen als Baumscheiben ausdrucken, gemeinsam auslegen und das Ergebnis als Plan festhalten. Teilen geht ohne Konto, per Link.</p>
+          </header>
+          <div class="w-links">
+              <a href="/?view=cards" class="w-link"><svg class="h-6 w-6 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v6M12 15v6M3 12h6M15 12h6"/></svg><span><strong data-i18n="welcomeGroupCards">Baumscheiben und Karten drucken</strong><span data-i18n="welcomeGroupCardsText">Jede Pflanze als Scheibe mit ihren Eigenschaften, als PDF.</span></span></a>
+              <a href="/polykulturen" class="w-link"><svg class="h-6 w-6 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"/><circle cx="5" cy="7" r="2"/><circle cx="19" cy="7" r="2"/><circle cx="12" cy="20" r="2"/></svg><span><strong data-i18n="welcomeGroupPoly">Polykultur zusammenstellen</strong><span data-i18n="welcomeGroupPolyText">Pflanzen nach Funktion kombinieren: Stickstoff, Insekten, Bodendecker.</span></span></a>
+              <a href="/settings#daten-section" class="w-link"><svg class="h-6 w-6 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.2 10.9l7.6-3.8M8.2 13.1l7.6 3.8"/></svg><span><strong data-i18n="welcomeGroupShare">Plan teilen</strong><span data-i18n="welcomeGroupShareText">Ein Link mit Pflanzen, Polykulturen und Plan, ohne Konto und Server.</span></span></a>
+              <a href="/beispiel" class="w-link"><svg class="h-6 w-6 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 20l6-9 4 5 3-4 5 8z"/><circle cx="17" cy="6" r="2"/></svg><span><strong data-i18n="welcomeGroupModels">Vorbilder ansehen</strong><span data-i18n="welcomeGroupModelsText">Echte Waldgärten wie Dartington und Garden Cottage, zum Lernen.</span></span></a>
+          </div>
+        </section>
 
-          <section class="w-vision">
-            <p class="w-lead" data-i18n="welcomeLead">Wir möchten Teil eines Kulturwandels sein: Hin zu einer Schenkökonomie und einem fürsorglichen Umgang mit Natur.</p>
-            <div>
-              <p data-i18n="welcomeTool1">Das Kit begleitet dich vom Pflanzensteckbrief über den Waldgartenplan bis zur Pflanzung draußen, am Schreibtisch, im Feld und in Gruppen, Vereinen und Gemeinden.</p>
-              <p data-i18n="welcomeTool2">Es ist ein freies Werkzeug, das allen gehört: geschenkt und weitergegeben, nicht verkauft.</p>
+        <section id="welcome-beta" class="w-content" data-for="profi" hidden>
+          <header class="w-welcome">
+            <p class="w-eyebrow" data-i18n="welcomeProEyebrow">Beta-Test</p>
+            <h2 data-i18n="welcomeProTitle">Alle Werkzeuge für deine Planung</h2>
+            <p data-i18n="welcomeProText">Vorerst gibt es sie im Beta-Test. Du bekommst einen Zugang, wir bekommen deine Rückmeldung.</p>
+          </header>
+          <div class="w-out">
+            <h3 data-i18n="startOutHeading">Was du weitergeben kannst</h3>
+            <div class="w-out-grid">
+              {outputs.map(o => <figure><div class="w-out-pic"><svg viewBox="0 0 276 120" role="img" data-i18n-aria-label={o.alt} aria-label={o.altDe} set:html={o.svg}></svg></div><figcaption><strong data-i18n={o.key}>{o.de}</strong><span data-i18n={o.sub}>{o.subDe}</span></figcaption></figure>)}
             </div>
-            <p class="w-support"><span aria-hidden="true">💚</span> <span data-i18n="welcomeSupport">Möchtest du uns unterstützen?</span> <a id="welcome-support" href="/unterstuetzen" data-i18n="welcomeSupportLink">Zur Seite „Unterstützen“</a></p>
-          </section>
-
-          <section class="w-steps">
-            <div class="w-step">
-              <h3 data-i18n="navPlants">Pflanzen</h3>
-              <p data-i18n="welcomeStepPlants">Lerne Pflanzen kennen: Steckbriefe mit Ökologie, Nutzen und Standortansprüchen. Zu jeder Angabe steht, woher sie stammt.</p>
-            </div>
-            <div class="w-step">
-              <h3 data-i18n="navGuilds">Polykulturen</h3>
-              <p data-i18n="welcomeStepGuilds">Stelle Pflanzen nach ihren Funktionen zusammen und drucke sie als Karten oder Baumscheiben aus.</p>
-            </div>
-            <div class="w-step">
-              <h3 data-i18n="navGardenPlan">Waldgartenplan</h3>
-              <p data-i18n="welcomeStepPlan">Plane deinen Garten: Zeichne die Fläche auf der Karte, setze Pflanzen und sieh mit dem Regler, wie der Garten in Jahren aussieht.</p>
-            </div>
-            <div class="w-step">
-              <h3 data-i18n="navCalendar">Kalender</h3>
-              <p data-i18n="welcomeStepCalendar">Behalte das Gartenjahr im Blick: Lege fest, wann du aussäst, pflanzt, pflegst und erntest.</p>
-            </div>
-          </section>
-
-          <!-- Beta test: always there (the button top right scrolls to it), set apart in colour from the four areas above; the tiles come from the server (names of private features stay out of this build) and only show when someone wrote them -->
-          <section id="welcome-beta" class="w-beta">
-            <BetaPitch heading="h3" href="/beta/" pitchId="welcome-beta-pitch" joinId="welcome-beta-join" />
-            <p id="welcome-beta-text" hidden></p>
-            <div id="welcome-beta-items" class="w-beta-items"></div>
-          </section>
-        </div>
+          </div>
+          <ul class="w-checks">
+            <li><svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M4 12l5 5L20 6"/></svg><span><strong data-i18n="welcomeProL1Head">Standort:</strong> <span data-i18n="welcomeProL1">Boden, Klima heute und in Zukunft und passende Pflanzen</span></span></li>
+            <li><svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M4 12l5 5L20 6"/></svg><span><strong data-i18n="welcomeProL2Head">Profi-Planer:</strong> <span data-i18n="welcomeProL2">Ebenen, Agroforst-Reihen, Trachtlücken, Windschutz, Wasserablauf</span></span></li>
+            <li><svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M4 12l5 5L20 6"/></svg><span><strong data-i18n="welcomeProL3Head">Im Team:</strong> <span data-i18n="welcomeProL3">Pläne freigeben, Baumbiographien und Aufgaben</span></span></li>
+          </ul>
+          <p id="welcome-beta-text" hidden></p>
+          <div id="welcome-beta-items" class="w-beta-items"></div>
+          <p class="w-privacy" data-i18n="welcomeProNote">Nach der Anmeldung ist die Ansicht „Beta“ aktiv. Das Konto speichert Gartendaten nur, wenn du es möchtest.</p>
+        </section>
       </div>
 
       <div class="w-foot">
-        <div class="w-cta">
-          <button id="welcome-next" type="button" autofocus class="w-btn w-primary" data-i18n="welcomeStartTour">Rundgang starten</button>
-          <a id="welcome-example" href="/beispiel" class="w-btn w-ghost" data-i18n="welcomeExample">Beispielprojekt ansehen</a>
-          <button id="welcome-skip" type="button" class="w-btn w-quiet" data-i18n="tourSkip">Überspringen</button>
+        <div class="w-cta" data-for="choose">
+          <p class="w-privacy w-grow"><strong data-i18n="welcomePrivacyShort">Kein Konto nötig: deine Daten bleiben in deinem Browser.</strong><br><span data-i18n="welcomeVision">Ein freies Werkzeug für den Kulturwandel:</span> <a id="welcome-support" href="/unterstuetzen" data-i18n="welcomeVisionLink">Teilst du unsere Vision? Unterstützen</a></p>
+          <button id="welcome-skip" type="button" class="w-btn w-quiet" data-i18n="welcomeLookAround">Erst mal umschauen</button>
         </div>
-        <p class="w-privacy"><strong data-i18n="welcomePrivacyHead">Deine Daten bleiben in deinem Browser.</strong> <span data-i18n="welcomePrivacyBody">Es gibt kein Konto und keinen Server, der deine Pflanzen oder Pläne speichert (Ausnahme: ein freiwilliges Beta-Konto, das auf Wunsch auch Gartendaten speichert). Lege regelmäßig ein Backup an (Einstellungen, Daten).</span></p>
+        <div class="w-cta" data-for="gemeinsam" hidden>
+          <button type="button" class="w-btn w-ghost" data-welcome-back data-i18n="welcomeBack">← Zurück</button>
+          <span class="w-grow"></span>
+          <button type="button" class="w-btn w-quiet" data-welcome-close data-i18n="welcomeLookAround">Erst mal umschauen</button>
+          <button id="welcome-next" type="button" class="w-btn w-primary" data-i18n="welcomeStartTour">Rundgang starten</button>
+        </div>
+        <div class="w-cta" data-for="profi" hidden>
+          <button type="button" class="w-btn w-ghost" data-welcome-back data-i18n="welcomeBack">← Zurück</button>
+          <span class="w-grow"></span>
+          <a id="welcome-beta-login" href="/anmelden/?mode=expert" class="w-btn w-quiet" data-i18n="welcomeProLogin">Ich habe schon einen Zugang</a>
+          <a id="welcome-beta-join" href="/beta/#signup-form" class="w-btn w-primary" data-i18n="welcomePathProGo">Am Beta-Test teilnehmen →</a>
+        </div>
       </div>
     </dialog>
 
-    <!-- "Womit möchtest du anfangen?": once, right after the welcome is closed (or its tour ended); any link or × closes it for good. -->
+    <!-- "Womit möchtest du anfangen?": once per device. Variant "garten" after the tour of the own-garden way (simple start page),
+         variant "profi" once the professional way has signed in (beta). Any link or × closes it for good. -->
     <dialog id="start-modal" aria-labelledby="start-title" class="m-auto w-[min(64rem,calc(100vw-1.5rem))] max-w-none max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-[22px] bg-stone-50 dark:bg-stone-900 p-5 sm:p-8 text-stone-800 dark:text-stone-100 shadow-2xl backdrop:bg-black/50">
           <button id="start-close" type="button" data-i18n-aria-label="closeBtn" aria-label="Schließen" class="float-right -mr-1 -mt-1 h-9 w-9 rounded-full text-2xl leading-none text-stone-500 hover:bg-stone-200 dark:hover:bg-stone-800">×</button>
-      <div class="space-y-8">
+      <div class="space-y-8" data-variant="profi">
     <div class="space-y-3.5">
           <h2 class="text-xl font-bold text-stone-900 dark:text-stone-100" id="start-title" data-i18n="startHeading">Womit möchtest du anfangen?</h2>
           <div class="grid gap-4 md:grid-cols-3">
@@ -374,36 +402,58 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
             <span class="text-sm text-stone-500 dark:text-stone-400" data-i18n="startOutNote">Beispiele aus dem Referenzprojekt</span>
       </div>
           <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
-            <figure class="m-0 flex flex-col gap-2">
-              <div class="overflow-hidden rounded-xl bg-[#e3e8c4]"><svg class="block h-auto w-full" viewBox="0 0 276 120" role="img" data-i18n-aria-label="startOut1Alt" aria-label="Standortprofil mit Klima und Bodenschichten, daneben passende Pflanzen mit Haken"><rect x="58" y="12" width="160" height="96" rx="4" fill="#ffffff" stroke="#c9cfa6"/><circle cx="80" cy="30" r="8" fill="#e0a93a"/><path d="M96 26H120M96 34H112" stroke="#59633d" stroke-width="3" stroke-linecap="round"/><rect x="68" y="48" width="52" height="12" fill="#6b5a3a"/><rect x="68" y="60" width="52" height="14" fill="#8c7650"/><rect x="68" y="74" width="52" height="24" fill="#b8a27a"/><g stroke-linecap="round" stroke-linejoin="round" fill="none" stroke-width="2.5"><path d="M134 30l4 4 8-8" stroke="#33401a"/><path d="M134 52l4 4 8-8" stroke="#33401a"/><path d="M134 74l4 4 8-8" stroke="#33401a"/><path d="M135 92l8 8M143 92l-8 8" stroke="#8c4a2f"/></g><path d="M154 30H206M154 52H198M154 74H202M154 96H190" stroke="#59633d" stroke-width="3" stroke-linecap="round"/></svg></div>
-              <figcaption class="text-[15px] leading-snug"><strong class="text-stone-900 dark:text-stone-100" data-i18n="startOut1">Standortgerechte Pflanzenwahl</strong><br><span class="text-stone-600 dark:text-stone-300" data-i18n="startOut1Sub">passend zu Klima, Boden und Lage</span></figcaption>
-            </figure>
-            <figure class="m-0 flex flex-col gap-2">
-              <div class="overflow-hidden rounded-xl bg-[#e3e8c4]"><svg class="block h-auto w-full" viewBox="0 0 276 120" role="img" data-i18n-aria-label="startOut2Alt" aria-label="Plan als PDF mit Legende und Maßstab"><rect x="88" y="10" width="100" height="100" rx="3" fill="#ffffff" stroke="#c9cfa6"/><polygon points="98,22 172,18 178,70 102,76" fill="#eef0d6" stroke="#33401a" stroke-width="1.5"/><g fill="#8fa552" stroke="#33401a" stroke-width="1"><circle cx="115" cy="35" r="6"/><circle cx="135" cy="34" r="6"/><circle cx="155" cy="33" r="6"/><circle cx="117" cy="58" r="6"/><circle cx="137" cy="57" r="6"/><circle cx="157" cy="56" r="6"/></g><circle cx="100" cy="88" r="3" fill="#8fa552"/><circle cx="100" cy="98" r="3" fill="#33401a"/><path d="M108 88H140M108 98H132" stroke="#59633d" stroke-width="3" stroke-linecap="round"/><path d="M150 96V100H178V96" fill="none" stroke="#33401a" stroke-width="1.5"/></svg></div>
-              <figcaption class="text-[15px] leading-snug"><strong class="text-stone-900 dark:text-stone-100" data-i18n="startOut2">Plan als PDF</strong><br><span class="text-stone-600 dark:text-stone-300" data-i18n="startOut2Sub">maßstäblich, mit Legende</span></figcaption>
-            </figure>
-            <figure class="m-0 flex flex-col gap-2">
-              <div class="overflow-hidden rounded-xl bg-[#e3e8c4]"><svg class="block h-auto w-full" viewBox="0 0 276 120" role="img" data-i18n-aria-label="startOut3Alt" aria-label="Pflanz- und Bestellliste als Tabelle"><rect x="88" y="10" width="100" height="100" rx="3" fill="#ffffff" stroke="#c9cfa6"/><rect x="96" y="18" width="84" height="9" rx="2" fill="#33401a"/><g fill="#8fa552"><circle cx="100" cy="40" r="3"/><circle cx="100" cy="54" r="3"/><circle cx="100" cy="68" r="3"/><circle cx="100" cy="82" r="3"/><circle cx="100" cy="96" r="3"/></g><path d="M108 40H150M108 54H142M108 68H154M108 82H138M108 96H148" stroke="#59633d" stroke-width="3" stroke-linecap="round"/><path d="M166 40H178M166 54H178M166 68H178M166 82H178M166 96H178" stroke="#8fa552" stroke-width="3" stroke-linecap="round"/></svg></div>
-              <figcaption class="text-[15px] leading-snug"><strong class="text-stone-900 dark:text-stone-100" data-i18n="startOut3">Pflanz- und Bestellliste</strong><br><span class="text-stone-600 dark:text-stone-300" data-i18n="startOut3Sub">Stückzahlen je Art und Sorte</span></figcaption>
-            </figure>
-            <figure class="m-0 flex flex-col gap-2">
-              <div class="overflow-hidden rounded-xl bg-[#e3e8c4]"><svg class="block h-auto w-full" viewBox="0 0 276 120" role="img" data-i18n-aria-label="startOut4Alt" aria-label="Diagramm zu Kosten und Ertrag über die Jahre"><g fill="#8fa552"><rect x="84" y="80" width="14" height="16"/><rect x="108" y="68" width="14" height="28"/><rect x="132" y="54" width="14" height="42"/><rect x="156" y="40" width="14" height="56"/><rect x="180" y="28" width="14" height="68"/></g><polyline points="78,48 103,56 127,62 151,67 175,71 200,74" fill="none" stroke="#33401a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M70 20V96H210" fill="none" stroke="#59633d" stroke-width="1.5"/></svg></div>
-              <figcaption class="text-[15px] leading-snug"><strong class="text-stone-900 dark:text-stone-100" data-i18n="startOut4">Wirtschaftlichkeit</strong><br><span class="text-stone-600 dark:text-stone-300" data-i18n="startOut4Sub">Kosten, Ertrag, Risiko und Pflege</span></figcaption>
-            </figure>
-            <figure class="m-0 flex flex-col gap-2">
-              <div class="overflow-hidden rounded-xl bg-[#e3e8c4]"><svg class="block h-auto w-full" viewBox="0 0 276 120" role="img" data-i18n-aria-label="startOut5Alt" aria-label="3D-Ansicht mit Baumkronen und Sonnenstand"><circle cx="226" cy="26" r="10" fill="#e0a93a"/><polygon points="44,92 150,110 236,84 136,68" fill="#c9d49a" stroke="#59633d" stroke-width="1.5"/><g fill="#1f2710" opacity=".15"><ellipse cx="112" cy="94" rx="14" ry="4"/><ellipse cx="154" cy="100" rx="14" ry="4"/><ellipse cx="160" cy="81" rx="10" ry="3"/><ellipse cx="195" cy="87" rx="10" ry="3"/></g><path d="M152 80V64M187 86V70M100 92V70M142 98V76" stroke="#59633d" stroke-width="3" stroke-linecap="round"/><g fill="#a3b866" stroke="#33401a" stroke-width="1"><ellipse cx="152" cy="56" rx="10" ry="12"/><ellipse cx="187" cy="62" rx="10" ry="12"/></g><g fill="#8fa552" stroke="#33401a" stroke-width="1"><ellipse cx="100" cy="58" rx="14" ry="17"/><ellipse cx="142" cy="64" rx="14" ry="17"/></g></svg></div>
-              <figcaption class="text-[15px] leading-snug"><strong class="text-stone-900 dark:text-stone-100" data-i18n="startOut5">3D und Besonnung</strong><br><span class="text-stone-600 dark:text-stone-300" data-i18n="startOut5Sub">Kronen nach Jahren</span></figcaption>
-            </figure>
-            <figure class="m-0 flex flex-col gap-2">
-              <div class="overflow-hidden rounded-xl bg-[#e3e8c4]"><svg class="block h-auto w-full" viewBox="0 0 276 120" role="img" data-i18n-aria-label="startOut6Alt" aria-label="Pflegekalender mit Arbeiten je Monat"><rect x="48" y="12" width="180" height="96" rx="4" fill="#ffffff" stroke="#c9cfa6"/><rect x="48" y="12" width="180" height="16" rx="4" fill="#33401a"/><path d="M63 28V108M78 28V108M93 28V108M108 28V108M123 28V108M138 28V108M153 28V108M168 28V108M183 28V108M198 28V108M213 28V108" stroke="#e3e8c4" stroke-width="1"/><g stroke-linecap="round" stroke-width="7"><path d="M54 42H88" stroke="#59633d"/><path d="M190 42H222" stroke="#59633d"/><path d="M84 58H118" stroke="#8fa552"/><path d="M114 74H176" stroke="#a3b866"/><path d="M144 90H206" stroke="#e0a93a"/></g></svg></div>
-              <figcaption class="text-[15px] leading-snug"><strong class="text-stone-900 dark:text-stone-100" data-i18n="startOut6">Pflegekalender</strong><br><span class="text-stone-600 dark:text-stone-300" data-i18n="startOut6Sub">Schnitt, Mulch, Ernte je Monat</span></figcaption>
-            </figure>
+            {outputs.map(o => <figure class="m-0 flex flex-col gap-2">
+              <div class="overflow-hidden rounded-xl bg-[#e3e8c4]"><svg class="block h-auto w-full" viewBox="0 0 276 120" role="img" data-i18n-aria-label={o.alt} aria-label={o.altDe} set:html={o.svg}></svg></div>
+              <figcaption class="text-[15px] leading-snug"><strong class="text-stone-900 dark:text-stone-100" data-i18n={o.key}>{o.de}</strong><br><span class="text-stone-600 dark:text-stone-300" data-i18n={o.sub}>{o.subDe}</span></figcaption>
+            </figure>)}
       </div>
     </div>
     <p class="flex items-center gap-2 text-sm text-stone-600 dark:text-stone-300">
           <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
           <span><span data-i18n="startPrivacy">Deine Daten bleiben in deinem Browser.</span> <a href="/hilfe#quellen" class="font-medium text-green-800 dark:text-green-300 underline underline-offset-2 hover:no-underline" data-i18n="startSources">Datenquellen und Methoden</a></span>
     </p>
+      </div>
+      <div class="space-y-7" data-variant="garten" hidden>
+        <div class="space-y-1">
+          <h2 class="text-2xl font-bold text-stone-900 dark:text-stone-100" id="start-title-garten" data-i18n="gardenStartTitle">Dein Waldgarten beginnt hier</h2>
+          <p class="text-stone-600 dark:text-stone-300" data-i18n="gardenStartText">Pflanzen entdecken, zusammenstellen und in deinen Garten setzen. Schritt für Schritt.</p>
+        </div>
+        <div class="grid gap-4 md:grid-cols-3">
+          <a href="/#suche" class="start-card flex flex-col gap-2 rounded-[18px] bg-white dark:bg-stone-900 p-5 ring-2 ring-[#c9d49a] dark:ring-stone-700 transition hover:ring-green-600">
+            <span class="flex h-14 w-14 items-center justify-center rounded-full bg-green-50 dark:bg-stone-800"><svg class="h-7 w-7 text-green-800 dark:text-green-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 21V11"/><path d="M12 11C12 6 8 4 4 4c0 5 3 7 8 7z"/><path d="M12 13c0-4 3-6 8-6 0 4-3 6-8 6z"/></svg></span>
+            <strong class="text-lg text-stone-900 dark:text-stone-100" data-i18n="gardenPlants">Pflanzen entdecken</strong>
+            <span class="text-[15px] text-stone-600 dark:text-stone-300" data-i18n="gardenPlantsText">Was wächst bei dir, was schmeckt, was hilft dem Boden? Steckbriefe mit Bild, Nutzen und Standort.</span>
+            <span class="mt-auto pt-1 font-bold text-green-800 dark:text-green-300"><span data-i18n="gardenPlantsGo">Zu den Pflanzen</span> →</span>
+          </a>
+          <a href="/polykulturen" class="start-card flex flex-col gap-2 rounded-[18px] bg-white dark:bg-stone-900 p-5 ring-2 ring-[#c9d49a] dark:ring-stone-700 transition hover:ring-green-600">
+            <span class="flex h-14 w-14 items-center justify-center rounded-full bg-green-50 dark:bg-stone-800"><svg class="h-7 w-7 text-green-800 dark:text-green-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="8" cy="9" r="4"/><circle cx="16" cy="9" r="4"/><circle cx="12" cy="16" r="4"/></svg></span>
+            <strong class="text-lg text-stone-900 dark:text-stone-100" data-i18n="gardenCombine">Pflanzen kombinieren</strong>
+            <span class="text-[15px] text-stone-600 dark:text-stone-300" data-i18n="gardenCombineText">Gute Nachbarn finden: ein Baum, Sträucher darunter, Kräuter am Boden.</span>
+            <span class="mt-auto pt-1 font-bold text-green-800 dark:text-green-300"><span data-i18n="gardenCombineGo">Polykultur zusammenstellen</span> →</span>
+          </a>
+          <a href="/gartenplan?neu=1" class="start-card flex flex-col gap-2 rounded-[18px] bg-white dark:bg-stone-900 p-5 ring-2 ring-[#c9d49a] dark:ring-stone-700 transition hover:ring-green-600">
+            <span class="flex h-14 w-14 items-center justify-center rounded-full bg-green-50 dark:bg-stone-800"><svg class="h-7 w-7 text-green-800 dark:text-green-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></svg></span>
+            <strong class="text-lg text-stone-900 dark:text-stone-100" data-i18n="gardenDraw">Garten zeichnen</strong>
+            <span class="text-[15px] text-stone-600 dark:text-stone-300" data-i18n="gardenDrawText">Fläche auf der Karte umranden, Pflanzen setzen und mit dem Regler sehen, wie alles in 10 Jahren aussieht.</span>
+            <span class="mt-auto pt-1 font-bold text-green-800 dark:text-green-300"><span data-i18n="gardenDrawGo">Plan anlegen</span> →</span>
+          </a>
+        </div>
+        <h3 class="text-lg font-bold text-stone-900 dark:text-stone-100" data-i18n="gardenInspire">Oder lass dich inspirieren</h3>
+        <div class="grid gap-3 md:grid-cols-3">
+          <a href="/?laden=beispiel" class="start-card flex items-start gap-3 rounded-[16px] bg-white dark:bg-stone-900 p-4 ring-1 ring-stone-200 dark:ring-stone-700 transition hover:ring-green-600">
+            <svg class="mt-0.5 h-7 w-7 shrink-0 text-green-800 dark:text-green-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 5h6a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H4z"/><path d="M20 5h-6a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h6z"/></svg>
+            <span><strong class="block text-stone-900 dark:text-stone-100" data-i18n="gardenSamples">Mit Beispielpflanzen starten</strong><span class="block text-sm text-stone-600 dark:text-stone-300" data-i18n="gardenSamplesText">Bewährte Waldgartenpflanzen, mit einem Klick geladen.</span></span>
+          </a>
+          <a href="/beispiel" class="start-card flex items-start gap-3 rounded-[16px] bg-white dark:bg-stone-900 p-4 ring-1 ring-stone-200 dark:ring-stone-700 transition hover:ring-green-600">
+            <svg class="mt-0.5 h-7 w-7 shrink-0 text-green-800 dark:text-green-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 20l6-9 4 5 3-4 5 8z"/><circle cx="17" cy="6" r="2"/></svg>
+            <span><strong class="block text-stone-900 dark:text-stone-100" data-i18n="gardenModels">Vorbilder ansehen</strong><span class="block text-sm text-stone-600 dark:text-stone-300" data-i18n="gardenModelsText">Echte Waldgärten zum Abschauen und Weiterplanen.</span></span>
+          </a>
+          <a href="/kalender" class="start-card flex items-start gap-3 rounded-[16px] bg-white dark:bg-stone-900 p-4 ring-1 ring-stone-200 dark:ring-stone-700 transition hover:ring-green-600">
+            <svg class="mt-0.5 h-7 w-7 shrink-0 text-green-800 dark:text-green-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+            <span><strong class="block text-stone-900 dark:text-stone-100" data-i18n="gardenYear">Gartenjahr planen</strong><span class="block text-sm text-stone-600 dark:text-stone-300" data-i18n="gardenYearText">Wann blüht und reift was? Alles im Kalender.</span></span>
+          </a>
+        </div>
+        <p class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-stone-600 dark:text-stone-300"><span data-i18n="gardenPrivacy">Deine Daten bleiben in deinem Browser. Lege ab und zu ein Backup an.</span> <a href="/beta/" class="font-semibold text-green-800 dark:text-green-300 underline underline-offset-2" data-i18n="gardenMore">Mehr Werkzeuge? Beta-Test</a></p>
       </div>
     </dialog>
 
@@ -511,16 +561,20 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
       // readable; "Einführung" in the footer replays it.
       import { createT, getLang } from '../lib/i18n/core';
       import { layoutDict } from '../lib/i18n/dict-layout';
-      import { currentMode } from '../lib/ui-mode';
+      import { currentMode, isLoginMode, setMode } from '../lib/ui-mode';
+      import { getPath, setPath, type StartPath } from '../lib/start-path';
       const tt = createT(layoutDict);
       const WELCOME_KEY = 'pdk-welcome-seen';
       const markSeen = () => { try { localStorage.setItem(WELCOME_KEY, '1'); } catch {} };
-      // "Womit möchtest du anfangen?" — once per device, after the welcome (or its tour); a link or × ends it for good.
+      // "Womit möchtest du anfangen?" — once per device: the simple start page after the own-garden tour, the
+      // professional one once the beta is on. A link or × ends it for good.
       const START_KEY = 'pdk-start-seen';
-      function showStart() {
+      function showStart(variant: 'garten' | 'profi') {
         const dlg = document.getElementById('start-modal') as HTMLDialogElement | null;
-        if (!dlg || dlg.open) return;
+        if (!dlg || dlg.open || document.querySelector('dialog[open]')) return;
         try { if (localStorage.getItem(START_KEY)) return; localStorage.setItem(START_KEY, '1'); } catch { return; }
+        dlg.querySelectorAll<HTMLElement>('[data-variant]').forEach(v => { v.hidden = v.dataset.variant !== variant; });
+        dlg.setAttribute('aria-labelledby', variant === 'garten' ? 'start-title-garten' : 'start-title');
         dlg.showModal();
       }
       {
@@ -612,7 +666,7 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
         };
         const end = () => {
           markSeen();
-          showStart();
+          if (getPath() === 'garten') showStart('garten');
           for (const el of [block, spot, card]) el.hidden = true;
           dummy?.remove();
           window.removeEventListener('resize', place);
@@ -633,23 +687,17 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
       }
 
 
-      /** The beta block of the welcome page: in beta mode only with news (up to four tiles from the private server), otherwise always, tiles when there are some. */
+      /** Tiles of new beta features from the private server (admin-written), shown in the professional step. */
       async function fillBeta() {
-        const box = document.getElementById('welcome-beta')!;
-        const jump = document.getElementById('welcome-beta-jump')!;
-        const inBeta = currentMode() === 'expert';
         let items: { title: string; text: string; bild?: string }[] = [];
         try {
           const res = await fetch(`/api/beta/vorschau?lang=${getLang()}`, { cache: 'no-store', signal: AbortSignal.timeout(2500) });
           items = res.ok ? (await res.json()).items ?? [] : [];
         } catch { /* offline or no server: no tiles */ }
-        jump.hidden = box.hidden = inBeta && !items.length;
-        if (inBeta) {
+        if (currentMode() === 'expert') {
           const line = document.getElementById('welcome-beta-text')!;
           line.textContent = tt('welcomeBetaTextIn');
           line.hidden = false;
-          document.getElementById('welcome-beta-pitch')!.hidden = true;
-          jump.hidden = true;
         }
         document.getElementById('welcome-beta-items')!.replaceChildren(...items.slice(0, 4).map(item => {
           const tile = document.createElement('div');
@@ -661,23 +709,52 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
           return tile;
         }));
       }
-      document.getElementById('welcome-beta-jump')?.addEventListener('click', () => document.getElementById('welcome-beta')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+      /** The tour runs on the plant page; elsewhere it opens that page first (/?rundgang=1). */
+      function startTour() {
+        if ((location.pathname.replace(/\/$/, '') || '/') === '/') runTour();
+        else location.href = '/?rundgang=1';
+      }
       const modal = document.getElementById('welcome-modal') as HTMLDialogElement | null;
       if (modal) {
         void fillBeta();
-        const startTour = () => { markSeen(); modal.close(); runTour(); };
-        document.getElementById('welcome-next')?.addEventListener('click', startTour);
-        document.getElementById('welcome-skip')?.addEventListener('click', () => { markSeen(); modal.close(); showStart(); });
-        document.getElementById('welcome-close')?.addEventListener('click', () => { markSeen(); modal.close(); showStart(); });
-        for (const id of ['welcome-example', 'welcome-support']) document.getElementById(id)?.addEventListener('click', markSeen);
-        modal.addEventListener('cancel', () => { markSeen(); setTimeout(showStart); });
-        const open = () => { if (!modal.open) modal.showModal(); };
+        const setStep = (step: string) => {
+          modal.dataset.step = step;
+          modal.querySelectorAll<HTMLElement>('[data-for]').forEach(el => { el.hidden = el.dataset.for !== step; });
+          modal.querySelector('.w-body')?.scrollTo(0, 0);
+        };
+        const close = () => { markSeen(); modal.close(); };
+        modal.querySelectorAll<HTMLElement>('[data-path]').forEach(b => b.addEventListener('click', () => {
+          const path = b.dataset.path as StartPath;
+          setPath(path);
+          if (path === 'garten') {
+            if (!isLoginMode(currentMode())) setMode('simple');
+            close();
+            startTour();
+          } else setStep(path);
+        }));
+        modal.querySelectorAll('[data-welcome-back]').forEach(b => b.addEventListener('click', () => setStep('choose')));
+        modal.querySelectorAll('[data-welcome-close]').forEach(b => b.addEventListener('click', close));
+        document.getElementById('welcome-next')?.addEventListener('click', () => { close(); startTour(); });
+        document.getElementById('welcome-skip')?.addEventListener('click', close);
+        document.getElementById('welcome-close')?.addEventListener('click', close);
+        modal.querySelectorAll('a').forEach(a => a.addEventListener('click', markSeen));
+        modal.addEventListener('cancel', markSeen);
+        const open = () => { if (!modal.open) { setStep('choose'); modal.showModal(); } };
         document.getElementById('open-welcome')?.addEventListener('click', open);
         document.getElementById('help-intro')?.addEventListener('click', open);
+        document.addEventListener('pdk:welcome', open);
+        document.getElementById('help-tour')?.addEventListener('click', startTour);
         let seen = false;
         try { seen = !!localStorage.getItem(WELCOME_KEY); } catch {}
         const legal = /^\/(impressum|datenschutz|hilfe|anmelden|admin|beta)\/?$/.test(location.pathname) || document.documentElement.hasAttribute('data-bare');
-        if (!seen && !legal) open();
+        const q = new URLSearchParams(location.search);
+        if (q.has('rundgang')) {
+          q.delete('rundgang');
+          history.replaceState(history.state, '', location.pathname + (q.size ? `?${q}` : '') + location.hash);
+          setTimeout(runTour, 300);   // after the page drew its list
+        } else if (!seen && !legal) open();
+        // the professional way: once the beta is on (signed in), its start page shows once
+        else if (getPath() === 'profi' && isLoginMode(currentMode())) showStart('profi');
       }
     </script>
     <script>
@@ -1177,7 +1254,7 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
         const btn = document.getElementById(toggleId)!, panel = document.getElementById(panelId)!;
         const setOpen = (open: boolean) => { panel.hidden = !open; btn.setAttribute('aria-expanded', String(open)); };
         btn.addEventListener('click', e => { e.stopPropagation(); setOpen(!!panel.hidden); });
-        panel.addEventListener('click', e => { e.stopPropagation(); if ((e.target as Element).closest('a, #help-intro, #help-shortcuts')) setOpen(false); });
+        panel.addEventListener('click', e => { e.stopPropagation(); if ((e.target as Element).closest('a, button.hdr-item')) setOpen(false); });
         document.addEventListener('click', () => setOpen(false));
         document.addEventListener('keydown', e => { if (e.key === 'Escape' && !panel.hidden) { setOpen(false); btn.focus(); } });
         return setOpen;
