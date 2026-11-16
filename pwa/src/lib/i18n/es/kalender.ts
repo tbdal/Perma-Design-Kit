@@ -13,4 +13,11 @@ export const es: Record<string, string> = {
   sortName: 'Nombre (A-Z)', sortFlowerEarliest: 'Floración más temprana', sortFlowerLatest: 'Floración más tardía', sortFruitEarliest: 'Fruto más temprano', sortFruitLatest: 'Fruto más tardío',
   filterFlower: 'Floración', filterFruit: 'Cosecha', filterNoData: 'Mostrar plantas sin datos de calendario', emptyNoData: 'Aún no hay plantas con datos de floración o cosecha.', emptyNoDataLink: 'Añadir o importar plantas →',
   emptyNoMatch: 'Ninguna planta coincide con el filtro.', overviewFloweringTitle: '{count} en flor', overviewRipeTitle: '{count} maduras', tableHeaderPlant: 'Planta', countAll: '{count} plantas', countFiltered: '{filtered} / {total} plantas',
+  kalEmptyKicker: 'Calendario',
+  kalEmptyTitle: '¿Qué florece y madura cuándo?',
+  kalEmptyText: 'En cuanto tengas plantas en tu lista, el calendario muestra floración y cosecha por mes, también en PDF para el tablón.',
+  kalEmptyAdd: 'Añadir plantas',
+  kalEmptySamples: 'Cargar plantas de ejemplo',
+  kalEmptyHint: 'Los filtros, la ordenación y los botones PDF aparecen cuando hay plantas.',
+  kalEmptyAlt: 'Barra de meses con barras de floración y cosecha',
 };

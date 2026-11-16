@@ -7,6 +7,26 @@ import Layout from '../layouts/Layout.astro';
     <p class="mt-1 text-sm text-stone-500 dark:text-stone-400" data-i18n="pageSubtitle">Datenquellen, Ansicht, Theme und Daten verwalten.</p>
   </div>
 
+  <!-- Einstieg und Ansicht (Entwurf S3): the way chosen in the welcome, the classic view, welcome and tour again -->
+  <section id="einstieg" class="mb-8 rounded-xl bg-white dark:bg-stone-800 p-5 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 scroll-mt-24">
+    <h2 class="text-lg font-semibold text-stone-800 dark:text-stone-100" data-i18n="einstiegTitle">Einstieg und Ansicht</h2>
+    <fieldset class="mt-3">
+      <legend class="mb-1 text-sm font-semibold text-stone-700 dark:text-stone-200" data-i18n="einstiegLegend">Ich nutze das Kit vor allem …</legend>
+      <label class="flex min-h-9 items-center gap-2.5 text-sm text-stone-700 dark:text-stone-200"><input type="radio" name="einstieg" value="garten" class="h-4 w-4 accent-green-800"><span data-i18n="einstiegGarten">für meinen eigenen Garten</span></label>
+      <label class="flex min-h-9 items-center gap-2.5 text-sm text-stone-700 dark:text-stone-200"><input type="radio" name="einstieg" value="gemeinsam" class="h-4 w-4 accent-green-800"><span data-i18n="einstiegGemeinsam">gemeinsam mit einer Gruppe, einem Verein oder einer Gemeinde</span></label>
+      <label class="flex min-h-9 items-center gap-2.5 text-sm text-stone-700 dark:text-stone-200"><input type="radio" name="einstieg" value="beruflich" class="h-4 w-4 accent-green-800"><span data-i18n="einstiegBeruflich">beruflich (Beta-Test)</span></label>
+      <p class="mt-1 text-xs text-stone-500 dark:text-stone-400" data-i18n="einstiegHint">Bestimmt die Hinweise auf leeren Seiten und was „Womit möchtest du anfangen?“ zeigt.</p>
+    </fieldset>
+    <label class="mt-4 flex items-start gap-3 border-t border-stone-200 dark:border-stone-700 pt-4 text-sm">
+      <input id="classic-view" type="checkbox" class="mt-0.5 h-5 w-5 accent-green-800">
+      <span><strong class="text-stone-800 dark:text-stone-100" data-i18n="classicTitle">Klassische Ansicht (wie früher)</strong><br><span class="text-stone-500 dark:text-stone-400" data-i18n="classicHint">Alle Werkzeuge auf einmal, für alle, die das Kit von früher kennen. Im Konto-Menü stehen sonst nur „Einfach“ und „Beta“.</span></span>
+    </label>
+    <div class="mt-4 flex flex-wrap gap-2.5 border-t border-stone-200 dark:border-stone-700 pt-4">
+      <button id="btn-welcome-again" type="button" class="inline-flex min-h-11 items-center rounded-full px-5 text-sm font-bold text-green-800 dark:text-green-300 ring-1 ring-green-800 dark:ring-green-300 hover:bg-green-50 dark:hover:bg-stone-700" data-i18n="welcomeAgain">Willkommen wieder zeigen</button>
+      <button type="button" data-tour-start class="inline-flex min-h-11 items-center rounded-full px-5 text-sm font-bold text-green-800 dark:text-green-300 ring-1 ring-green-800 dark:ring-green-300 hover:bg-green-50 dark:hover:bg-stone-700" data-i18n="tourStart">Rundgang starten</button>
+    </div>
+  </section>
+
   <!-- Datenquellen -->
   <section class="mb-8">
     <h2 class="mb-3 text-lg font-semibold text-stone-800 dark:text-stone-100" data-i18n="sectionSources">Datenquellen</h2>
@@ -341,9 +361,25 @@ import Layout from '../layouts/Layout.astro';
   import { providePageApi } from '../lib/expert-api';
   import { createT, applyStaticI18n, getLang } from '../lib/i18n/core';
   import { settingsDict } from '../lib/i18n/dict-settings';
-  import { getAuth, logout, refreshAuth } from '../lib/ui-mode';
+  import { currentMode, getAuth, logout, onFeaturesChange, refreshAuth, setMode } from '../lib/ui-mode';
+  import { getEinstieg, setEinstieg, type Einstieg } from '../lib/einstieg';
 
   const t = createT(settingsDict);
+
+  // ── Einstieg und Ansicht ──
+  {
+    const way = getEinstieg();
+    document.querySelectorAll<HTMLInputElement>('input[name="einstieg"]').forEach(r => {
+      r.checked = r.value === way;
+      r.addEventListener('change', () => setEinstieg(r.value as Einstieg));
+    });
+    const classic = document.getElementById('classic-view') as HTMLInputElement;
+    const sync = () => { classic.checked = currentMode() === 'classic'; };
+    sync();
+    onFeaturesChange(sync);
+    classic.addEventListener('change', () => setMode(classic.checked ? 'classic' : 'simple'));
+    document.getElementById('btn-welcome-again')!.addEventListener('click', () => document.dispatchEvent(new CustomEvent('pdk:welcome')));
+  }
 
   // ── Sign-in and the phone's QR code ──
   {

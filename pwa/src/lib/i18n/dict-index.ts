@@ -160,10 +160,6 @@ export const indexDict: Dict = {
   bulkEnrichDone: { de: '✓ {done} ergänzt', en: '✓ {done} enriched' },
 
   // ── Empty state ──────────────────────────────────────────────────────
-  emptyStateTitle: { de: 'Noch keine Pflanzen', en: 'No plants yet' },
-  emptyStateSubtitle: { de: 'Suche nach einer Pflanze oder lade Beispieldaten.', en: 'Search for a plant or load sample data.' },
-  emptyStateBtn: { de: 'Erste Pflanze suchen', en: 'Search for your first plant' },
-  emptyStartWith: { de: 'Oder womit starten?', en: 'Or start with:' },
 
   // ── Grid/list card chrome ────────────────────────────────────────────
   btnEnrichTitle: { de: 'Daten ergänzen', en: 'Fetch data' },
@@ -308,6 +304,29 @@ export const indexDict: Dict = {
   alertEnrichAllFailed: { de: ' {failed} fehlgeschlagen (siehe Konsole).', en: ' {failed} failed (see console).' },
   alertNoCsvPlants: { de: 'Keine Pflanzen in der CSV gefunden.', en: 'No plants found in the CSV.' },
   enrichSourcesStatus: { de: 'Lade Daten…', en: 'Loading data…' },
+  emptyTitle2: { de: 'Noch keine Pflanzen in deiner Liste', en: 'No plants in your list yet' },
+  emptyText2: { de: 'Suche oben eine Pflanze: ihr Steckbrief kommt mit Quelle je Feld. Oder fang mit einer fertigen Auswahl an, du kannst sie jederzeit ändern oder löschen.', en: 'Search for a plant above: its profile comes with a source for each field. Or start with a ready-made selection; you can change or delete it any time.' },
+  emptySetsLegend: { de: 'Beispielpflanzen laden', en: 'Load sample plants' },
+  setCrawford: { de: 'Ein kleiner Waldgarten nach Martin Crawford', en: 'A small forest garden after Martin Crawford' },
+  setCrawfordSub: { de: '{n} bewährte Arten über alle Schichten', en: '{n} proven species across all layers' },
+  setMaster: { de: 'Standard-Artenliste', en: 'Standard species list' },
+  setMasterSub: { de: 'rund 190 Arten, für die Planung', en: 'about 190 species, for planning' },
+  setTry: { de: 'Zum Ausprobieren', en: 'To try out' },
+  setTrySub: { de: '{n} Pflanzen mit allen Angaben', en: '{n} plants with all details' },
+  wayBoxHead: { de: 'Dein Einstieg:', en: 'Your way in:' },
+  way_garten: { de: 'Ich plane meinen Garten', en: 'I’m planning my garden' },
+  way_gemeinsam: { de: 'Wir planen gemeinsam', en: 'We plan together' },
+  way_beruflich: { de: 'Ich plane professionell', en: 'I plan professionally' },
+  way_garten_1: { de: '<strong>Pflanzen wählen</strong>: hier', en: '<strong>Choose plants</strong>: here' },
+  way_garten_2: { de: '<a href="/gartenplan?neu=1">Fläche im Planer zeichnen</a>', en: '<a href="/gartenplan?neu=1">Draw your area in the planner</a>' },
+  way_garten_3: { de: 'Pflanzen setzen, in 3D ansehen', en: 'Place plants, view in 3D' },
+  way_gemeinsam_1: { de: '<strong>Pflanzen wählen</strong>: hier', en: '<strong>Choose plants</strong>: here' },
+  way_gemeinsam_2: { de: '<a href="/polykulturen">Polykultur zusammenstellen</a>', en: '<a href="/polykulturen">Put together a polyculture</a>' },
+  way_gemeinsam_3: { de: '<a href="/?view=cards">Baumscheiben und Karten drucken</a>', en: '<a href="/?view=cards">Print canopy discs and cards</a>' },
+  way_beruflich_1: { de: '<strong>Pflanzen recherchieren</strong>: hier, mit Quelle je Feld', en: '<strong>Research plants</strong>: here, with a source per field' },
+  way_beruflich_2: { de: '<a href="/gartenplan?neu=1">Fläche planen</a>: Boden und Klima des Standorts', en: '<a href="/gartenplan?neu=1">Plan an area</a>: soil and climate of the site' },
+  way_beruflich_3: { de: 'Als PDF weitergeben', en: 'Hand on as a PDF' },
+  wayBoxChange: { de: 'Ändern unter <a href="/settings#einstieg">Einstellungen → Einstieg</a>.', en: 'Change it under <a href="/settings#einstieg">Settings → Way in</a>.' },
 };
 
 addEs(indexDict, esTexts);

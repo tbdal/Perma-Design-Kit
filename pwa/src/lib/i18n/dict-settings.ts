@@ -228,6 +228,16 @@ export const settingsDict: Dict = {
   persistOff: { de: 'nicht aktiv – bei Speichermangel kann der Browser die Daten löschen', en: 'not active – the browser may delete the data when space runs low' },
   persistUnsupported: { de: 'vom Browser nicht unterstützt', en: 'not supported by this browser' },
   persistRequestDenied: { de: 'Der Browser hat abgelehnt oder entscheidet selbst. Regelmäßige Backups schützen deine Daten.', en: 'The browser declined or decides on its own. Regular backups keep your data safe.' },
+  einstiegTitle: { de: 'Einstieg und Ansicht', en: 'Way in and view' },
+  einstiegLegend: { de: 'Ich nutze das Kit vor allem …', en: 'I mainly use the kit …' },
+  einstiegGarten: { de: 'für meinen eigenen Garten', en: 'for my own garden' },
+  einstiegGemeinsam: { de: 'gemeinsam mit einer Gruppe, einem Verein oder einer Gemeinde', en: 'together with a group, a club or a community' },
+  einstiegBeruflich: { de: 'beruflich (Beta-Test)', en: 'professionally (beta test)' },
+  einstiegHint: { de: 'Bestimmt die Hinweise auf leeren Seiten und was „Womit möchtest du anfangen?“ zeigt.', en: 'Sets the hints on empty pages and what “Where would you like to start?” shows.' },
+  classicTitle: { de: 'Klassische Ansicht (wie früher)', en: 'Classic view (as before)' },
+  classicHint: { de: 'Alle Werkzeuge auf einmal, für alle, die das Kit von früher kennen. Im Konto-Menü stehen sonst nur „Einfach“ und „Beta“.', en: 'All tools at once, for everyone who knows the kit from before. Otherwise the account menu only offers “Simple” and “Beta”.' },
+  welcomeAgain: { de: 'Willkommen wieder zeigen', en: 'Show the welcome again' },
+  tourStart: { de: 'Rundgang starten', en: 'Start tour' },
 };
 
 addEs(settingsDict, esTexts);

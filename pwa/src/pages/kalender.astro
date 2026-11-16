@@ -24,13 +24,13 @@ import Layout from '../layouts/Layout.astro';
   </div>
 
   <!-- Monatliche Übersicht -->
-  <section class="mb-8">
+  <section data-kal-tools class="mb-8">
     <h2 class="mb-3 text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400" data-i18n="overviewHeading">Überblick</h2>
     <div id="overview" class="grid grid-cols-6 gap-2 sm:grid-cols-12"></div>
   </section>
 
   <!-- Filter -->
-  <div class="mb-4 flex flex-wrap items-center gap-3">
+  <div data-kal-tools class="mb-4 flex flex-wrap items-center gap-3">
     <input type="search" id="kalender-search" data-i18n-placeholder="searchPlaceholder" placeholder="Pflanze suchen…"
       class="rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-3 py-1.5 text-sm shadow-inner focus:border-green-500 focus:outline-none w-52" />
     <label class="inline-flex items-center gap-1.5 cursor-pointer text-sm">
@@ -93,18 +93,32 @@ import Layout from '../layouts/Layout.astro';
   </div>
 
   <!-- Ausgabeformat: Tabelle als PDF — genauso wie auf der Pflanzenliste -->
-  <div class="mb-4 flex items-center gap-2">
+  <div data-kal-tools class="mb-4 flex items-center gap-2">
     <span class="text-sm font-medium text-stone-500 dark:text-stone-400" data-i18n="tableOutputFormatLabel">Ausgabeformat</span>
     <button id="btn-table-pdf" data-i18n="menuTablePdf" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700">Tabelle als PDF (Farbe)</button>
     <button id="btn-table-pdf-gray" data-i18n="menuTablePdfGray" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-sm font-medium text-stone-700 dark:text-stone-200 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700 transition hover:bg-stone-200 dark:hover:bg-stone-700">Tabelle als PDF (Graustufen)</button>
   </div>
 
   <!-- Detailtabelle -->
-  <div class="overflow-x-auto rounded-xl bg-white dark:bg-stone-800 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+  <div data-kal-tools class="overflow-x-auto rounded-xl bg-white dark:bg-stone-800 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
     <div id="calendar-table" class="min-w-[640px]"></div>
   </div>
 
-  <!-- Empty states -->
+  <!-- Empty states: no plants at all (Entwurf S2), plants without calendar data, nothing matches the filter -->
+  <section id="empty-no-plants" hidden aria-labelledby="kal-empty-h" class="mt-6 max-w-2xl overflow-hidden rounded-3xl bg-[#f6f5e6] dark:bg-stone-800 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700">
+    <div class="h-16" style="background:url(/horizont-sky.jpg) left bottom / auto 160px repeat-x, #a5ba6b" aria-hidden="true"></div>
+    <div class="flex flex-col gap-3.5 px-6 py-6 sm:px-8">
+      <span class="text-xs font-bold uppercase tracking-wider text-[#59633d] dark:text-stone-400" data-i18n="kalEmptyKicker">Kalender</span>
+      <h2 id="kal-empty-h" class="text-2xl font-bold text-stone-900 dark:text-stone-100" data-i18n="kalEmptyTitle">Wann blüht und reift was?</h2>
+      <svg class="block h-auto w-full" viewBox="0 0 520 120" role="img" data-i18n-aria-label="kalEmptyAlt" aria-label="Monatsleiste mit Balken für Blüte und Ernte"><g font-family="Archivo, sans-serif" font-size="11" fill="#59633d"><text x="8" y="14">I</text><text x="94" y="14">III</text><text x="180" y="14">V</text><text x="266" y="14">VII</text><text x="352" y="14">IX</text><text x="438" y="14">XI</text></g><g stroke-linecap="round" stroke-width="12"><path d="M100 40H210" stroke="#e0a93a"/><path d="M300 40H390" stroke="#8fa552"/><path d="M150 70H240" stroke="#e0a93a"/><path d="M330 70H440" stroke="#8fa552"/><path d="M120 100H180" stroke="#e0a93a"/><path d="M250 100H300" stroke="#8fa552"/></g></svg>
+      <p class="text-base text-stone-700 dark:text-stone-300" data-i18n="kalEmptyText">Sobald du Pflanzen in deiner Liste hast, zeigt der Kalender Blüte und Ernte je Monat, auch als PDF für die Pinnwand.</p>
+      <div class="flex flex-wrap gap-2.5">
+        <a href="/#suche" class="inline-flex min-h-11 items-center rounded-full bg-green-800 px-5 font-bold text-white hover:bg-green-900" data-i18n="kalEmptyAdd">Pflanzen hinzufügen</a>
+        <a href="/#beispielpflanzen" class="inline-flex min-h-11 items-center rounded-full px-5 font-bold text-green-800 dark:text-green-300 ring-1 ring-green-800 dark:ring-green-300 hover:bg-green-50 dark:hover:bg-stone-700" data-i18n="kalEmptySamples">Beispielpflanzen laden</a>
+      </div>
+      <p class="text-sm text-stone-500 dark:text-stone-400" data-i18n="kalEmptyHint">Filter, Sortierung und PDF-Knöpfe erscheinen erst mit Pflanzen.</p>
+    </div>
+  </section>
   <div id="empty-no-data" hidden class="mt-16 text-center">
     <p class="text-stone-500 dark:text-stone-400" data-i18n="emptyNoData">Noch keine Pflanzen mit Blüte- oder Erntedaten.</p>
     <a href="/" data-i18n="emptyNoDataLink" class="mt-2 inline-block text-sm text-green-700 dark:text-green-400 underline underline-offset-2 hover:no-underline">Pflanzen anlegen oder importieren →</a>
@@ -327,7 +341,10 @@ import Layout from '../layouts/Layout.astro';
     // "No data at all" only when there's truly nothing to show even with
     // the no-data checkbox on — otherwise that checkbox would reveal a
     // populated (if blank-rowed) table right next to this message.
-    emptyNoData.hidden  = active.length > 0 || (showNoData && allPlants.length > 0);
+    document.getElementById('empty-no-plants')!.hidden = allPlants.length > 0;
+    // without plants only the empty page shows: overview, filters and PDF buttons come with the first plant
+    document.querySelectorAll<HTMLElement>('[data-kal-tools]').forEach(el => { el.hidden = allPlants.length === 0; });
+    emptyNoData.hidden  = allPlants.length === 0 || active.length > 0 || showNoData;
     emptyNoMatch.hidden = eligible.length === 0 || filtered.length > 0;
     tableEl.style.display = filtered.length === 0 ? 'none' : '';
 

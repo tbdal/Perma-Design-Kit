@@ -10,8 +10,8 @@ test('Strg+O finds pages, menu items and plants and runs them', async ({ page, e
   // the palette runs a button of the page: load the sample data
   await expect(page.locator('#btn-load-samples')).toBeVisible();
   await page.keyboard.press('Control+o');
-  await input.fill('beispieldaten laden');
-  await expect(pal.locator('li').first()).toHaveText(/^Beispieldaten laden/);
+  await input.fill('zum ausprobieren');
+  await expect(pal.locator('li').first()).toHaveText(/^Zum Ausprobieren/);
   await page.keyboard.press('Enter');
   await expect(page.locator('#plant-list h3').first()).toBeVisible();
 

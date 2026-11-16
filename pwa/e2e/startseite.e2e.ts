@@ -5,26 +5,22 @@ import { test, expect, stubNetwork } from './helpers';
 
 const seen = () => { try { localStorage.setItem('pdk-welcome-seen', '1'); localStorage.setItem('pdk-persist-later', String(Date.now())); } catch { /* ignore */ } };
 
-test('after the welcome: "Womit möchtest du anfangen?" once, gone after a link', async ({ page, errors }) => {
+test('professionals in the beta: "Womit möchtest du anfangen?" once, gone after a link', async ({ page, errors }) => {
   await stubNetwork(page);
-  // a first visit: the welcome opens; the start page must not have been seen yet
-  await page.addInitScript(() => { if (!sessionStorage.getItem('init')) { sessionStorage.setItem('init', '1'); localStorage.removeItem('pdk-welcome-seen'); localStorage.removeItem('pdk-start-seen'); } });
+  // back after the beta login: welcome seen, way "beruflich", beta mode, start page not seen yet
+  await page.addInitScript(() => { if (!sessionStorage.getItem('init')) { sessionStorage.setItem('init', '1'); localStorage.setItem('pdk-welcome-seen', '1'); localStorage.removeItem('pdk-start-seen'); localStorage.setItem('pdk-einstieg', 'beruflich'); } });
+  await page.route('**/api/auth/me', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ name: 'Beta', role: 'expert' }) }));
+  await page.addInitScript(() => { localStorage.setItem('pdk-mode', 'expert'); localStorage.setItem('pdk-auth', JSON.stringify({ name: 'Beta', role: 'expert' })); });
   await page.goto('/kalender');
-  await expect(page.locator('#welcome-modal')).toBeVisible();
-  await expect(page.locator('#start-modal')).toBeHidden();
-  await page.click('#welcome-skip');
   const start = page.locator('#start-modal');
   await expect(start).toBeVisible();
-  await expect(start.locator('figure')).toHaveCount(6);
-  await start.locator('a[href="/#suche"]').click();
+  await expect(start.locator('#start-pro figure')).toHaveCount(6);
+  await start.locator('a[href="/#suche"]').last().click();
   await expect(page).toHaveURL(/\/$/);
   await expect(page.locator('#plant-search')).toBeFocused();
   await expect(page.locator('#start-modal')).toBeHidden();
   await page.reload();
-  await expect(page.locator('#welcome-modal')).toBeHidden();
   await expect(page.locator('#start-modal')).toBeHidden();
-  // not on the plant page itself
-  await expect(page.locator('#plant-list')).toBeVisible();
   void errors;
 });
 

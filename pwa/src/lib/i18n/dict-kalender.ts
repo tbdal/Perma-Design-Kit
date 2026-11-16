@@ -55,6 +55,13 @@ export const kalenderDict: Dict = {
   tableHeaderPlant: { de: 'Pflanze', en: 'Plant' },
   countAll: { de: '{count} Pflanzen', en: '{count} plants' },
   countFiltered: { de: '{filtered} / {total} Pflanzen', en: '{filtered} / {total} plants' },
+  kalEmptyKicker: { de: 'Kalender', en: 'Calendar' },
+  kalEmptyTitle: { de: 'Wann blüht und reift was?', en: 'What flowers and ripens when?' },
+  kalEmptyText: { de: 'Sobald du Pflanzen in deiner Liste hast, zeigt der Kalender Blüte und Ernte je Monat, auch als PDF für die Pinnwand.', en: 'As soon as you have plants in your list, the calendar shows flowering and harvest per month, also as a PDF for the pinboard.' },
+  kalEmptyAdd: { de: 'Pflanzen hinzufügen', en: 'Add plants' },
+  kalEmptySamples: { de: 'Beispielpflanzen laden', en: 'Load sample plants' },
+  kalEmptyHint: { de: 'Filter, Sortierung und PDF-Knöpfe erscheinen erst mit Pflanzen.', en: 'Filters, sorting and PDF buttons appear once there are plants.' },
+  kalEmptyAlt: { de: 'Monatsleiste mit Balken für Blüte und Ernte', en: 'Month bar with bars for flowering and harvest' },
 };
 
 addEs(kalenderDict, esTexts);
