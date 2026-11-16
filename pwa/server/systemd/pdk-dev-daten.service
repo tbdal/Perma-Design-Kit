@@ -1,0 +1,7 @@
+# Fresh copy of the live data for the dev instance (Werkstatt #656), see scripts/dev-daten.sh.
+[Unit]
+Description=Perma Design Kit dev instance: copy live data
+
+[Service]
+Type=oneshot
+ExecStart=/root/pdk/pwa/scripts/dev-daten.sh

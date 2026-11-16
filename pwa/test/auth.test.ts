@@ -126,6 +126,8 @@ describe('HTTP endpoints', () => {
     const cookie = cookieOf(res);
     expect((await fetch(`${base}/api/auth/me`, { headers: { cookie } })).status).toBe(200);
     expect((await fetch(`${base}/api/auth/check`, { headers: { cookie } })).status).toBe(204);
+    // the dev instance lets only team/admin in
+    expect((await fetch(`${base}/api/auth/check?team`, { headers: { cookie } })).status).toBe(401);
     // experts are not admins
     expect((await fetch(`${base}/api/admin/users`, { headers: { cookie } })).status).toBe(403);
     const out = await fetch(`${base}/api/auth/logout`, { method: 'POST', headers: { cookie } });

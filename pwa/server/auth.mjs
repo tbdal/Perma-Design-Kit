@@ -347,7 +347,11 @@ export function createAuthHandler({ store, isAllowedOrigin = () => true, now = (
     }
 
     if (path === '/api/features' && method === 'GET') { send(res, 200, { features: store.features() }); return true; }
-    if (path === '/api/auth/check') { res.writeHead(session(req) ? 204 : 401, { 'Cache-Control': 'no-store' }); res.end(); return true; }
+    // ?team: only team/admin accounts (the dev instance's nginx gate, Werkstatt #656)
+    if (path === '/api/auth/check') {
+      const s = session(req);
+      res.writeHead(s && (!url.searchParams.has('team') || s.role !== 'expert') ? 204 : 401, { 'Cache-Control': 'no-store' }); res.end(); return true;
+    }
     if (path === '/api/auth/me' && method === 'GET') {
       const s = session(req);
       s ? send(res, 200, s) : send(res, 401, { error: 'login' });

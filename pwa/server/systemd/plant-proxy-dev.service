@@ -1,0 +1,43 @@
+# Server of the dev instance dev.permadesignkit.org (Werkstatt #656): the code of the dev checkout
+# /root/pdk-dev (branch dev), port 8788, on a copy of the live data in /var/lib/pdk-dev
+# (scripts/dev-daten.sh: nightly and on each dev deploy). No mail (smtp files left out of the copy),
+# no GitHub sync. Install: copy to /etc/systemd/system/, daemon-reload, enable --now.
+[Unit]
+Description=Perma Design Kit dev instance: plant proxy + private API on a data copy
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/root/.nvm/versions/node/v24.20.0/bin/node /root/pdk-dev/pwa/server/plant-proxy-server.mjs
+WorkingDirectory=/root/pdk-dev/pwa
+Restart=on-failure
+RestartSec=3
+Environment=PLANT_PROXY_PORT=8788
+Environment=PDK_PRIVATE_DIR=/var/lib/pdk-dev/private
+Environment=PDK_ASSETS_DIR=/var/lib/pdk-dev/assets
+Environment=PDK_BASE_URL=https://dev.permadesignkit.org
+Environment=PDK_ROADMAP_SYNC=0
+# Same sandbox as plant-proxy (its drop-in sandbox.conf); /root/pdk read-only for the git history (Dev ↔ Live).
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictSUIDSGID=yes
+RestrictRealtime=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+SystemCallArchitectures=native
+TemporaryFileSystem=/root
+BindReadOnlyPaths=/root/pdk /root/pdk-dev /root/.nvm /root/.gitconfig
+ReadWritePaths=/var/lib/pdk-dev
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,11 @@
+# Nightly copy of the live data for the dev instance. Install: copy both files to /etc/systemd/system/,
+# daemon-reload, enable --now pdk-dev-daten.timer
+[Unit]
+Description=Perma Design Kit dev instance: copy live data nightly
+
+[Timer]
+OnCalendar=*-*-* 04:30:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

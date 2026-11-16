@@ -6,19 +6,33 @@
 # Only deploys a clean `main` that matches origin/main, so what's live is
 # always a commit anyone can check out — not a feature branch, a worktree,
 # or uncommitted edits. DEPLOY_FORCE=1 skips these checks (emergencies only).
+#
+# Dev instance (Werkstatt #656): DEPLOY_TARGET=dev (npm run deploy:dev) deploys branch `dev` from the
+# dev checkout /root/pdk-dev to https://dev.permadesignkit.org (own web root, own server on a data copy).
+# A live deploy then only takes commits that were on dev before (DEPLOY_QUICK=1 for text/layout and
+# DEPLOY_OHNE_DEV=1 for urgent fixes go straight live). Each deploy notes what it put where in
+# /var/lib/pdk-deploy/<live|dev>.json (the "Dev ↔ Live" box on /admin/).
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
+TARGET="${DEPLOY_TARGET:-live}"
+case "$TARGET" in
+  live) BRANCH=main WEBROOT=/var/www/permadesignkit.org SITE=https://permadesignkit.org ;;
+  dev)  BRANCH=dev  WEBROOT=/var/www/dev.permadesignkit.org SITE=https://dev.permadesignkit.org ;;
+  *) echo "DEPLOY_TARGET must be live or dev" >&2; exit 1 ;;
+esac
+STAMPS=/var/lib/pdk-deploy
+
 # Everything (stdout + stderr) also goes to a log of the last deploy, so its
 # progress and result can be checked later: tail -f ~/pdk-deploy.log
-exec > >(tee "$HOME/pdk-deploy.log") 2>&1
-echo "Deploy started $(date -Is)"
+exec > >(tee "$HOME/pdk-deploy$([[ $TARGET == dev ]] && echo -dev).log") 2>&1
+echo "Deploy ($TARGET) started $(date -Is)"
 
 if [[ "${DEPLOY_FORCE:-}" != "1" ]]; then
   branch="$(git rev-parse --abbrev-ref HEAD)"
-  if [[ "$branch" != "main" ]]; then
-    echo "Refusing to deploy: on branch '$branch', not 'main'." >&2
+  if [[ "$branch" != "$BRANCH" ]]; then
+    echo "Refusing to deploy ($TARGET): on branch '$branch', not '$BRANCH'." >&2
     exit 1
   fi
   if [[ -n "$(git status --porcelain -- .)" ]]; then
@@ -26,9 +40,9 @@ if [[ "${DEPLOY_FORCE:-}" != "1" ]]; then
     git status --short -- . >&2
     exit 1
   fi
-  git fetch --quiet origin main
-  if [[ "$(git rev-parse HEAD)" != "$(git rev-parse origin/main)" ]]; then
-    echo "Refusing to deploy: local main ($(git rev-parse --short HEAD)) differs from origin/main ($(git rev-parse --short origin/main)). Pull or push first." >&2
+  git fetch --quiet origin "$BRANCH"
+  if [[ "$(git rev-parse HEAD)" != "$(git rev-parse "origin/$BRANCH")" ]]; then
+    echo "Refusing to deploy: local $BRANCH ($(git rev-parse --short HEAD)) differs from origin/$BRANCH ($(git rev-parse --short "origin/$BRANCH")). Pull or push first." >&2
     exit 1
   fi
 fi
@@ -36,9 +50,9 @@ fi
 # Private expert module (src/expert/, its own git repo with the bare repo on
 # this VPS as origin — never on GitHub): same rule, what's live must be a
 # pushed commit of its main branch.
-if [[ -d src/expert/.git && "${DEPLOY_FORCE:-}" != "1" ]]; then
-  if [[ "$(git -C src/expert rev-parse --abbrev-ref HEAD)" != "main" ]]; then
-    echo "Refusing to deploy: src/expert is not on its main branch." >&2
+if [[ -e src/expert/.git && "${DEPLOY_FORCE:-}" != "1" ]]; then
+  if [[ "$(git -C src/expert rev-parse --abbrev-ref HEAD)" != "$BRANCH" ]]; then
+    echo "Refusing to deploy: src/expert is not on its $BRANCH branch." >&2
     exit 1
   fi
   if [[ -n "$(git -C src/expert status --porcelain)" ]]; then
@@ -46,9 +60,28 @@ if [[ -d src/expert/.git && "${DEPLOY_FORCE:-}" != "1" ]]; then
     git -C src/expert status --short >&2
     exit 1
   fi
-  git -C src/expert fetch --quiet origin main
-  if [[ "$(git -C src/expert rev-parse HEAD)" != "$(git -C src/expert rev-parse origin/main)" ]]; then
-    echo "Refusing to deploy: src/expert main differs from its origin (the bare repo on the VPS). Push or pull there first." >&2
+  git -C src/expert fetch --quiet origin "$BRANCH"
+  if [[ "$(git -C src/expert rev-parse HEAD)" != "$(git -C src/expert rev-parse "origin/$BRANCH")" ]]; then
+    echo "Refusing to deploy: src/expert $BRANCH differs from its origin (the bare repo on the VPS). Push or pull there first." >&2
+    exit 1
+  fi
+fi
+
+# Live only takes what was on dev: every commit since the last live deploy must have an equal one
+# (same patch, so rebased commits count) in the commit deployed to dev.
+stamp_field() { node -e 'try { process.stdout.write(JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"))[process.argv[2]] || "") } catch {}' "$STAMPS/$1.json" "$2"; }
+not_on_dev() {  # repo dir, field → commits since live that dev never had
+  local dev live; dev="$(stamp_field dev "$2")"; live="$(stamp_field live "$2")"
+  if [[ -z "$dev" ]] || ! git -C "$1" cat-file -e "$dev^{commit}" 2>/dev/null; then echo "(no dev deploy known)"; return; fi
+  if [[ -n "$live" ]] && git -C "$1" cat-file -e "$live^{commit}" 2>/dev/null; then git -C "$1" cherry -v "$dev" HEAD "$live" | grep '^+' || true
+  else git -C "$1" cherry -v "$dev" HEAD | grep '^+' | tail -20 || true; fi
+}
+if [[ $TARGET == live && "${DEPLOY_QUICK:-}" != "1" && "${DEPLOY_OHNE_DEV:-}" != "1" && "${DEPLOY_FORCE:-}" != "1" ]]; then
+  missing="$(not_on_dev . pdk)"
+  [[ -e src/expert/.git ]] && missing+="$(not_on_dev src/expert expert | sed 's/^/expert: /')"
+  if [[ -n "$missing" ]]; then
+    echo "Refusing to deploy live: not on dev yet (npm run deploy:dev in /root/pdk-dev first; urgent fix: DEPLOY_OHNE_DEV=1):" >&2
+    echo "$missing" >&2
     exit 1
   fi
 fi
@@ -56,14 +89,14 @@ fi
 # Faster deploys (Werkstatt #591): browser tests tagged @slow (3D, phone overflow) run every night
 # (scripts/nightly-e2e.sh) and in a deploy only when something in their scope changed since the last deploy.
 # DEPLOY_QUICK=1 is for text/layout changes and the static page public/sonnenfehler/ only (refused otherwise): just the browser tests of the touched pages.
-STAMP="$HOME/.pdk-deployed"   # line 1: public commit of the last deploy, line 2: expert commit
+STAMP="$HOME/.pdk-deployed$([[ $TARGET == dev ]] && echo -dev)"   # line 1: public commit of the last deploy, line 2: expert commit
 SLOW_SCOPE='^(\*|src/lib/[^/]*3d[^/]*|src/layouts/|src/styles/|e2e/|package-lock\.json|playwright\.config\.ts|scripts/serve-dist\.mjs)'
 # Files changed since the last deploy (paths relative to pwa/, expert ones with src/expert/); "*" = unknown, i.e. everything.
 changed() {
   local last last_x
   last="$(sed -n 1p "$STAMP" 2>/dev/null || true)"; last_x="$(sed -n 2p "$STAMP" 2>/dev/null || true)"
   if [[ -n "$last" ]] && git cat-file -e "$last^{commit}" 2>/dev/null; then git diff --name-only --relative "$last" HEAD; else echo '*'; fi
-  if [[ -d src/expert/.git ]]; then
+  if [[ -e src/expert/.git ]]; then
     if [[ -n "$last_x" ]] && git -C src/expert cat-file -e "$last_x^{commit}" 2>/dev/null; then git -C src/expert diff --name-only "$last_x" HEAD | sed 's#^#src/expert/#'; else echo '*'; fi
   fi
 }
@@ -120,18 +153,27 @@ flock -u 9
 # the previous build (the service worker holds it until "Neu laden") would
 # otherwise get a 404 for its chunks and lose the whole expert module. Its
 # public chunks are in the worker's cache; /x/ never is. Old ones go after 30 days.
-rsync -a --delete --exclude '/x/' dist/ /var/www/permadesignkit.org/
+mkdir -p "$WEBROOT"
+rsync -a --delete --exclude '/x/' dist/ "$WEBROOT/"
 if [[ -d dist/x ]]; then
-  rsync -a dist/x/ /var/www/permadesignkit.org/x/
-  find /var/www/permadesignkit.org/x -type f -mtime +30 -delete
+  rsync -a dist/x/ "$WEBROOT/x/"
+  find "$WEBROOT/x" -type f -mtime +30 -delete
 fi
-chown -R www-data:www-data /var/www/permadesignkit.org
+chown -R www-data:www-data "$WEBROOT"
 
 # The plant proxy also serves the expert login and the private /api/x/ routes
 # (server code may have changed with this deploy): restart it if it runs here.
-if systemctl cat plant-proxy.service >/dev/null 2>&1; then
+# Dev: a fresh copy of the live data, then its own server restarts.
+if [[ $TARGET == dev ]]; then
+  bash scripts/dev-daten.sh
+  if ! diff -q <(node scripts/nginx-dev-conf.mjs) /etc/nginx/sites-available/dev.permadesignkit.org >/dev/null 2>&1; then
+    echo "NOTE: nginx conf of the dev instance is outdated: node scripts/nginx-dev-conf.mjs > /etc/nginx/sites-available/dev.permadesignkit.org && nginx -t && systemctl reload nginx"
+  fi
+elif systemctl cat plant-proxy.service >/dev/null 2>&1; then
   systemctl restart plant-proxy && echo "Restarted plant-proxy"
 fi
 
 printf '%s\n%s\n' "$(git rev-parse HEAD)" "$(git -C src/expert rev-parse HEAD 2>/dev/null || true)" > "$STAMP"
-echo "Deployed $(git rev-parse --short HEAD) to https://permadesignkit.org"
+mkdir -p "$STAMPS"
+printf '{"pdk":"%s","expert":"%s","at":"%s"}\n' "$(git rev-parse HEAD)" "$(git -C src/expert rev-parse HEAD 2>/dev/null || true)" "$(date -Is)" > "$STAMPS/$TARGET.json"
+echo "Deployed $(git rev-parse --short HEAD) to $SITE"

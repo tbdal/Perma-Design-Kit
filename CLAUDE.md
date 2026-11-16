@@ -41,6 +41,18 @@ npm run deploy
 
 Run `npm run check` and `npm test` before committing (check the summary for `1 error` too, not only `errors`). `npm run deploy` also runs the browser tests — except those tagged `@slow` in their title (3D, phone overflow), unless their scope changed since the last deploy (`~/.pdk-deployed`); all of them run nightly (`scripts/nightly-e2e.sh`, timer in `server/systemd/`, log `~/pdk-nightly.log`, a failure becomes a Werkstatt entry). `DEPLOY_QUICK=1 npm run deploy` for text/layout-only changes (refused otherwise) runs just the browser tests of the touched pages. Tag a new slow test (> ~5 s) with ` @slow` in its title. `test/fixtures/pfaf/*.html` are saved PFAF pages for the parser tests — refresh them when PFAF changes its markup.
 
+## Dev instance (Werkstatt #656)
+
+Changes go to https://dev.permadesignkit.org first (team/admin login only), live only after the user approves. Except: text/typo changes (`DEPLOY_QUICK=1`) and urgent bug fixes (`DEPLOY_OHNE_DEV=1`) may go straight live.
+
+- **Dev checkout** `/root/pdk-dev`: a git worktree of `/root/pdk` on branch `dev`, with `pwa/src/expert` a worktree of the expert repo on its `dev` branch. Both `dev` branches are pushed (GitHub / bare repo).
+- **Flow**: finish the feature branch → in `/root/pdk-dev` (both repos) `git merge --no-edit <branch>`, push `dev`, `cd pwa && npm run deploy:dev` → Werkstatt entry `tag <nr> prüfen` with a link to the dev page. The user checks there and tags `#freigegeben` (or says so) → fast-forward `main` to the branch as before, push, `npm run deploy` → `untag <nr> dev freigegeben` (keep `#prüfen`, the user closes it) → merge `main` into `dev` and push.
+- **Gate**: a live deploy refuses commits since the last live deploy that have no patch-equal commit in what was last deployed to dev (`git cherry`, both repos). Stamps: `/var/lib/pdk-deploy/{live,dev}.json`.
+- **Werkstatt**: every new entry gets `#dev` (= goes over dev); for small stuff drop it: `aufgabe.mjs untag <nr> dev`.
+- **Server**: systemd `plant-proxy-dev` (port 8788, code from `/root/pdk-dev`, `server/systemd/`) on a copy of the live data in `/var/lib/pdk-dev` (`scripts/dev-daten.sh`: at each dev deploy and nightly via `pdk-dev-daten.timer`; no mail, no GitHub sync). What is typed on dev is lost with the next copy.
+- **nginx**: `/etc/nginx/sites-available/dev.permadesignkit.org` is generated from the live conf: `node scripts/nginx-dev-conf.mjs > …`, `nginx -t`, reload (the dev deploy warns when it is outdated). Login gate: `/api/auth/check?team`.
+- **Diff**: box "Dev ↔ Live" on `/admin/` (and the band on top of every dev page): commits on dev not live yet, with their Werkstatt numbers.
+
 ## Architecture
 
 **Astro static PWA** — pages `index.astro` (Pflanzen), `kalender.astro`, `polykulturen.astro`, `gartenplan.astro`, `settings.astro` plus static info pages; `cards.astro` is only a redirect to `/?view=cards`. No framework components, all interactivity is vanilla TypeScript in `<script>` blocks within each page. There is no component folder; shared logic lives in `src/lib/`.
