@@ -32,7 +32,7 @@ const store: Record<string, string> = {};
 
 import {
   buildBackup, parseBackup, applyBackup, backupIsEmpty, autoSyncIfConfigured, getSyncProblem,
-  webdavPush, rememberPulled, forgetSyncState, registerSyncTarget, syncProviderLabel, syncMarker, syncFingerprint, reportSyncConflict,
+  webdavPush, rememberPulled, forgetSyncState, registerSyncTarget, AUTO_SYNC_RETRY_MS, syncProviderLabel, syncMarker, syncFingerprint, reportSyncConflict,
   type BuiltBackup,
 } from '../src/lib/sync';
 import { loadSettings, saveSettings } from '../src/lib/settings';
@@ -302,6 +302,27 @@ describe('auto-sync (registered target)', () => {
     t.remote = null; t.fail = 'HTTP 413';
     expect(await autoSyncIfConfigured()).toMatchObject({ ok: false, provider: 'extra', error: 'HTTP 413' });
     expect(getSyncProblem()).toMatchObject({ kind: 'error', provider: 'extra' });
+  });
+
+  it('retries a passing server error before showing it', async () => {
+    const waits = AUTO_SYNC_RETRY_MS.splice(0, AUTO_SYNC_RETRY_MS.length, 0, 0);
+    try {
+      const t = target();
+      let fails = 1;
+      registerSyncTarget({
+        id: 'extra', label: 'Extra-Speicher', enabled: () => true,
+        remoteExportedAt: async () => t.remote?.exportedAt ?? null,
+        push: async (b) => { if (fails-- > 0) throw new Error('HTTP 500'); t.pushes++; t.remote = b; },
+      });
+      expect(await autoSyncIfConfigured()).toEqual({ ok: true, provider: 'extra' });
+      expect(getSyncProblem()).toBeNull();
+
+      store['sync-fingerprint-extra'] = 'changed';
+      fails = 9;
+      expect(await autoSyncIfConfigured()).toMatchObject({ ok: false, error: 'HTTP 500' });
+      expect(fails).toBe(6); // three tries, then the warning
+      expect(getSyncProblem()).toMatchObject({ kind: 'error', provider: 'extra' });
+    } finally { AUTO_SYNC_RETRY_MS.splice(0, 2, ...waits); }
   });
 
   it('a foreign stamp with the same content is no conflict (#607)', async () => {
