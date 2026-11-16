@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Freigabe-Sperre für GitHub (Werkstatt: intern → dev → Freigabe → GitHub).
+# Installiert als .git/hooks/pre-push (gilt für alle Arbeitskopien und Worktrees):
+#   cp pwa/scripts/git-hooks/pre-push .git/hooks/pre-push && chmod +x .git/hooks/pre-push
+#
+# Entwicklung bleibt intern: Branches und `dev` gehen auf den Remote `intern` (/root/git/pdk-intern.git,
+# remote.pushDefault). Auf GitHub (origin) kommt nur `main`, und nur
+#   - mit ausdrücklicher Freigabe der Person, die das Projekt verantwortet: PDK_FREIGABE=1 git push origin main
+#   - und wenn jeder neue Commit vorher auf dev.permadesignkit.org lief (gleicher Patch im letzten Dev-Deploy,
+#     /var/lib/pdk-deploy/dev.json); nur dringende Fehler ohne Dev: zusätzlich PDK_OHNE_DEV=1.
+set -euo pipefail
+remote="$1"; url="$2"
+case "$url" in *github.com*) ;; *) exit 0 ;; esac
+
+zero=0000000000000000000000000000000000000000
+fail() { echo "pre-push: $*" >&2; exit 1; }
+[[ "${PDK_FREIGABE:-}" == "1" ]] || fail "Push nach GitHub ($remote) ohne Freigabe abgelehnt. Erst intern (git push intern …), auf dev testen (npm run deploy:dev), dann nach Freigabe: PDK_FREIGABE=1 git push origin main"
+
+dev_commit="$(sed -n 's/.*"pdk":"\([0-9a-f]*\)".*/\1/p' /var/lib/pdk-deploy/dev.json 2>/dev/null || true)"
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [[ "$remote_ref" == "refs/heads/main" ]] || fail "Nach GitHub geht nur main, nicht $remote_ref (Branches gehören auf den Remote intern)."
+  [[ "$local_sha" == "$zero" ]] && fail "main auf GitHub löschen? Nein."
+  [[ "${PDK_OHNE_DEV:-}" == "1" ]] && continue
+  [[ -n "$dev_commit" ]] && git cat-file -e "$dev_commit^{commit}" 2>/dev/null || fail "Kein Dev-Deploy bekannt (/var/lib/pdk-deploy/dev.json). Erst npm run deploy:dev."
+  if [[ "$remote_sha" == "$zero" ]]; then range_base=""; else range_base="$remote_sha"; fi
+  missing="$(git cherry "$dev_commit" "$local_sha" $range_base | grep '^+' || true)"
+  # a revert of something that never went live needs no dev round
+  missing="$(while read -r m; do [[ -z "$m" ]] && continue; sha="${m#+ }"; git log -1 --format=%s "$sha" | grep -q '^Revert' || echo "$sha $(git log -1 --format=%s "$sha" | cut -c1-80)"; done <<< "$missing")"
+  [[ -z "$missing" ]] || fail "Diese Commits liefen noch nicht auf dev (npm run deploy:dev, dann testen; dringend: PDK_OHNE_DEV=1):
+$missing"
+done
+exit 0

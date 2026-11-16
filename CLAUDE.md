@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Git
 
-This is a fork (`tbdal/Perma-Design-Kit`, formerly `tbdal/Perma-Guild-Forge`) of the upstream `js32/Perma-Guild-Forge`. `origin` points to the fork; push there with plain `git`.
+This is a fork (`tbdal/Perma-Design-Kit`, formerly `tbdal/Perma-Guild-Forge`) of the upstream `js32/Perma-Guild-Forge`. `origin` points to the fork on GitHub (public).
+
+**Nothing goes to GitHub before the user's release (Freigabe)** (rule since 2026-11-16). Work stays internal: feature branches and `dev` are pushed to the remote `intern` (bare repo `/root/git/pdk-intern.git`, `remote.pushDefault`, so a plain `git push` goes there), tested on https://dev.permadesignkit.org, and only after the user explicitly releases it does `main` go to GitHub: `PDK_FREIGABE=1 git push origin main`. The pre-push hook (`pwa/scripts/git-hooks/pre-push`, installed as `.git/hooks/pre-push` for all worktrees) refuses any GitHub push without `PDK_FREIGABE=1`, any branch other than `main`, and commits that never ran on dev (urgent fix: also `PDK_OHNE_DEV=1`). Never set `PDK_FREIGABE=1` on your own judgment — only when the user said to release in this conversation.
 
 ## Where new code goes (read before writing any feature)
 
@@ -45,8 +47,8 @@ Run `npm run check` and `npm test` before committing (check the summary for `1 e
 
 Changes go to https://dev.permadesignkit.org first (team/admin login only), live only after the user approves. Except: text/typo changes (`DEPLOY_QUICK=1`) and urgent bug fixes (`DEPLOY_OHNE_DEV=1`) may go straight live.
 
-- **Dev checkout** `/root/pdk-dev`: a git worktree of `/root/pdk` on branch `dev`, with `pwa/src/expert` a worktree of the expert repo on its `dev` branch. Both `dev` branches are pushed (GitHub / bare repo).
-- **Flow**: finish the feature branch → in `/root/pdk-dev` (both repos) `git merge --no-edit <branch>`, push `dev`, `cd pwa && npm run deploy:dev` → Werkstatt entry `tag <nr> prüfen` with a link to the dev page. The user checks there and tags `#freigegeben` (or says so) → fast-forward `main` to the branch as before, push, `npm run deploy` → `untag <nr> dev freigegeben` (keep `#prüfen`, the user closes it) → merge `main` into `dev` and push.
+- **Dev checkout** `/root/pdk-dev`: a git worktree of `/root/pdk` on branch `dev`, with `pwa/src/expert` a worktree of the expert repo on its `dev` branch. Both `dev` branches are pushed to internal bare repos only (`intern` / the expert repo's origin), never to GitHub.
+- **Flow**: finish the feature branch → in `/root/pdk-dev` (both repos) `git merge --no-edit <branch>`, push `dev`, `cd pwa && npm run deploy:dev` → Werkstatt entry `tag <nr> prüfen` with a link to the dev page. The user checks there and tags `#freigegeben` (or says so) → fast-forward `main` to the branch as before, `PDK_FREIGABE=1 git push origin main`, `npm run deploy` → `untag <nr> dev freigegeben` (keep `#prüfen`, the user closes it) → merge `main` into `dev` and push it (to `intern`).
 - **Gate**: a live deploy refuses commits since the last live deploy that have no patch-equal commit in what was last deployed to dev (`git cherry`, both repos). Stamps: `/var/lib/pdk-deploy/{live,dev}.json`.
 - **Werkstatt**: every new entry gets `#dev` (= goes over dev); for small stuff drop it: `aufgabe.mjs untag <nr> dev`.
 - **Server**: systemd `plant-proxy-dev` (port 8788, code from `/root/pdk-dev`, `server/systemd/`) on a copy of the live data in `/var/lib/pdk-dev` (`scripts/dev-daten.sh`: at each dev deploy and nightly via `pdk-dev-daten.timer`; no mail, no GitHub sync). What is typed on dev is lost with the next copy.

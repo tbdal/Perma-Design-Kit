@@ -18,8 +18,10 @@ cd "$(dirname "$0")/.."
 
 TARGET="${DEPLOY_TARGET:-live}"
 case "$TARGET" in
-  live) BRANCH=main WEBROOT=/var/www/permadesignkit.org SITE=https://permadesignkit.org ;;
-  dev)  BRANCH=dev  WEBROOT=/var/www/dev.permadesignkit.org SITE=https://dev.permadesignkit.org ;;
+  # live: main as released on GitHub (origin); dev: branch dev on the internal remote (intern, /root/git/pdk-intern.git) —
+  # development stays off GitHub until it is released (pre-push hook, pwa/scripts/git-hooks/pre-push)
+  live) BRANCH=main REMOTE=origin WEBROOT=/var/www/permadesignkit.org SITE=https://permadesignkit.org ;;
+  dev)  BRANCH=dev  REMOTE=intern WEBROOT=/var/www/dev.permadesignkit.org SITE=https://dev.permadesignkit.org ;;
   *) echo "DEPLOY_TARGET must be live or dev" >&2; exit 1 ;;
 esac
 STAMPS=/var/lib/pdk-deploy
@@ -41,9 +43,9 @@ if [[ "${DEPLOY_FORCE:-}" != "1" ]]; then
     git status --short -- . >&2
     exit 1
   fi
-  git fetch --quiet origin "$BRANCH"
-  if [[ "$(git rev-parse HEAD)" != "$(git rev-parse "origin/$BRANCH")" ]]; then
-    echo "Refusing to deploy: local $BRANCH ($(git rev-parse --short HEAD)) differs from origin/$BRANCH ($(git rev-parse --short "origin/$BRANCH")). Pull or push first." >&2
+  git fetch --quiet "$REMOTE" "$BRANCH"
+  if [[ "$(git rev-parse HEAD)" != "$(git rev-parse "$REMOTE/$BRANCH")" ]]; then
+    echo "Refusing to deploy: local $BRANCH ($(git rev-parse --short HEAD)) differs from $REMOTE/$BRANCH ($(git rev-parse --short "$REMOTE/$BRANCH")). Pull or push first." >&2
     exit 1
   fi
 fi
