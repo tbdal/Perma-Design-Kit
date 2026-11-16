@@ -15,5 +15,7 @@ describe('nginx conf of the dev instance', () => {
     expect(conf).not.toContain('auth_request /_pdk_auth;');
     expect(conf).toContain('proxy_pass http://127.0.0.1:8788/api/auth/check?team;');
     expect(conf.match(/auth_request off;/g)!.length).toBeGreaterThanOrEqual(7);
+    // the proxy checks the login itself; a second check fails with 500 while it restarts
+    expect(conf).toMatch(/location \^~ \/api\/x\/big\/ \{\n\s+auth_request off;/);
   });
 });

@@ -404,6 +404,11 @@ export function syncProviderLabel(provider: string | null): string {
   return targets.find(t => t.id === provider)?.label ?? '';
 }
 
+/** Server busy or restarting (500, 502–504, 429) or the connection dropped: worth another try before warning. */
+const isTransient = (e: unknown) => e instanceof TypeError || /^HTTP (50[0234]|429)\b/.test((e as Error)?.message ?? '');
+/** Waits before the 2nd and 3rd try; exported for the tests. */
+export const AUTO_SYNC_RETRY_MS = [2000, 6000];
+
 async function autoSyncTo(
   provider: SyncProvider,
   remoteExportedAt: () => Promise<string | null>,
@@ -411,29 +416,45 @@ async function autoSyncTo(
   build: () => Promise<BuiltBackup> = buildBackup,
   sameAsRemote?: (backup: BuiltBackup) => Promise<boolean>,
 ): Promise<SyncResult> {
-  try {
-    const backup = await build();
-    const problem = getSyncProblem();
-    if (backup.fingerprint && backup.fingerprint === ls.get(fingerprintKey(provider)) && !problem) {
+  for (let i = 0; ; i++) {
+    try {
+      return await autoSyncOnce(provider, remoteExportedAt, push, build, sameAsRemote);
+    } catch (e) {
+      if (isTransient(e) && i < AUTO_SYNC_RETRY_MS.length) {
+        await new Promise(res => setTimeout(res, AUTO_SYNC_RETRY_MS[i]));
+        continue;
+      }
+      const error = (e as Error).message;
+      setSyncProblem('error', provider, error);
+      return { ok: false, provider, error };
+    }
+  }
+}
+
+async function autoSyncOnce(
+  provider: SyncProvider,
+  remoteExportedAt: () => Promise<string | null>,
+  push: (backup: BuiltBackup) => Promise<unknown>,
+  build: () => Promise<BuiltBackup>,
+  sameAsRemote?: (backup: BuiltBackup) => Promise<boolean>,
+): Promise<SyncResult> {
+  const backup = await build();
+  const problem = getSyncProblem();
+  if (backup.fingerprint && backup.fingerprint === ls.get(fingerprintKey(provider)) && !problem) {
+    return { ok: true, provider, skipped: true };
+  }
+  const remote = await remoteExportedAt();
+  if (remote !== null && !remoteIsKnown(provider, remote)) {
+    // A backup this device does not know, but with the same content: nothing to resolve (#607).
+    if (sameAsRemote && backup.fingerprint && await sameAsRemote(backup)) {
+      rememberRemote(provider, remote, backup.fingerprint);
       return { ok: true, provider, skipped: true };
     }
-    const remote = await remoteExportedAt();
-    if (remote !== null && !remoteIsKnown(provider, remote)) {
-      // A backup this device does not know, but with the same content: nothing to resolve (#607).
-      if (sameAsRemote && backup.fingerprint && await sameAsRemote(backup)) {
-        rememberRemote(provider, remote, backup.fingerprint);
-        return { ok: true, provider, skipped: true };
-      }
-      setSyncProblem('conflict', provider, '');
-      return { ok: false, provider, conflict: true };
-    }
-    await push(backup);
-    return { ok: true, provider };
-  } catch (e) {
-    const error = (e as Error).message;
-    setSyncProblem('error', provider, error);
-    return { ok: false, provider, error };
+    setSyncProblem('conflict', provider, '');
+    return { ok: false, provider, conflict: true };
   }
+  await push(backup);
+  return { ok: true, provider };
 }
 
 const stampOf = (read: () => Promise<string | null>) => async () => {
