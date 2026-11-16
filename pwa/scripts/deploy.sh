@@ -23,10 +23,11 @@ case "$TARGET" in
   *) echo "DEPLOY_TARGET must be live or dev" >&2; exit 1 ;;
 esac
 STAMPS=/var/lib/pdk-deploy
+SUF=""; if [[ $TARGET == dev ]]; then SUF=-dev; fi   # log and stamp file names of the dev deploy
 
 # Everything (stdout + stderr) also goes to a log of the last deploy, so its
 # progress and result can be checked later: tail -f ~/pdk-deploy.log
-exec > >(tee "$HOME/pdk-deploy$([[ $TARGET == dev ]] && echo -dev).log") 2>&1
+exec > >(tee "$HOME/pdk-deploy$SUF.log") 2>&1
 echo "Deploy ($TARGET) started $(date -Is)"
 
 if [[ "${DEPLOY_FORCE:-}" != "1" ]]; then
@@ -89,7 +90,7 @@ fi
 # Faster deploys (Werkstatt #591): browser tests tagged @slow (3D, phone overflow) run every night
 # (scripts/nightly-e2e.sh) and in a deploy only when something in their scope changed since the last deploy.
 # DEPLOY_QUICK=1 is for text/layout changes and the static page public/sonnenfehler/ only (refused otherwise): just the browser tests of the touched pages.
-STAMP="$HOME/.pdk-deployed$([[ $TARGET == dev ]] && echo -dev)"   # line 1: public commit of the last deploy, line 2: expert commit
+STAMP="$HOME/.pdk-deployed$SUF"   # line 1: public commit of the last deploy, line 2: expert commit
 SLOW_SCOPE='^(\*|src/lib/[^/]*3d[^/]*|src/layouts/|src/styles/|e2e/|package-lock\.json|playwright\.config\.ts|scripts/serve-dist\.mjs)'
 # Files changed since the last deploy (paths relative to pwa/, expert ones with src/expert/); "*" = unknown, i.e. everything.
 changed() {
