@@ -5990,6 +5990,7 @@ import Layout from '../layouts/Layout.astro';
     onHistoryChange: cb => { historyListeners.push(cb); },
     setRowPath: fn => { rowPathFn = fn; renderRowDraft(); },
     refreshRowDraft: () => renderRowDraft(),
+    hasRowPatterns: () => agroforests().length > 0,
     getPluginData: <T,>(featureId: string) => editing?.ext?.[featureId] as T | undefined,
     setPluginData(featureId, data) {
       if (!editing) return;
