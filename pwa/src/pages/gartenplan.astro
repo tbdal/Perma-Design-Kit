@@ -265,7 +265,7 @@ import Layout from '../layouts/Layout.astro';
           <button data-feature="row" id="btn-draw-row" type="button" data-i18n="btnDrawRow" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">⋯ Reihe pflanzen</button>
           <details id="share-menu" class="relative">
             <summary data-i18n-title="shareMenu" title="Weitergeben" class="flex cursor-pointer list-none items-center gap-1.5 rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700 [&::-webkit-details-marker]:hidden"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg><span data-i18n="shareMenu">Weitergeben</span></summary>
-            <div class="absolute right-0 z-30 mt-1 flex min-w-48 flex-col items-stretch gap-1 rounded-xl bg-white dark:bg-stone-900 p-2 shadow-lg ring-1 ring-stone-200 dark:ring-stone-700">
+            <div class="absolute right-0 z-30 mt-1 flex min-w-48 max-sm:fixed max-sm:inset-x-2 max-sm:max-h-[75vh] max-sm:overflow-y-auto flex-col items-stretch gap-1 rounded-xl bg-white dark:bg-stone-900 p-2 shadow-lg ring-1 ring-stone-200 dark:ring-stone-700">
               <button id="btn-share-link" type="button" data-i18n="shareOpen" data-i18n-title="shareOpenTitle" title="Projekt als Link teilen" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">🔗 Teilen…</button>
               <button data-feature="export" id="btn-shopping" type="button" data-i18n="btnShopping" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">Pflanzliste</button>
               <button data-feature="export" id="btn-export-pdf" data-i18n="btnExportPdf" class="rounded-lg bg-stone-100 dark:bg-stone-800 px-3 py-1.5 text-xs font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-200 dark:ring-stone-700 hover:bg-stone-200 dark:hover:bg-stone-700">PDF exportieren</button>
@@ -608,9 +608,12 @@ import Layout from '../layouts/Layout.astro';
   #climate-body.zoomed { font-size: 1rem; line-height: 1.5; max-width: 90rem; margin: 0 auto; }
   #climate-body.zoomed .text-xs, #climate-body.zoomed .text-sm { font-size: 1rem; }
   #climate-body.zoomed .text-\[10px\], #climate-body.zoomed .text-\[11px\] { font-size: .85rem; }
-  #climate-body.zoomed > dl { grid-template-columns: auto 1fr auto 1fr; column-gap: 2rem; }
-  #climate-body.zoomed [data-climate-future] { display: grid; grid-template-columns: minmax(18rem, 24rem) minmax(0, 1fr); column-gap: 2.5rem; align-items: start; }
-  #climate-body.zoomed [data-climate-future] > [data-clim-out] { grid-column: 2; grid-row: 1 / span 3; }
+  /* side by side only where there is room (#665: on phones the columns squeezed the text unreadable) */
+  @media (min-width: 48rem) {
+    #climate-body.zoomed > dl { grid-template-columns: auto 1fr auto 1fr; column-gap: 2rem; }
+    #climate-body.zoomed [data-climate-future] { display: grid; grid-template-columns: minmax(18rem, 24rem) minmax(0, 1fr); column-gap: 2.5rem; align-items: start; }
+    #climate-body.zoomed [data-climate-future] > [data-clim-out] { grid-column: 2; grid-row: 1 / span 3; }
+  }
   #climate-body.zoomed [data-clim-ssp] { font-size: .85rem; padding: .15rem .6rem; }
   #plan-svg.tool-pan { cursor: grab; }
   #plan-svg.tool-pan #plan-markers, #plan-svg.tool-pan #plan-areas-layer,
@@ -5094,7 +5097,7 @@ import Layout from '../layouts/Layout.astro';
     const nameOf = new Map<string, string>();
     for (const pl of editing.placements) { const p = plantsById.get(pl.plantId); if (p) nameOf.set(p.id, displayName(p) || p.latinName); }
     const ruler = [...nameOf].map(([id, name]) => ({ ...plantsById.get(id)!, name }));
-    const r = explorerOutHtml(c, f, s, climateMetric, lang === 'en' ? 'en' : 'de', ruler, climateBody.classList.contains('zoomed'));
+    const r = explorerOutHtml(c, f, s, climateMetric, lang === 'en' ? 'en' : 'de', ruler, climateBody.classList.contains('zoomed') && matchMedia('(min-width: 48rem)').matches);
     out.innerHTML = r.html;
     const modeEl = climateBody.querySelector<HTMLElement>('[data-clim-mode]')!;
     modeEl.textContent = `${r.mode}${s.year > LAST_DATA_YEAR ? '' : ' · ' + t('climateSspLater', { y: LAST_DATA_YEAR + 1 })}`;
