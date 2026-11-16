@@ -5964,6 +5964,12 @@ import Layout from '../layouts/Layout.astro';
       view3d?.refreshPlacements();
       return placement.id;
     },
+    climateScenario: () => scenarioOf(editing),
+    setClimateScenario(patch) {
+      if (!editing) return;
+      setScenario(patch, true);
+      renderClimatePanel();
+    },
     sunHoursAt(xM, yM) {
       if (!editing) return null;
       const mode = coverageSelect.value === 'sun-day' ? 'day' : 'season';
