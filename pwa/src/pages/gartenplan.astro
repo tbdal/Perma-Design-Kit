@@ -5853,6 +5853,7 @@ import Layout from '../layouts/Layout.astro';
   providePageApi('gartenplan', {
     getPlan: () => editing,
     climateOutlook: () => currentOutlook(),
+    siteClimate: () => currentClimate(),
     climateStatus(p) { const c = currentClimate(), o = currentOutlook(); return c && o ? climateCheck(p, c, o) : null; },
     onClimateChange(cb) { climateListeners.push(cb); },
     setReplaceHandler(fn) { replaceHandler = fn; lastWarnSig = ''; scheduleWarnings(); },
