@@ -37,6 +37,8 @@ export interface GartenplanApi {
   getPlan(): GardenPlan | null;
   /** The open plan's climate in its target year (zones per model, summer rain; #530); null without location or model data. */
   climateOutlook(): import('./site-climate').FutureOutlook | null;
+  /** The open plan's measured site climate (zone, frost dates, rain, wind); null without location or data yet. */
+  siteClimate(): import('./site-climate').SiteClimate | null;
   /** How a plant fares at the open plan's site today and in its target year; null when unknown. */
   climateStatus(p: PlantData): import('./site-climate').ClimateCheck | null;
   /** Called when the climate choice (target year, scenario, model) or the climate data of the open plan changed. */
