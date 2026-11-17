@@ -263,6 +263,13 @@ test('climate explorer: target year, scenario and model drive the hints and stay
   await expect.poll(() => withDb(page, `return (await all('gardenPlans')).find(p => p.id === 'np').climateScenario`)).toEqual({ year: 2090, ssp: 'SSP5-8.5', model: 'CMCC_CM2_VHR4' });
   await page.reload();   // reopens the last plan
   await expect(page.locator('#climate-body [data-clim-year-out]')).toHaveText('2090');
+  // phone (#665): one column with the narrow drawings, nothing wider than the dialog
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.click('#btn-climate-zoomer');
+  await expect(zoomer.locator('[data-clim-out] .grid-cols-2')).toHaveCount(1);
+  const [pCtl, pOut] = await Promise.all([zoomer.locator('#clim-year').boundingBox(), zoomer.locator('[data-clim-out] svg').first().boundingBox()]);
+  expect(pOut!.y).toBeGreaterThan(pCtl!.y);
+  expect(await zoomer.evaluate(d => d.scrollWidth <= d.clientWidth)).toBe(true);
   void errors;
 });
 
@@ -408,6 +415,30 @@ test('hint click: first jumps to the area and marks it, second selects the plant
   await page.locator('#plan-search-hero').hover();
   await hint.blur();
   await expect(page.locator('#warn-layer circle')).toHaveCount(0);
+  void errors;
+});
+
+test('phone: the menu bar stays at the bottom in the open plan too, not at the top', async ({ page, errors }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await stubNetwork(page);
+  await seedNeighbourPlan(page);
+  await openPlan(page, 'np');
+  const b = (await page.locator('#nav-links').boundingBox())!;
+  expect(Math.round(b.y + b.height)).toBe(844);
+  void errors;
+});
+
+test('share menu stays on a phone screen (#666)', async ({ page, errors }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await stubNetwork(page);
+  await seedNeighbourPlan(page);
+  await openPlan(page, 'np');
+  // the team section of the expert module makes the menu wider than the space left of the button
+  await page.locator('#share-menu > div').evaluate(el => el.insertAdjacentHTML('beforeend', '<p style="width:22rem">Freigabe im Team</p>'));
+  await page.click('#share-menu > summary');
+  const box = (await page.locator('#share-menu > div').boundingBox())!;
+  expect(box.x).toBeGreaterThanOrEqual(0);
+  expect(box.x + box.width).toBeLessThanOrEqual(390);
   void errors;
 });
 
