@@ -612,6 +612,8 @@ html[data-design="horizont"].dark .hdr-opt[aria-pressed="true"] { background: va
     --bottom-bar-h: calc(3.9rem + env(safe-area-inset-bottom, 0px));
   }
   html:not([data-bare]) body { padding-bottom: var(--bottom-bar-h); }
+  /* backdrop-filter on the scrolled header would make it the containing block of the fixed bar, which then jumps up to the header */
+  html:not([data-bare]) .site-header.hz-scrolled { -webkit-backdrop-filter: none; backdrop-filter: none; }
   html:not([data-bare]) .site-header #nav-links {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 45; order: 0;
     margin: 0; width: auto; height: var(--bottom-bar-h); gap: 0;

@@ -58,6 +58,10 @@ test.describe('phone', () => {
     const box = (await nav.boundingBox())!;
     expect(Math.round(box.y + box.height)).toBe(844);
     await expect(page.locator('#nav-links a[aria-current="page"]')).toHaveAttribute('href', '/kalender');
+    // still at the bottom once the page scrolled (the frosted header must not capture the fixed bar)
+    await page.evaluate(() => { document.body.style.minHeight = '3000px'; scrollTo(0, 400); document.querySelector('.site-header')!.classList.add('hz-scrolled'); });
+    const after = (await nav.boundingBox())!;
+    expect(Math.round(after.y + after.height)).toBe(844);
     const user = (await page.locator('#user-toggle').boundingBox())!;
     expect(user.x + user.width).toBeLessThanOrEqual(390);
     // the feedback button stays above the bar
