@@ -570,29 +570,29 @@ html[data-design="horizont"].dark .hdr-opt[aria-pressed="true"] { background: va
 .hdr-seg[aria-pressed="true"] { background: var(--color-green-700); color: #fff; outline-color: var(--color-green-700); }
 
 /* ══ Bottom bar on phones: the four areas (and module links) fixed at the bottom ══
-   Not in the open plan (the map has its own bar there), the new planer, or bare pages. */
+   On every page incl. the planner, so it never jumps to the top (not in the field view: own bar; not on bare pages). */
 .nav-icon { display: none; }
 @media (max-width: 639px) {
-  html:not([data-bare]):not(.pdk-neu):not(:has(#plan-editor-view:not([hidden]))) {
+  html:not([data-bare]):not(.pdk-feld) {
     --bottom-bar-h: calc(3.9rem + env(safe-area-inset-bottom, 0px));
   }
-  html:not([data-bare]):not(.pdk-neu):not(:has(#plan-editor-view:not([hidden]))) body { padding-bottom: var(--bottom-bar-h); }
-  html:not([data-bare]):not(.pdk-neu):not(:has(#plan-editor-view:not([hidden]))) .site-header #nav-links {
+  html:not([data-bare]):not(.pdk-feld) body { padding-bottom: var(--bottom-bar-h); }
+  html:not([data-bare]):not(.pdk-feld) .site-header #nav-links {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 45; order: 0;
     margin: 0; width: auto; height: var(--bottom-bar-h); gap: 0;
     display: flex; align-items: stretch; justify-content: space-around; overflow-x: auto;
     padding: 0 0.25rem env(safe-area-inset-bottom, 0px);
     background: #fff; border-top: 1px solid var(--color-stone-200); box-shadow: 0 -4px 14px rgb(15 18 8 / 0.08);
   }
-  html.dark:not([data-bare]):not(.pdk-neu):not(:has(#plan-editor-view:not([hidden]))) .site-header #nav-links { background: var(--color-stone-900); border-top-color: var(--color-stone-700); }
-  html:not([data-bare]):not(.pdk-neu):not(:has(#plan-editor-view:not([hidden]))) .site-header #nav-links > a {
+  html.dark:not([data-bare]):not(.pdk-feld) .site-header #nav-links { background: var(--color-stone-900); border-top-color: var(--color-stone-700); }
+  html:not([data-bare]):not(.pdk-feld) .site-header #nav-links > a {
     flex: 1 0 4.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.15rem;
     padding: 0.25rem 0.2rem; border-radius: 0; background: transparent !important;
     font-size: 0.72rem; font-weight: 500; color: var(--color-stone-600) !important;
   }
-  html.dark:not([data-bare]):not(.pdk-neu):not(:has(#plan-editor-view:not([hidden]))) .site-header #nav-links > a { color: var(--color-stone-300) !important; }
-  html:not([data-bare]):not(.pdk-neu):not(:has(#plan-editor-view:not([hidden]))) .site-header #nav-links > a[aria-current="page"] { color: var(--color-stone-900) !important; font-weight: 700; box-shadow: inset 0 3px 0 var(--color-green-700); }
-  html.dark:not([data-bare]):not(.pdk-neu):not(:has(#plan-editor-view:not([hidden]))) .site-header #nav-links > a[aria-current="page"] { color: #fff !important; box-shadow: inset 0 3px 0 var(--color-green-400); }
-  html:not([data-bare]):not(.pdk-neu):not(:has(#plan-editor-view:not([hidden]))) .nav-icon { display: block; width: 1.4rem; height: 1.4rem; }
-  html:not([data-bare]):not(.pdk-neu):not(:has(#plan-editor-view:not([hidden]))) #feedback-fab:not(.fab-compact) { bottom: calc(var(--bottom-bar-h) + 0.75rem) !important; }
+  html.dark:not([data-bare]):not(.pdk-feld) .site-header #nav-links > a { color: var(--color-stone-300) !important; }
+  html:not([data-bare]):not(.pdk-feld) .site-header #nav-links > a[aria-current="page"] { color: var(--color-stone-900) !important; font-weight: 700; box-shadow: inset 0 3px 0 var(--color-green-700); }
+  html.dark:not([data-bare]):not(.pdk-feld) .site-header #nav-links > a[aria-current="page"] { color: #fff !important; box-shadow: inset 0 3px 0 var(--color-green-400); }
+  html:not([data-bare]):not(.pdk-feld) .nav-icon { display: block; width: 1.4rem; height: 1.4rem; }
+  html:not([data-bare]):not(.pdk-feld) #feedback-fab, html:not([data-bare]):not(.pdk-feld) #toast { bottom: calc(var(--bottom-bar-h) + 0.75rem) !important; }
 }

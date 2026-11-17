@@ -3289,8 +3289,10 @@ import Layout from '../layouts/Layout.astro';
     const headerH = header && getComputedStyle(header).position === 'sticky' ? header.getBoundingClientRect().height : 0;
     const legendH = document.getElementById('plan-legend')?.getBoundingClientRect().height ?? 0;
     const gripH = document.getElementById('plan-resize')?.getBoundingClientRect().height ?? 0;
+    const nav = document.getElementById('nav-links');   // the menu bar at the bottom on phones
+    const navH = nav && getComputedStyle(nav).position === 'fixed' ? nav.getBoundingClientRect().height : 0;
     // gaps + breathing room
-    return Math.max(MIN_PLAN_H, Math.round(window.innerHeight - headerH - legendH - gripH - 12 - 12));
+    return Math.max(MIN_PLAN_H, Math.round(window.innerHeight - headerH - legendH - gripH - navH - 12 - 12));
   }
   function applyCanvasHeight(heightPx: number) {
     canvasRectCache = null;

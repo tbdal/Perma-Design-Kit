@@ -418,6 +418,16 @@ test('hint click: first jumps to the area and marks it, second selects the plant
   void errors;
 });
 
+test('phone: the menu bar stays at the bottom in the open plan too, not at the top', async ({ page, errors }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await stubNetwork(page);
+  await seedNeighbourPlan(page);
+  await openPlan(page, 'np');
+  const b = (await page.locator('#nav-links').boundingBox())!;
+  expect(Math.round(b.y + b.height)).toBe(844);
+  void errors;
+});
+
 test('share menu stays on a phone screen (#666)', async ({ page, errors }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await stubNetwork(page);
