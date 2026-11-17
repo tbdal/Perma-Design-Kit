@@ -43,6 +43,9 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
     <!-- Raleway: matches the Baumscheibe template's own "COMMON NAME" placeholder
          font (see baumscheibe-render.ts NAME_BOXES). OFL-licensed, self-hosted (see global.css) — not loaded from Google Fonts, to avoid IP transfer to Google. -->
     <title>{title}</title>
+    <!-- Header fonts (font-display: optional in global.css): fetched early so they are there for the first paint and the header never reflows. -->
+    <link rel="preload" href="/fonts/archivo-var-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/archivo-black-latin.woff2" as="font" type="font/woff2" crossorigin />
     <!-- Blocking on purpose: sets lang + dark mode before first paint. -->
     <script is:inline src="/boot.js"></script>
     <!-- Umami Analytics — self-hosted (own VPS, Docker), cookieless, no
@@ -242,6 +245,8 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
         </div>
       </nav>
     </header>
+    <!-- Blocking on purpose: the header as the last page left it (signed in, module links) before first paint, so it does not jump. -->
+    <script is:inline src="/header-boot.js"></script>
     <main id="main" tabindex="-1" class={`site-main outline-none mx-auto w-full ${containerMaxW} flex-1 px-4 py-6 sm:px-6`}>
       <slot />
     </main>
@@ -1341,9 +1346,13 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
           return panel;
         },
         addNavLink(featureId, label, href, opts = {}) {
+          navCache.push({ featureId, label, href, after: opts.after, icon: opts.icon });
           const ref = document.querySelector<HTMLAnchorElement>(`a[data-nav="${CSS.escape(opts.after ?? '')}"]`)
             ?? [...document.querySelectorAll<HTMLAnchorElement>('a[data-nav]')].pop()!;
-          const a = document.createElement('a');
+          // the copy header-boot.js painted from the last page view, or a new one
+          const a = document.querySelector<HTMLAnchorElement>(`a[data-nav-cached][href="${CSS.escape(href)}"]`) ?? document.createElement('a');
+          delete a.dataset.navCached;
+          a.replaceChildren();
           a.href = href;
           a.dataset.feature = featureId;
           // Look of the regular links (the first one; the forest-garden link is dimmed as experimental).
@@ -1352,7 +1361,7 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
           // like the regular links: icon (phone bottom bar only) + label in its own span
           if (opts.icon) a.innerHTML = `<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">${opts.icon}</svg>`;
           a.append(Object.assign(document.createElement('span'), { textContent: label }));
-          ref.after(a);
+          if (!a.isConnected) ref.after(a);
           const url = new URL(href, location.href);
           const mark = () => {
             const on = url.pathname.replace(/\/$/, '') === location.pathname.replace(/\/$/, '') && (!url.hash || url.hash === location.hash);
@@ -1393,11 +1402,18 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
         }).catch(() => {});
       }
 
+      // Module nav links of this page view, for header-boot.js on the next one; links it painted that the module did not claim go.
+      const navCache: { featureId: string; label: string; href: string; after?: string; icon?: string }[] = [];
+      const settleNav = () => {
+        document.querySelectorAll('a[data-nav-cached]').forEach(a => a.remove());
+        try { localStorage.setItem('pdk-nav-extra', JSON.stringify(navCache)); } catch { /* ignore */ }
+      };
+
       // Expert mode: load the private module (only in builds that contain
       // src/expert/; its chunks come from /x/, which needs the login cookie).
       if (hasExpertCode && isLoginMode(currentMode())) {
         loadExpertModule().then(async mod => {
-          if (!mod) { if (getAuth()) switchToNewBuild(); return; }
+          if (!mod) { settleNav(); if (getAuth()) switchToNewBuild(); return; }
           registerFeatures(mod.features);
           await mod.mount({
             page: location.pathname.replace(/\/$/, '') || '/',
@@ -1406,8 +1422,9 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
             onFeaturesChange: cb => onFeaturesChange(() => cb()),
             pageApi,
           });
-        }).catch(err => console.warn('expert module failed', err));
-      }
+          settleNav();
+        }).catch(err => { settleNav(); console.warn('expert module failed', err); });
+      } else settleNav();
     </script>
   </body>
 </html>

@@ -70,3 +70,16 @@ test.describe('phone', () => {
     void errors;
   });
 });
+
+test('signed in: the header is drawn signed in before the page scripts ran (no jump)', async ({ page, errors }) => {
+  await stubNetwork(page);
+  await page.addInitScript(() => { localStorage.setItem('pdk-welcome-seen', '1'); localStorage.setItem('pdk-auth', JSON.stringify({ name: 'Jo', role: 'expert' })); });
+  // without the bundled scripts only header-boot.js has run
+  await page.route(/\/_astro\/.*\.js$/, r => r.abort());
+  await page.goto('/kalender');
+  await expect(page.locator('#user-label')).toHaveText('Jo');
+  await expect(page.locator('#user-initial')).toHaveText('J');
+  await expect(page.locator('#header-beta')).toBeHidden();
+  await expect(page.locator('#beta-badge')).toBeVisible();
+  void errors;
+});
