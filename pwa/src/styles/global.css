@@ -134,10 +134,7 @@ html[data-design="horizont"] {
   --color-stone-950: #161c09;
 }
 html[data-design="horizont"] body { background: var(--hz-ground-color); }
-/* The big tree line only on the start page; elsewhere a narrow strip of the same trees,
-   repeated across the width (the picture is too narrow at this height), so the work gets the room. */
-html[data-design="horizont"]:not([data-home]) { --hz-trees: 56px; }
-html[data-design="horizont"]:not([data-home]) .hz-sky { background-repeat: no-repeat, repeat-x, no-repeat; }
+/* The tree line is drawn once across the full width on every page (#679: a narrow strip repeated side by side looked tiled). */
 
 /* Headings in the display face, as in the design. */
 html[data-design="horizont"] :is(h1, h2, .hz-hero-title) {
