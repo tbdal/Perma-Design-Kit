@@ -620,7 +620,8 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
       type TourStep = { selector: string; closest?: string; dummy?: boolean; fallback?: string; title: string; text: string; fallbackText?: string; link?: { href: string; label: string } }; // link: i18n keys (URL differs per language)
       const TOUR_STEPS: TourStep[] = [
         { selector: '#plant-search', closest: 'div', title: 'tourSearchTitle', text: 'tourSearchText' },
-        { selector: '#tour-dummy .btn-edit', dummy: true, title: 'tourEditTitle', text: 'tourEditText' },
+        // the first plant's real edit button; an example plant only when the list is empty (#687)
+        { selector: '#plant-list .btn-edit', title: 'tourEditTitle', text: 'tourEditText' },
         { selector: '#btn-view-list', title: 'tourListTitle', text: 'tourListText' },
         { selector: '#btn-view-cards', title: 'tourCardsTitle', text: 'tourCardsText' },
         { selector: 'a[data-nav="/polykulturen"]', title: 'tourGuildsTitle', text: 'tourGuildsText' },
@@ -650,11 +651,10 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
         const card = document.getElementById('tour-card')!;
         const prev = document.getElementById('tour-prev') as HTMLButtonElement;
         const next = document.getElementById('tour-next') as HTMLButtonElement;
-        // Step 2 points at the edit button of an example plant (not saved), so
-        // it works even on an empty list and while the real button is hover-only.
+        // Step 2 points at the first plant's edit button; on an empty list at the one of an example plant (not saved).
         let dummy: HTMLElement | null = null;
         const list = document.getElementById('plant-list');
-        if (list) {
+        if (list && !list.querySelector('.btn-edit')) {
           dummy = document.createElement('div');
           dummy.id = 'tour-dummy';
           dummy.className = 'flex items-center justify-between gap-3 rounded-xl bg-white dark:bg-stone-800 px-4 py-3 shadow-sm ring-1 ring-stone-200 dark:ring-stone-700';
@@ -688,7 +688,12 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
         };
         const show = () => {
           const cur = steps[idx];
-          if (dummy) dummy.hidden = !dummy.contains(cur.el);
+          if (dummy) { dummy.hidden = !dummy.contains(cur.el); if (!dummy.isConnected) list?.prepend(dummy); }
+          // the page may have redrawn its list meanwhile: look the element up again
+          if (!cur.el.isConnected) { const again = Array.from(document.querySelectorAll(TOUR_STEPS.find(s => s.title === cur.title)!.selector)).find(visible); if (again) cur.el = again; }
+          // the edit buttons show only on hover: here they show while the tour points at them
+          document.querySelectorAll('.tour-hover').forEach(g => g.classList.remove('tour-hover'));
+          cur.el.closest('.group')?.classList.add('tour-hover');
           cur.el.scrollIntoView({ block: 'center', behavior: 'instant' as ScrollBehavior });
           document.getElementById('tour-title')!.textContent = tt(cur.title);
           const textEl = document.getElementById('tour-text')!;
@@ -710,6 +715,7 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
           showStart();
           for (const el of [block, spot, card]) el.hidden = true;
           dummy?.remove();
+          document.querySelectorAll('.tour-hover').forEach(g => g.classList.remove('tour-hover'));
           window.removeEventListener('resize', place);
           document.removeEventListener('keydown', onKey, true);
         };
