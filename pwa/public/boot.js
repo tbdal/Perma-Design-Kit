@@ -143,14 +143,10 @@ try { performance.setResourceTimingBufferSize(3000); } catch (_) {}
     var root = document.documentElement;
     root.classList.add('pdk-layout-pending');
     var sheet = new CSSStyleSheet();
-    // The header too (#623): the module's compact header and its own menu item came after the first paint,
-    // so the big wordmark and the old item flashed. Same values as `html.pdk-neu .site-header …` in the module.
+    // The menu item too (#623): the module's own one came after the first paint, so the old one flashed.
+    // The header itself looks as on every other page, so it does not jump when switching pages.
     var p = 'html.pdk-layout-pending ';
-    sheet.replaceSync(p + '#plan-list-view,' + p + '#plan-editor-view,' + p + 'a[data-nav="/gartenplan"]{visibility:hidden}'
-      + p + '.site-header .hz-wordmark{font-size:10.5px}'
-      + p + '.site-header svg.hz-std{width:1.225rem;height:1.225rem}'
-      + p + '.site-header nav{max-width:none;margin-left:0;margin-right:0;padding-left:16px;padding-right:16px}'
-      + '@media (max-width:639px){' + p + '.site-header nav{padding-left:8px;padding-right:8px}}');
+    sheet.replaceSync(p + '#plan-list-view,' + p + '#plan-editor-view,' + p + 'a[data-nav="/gartenplan"]{visibility:hidden}');
     document.adoptedStyleSheets = document.adoptedStyleSheets.concat([sheet]);
     setTimeout(function () { root.classList.remove('pdk-layout-pending'); }, 4000);
   } catch (_) {}
