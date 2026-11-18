@@ -25,9 +25,12 @@
 
     var mode = document.documentElement.dataset.mode; // set by boot.js, already checked against the role
     if (mode !== 'expert' && mode !== 'team') return;
-    var links = JSON.parse(localStorage.getItem('pdk-nav-extra') || '[]');
+    var cache = JSON.parse(localStorage.getItem('pdk-nav-extra') || '{}') || {};
+    var links = Array.isArray(cache.links) ? cache.links : [];
     var navs = document.querySelectorAll('a[data-nav]');
-    if (!Array.isArray(links) || !navs.length) return;
+    if (!links.length || !navs.length) return;
+    // regular links the module hides; it shows them again itself if that changed
+    navs.forEach(function (a) { if (Array.isArray(cache.hidden) && cache.hidden.indexOf(a.dataset.nav) >= 0) { a.hidden = true; a.dataset.navHid = ''; } });
     var cls = navs[0].className.split(/\s+/).filter(function (c) { return c !== 'bg-green-800' && c !== 'dark:bg-green-900' && c !== 'text-white'; }).join(' ');
     links.forEach(function (l) {
       if (!l || typeof l.href !== 'string' || typeof l.label !== 'string') return;

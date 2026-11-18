@@ -83,3 +83,17 @@ test('signed in: the header is drawn signed in before the page scripts ran (no j
   await expect(page.locator('#beta-badge')).toBeVisible();
   void errors;
 });
+
+test('module links painted from the last visit go again when no module takes over', async ({ page, errors }) => {
+  await stubNetwork(page);
+  await page.route('**/api/auth/me', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ name: 'Jo', role: 'team' }) }));
+  await page.addInitScript(() => {
+    localStorage.setItem('pdk-welcome-seen', '1'); localStorage.setItem('pdk-mode', 'team');
+    localStorage.setItem('pdk-auth', JSON.stringify({ name: 'Jo', role: 'team' }));
+    localStorage.setItem('pdk-nav-extra', JSON.stringify({ links: [{ featureId: 'x', label: 'Gemerkt', href: '/gemerkt' }], hidden: ['/gartenplan'] }));
+  });
+  await page.goto('/kalender');
+  await expect(page.locator('#nav-links a[href="/gemerkt"]')).toHaveCount(0);
+  await expect(page.locator('a[data-nav="/gartenplan"]')).toBeVisible();
+  void errors;
+});
