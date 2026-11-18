@@ -231,6 +231,8 @@ export interface PolykulturenApi {
   addEditorBox(featureId: string, title: string): HTMLElement;
   /** Extra HTML at the end of each polyculture card in the list (null = none). */
   addCardExtra(featureId: string, fn: (pc: Polyculture) => string | null): void;
+  /** A further order for the polyculture list (ties fall back to the name); it is offered in the sort menu. */
+  addSortOption(featureId: string, id: string, label: string, compare: (a: Polyculture, b: Polyculture) => number): void;
   /** Adds a plant of the list to the polyculture open in the editor, with the role it fits best; false without an open editor or when it is a member already. */
   addMember(plantId: string): boolean;
 }

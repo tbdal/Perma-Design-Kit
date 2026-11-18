@@ -7,6 +7,7 @@ import Layout from '../layouts/Layout.astro';
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
       <h1 class="text-2xl font-bold text-stone-900 dark:text-stone-100" data-i18n="pageTitle">Polykulturen</h1>
       <div class="flex flex-wrap items-center gap-2">
+        <select id="poly-sort" data-i18n-aria-label="sortLabel" aria-label="Polykulturen sortieren" class="rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-2 text-sm text-stone-700 dark:text-stone-200"></select>
         <select id="from-group" data-i18n-aria-label="fromGroupLabel" aria-label="Polykultur aus einer Pflanzengruppe anlegen" class="rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-2.5 py-2 text-sm text-stone-700 dark:text-stone-200"></select>
         <button id="btn-examples" type="button" data-i18n="btnExamples" class="rounded-lg bg-white dark:bg-stone-800 px-3.5 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-50 dark:hover:bg-stone-700">Beispiele laden</button>
         <button id="btn-share-link" type="button" data-i18n="shareOpen" data-i18n-title="shareOpenTitle" title="Projekt als Link teilen" class="rounded-lg bg-white dark:bg-stone-800 px-3.5 py-2 text-sm font-medium text-stone-700 dark:text-stone-200 ring-1 ring-stone-300 dark:ring-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700">🔗 Teilen…</button>
@@ -166,6 +167,7 @@ import Layout from '../layouts/Layout.astro';
   const editorView = document.getElementById('polyculture-editor-view')!;
   const listEl = document.getElementById('polyculture-list')!;
   const emptyEl = document.getElementById('polyculture-empty')!;
+  const sortEl = document.getElementById('poly-sort') as HTMLSelectElement;
   const toast = document.getElementById('toast')!;
 
   const fName = document.getElementById('g-name') as HTMLInputElement;
@@ -189,6 +191,29 @@ import Layout from '../layouts/Layout.astro';
     return uses.length ? t('inPlans', { list: uses.map(u => t('inPlanItem', { name: u.name || '–', n: u.packages })).join(', ') }) : '';
   }
 
+  // ── Sorting: name and creation date both ways, plus orders modules add ──
+  const SORT_KEY = 'pdk-poly-sort';
+  const byName = (a: Polyculture, b: Polyculture) => (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base', numeric: true });
+  const byCreated = (a: Polyculture, b: Polyculture) => (a.createdAt || '').localeCompare(b.createdAt || '');
+  const sorts: { id: string; label: string; compare: (a: Polyculture, b: Polyculture) => number }[] = [
+    { id: 'name-asc', label: t('sortNameAsc'), compare: byName },
+    { id: 'name-desc', label: t('sortNameDesc'), compare: (a, b) => byName(b, a) },
+    { id: 'created-desc', label: t('sortCreatedDesc'), compare: (a, b) => byCreated(b, a) || byName(a, b) },
+    { id: 'created-asc', label: t('sortCreatedAsc'), compare: (a, b) => byCreated(a, b) || byName(a, b) },
+  ];
+  let sortId = 'name-asc';
+  try { sortId = localStorage.getItem(SORT_KEY) || sortId; } catch { /* default */ }
+  function renderSortSelect() {
+    sortEl.innerHTML = sorts.map(s => `<option value="${escapeHtml(s.id)}">${escapeHtml(s.label)}</option>`).join('');
+    sortEl.value = sorts.some(s => s.id === sortId) ? sortId : 'name-asc';   // a module's order whose module is not loaded: back to the default
+  }
+  renderSortSelect();
+  sortEl.addEventListener('change', () => {
+    sortId = sortEl.value;
+    try { localStorage.setItem(SORT_KEY, sortId); } catch { /* only this visit */ }
+    renderList();
+  });
+
   // ── Plugins (expert-api.ts PolykulturenApi) ────────────────────────────
   const cardExtras: ((pc: Polyculture) => string | null)[] = [];
   const editorListeners: ((pc: Polyculture | null) => void)[] = [];
@@ -208,6 +233,12 @@ import Layout from '../layouts/Layout.astro';
       return box.querySelector('div')!;
     },
     addCardExtra(_featureId, fn) { cardExtras.push(fn); renderList(); },
+    addSortOption(_featureId, id, label, compare) {
+      if (sorts.some(s => s.id === id)) return;
+      sorts.push({ id, label, compare: (a, b) => compare(a, b) || byName(a, b) });
+      renderSortSelect();
+      renderList();
+    },
     addMember(plantId) {
       const plant = plantsById.get(plantId);
       if (!editing || !plant || editing.members.some(m => m.plantId === plantId)) return false;
@@ -241,7 +272,8 @@ import Layout from '../layouts/Layout.astro';
     }
     emptyEl.classList.add('hidden');
     listEl.classList.remove('hidden');
-    listEl.innerHTML = polycultures.map(g => {
+    const compare = (sorts.find(s => s.id === sortEl.value) ?? sorts[0]).compare;
+    listEl.innerHTML = [...polycultures].sort(compare).map(g => {
       const anchor = g.anchorPlantId ? plantsById.get(g.anchorPlantId) : undefined;
       const filledRoles = new Set(g.members.map(m => m.role));
       const memberChips = g.members.slice(0, 6).map(m => {

@@ -25,5 +25,6 @@ export const es: Record<string, string> = {
   polyEmptyText: 'Un policultivo es un grupo alrededor de una planta ancla: nitrógeno, insectos, cobertura del suelo. Imprímelo como tarjetas o discos de copa.',
   polyEmptyExamples: 'Ver un policultivo de ejemplo',
   polyEmptyTerm: 'Término: policultivo = comunidad de plantas en un lugar; gremio = función a través de sistemas.',
+  sortLabel: 'Ordenar policultivos', sortNameAsc: 'Nombre A–Z', sortNameDesc: 'Nombre Z–A', sortCreatedDesc: 'Más recientes primero', sortCreatedAsc: 'Más antiguos primero',
   polyEmptyAlt: 'Un árbol en el centro, rodeado de arbustos y cobertura del suelo',
 };
