@@ -1,7 +1,7 @@
 // Spanish texts of dict-impressum.ts (courtesy translation; the German version is binding).
 export const es: Record<string, string> = {
   imTitle: 'Aviso legal', imTmgNote: 'Información según el § 5 DDG (Ley alemana de servicios digitales). Traducción de cortesía; prevalece la versión alemana.',
-  imProviderTitle: 'Responsable', imPlaceholderCountry: 'Alemania', imContactTitle: 'Contacto', imEmailLabel: 'Correo:', imPhoneLabel: 'Teléfono (opcional):', imPlaceholderPhone: '[número de teléfono]',
+  imProviderTitle: 'Responsable', imPlaceholderCountry: 'Alemania', imContactTitle: 'Contacto', imEmailLabel: 'Correo:', imPhoneLabel: 'Teléfono:',
   imContentResponsibleTitle: 'Responsables del contenido según el § 18 (2) MStV (Tratado interestatal alemán de medios)', imContentResponsibleBody: 'Andreas Linder y Jörn Müller, direcciones como arriba',
   imLiabilityContentTitle: 'Responsabilidad por el contenido',
   imLiabilityContentBody: 'El contenido de este sitio se ha elaborado con el mayor cuidado posible. Sin embargo, no podemos garantizar su exactitud, integridad ni actualidad. Como proveedores de servicios somos responsables de nuestros propios contenidos en estas páginas conforme al § 7 (1) DDG. Según los §§ 8 a 10 DDG no estamos obligados a supervisar información de terceros transmitida o almacenada ni a investigar circunstancias que indiquen una actividad ilícita.',

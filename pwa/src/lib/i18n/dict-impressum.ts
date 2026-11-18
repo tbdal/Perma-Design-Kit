@@ -16,8 +16,8 @@ export const impressumDict: Dict = {
   imContactTitle: { de: 'Kontakt', en: 'Contact' },
   imEmailLabel: { de: 'E-Mail:', en: 'Email:' },
   imPlaceholderEmail: { de: 'info@permadesignkit.org', en: 'info@permadesignkit.org' },
-  imPhoneLabel: { de: 'Telefon (optional):', en: 'Phone (optional):' },
-  imPlaceholderPhone: { de: '[Telefonnummer]', en: '[phone number]' },
+  imPhoneLabel: { de: 'Telefon:', en: 'Phone:' },
+  imPlaceholderPhone: { de: '+49 174 7696748', en: '+49 174 7696748' },
 
   imContentResponsibleTitle: { de: 'Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV', en: 'Responsible for content pursuant to Sec. 18 (2) MStV (German Interstate Media Treaty)' },
   imContentResponsibleBody: { de: 'Andreas Linder und Jörn Müller, Anschriften wie oben', en: 'Andreas Linder and Jörn Müller, addresses as above' },
