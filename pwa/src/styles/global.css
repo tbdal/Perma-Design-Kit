@@ -630,3 +630,6 @@ html[data-design="horizont"].dark .hdr-opt[aria-pressed="true"] { background: va
   html:not([data-bare]) .nav-icon { display: block; width: 1.4rem; height: 1.4rem; }
   html:not([data-bare]) #feedback-fab, html:not([data-bare]) #toast { bottom: calc(var(--bottom-bar-h) + 0.75rem) !important; }
 }
+
+/* Tour (Layout.astro): hover-only buttons show while the tour points at them. */
+.tour-hover [class~="sm:opacity-0"] { opacity: 1 !important; }
