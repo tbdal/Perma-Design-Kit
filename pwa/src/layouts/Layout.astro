@@ -1233,7 +1233,7 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
         },
         addNavLink(featureId, label, href, opts = {}) {
           navCache.push({ featureId, label, href, after: opts.after, icon: opts.icon });
-          saveNav();
+          setTimeout(saveNav);   // once the module placed it and hid what it replaces
           const ref = document.querySelector<HTMLAnchorElement>(`a[data-nav="${CSS.escape(opts.after ?? '')}"]`)
             ?? [...document.querySelectorAll<HTMLAnchorElement>('a[data-nav]')].pop()!;
           // the copy header-boot.js painted from the last page view, or a new one
