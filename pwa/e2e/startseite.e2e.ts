@@ -117,3 +117,25 @@ test('the tour started on another page goes to the plant page and starts with th
   await expect(page.locator('#tour-title')).toContainText('Suche');
   void errors;
 });
+
+test('tour step 2 points at the first plant\'s own edit button and shows it', async ({ page, errors }) => {
+  await stubNetwork(page);
+  await page.addInitScript(() => { localStorage.setItem('pdk-welcome-seen', '1'); localStorage.setItem('pdk-start-seen', '1'); });
+  await page.goto('/');
+  await page.locator('#btn-load-samples-crawford').click();
+  await expect(page.locator('#plant-list [data-id] .btn-edit').first()).toBeAttached();
+  await page.click('#help-toggle');
+  if (await page.locator('#help-tour').count()) await page.click('#help-tour');
+  else { await page.click('#help-intro'); await page.click('#welcome-next'); }
+  await page.click('#tour-next');
+  await expect(page.locator('#tour-progress')).toHaveText(/^2 \//);
+  await expect(page.locator('#tour-dummy')).toHaveCount(0);
+  const btn = page.locator('#plant-list [data-id] .btn-edit').first();
+  // the spot glides there
+  await expect.poll(async () => {
+    const b = (await btn.boundingBox())!, s = (await page.locator('#tour-spot').boundingBox())!;
+    return Math.max(Math.abs(s.x + 6 - b.x), Math.abs(s.y + 6 - b.y));
+  }).toBeLessThan(3);
+  expect(await btn.evaluate(el => getComputedStyle(el.closest('[class~="sm:opacity-0"]') ?? el).opacity)).toBe('1');
+  void errors;
+});
