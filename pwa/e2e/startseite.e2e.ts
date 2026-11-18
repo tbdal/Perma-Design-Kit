@@ -97,7 +97,8 @@ test('module links painted from the last visit go again when no module takes ove
     localStorage.setItem('pdk-nav-extra', JSON.stringify({ links: [{ featureId: 'x', label: 'Gemerkt', href: '/gemerkt' }], hidden: ['/gartenplan'] }));
   });
   await page.goto('/kalender');
-  await expect(page.locator('#nav-links a[href="/gemerkt"]')).toHaveCount(0);
+  // with the module in the build it is removed after its grace period (5 s)
+  await expect(page.locator('#nav-links a[href="/gemerkt"]')).toHaveCount(0, { timeout: 10_000 });
   await expect(page.locator('a[data-nav="/gartenplan"]')).toBeVisible();
   void errors;
 });
