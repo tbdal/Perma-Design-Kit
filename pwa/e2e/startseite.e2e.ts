@@ -1,5 +1,5 @@
 // Start page for professionals (Prüfbericht Nov., proposals 3, 4, 6, 7, 8): three ways in and the outputs once after
-// the welcome, the planner's empty page without the warning box, the narrow tree line elsewhere,
+// the welcome, the planner's empty page without the warning box, the tree line,
 // and on phones the four areas as a bar at the bottom.
 import { test, expect, stubNetwork } from './helpers';
 
@@ -40,10 +40,9 @@ test('planner without plans: Beta label and what the planner does, no warning bo
   await expect(page.locator('#plan-empty li')).toHaveCount(5);
   await expect(page.locator('#plan-empty a[href="/beispiel"]')).toBeVisible();
   await expect(page.locator('body')).not.toContainText('Experimentell');
-  // narrow tree line here, the big one only on the start page
-  expect(await page.evaluate(() => document.documentElement.hasAttribute('data-home'))).toBe(false);
-  await page.goto('/');
-  expect(await page.evaluate(() => document.documentElement.hasAttribute('data-home'))).toBe(true);
+  // the tree line is one picture across the whole width, not a strip repeated side by side (#679)
+  const sky = await page.locator('.hz-sky').evaluate(el => getComputedStyle(el).backgroundRepeat);
+  expect(sky).not.toContain('repeat-x');
   void errors;
 });
 
