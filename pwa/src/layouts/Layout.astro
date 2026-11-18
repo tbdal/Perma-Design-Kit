@@ -909,13 +909,14 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
       import { onForeignChange, staleAction } from '../lib/data-channel';
       import { getContrast, setContrast, applyContrast, getFontSize, setFontSize, applyFontSize, getTheme, setTheme, applyTheme, type ContrastPref, type FontSizePref, type ThemePref } from '../lib/settings';
       import { layoutDict } from '../lib/i18n/dict-layout';
-      import { installBrokenImageCleanup } from '../lib/html';
+      import { installBrokenImageCleanup, installAnchoredPopovers } from '../lib/html';
       import { installImageZoom } from '../lib/image-zoom';
       import { installCommandPalette } from '../lib/command-palette';
 
       const t = createT(layoutDict);
       applyStaticI18n(layoutDict);
       installBrokenImageCleanup();
+      installAnchoredPopovers();
       installImageZoom(t('closeBtn'));
       installCommandPalette(t);
 

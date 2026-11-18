@@ -235,6 +235,11 @@ test('climate explorer: target year, scenario and model drive the hints and stay
   // explanations (#603): the model "i" opens its popover
   await zoomer.locator('[popovertarget="clim-i-models"]').click();
   await expect(page.locator('#clim-i-models')).toContainText('HighResMIP');
+  // at its "i" (below or above it), not in the middle of the screen
+  const iB = (await zoomer.locator('[popovertarget="clim-i-models"]').boundingBox())!, pB = (await page.locator('#clim-i-models').boundingBox())!;
+  expect(Math.min(Math.abs(pB.y - (iB.y + iB.height + 6)), Math.abs(pB.y + pB.height - (iB.y - 6)))).toBeLessThan(2);
+  expect(pB.x).toBeLessThanOrEqual(iB.x + 1);
+  expect(pB.x + pB.width).toBeGreaterThanOrEqual(iB.x + iB.width - 1);
   await page.keyboard.press('Escape');
   await zoomer.locator('[data-clim-year]').fill('2046');
   await expect(zoomer.locator('[data-clim-mode]')).toContainText('Hochrechnung');

@@ -8,6 +8,46 @@ export function installBrokenImageCleanup(): void {
   }, true);
 }
 
+/** Popovers opened by a button ([popovertarget], e.g. the "i" explanations) appear at that button – below it, or above
+ *  when there is no room – instead of in the middle or top left of the screen; scrolling closes them (they are fixed
+ *  to the viewport and follow the button while the page scrolls). Call once per page. */
+export function installAnchoredPopovers(): void {
+  let invoker: Element | null = null;   // the clicked button: ids may repeat (a box and its large view)
+  document.addEventListener('click', e => { invoker = (e.target as Element).closest?.('[popovertarget]') ?? invoker; }, true);
+  const anchorOf = (pop: HTMLElement) => (invoker?.getAttribute('popovertarget') === pop.id && invoker.isConnected ? invoker : document.querySelector(`[popovertarget="${CSS.escape(pop.id)}"]`));
+  const place = (pop: HTMLElement, measured: boolean) => {
+    const a = anchorOf(pop);
+    if (!a) return;
+    const r = a.getBoundingClientRect(), gap = 6, edge = 8;
+    const roomBelow = innerHeight - edge - r.bottom - gap, roomAbove = r.top - gap - edge;
+    pop.style.maxHeight = '';
+    Object.assign(pop.style, { position: 'fixed', inset: 'auto', margin: '0', maxWidth: `min(28rem, calc(100vw - ${2 * edge}px))`, overflow: 'auto' });
+    const w = measured ? pop.offsetWidth : Math.min(448, innerWidth - 2 * edge), h = measured ? pop.offsetHeight : 0;
+    // below when it fits (or there is more room below), else above; too tall for either: it scrolls inside
+    const down = h <= roomBelow || roomBelow >= roomAbove;
+    const room = Math.max(40, down ? roomBelow : roomAbove);
+    Object.assign(pop.style, { maxHeight: `${room}px`, top: `${down ? r.bottom + gap : r.top - gap - Math.min(h, room)}px`,
+      left: `${Math.max(edge, Math.min(r.left + r.width / 2 - w / 2, innerWidth - edge - w))}px` });
+  };
+  document.addEventListener('beforetoggle', e => {
+    const pop = e.target as HTMLElement;
+    if (pop.hasAttribute?.('popover') && (e as ToggleEvent).newState === 'open') place(pop, false);
+  }, true);
+  document.addEventListener('toggle', e => {
+    const pop = e.target as HTMLElement;
+    if (pop.hasAttribute?.('popover') && (e as ToggleEvent).newState === 'open') place(pop, true);   // now with its real size
+  }, true);
+  // scrolling: the popover follows its button, and closes once the button left the screen
+  document.addEventListener('scroll', e => {
+    document.querySelectorAll<HTMLElement>('[popover]:popover-open').forEach(p => {
+      const a = anchorOf(p);
+      if (!a || p.contains(e.target as Node)) return;
+      const r = a.getBoundingClientRect();
+      if (r.bottom < 0 || r.top > innerHeight) p.hidePopover(); else place(p, true);
+    });
+  }, { capture: true, passive: true });
+}
+
 /** Escape a string for safe interpolation into HTML markup (text/attribute context). */
 export function escapeHtml(s: string): string {
   return s.replace(/[&<>"']/g, c => ({

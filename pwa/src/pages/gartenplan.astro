@@ -2416,22 +2416,27 @@ import Layout from '../layouts/Layout.astro';
   }
   /** Opens the plant's editor (the form from "Pflanzen") in a frame over the plan (index.astro "pdk-edit",
    *  #549); when it closes the plants are read again. Falls back to going there. A plant only carried along
-   *  by a shared plan goes into the own list first. */
+   *  by a shared plan goes into the own list first. `preview`: a plant not in the list yet, shown with
+   *  "Verwerfen"/"Speichern" (index.astro ?preview=new); resolves with whether it was saved. */
   let editFrame: HTMLIFrameElement | null = null;
-  async function openPlantEditor(p: PlantData) {
-    if (editFrame) return;
-    if (!plants.some(x => x.id === p.id)) { await importPlants([p]); plants = await getAllPlants(); rebuildPlantsById(); }
+  async function openPlantEditor(p: PlantData, preview = false): Promise<boolean> {
+    if (editFrame) return false;
+    if (!preview && !plants.some(x => x.id === p.id)) { await importPlants([p]); plants = await getAllPlants(); rebuildPlantsById(); }
     if (editing && !readOnly) { editing.updatedAt = new Date().toISOString(); await saveGardenPlan(editing); } // nothing of the plan gets lost on the way
     const href = `/?edit=${encodeURIComponent(p.id)}&return=${encodeURIComponent(location.pathname + (editing ? `?plan=${editing.id}` : '') + location.hash)}`;
     const f = editFrame = document.createElement('iframe');
     f.name = 'pdk-edit';
-    f.src = `/?edit=${encodeURIComponent(p.id)}`;
+    f.src = preview ? '/?preview=new' : `/?edit=${encodeURIComponent(p.id)}`;
     f.title = t('editPlant');
     f.className = 'fixed inset-0 z-[100] h-full w-full border-0 bg-transparent opacity-0 transition-opacity';
-    let loads = 0;
-    const fallback = setTimeout(() => { location.href = href; }, 15000);
+    let loads = 0, saved = false, done: (v: boolean) => void = () => {};
+    const result = new Promise<boolean>(r => { done = r; });
+    // a preview cannot go to the plant page instead (the plant exists only here): give up
+    const fallback = setTimeout(() => { if (!preview) { location.href = href; return; } window.removeEventListener('message', onMsg); f.remove(); editFrame = null; done(false); }, 15000);
     const onMsg = async (m: MessageEvent) => {
       if (m.origin !== location.origin || m.source !== f.contentWindow) return;
+      if (m.data?.type === 'pdk-preview-ready' && preview) { f.contentWindow!.postMessage({ type: 'pdk-preview-plant', plant: p }, location.origin); return; }
+      if (m.data?.type === 'pdk-preview-done') { saved = m.data.saved === true; return; }
       if (m.data?.type === 'pdk-edit-open') { clearTimeout(fallback); f.style.opacity = '1'; f.focus(); return; }
       if (m.data?.type !== 'pdk-edit-closed') return;
       clearTimeout(fallback);
@@ -2441,11 +2446,13 @@ import Layout from '../layouts/Layout.astro';
       if (editing) { renderPlanSvg(); renderSelectedPanel(); scheduleWarnings(); }
       // A moment longer: the frame's change messages must not count as another tab's (Layout.astro).
       setTimeout(() => { f.remove(); if (editFrame === f) editFrame = null; }, 800);
+      done(saved);
     };
     window.addEventListener('message', onMsg);
     // Something in the form led to another page: go there for real.
     f.addEventListener('load', () => { if (loads++ > 0) { clearTimeout(fallback); try { location.href = f.contentWindow!.location.href; } catch { location.href = href; } } });
     document.body.appendChild(f);
+    return result;
   }
   /** The hints (red ! on the plan) that name this placement — what the mark means. */
   let selectedHintKey = '';
@@ -5884,6 +5891,7 @@ import Layout from '../layouts/Layout.astro';
     isHidden: id => hiddenByPlugin(id),
     importGeoJson: data => importGeoJsonData(data),
     addSelectionExtra(featureId, render) { selectionExtras.push({ featureId, render }); renderSelectedPanel(); },
+    previewPlant: plant => openPlantEditor(plant, true),
     async addPlant(plant) {
       if (plants.some(p => p.id === plant.id)) return; // plants a plugin only brings along (shared plans) are not in the list yet
       await importPlants([plant]);

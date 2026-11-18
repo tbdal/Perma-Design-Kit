@@ -2242,11 +2242,32 @@ import Layout from '../layouts/Layout.astro';
   // In the frame "pdk-edit" (another page shows the form over itself, e.g. Steckbriefe) only the
   // dialog is visible (html.pdk-embed in global.css); opening and closing are told to that page.
   const embedded = window.name === 'pdk-edit' && window.parent !== window;
-  const tellParent = (type: 'pdk-edit-open' | 'pdk-edit-closed') => { if (embedded) window.parent.postMessage({ type }, location.origin); };
+  const tellParent = (type: 'pdk-edit-open' | 'pdk-edit-closed' | 'pdk-preview-ready') => { if (embedded) window.parent.postMessage({ type }, location.origin); };
   if (embedded) document.documentElement.classList.add('pdk-embed');
   void renderList().then(() => {
     const url = new URL(location.href);
     const q = url.searchParams;
+    //  ?preview=new (only in the frame): the parent page sends a plant that is not in the list yet; it is shown with
+    //  "Verwerfen"/"Speichern", and the parent hears whether it was saved.
+    if (embedded && q.get('preview') === 'new') {
+      q.delete('preview');
+      history.replaceState(history.state, '', url);
+      const onMsg = (m: MessageEvent) => {
+        if (m.origin !== location.origin || m.source !== window.parent || m.data?.type !== 'pdk-preview-plant') return;
+        window.removeEventListener('message', onMsg);
+        const plant = normalizePlant(m.data.plant);
+        if (!plant) { tellParent('pdk-edit-closed'); return; }
+        tellParent('pdk-edit-open');
+        void openPreview(plant, true).then(async saved => {
+          window.parent.postMessage({ type: 'pdk-preview-done', saved }, location.origin);
+          await Promise.allSettled(leaveHolds);
+          tellParent('pdk-edit-closed');
+        });
+      };
+      window.addEventListener('message', onMsg);
+      tellParent('pdk-preview-ready');
+      return;
+    }
     const id = q.get('edit');
     const isNew = q.get('new') === '1';
     if (!id && !isNew) { tellParent('pdk-edit-closed'); return; }
