@@ -1,5 +1,5 @@
-// Runs synchronously right after the header, before first paint: draws the
-// header as the last page view left it, so it does not jump once the page's
+// Runs synchronously right after the header, before first paint: marks the
+// link of this page and draws the header as the last page view left it, so it does not jump once the page's
 // scripts ran — signed in (Beta badge, initial and name instead of
 // "Anmelden") and the links the expert module added (cached by Layout.astro in
 // pdk-nav-extra). Layout.astro's sync() and addNavLink() take over from here;
@@ -7,6 +7,12 @@
 // External file: the Content-Security-Policy forbids inline scripts.
 (function () {
   try {
+    // the link of this page (bold on phones, so before first paint too)
+    var path = location.pathname.replace(/\/$/, '') || '/';
+    document.querySelectorAll('a[data-nav]').forEach(function (a) {
+      if (a.dataset.nav === path) { a.classList.add('bg-green-800', 'dark:bg-green-900', 'text-white'); a.setAttribute('aria-current', 'page'); }
+    });
+
     var auth = JSON.parse(localStorage.getItem('pdk-auth') || 'null');
     if (!auth || typeof auth.name !== 'string' || !auth.name) return;
     var $ = function (id) { return document.getElementById(id); };
