@@ -1233,7 +1233,7 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
         },
         addNavLink(featureId, label, href, opts = {}) {
           navCache.push({ featureId, label, href, after: opts.after, icon: opts.icon });
-          try { localStorage.setItem('pdk-nav-extra', JSON.stringify(navCache)); } catch { /* ignore */ }
+          saveNav();
           const ref = document.querySelector<HTMLAnchorElement>(`a[data-nav="${CSS.escape(opts.after ?? '')}"]`)
             ?? [...document.querySelectorAll<HTMLAnchorElement>('a[data-nav]')].pop()!;
           // the copy header-boot.js painted from the last page view, or a new one
@@ -1292,9 +1292,16 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
       // Module nav links of this page view, for header-boot.js on the next one. Links it painted that the module
       // did not claim go once the module had time to add its own (mount() starts its parts without waiting for them).
       const navCache: { featureId: string; label: string; href: string; after?: string; icon?: string }[] = [];
+      // also which of the regular links the module hid (the new planner takes the old one's place)
+      const saveNav = () => {
+        const hidden = [...document.querySelectorAll<HTMLAnchorElement>('a[data-nav][hidden]')].map(a => a.dataset.nav);
+        try { localStorage.setItem('pdk-nav-extra', JSON.stringify({ links: navCache, hidden })); } catch { /* ignore */ }
+      };
       const settleNav = () => {
         document.querySelectorAll('a[data-nav-cached]').forEach(a => a.remove());
-        if (!navCache.length) try { localStorage.removeItem('pdk-nav-extra'); } catch { /* ignore */ }
+        // a link header-boot.js hid comes back when no module took over
+        document.querySelectorAll<HTMLAnchorElement>('a[data-nav-hid]').forEach(a => { if (!navCache.length) a.hidden = false; delete a.dataset.navHid; });
+        if (navCache.length) saveNav(); else try { localStorage.removeItem('pdk-nav-extra'); } catch { /* ignore */ }
       };
 
       // Expert mode: load the private module (only in builds that contain
