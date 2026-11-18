@@ -99,3 +99,17 @@ test('module links painted from the last visit go again when no module takes ove
   await expect(page.locator('a[data-nav="/gartenplan"]')).not.toHaveAttribute('data-nav-hid', '');
   void errors;
 });
+
+test('the tour started on another page goes to the plant page and starts with the search', async ({ page, errors }) => {
+  await stubNetwork(page);
+  await page.addInitScript(() => { localStorage.setItem('pdk-welcome-seen', '1'); localStorage.setItem('pdk-start-seen', '1'); });
+  await page.goto('/kalender');
+  await page.click('#help-toggle');
+  // "Rundgang für diese Seite" where the help menu has it, else through the welcome
+  if (await page.locator('#help-tour').count()) await page.click('#help-tour');
+  else { await page.click('#help-intro'); await page.click('#welcome-next'); }
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.locator('#tour-progress')).toHaveText(/^1 \//);
+  await expect(page.locator('#tour-title')).toContainText('Suche');
+  void errors;
+});

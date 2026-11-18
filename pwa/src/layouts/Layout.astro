@@ -638,7 +638,13 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
         return r.width > 0 && r.height > 0;
       };
 
+      // The tour begins on the plant page (search, list, cards): from any other page it goes there first.
+      const TOUR_KEY = 'pdk-tour-pending';
       function runTour() {
+        if (!document.getElementById('plant-search')) {
+          try { sessionStorage.setItem(TOUR_KEY, '1'); } catch { /* the tour then starts on this page */ }
+          if (sessionStorage.getItem(TOUR_KEY)) { location.href = '/'; return; }
+        }
         const block = document.getElementById('tour-block')!;
         const spot = document.getElementById('tour-spot')!;
         const card = document.getElementById('tour-card')!;
@@ -786,7 +792,10 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
         let seen = false;
         try { seen = !!localStorage.getItem(WELCOME_KEY); } catch {}
         const legal = /^\/(impressum|datenschutz|hilfe|anmelden|admin|beta)\/?$/.test(location.pathname) || document.documentElement.hasAttribute('data-bare');
-        if (!seen && !legal) open();
+        let pending = false;
+        try { pending = !!sessionStorage.getItem(TOUR_KEY); sessionStorage.removeItem(TOUR_KEY); } catch { /* ignore */ }
+        if (pending && document.getElementById('plant-search')) { if (document.readyState === 'complete') runTour(); else addEventListener('load', () => runTour(), { once: true }); }
+        else if (!seen && !legal) open();
         // Professionals back after the beta signup or login: their start page, once.
         else if (seen && !legal && getEinstieg() === 'beruflich' && isLoginMode(currentMode())) showStart();
       }
