@@ -1403,7 +1403,10 @@ const fbItem = 'block w-full rounded-lg px-2 py-2 text-left hover:bg-stone-100 d
       // also which of the regular links the module hid (the new planner takes the old one's place)
       const saveNav = () => {
         const hidden = [...document.querySelectorAll<HTMLAnchorElement>('a[data-nav][hidden]')].map(a => a.dataset.nav);
-        try { localStorage.setItem('pdk-nav-extra', JSON.stringify({ links: navCache, hidden })); } catch { /* ignore */ }
+        // in the order they stand now (the module may move its links after adding them)
+        const order = [...document.querySelectorAll<HTMLAnchorElement>('#nav-links a:not([data-nav])')].map(a => a.getAttribute('href'));
+        const links = [...navCache].sort((x, y) => order.indexOf(x.href) - order.indexOf(y.href));
+        try { localStorage.setItem('pdk-nav-extra', JSON.stringify({ links, hidden })); } catch { /* ignore */ }
       };
       const settleNav = () => {
         document.querySelectorAll('a[data-nav-cached]').forEach(a => a.remove());

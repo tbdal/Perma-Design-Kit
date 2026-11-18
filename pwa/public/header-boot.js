@@ -32,9 +32,10 @@
     // regular links the module hides; it shows them again itself if that changed
     navs.forEach(function (a) { if (Array.isArray(cache.hidden) && cache.hidden.indexOf(a.dataset.nav) >= 0) { a.hidden = true; a.dataset.navHid = ''; } });
     var cls = navs[0].className.split(/\s+/).filter(function (c) { return c !== 'bg-green-800' && c !== 'dark:bg-green-900' && c !== 'text-white'; }).join(' ');
+    var prev = null; // in the cached order: each after the one before
     links.forEach(function (l) {
       if (!l || typeof l.href !== 'string' || typeof l.label !== 'string') return;
-      var ref = (l.after && document.querySelector('a[data-nav="' + CSS.escape(l.after) + '"]')) || navs[navs.length - 1];
+      var ref = prev || (l.after && document.querySelector('a[data-nav="' + CSS.escape(l.after) + '"]')) || navs[navs.length - 1];
       var a = document.createElement('a');
       a.href = l.href;
       a.className = cls;
@@ -51,6 +52,7 @@
       span.textContent = l.label;
       a.appendChild(span);
       ref.after(a);
+      prev = a;
     });
   } catch (_) {}
 })();
