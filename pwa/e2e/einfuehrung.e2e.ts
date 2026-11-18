@@ -27,7 +27,8 @@ test('first visit shows the three ways, "Erst mal umschauen" remembers it, the f
 test('"Ich plane meinen Garten": simple view, the tour, then the simple start page', async ({ page, errors }) => {
   await stubNetwork(page);
   await page.addInitScript(() => { if (!sessionStorage.getItem('init')) { sessionStorage.setItem('init', '1'); localStorage.removeItem('pdk-welcome-seen'); localStorage.removeItem('pdk-start-seen'); localStorage.setItem('pdk-mode', 'classic'); } });
-  await page.goto('/kalender');
+  // on the plant page: from any other page the tour first loads it, and the errors fixture marks the start dialog seen on every load
+  await page.goto('/');
   await page.click('#welcome-way-garten');
   await expect(page.locator('#welcome-modal')).toBeHidden();
   await expect(page.locator('html')).toHaveAttribute('data-mode', 'simple');
