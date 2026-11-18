@@ -120,6 +120,8 @@ test('admin overrides from the server apply; admin page edits them', async ({ pa
   await expect(page.locator('[data-box="beispiele"] table')).toBeVisible(); // example polycultures: a table in a folding box too
   await page.click('[data-box="users"] > summary');
   await expect(page.locator('[data-box="users"]')).not.toHaveAttribute('open', '');
+  // the toggle event (and with it the remembering) comes a moment after the click
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('pdk-admin-closed-boxes') ?? '')).toContain('users');
   await page.reload();
   await expect(page.locator('[data-box="users"]')).not.toHaveAttribute('open', '');
   await page.click('[data-box="users"] > summary');
