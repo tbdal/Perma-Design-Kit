@@ -66,7 +66,7 @@ Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerb
 
 ## Karten-Deckkraft in 3D, Beta-Block schöner 2026-11-02
 - [x] **Deckkraft des Kartenhintergrunds wirkt auch in 3D**: unter 100 % wird die Karte am Boden durchsichtig und die Wiese scheint durch (der Regler baut die 3D-Ansicht neu auf); in 2D (alte und neue Oberfläche, Karte/Satellit/Luftbild) per Test abgesichert #bugs #prüfen
-- [x] **Willkommensseite: Beta-Block auffälliger**: Knopf oben rechts in Gelb-Orange mit Funke, Pfeil und leichtem Pulsieren; der Text unten steht in einem eigenen dunkelgrünen Feld mit Aufzählung (Baumbiographien, (Q)GIS, Teamarbeit, Waldgartenplaner), Knopf „Beta-Test“ und Einladung zum Mitwirken #minor #prüfen
+- [x] **Willkommensseite: Beta-Block auffälliger**: Knopf oben rechts in Gelb-Orange mit Funke, Pfeil und leichtem Pulsieren; der Text unten steht in einem eigenen dunkelgrünen Feld mit Aufzählung (Baumbiographien, (Q)GIS, Teamarbeit, Planer), Knopf „Beta-Test“ und Einladung zum Mitwirken #minor #prüfen
 
 ## Beta-Test auf der Willkommensseite statt in der Tour 2026-11-02
 - [x] **Willkommensseite: Knopf oben rechts „Interesse an erweiterten Funktionen und Teilnahme am Beta-Test?“** springt zum Text unten (Frage, kurzer Text, „Beim Beta-Test mitmachen“, bis zu vier Kacheln aus der Tour-Vorschau); der Rundgang hat den Beta-Schritt nicht mehr (wieder 7 Schritte) #minor #prüfen
