@@ -318,7 +318,8 @@ async function handleExpert(req, res, url) {
   if (req.method !== 'GET' && req.method !== 'HEAD' && !isAllowedOrigin(req.headers.origin || null)) return send(403, { error: 'origin' });
   const session = handleAuth.session(req);
   if (!session) return send(401, { error: 'login' });
-  return expertServer.handle(req, res, url, { session, ip: clientIp(req) });
+  // features(): the admin's per-feature modes (features.json), so modules can honour what is switched on.
+  return expertServer.handle(req, res, url, { session, ip: clientIp(req), features: () => authStore.features() });
 }
 
 // The beta test's public routes (signup form, confirmation, tour preview …): no login, the module checks the rest.

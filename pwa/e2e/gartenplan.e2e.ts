@@ -229,6 +229,7 @@ test('climate explorer: target year, scenario and model drive the hints and stay
   expect((await zoomer.boundingBox())!.width).toBeGreaterThan(600);
   // own layout (#602): drawings beside the controls, four figures in a row, page-size text
   await expect(zoomer.locator('[data-clim-out] .grid-cols-4')).toHaveCount(1);
+  await expect(zoomer.locator('[data-clim-out] svg').first()).toBeVisible(); // drawn a moment after the grid (was flaky in a deploy)
   const [ctl, out] = await Promise.all([zoomer.locator('#clim-year').boundingBox(), zoomer.locator('[data-clim-out] svg').first().boundingBox()]);
   expect(out!.x).toBeGreaterThan(ctl!.x + ctl!.width);
   expect(await zoomer.locator('#climate-body').evaluate(el => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(15);

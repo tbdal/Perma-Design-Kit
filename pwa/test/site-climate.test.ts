@@ -66,6 +66,36 @@ describe('plants vs. site', () => {
   });
 });
 
+describe('southern hemisphere', () => {
+  // Frost from 10 May to 20 Sep (winter there), none in the southern summer.
+  const time: string[] = [], tmin: number[] = [], pr: number[] = [], wd: number[] = [];
+  for (let d = new Date(Date.UTC(2000, 0, 1)); d.getUTCFullYear() < 2006; d.setUTCDate(d.getUTCDate() + 1)) {
+    const iso = d.toISOString().slice(0, 10), md = iso.slice(5);
+    time.push(iso); tmin.push(md === '07-15' ? -6 : md >= '05-10' && md <= '09-20' ? -1 : 9); pr.push(1); wd.push(270);
+  }
+  const c = summarizeClimate({ time, temperature_2m_min: tmin, precipitation_sum: pr, wind_direction_10m_dominant: wd }, -37.8, 145, 50);
+  it('last frost in spring (September), first in autumn (May), the summer between them frost-free', () => {
+    expect(c.lastFrostDoy).toBeGreaterThanOrEqual(263); // ~20 Sep
+    expect(c.lastFrostDoy).toBeLessThanOrEqual(264);
+    expect(c.firstFrostDoy).toBeGreaterThanOrEqual(130); // ~10 May
+    expect(c.firstFrostDoy).toBeLessThanOrEqual(131);
+    expect(c.frostFreeDays).toBeGreaterThan(220);
+    expect(c.meanAnnualMinC).toBe(-6);
+  });
+  it('blossom frost: August/September flowers are at risk there, March ones not', () => {
+    const months = (m: number) => Array.from({ length: 12 }, (_, i) => i === m);
+    expect(blossomFrostRisk({ flowerMonths: months(7) }, c)).toBe(true);   // August
+    expect(blossomFrostRisk({ flowerMonths: months(10) }, c)).toBe(false); // November
+    expect(blossomFrostRisk({ flowerMonths: months(2) }, c)).toBe(false);  // March (autumn)
+  });
+  it('Köppen reads October–March as summer', () => {
+    // Melbourne-like: warm Jan, mild Jul, even rain → Cfb
+    expect(koeppen([21, 21, 19, 17, 14, 11, 10, 11, 13, 15, 17, 19], Array(12).fill(55), true)).toBe('Cfb');
+    // dry southern summer (Dec–Feb) → s (hot: a)
+    expect(koeppen([24, 24, 22, 19, 16, 13, 12, 13, 15, 17, 20, 22], [10, 12, 20, 50, 90, 110, 120, 100, 60, 40, 20, 12], true)).toBe('Csa');
+  });
+});
+
 describe('climateRequestUrl', () => {
   it('rounds the location to 0.1°', () => {
     const u = climateRequestUrl(50.93761, 6.96025);

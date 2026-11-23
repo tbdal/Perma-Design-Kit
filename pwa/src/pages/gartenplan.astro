@@ -3919,9 +3919,20 @@ import Layout from '../layouts/Layout.astro';
         r.plan.placements = r.plan.placements.map(pl => ({ ...old.get(pl.id), ...pl }));
         const oldAreas = new Map(existing.areas.map(a => [a.id, a]));
         r.plan.areas = r.plan.areas.map(a => ({ ...oldAreas.get(a.id), ...a }));
-        // The plan's own settings stay too: grid spacing, map background and its opacity (the file is read north-up on a 1 m grid).
-        const geo = r.plan.geo && existing.geo ? { ...r.plan.geo, basemap: existing.geo.basemap, opacity: existing.geo.opacity } : r.plan.geo;
-        r.plan = { ...existing, ...r.plan, geo, gridSpacingM: existing.gridSpacingM, createdAt: existing.createdAt, polycultureId: existing.polycultureId, zones: undefined };
+        // The plan keeps its own frame: anchor, rotation, map background, grid spacing. The file is read north-up,
+        // so its geometry is moved into that frame (over lat/lon) and the plan grows where something lies outside.
+        const from = r.plan.geo, to = existing.geo;
+        if (from && to) {
+          const move = (p: { xM: number; yM: number }) => { const ll = planToLatLon(p, from); const q = latLonToPlan(ll.lat, ll.lon, to); p.xM = q.xM; p.yM = q.yM; };
+          r.plan.boundary.forEach(move);
+          r.plan.areas.forEach(a => a.points.forEach(move));
+          r.plan.placements.forEach(move);
+          r.plan.geo = to;
+          r.plan.areaWidthM = existing.areaWidthM;
+          r.plan.areaHeightM = existing.areaHeightM;
+        }
+        r.plan = { ...existing, ...r.plan, gridSpacingM: existing.gridSpacingM, createdAt: existing.createdAt, polycultureId: existing.polycultureId, zones: from && to ? existing.zones : undefined };
+        if (from && to) growPlanToFit(r.plan, 1); // moves the zone centre along
       } else {
         r.plan.id = newId();
         r.plan.areas.forEach(a => { a.id = newId(); });
