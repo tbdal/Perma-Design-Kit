@@ -11,6 +11,7 @@ import type { GardenPlan, GardenPlanPoint, PlantData, Polyculture } from './type
 import type { Lang } from './i18n/core';
 import type { Scene3DLayer } from './gartenplan-3d';
 import type { Occluder } from './sun-hours';
+import type { TileSource } from './gartenplan-background';
 
 export interface ExpertContext {
   /** Path of the current page, e.g. '/gartenplan'. */
@@ -104,6 +105,9 @@ export interface GartenplanApi {
   isHidden(id: string): boolean;
   /** Plant name labels on the 2D plan: per placement hidden and/or scaled (1 = normal; the selected plant always shows its name); `maxPx` = how big the name may grow when zooming in (default 13 px × scale); null = back to normal. Asked again on every redraw. */
   setLabelStyle(featureId: string, fn: ((placementId: string) => { hidden?: boolean; scale?: number; maxPx?: number } | null | undefined) | null): void;
+  /** Tile layers for the open plan while the feature is on: `base` = the background 'extra' (2D and 3D; null = OSM), `overlays` = drawn
+   *  over the background in 2D and its PDF, each with its opacity. Replaces the earlier ones; call again with null/[] on plan change. */
+  setExtraTiles(featureId: string, base: TileSource | null, overlays: (TileSource & { opacity: number })[]): void;
   /** Placements and areas (by id) not drawn in 2D and 3D while the feature is on; replaces the feature's earlier set. */
   setHidden(featureId: string, ids: Iterable<string>): void;
   /** What is selected on the plan: placements (single or multi-selection) and the selected area. */

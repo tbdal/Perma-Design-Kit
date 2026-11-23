@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { orthoFor, ORTHO_SOURCES } from '../src/lib/ortho-sources';
-import { tileUrl, sourceForGeo, S2_TILES, OSM_TILES, orthoProxyUrl } from '../src/lib/gartenplan-background';
+import { tileUrl, sourceForGeo, S2_TILES, OSM_TILES, orthoProxyUrl, setExtraTiles, basemapSvg, basemapAttribution } from '../src/lib/gartenplan-background';
 
 describe('orthophoto sources', () => {
   it('picks the service of the state / country a garden lies in', () => {
@@ -56,6 +56,31 @@ describe('orthophoto sources', () => {
     expect(sourceForGeo(geo)).toBe(S2_TILES);
     expect(sourceForGeo({ ...geo, lat: 48.1372, lon: 11.5756 })?.url).toBe('/geo/ortho/by/od/wms/dop/v1/dop40?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=by_dop40c&STYLES=&FORMAT=image/jpeg&CRS=EPSG:3857&WIDTH=256&HEIGHT=256&BBOX={bbox}');
     expect(sourceForGeo({ ...geo, basemap: 'none' })).toBeNull();
+  });
+});
+
+describe('tile layers set by a module', () => {
+  const geo = { lat: 51.5, lon: 11.9, rotationDeg: 0, basemap: 'extra' as const, opacity: 0.6 };
+  const plan = { geo, areaWidthM: 30, areaHeightM: 20 } as unknown as import('../src/lib/types').GardenPlan;
+  const view = { minX: 0, minY: 0, maxX: 30, maxY: 20 };
+  const tk = { url: 'https://tk/wms?BBOX={bbox}', maxZoom: 18, attributionHtml: 'TK' };
+  const alkis = { url: 'https://alkis/wms?BBOX={bbox}', maxZoom: 19, attributionHtml: 'ALKIS', opacity: 0.8 };
+  it("'extra' shows the module's background, OSM without one; overlays draw over any background", () => {
+    setExtraTiles(null, []);
+    expect(sourceForGeo(geo)).toBe(OSM_TILES);
+    setExtraTiles(tk, [alkis]);
+    expect(sourceForGeo(geo)).toBe(tk);
+    const svg = basemapSvg(plan, view, 0.05);
+    expect(svg.indexOf('https://tk/')).toBeGreaterThan(-1);
+    expect(svg.indexOf('https://alkis/')).toBeGreaterThan(svg.indexOf('https://tk/'));
+    expect(svg).toContain('opacity="0.8"');
+    expect(basemapAttribution(plan)).toBe('TK · ALKIS');
+    // no background, overlay only
+    const none = { ...plan, geo: { ...geo, basemap: 'none' as const } };
+    expect(basemapSvg(none, view, 0.05)).toContain('https://alkis/');
+    expect(basemapSvg(none, view, 0.05)).not.toContain('https://tk/');
+    setExtraTiles(null, []);
+    expect(basemapSvg(none, view, 0.05)).toBe('');
   });
 });
 

@@ -669,7 +669,7 @@ import Layout from '../layouts/Layout.astro';
   import { areasSvg, AREA_PALETTE, uiScale, polygonCentroid } from '../lib/gartenplan-render';
   import { planFromLatLngPolygon, planToLatLon, planToEnu } from '../lib/gartenplan-geo';
   import type { MapDrawer } from '../lib/gartenplan-mapdraw';
-  import { basemapSvg, basemapAttribution, sourceForGeo, FALLBACK_ATTRIBUTION, basemapSvgInline } from '../lib/gartenplan-background';
+  import { basemapSvg, basemapAttribution, sourceForGeo, FALLBACK_ATTRIBUTION, basemapSvgInline, setExtraTiles } from '../lib/gartenplan-background';
   import { growPlanToFit, MAX_PLAN_M } from '../lib/gartenplan-extent';
   import type { PlanRect } from '../lib/gartenplan-geo';
   import { compassLabel, sunPosition } from '../lib/sun-position';
@@ -1508,6 +1508,7 @@ import Layout from '../layouts/Layout.astro';
     fBasemap.disabled = !geo;
     fBasemapOpacity.disabled = !geo;
     fBasemap.value = geo?.basemap ?? 'none';
+    if (fBasemap.selectedIndex < 0) fBasemap.value = 'osm'; // 'extra' without the module that offers it: OSM is what shows
     // Name the service the aerial photo comes from (or that there is none).
     const ortho = geo ? orthoFor(geo.lat, geo.lon) : null;
     fBasemapOrtho.textContent = ortho
@@ -1546,7 +1547,7 @@ import Layout from '../layouts/Layout.astro';
   fBasemap.addEventListener('change', () => {
     if (!editing?.geo) return;
     const v = fBasemap.value;
-    editing.geo.basemap = v === 'none' || v === 'sat' || v === 'ortho' || v === 'mapbox' ? v : 'osm';
+    editing.geo.basemap = v === 'none' || v === 'sat' || v === 'ortho' || v === 'mapbox' || v === 'extra' ? v : 'osm';
     refreshBasemaps();
     if (!plan3dContainer.hidden) btnView3d.click(); // rebuild 3D ground, camera kept
     scheduleAutosave();
@@ -6029,6 +6030,14 @@ import Layout from '../layouts/Layout.astro';
       if (!fn && !pluginLabelStyle.has(featureId)) return;
       if (fn) pluginLabelStyle.set(featureId, fn); else pluginLabelStyle.delete(featureId);
       for (const pl of editing?.placements ?? []) { const g = markerMap.get(pl.id); if (g) updateMarkerShape(g, pl, plantsById.get(pl.plantId)); }
+    },
+    setExtraTiles(featureId, base, overlays) {
+      const on = featureOn(featureId);
+      const baseChanged = JSON.stringify(sourceForGeo(editing?.geo));
+      setExtraTiles(on ? base : null, on ? overlays : []);
+      if (!editing) return;
+      refreshBasemaps();
+      if (!plan3dContainer.hidden && baseChanged !== JSON.stringify(sourceForGeo(editing.geo))) btnView3d.click(); // the 3D ground shows the background
     },
     setHidden(featureId, ids) {
       const next = new Set(ids), before = pluginHidden.get(featureId);

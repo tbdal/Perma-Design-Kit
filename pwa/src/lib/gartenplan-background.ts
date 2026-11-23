@@ -75,6 +75,7 @@ export function orthoTiles(o: OrthoSource): TileSource {
  *  'ortho' falls back to the coarse satellite layer outside all coverages. */
 export function sourceForGeo(geo: GardenPlanGeo | null | undefined): TileSource | null {
   if (!geo || geo.basemap === 'none') return null;
+  if (geo.basemap === 'extra') return extraTiles.base ?? OSM_TILES;
   if (geo.basemap === 'ortho') {
     const o = orthoFor(geo.lat, geo.lon);
     return o ? orthoTiles(o) : S2_TILES;
@@ -82,6 +83,12 @@ export function sourceForGeo(geo: GardenPlanGeo | null | undefined): TileSource 
   if (geo.basemap === 'mapbox') { const mb = ORTHO_SOURCES.find(s => s.id === 'mb'); return mb ? orthoTiles(mb) : S2_TILES; }
   return geo.basemap === 'sat' ? S2_TILES : OSM_TILES;
 }
+
+/** Tile layers a module sets for the open plan (expert-api setExtraTiles): `base` for the background 'extra',
+ *  `overlays` drawn over the background in 2D (and in its PDF), each with its own opacity. */
+export type OverlayTiles = TileSource & { opacity: number };
+let extraTiles: { base: TileSource | null; overlays: OverlayTiles[] } = { base: null, overlays: [] };
+export function setExtraTiles(base: TileSource | null, overlays: OverlayTiles[]): void { extraTiles = { base, overlays }; }
 
 export function hasBasemap(plan: GardenPlan): boolean {
   return !!plan.geo && plan.geo.basemap !== 'none';
@@ -93,7 +100,8 @@ function sourceFor(plan: GardenPlan): TileSource {
 
 /** Attribution HTML for the plan's current background, '' without one. */
 export function basemapAttribution(plan: GardenPlan): string {
-  return hasBasemap(plan) ? sourceFor(plan).attributionHtml : '';
+  const over = plan.geo ? extraTiles.overlays.map(o => o.attributionHtml) : [];
+  return [hasBasemap(plan) ? sourceFor(plan).attributionHtml : '', ...over].filter((a, i, all) => a && all.indexOf(a) === i).join(' · ');
 }
 
 /** Map tiles (OSM or coarse satellite) for the visible rectangle `view` (plan
@@ -104,20 +112,22 @@ export function basemapAttribution(plan: GardenPlan): string {
  *  per device pixel on screen; `maxTiles` see maxTilesForScreen(). */
 export function basemapSvg(plan: GardenPlan, view: PlanRect, screenMPerPx: number, maxTiles?: number): string {
   const geo = plan.geo;
-  if (!geo || geo.basemap === 'none') return '';
-  const src = sourceFor(plan);
-  const tiles = tilesForRect(view, geo, screenMPerPx, src.maxZoom, maxTiles);
+  if (!geo) return '';
   const u = SVG_UNITS_PER_METER;
-  // A hair of overlap hides the anti-aliasing seams between rotated tiles.
-  const images = tiles.map(t => {
-    const size = t.sizeM * u * 1.003;
-    const fb = fallbackTileUrl(src, t.z, t.x, t.y);
-    const url = tileUrl(src, t.z, t.x, t.y);
-    // data-k: identifies the tile (source, z/x/y), so a redraw can keep the element that already has the picture.
-    // crossorigin like the 3D ground's texture loader: one browser-cache entry serves both (Firefox keeps them apart otherwise).
-    return `<image href="${url}"${fb ? ` data-fallback="${fb}"` : ''} x="${t.eM * u}" y="${t.sM * u}" width="${size}" height="${size}" preserveAspectRatio="none" data-k="${url}" crossorigin="anonymous"/>`;
-  }).join('');
-  return `<g opacity="${geo.opacity}" pointer-events="none"><g transform="rotate(${-geo.rotationDeg})">${images}</g></g>`;
+  const layer = (src: TileSource, opacity: number) => {
+    const tiles = tilesForRect(view, geo, screenMPerPx, src.maxZoom, maxTiles);
+    // A hair of overlap hides the anti-aliasing seams between rotated tiles.
+    const images = tiles.map(t => {
+      const size = t.sizeM * u * 1.003;
+      const fb = fallbackTileUrl(src, t.z, t.x, t.y);
+      const url = tileUrl(src, t.z, t.x, t.y);
+      // data-k: identifies the tile (source, z/x/y), so a redraw can keep the element that already has the picture.
+      // crossorigin like the 3D ground's texture loader: one browser-cache entry serves both (Firefox keeps them apart otherwise).
+      return `<image href="${url}"${fb ? ` data-fallback="${fb}"` : ''} x="${t.eM * u}" y="${t.sM * u}" width="${size}" height="${size}" preserveAspectRatio="none" data-k="${url}" crossorigin="anonymous"/>`;
+    }).join('');
+    return `<g opacity="${opacity}" pointer-events="none"><g transform="rotate(${-geo.rotationDeg})">${images}</g></g>`;
+  };
+  return (geo.basemap === 'none' ? '' : layer(sourceFor(plan), geo.opacity)) + extraTiles.overlays.map(o => layer(o, o.opacity)).join('');
 }
 
 /** Same as basemapSvg() for the plan area, with every tile embedded as a data
