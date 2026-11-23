@@ -44,13 +44,15 @@ function prunePlant(p: PlantData): Record<string, unknown> {
 
 export function sharePayload(c: ShareContent, o: ShareOptions): string {
   const plants = c.plants.map(p => prunePlant(o.includeNotes ? p : { ...p, notes: '' }));
+  // Without notes the descriptions of polycultures and plans stay home too: they are free text like the notes.
   const polycultures = o.includeNotes ? c.polycultures
-    : c.polycultures.map(pc => ({ ...pc, notes: '', members: pc.members.map(m => ({ ...m, notes: '' })) }));
+    : c.polycultures.map(pc => ({ ...pc, notes: '', description: '', members: pc.members.map(m => ({ ...m, notes: '' })) }));
   const gardenPlans = c.gardenPlans.map(g => ({
     ...g,
     // the dossier's files would blow up the link: the dossier stays with its owner
     ...(g.ext && 'dossier' in g.ext ? { ext: Object.fromEntries(Object.entries(g.ext).filter(([k]) => k !== 'dossier')) } : {}),
     notes: o.includeNotes ? g.notes : '',
+    description: o.includeNotes ? g.description : '',
     placements: o.includeNotes ? g.placements : g.placements.map(pl => ({ ...pl, notes: '' })),
     geo: o.includeLocation ? g.geo : null,
   }));

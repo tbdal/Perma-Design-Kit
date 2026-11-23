@@ -176,7 +176,8 @@ export async function upsertUser(users, { name, role, password, comment }, now =
   const existing = findUser(users, name);
   if (!existing) {
     if (password === undefined) throw new Error('short-password');
-    return [...users, { name, role: role || 'expert', hash, v: 1, created: now.toISOString(), ...(note ? { comment: note } : {}) }];
+    // v from the clock, not 1: a cookie of a removed account with the same name must not fit a new one.
+    return [...users, { name, role: role || 'expert', hash, v: now.getTime(), created: now.toISOString(), ...(note ? { comment: note } : {}) }];
   }
   const next = { ...existing };
   if (role !== undefined) next.role = role;
@@ -409,7 +410,10 @@ export function createAuthHandler({ store, isAllowedOrigin = () => true, now = (
         // Login link made by an admin (kept like an invitation, valid INVITE_DAYS, once).
         const clock = new Date(now());
         const inv = findInvite(store.invites(), body?.token, clock);
-        if (inv?.extra?.login) {
+        // Only for the account as it was when the link was made (same v: not removed and re-created, no new password)
+        // and never for an admin (role may have been raised since).
+        const target = inv?.extra?.login ? findUser(store.users(), inv.extra.login) : null;
+        if (target && target.role !== 'admin' && (inv.extra.loginV === undefined || (target.v || 1) === inv.extra.loginV)) { // undefined: links made before 23.11.
           name = inv.extra.login;
           store.saveInvites(store.invites().map(i => (i.id === inv.id ? { ...i, used: clock.toISOString(), usedBy: name } : i)));
         }
@@ -480,7 +484,9 @@ export function createAuthHandler({ store, isAllowedOrigin = () => true, now = (
         }
         if (path === '/api/admin/invites' && method === 'POST') {
           const body = await readJsonBody(req);
-          const made = createInvite(store.invites(), { role: body?.role, label: body?.label, by: s.name, extra: body?.extra }, new Date(now()));
+          // Login links only come from /api/admin/login-link (with its checks), never through a hand-made extra.
+          const extra = body?.extra && typeof body.extra === 'object' ? Object.fromEntries(Object.entries(body.extra).filter(([k]) => k !== 'login' && k !== 'loginV')) : body?.extra;
+          const made = createInvite(store.invites(), { role: body?.role, label: body?.label, by: s.name, extra }, new Date(now()));
           store.saveInvites(made.invites);
           send(res, 200, { id: made.invite.id, token: made.token, expires: made.invite.expires });
           return true;
@@ -491,7 +497,7 @@ export function createAuthHandler({ store, isAllowedOrigin = () => true, now = (
           const user = findUser(store.users(), body?.name);
           if (!user) throw new Error('not-found');
           if (user.role === 'admin') throw new Error('bad-role');
-          const made = createInvite(store.invites(), { role: user.role, label: `Anmeldelink: ${user.name}`, by: s.name, extra: { login: user.name } }, new Date(now()));
+          const made = createInvite(store.invites(), { role: user.role, label: `Anmeldelink: ${user.name}`, by: s.name, extra: { login: user.name, loginV: user.v || 1 } }, new Date(now()));
           store.saveInvites(made.invites);
           send(res, 200, { token: made.token, expires: made.invite.expires });
           return true;

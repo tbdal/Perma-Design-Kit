@@ -45,4 +45,21 @@ describe('growPlanToFit', () => {
     expect(after.lat).toBeCloseTo(before.lat, 9);
     expect(after.lon).toBeCloseTo(before.lon, 9);
   });
+
+  it('never grows past 5 km a side; what was dragged further is held at the edge', () => {
+    const p = createEmptyGardenPlan();
+    Object.assign(p, { areaWidthM: 4990, areaHeightM: 100, gridSpacingM: 1, boundary: [{ xM: 0, yM: 0 }, { xM: 4990, yM: 0 }, { xM: 4990, yM: 100 }], placements: [] });
+    p.placements.push({ id: 'x', plantId: 'p', xM: 5300, yM: 50, notes: '' } as any);
+    expect(growPlanToFit(p)).toEqual({ dx: 0, dy: 0 });
+    expect(p.areaWidthM).toBe(5000);
+    expect(p.placements[0].xM).toBe(5000);
+    // already at the limit: held, not grown (no "plan grown" message)
+    p.placements[0].xM = 5200;
+    expect(growPlanToFit(p)).toBeNull();
+    expect(p.placements[0].xM).toBe(5000);
+    // to the left as well
+    p.placements[0].xM = -50;
+    expect(growPlanToFit(p)).toBeNull();
+    expect(p.placements[0].xM).toBe(0);
+  });
 });

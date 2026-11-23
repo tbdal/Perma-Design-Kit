@@ -94,8 +94,10 @@ export function normalizePlant(raw: unknown): PlantData | null {
 
   p.id = safeId(raw.id, () => p.id);
   p.habit = parseHabit(raw.habit);
-  // Keep a valid add date; data without one counts as added now.
-  if (typeof raw.createdAt !== 'string' || Number.isNaN(Date.parse(raw.createdAt))) p.createdAt = new Date().toISOString();
+  // Keep a valid add date; data without one counts as added now. An empty one stays empty (unknown): otherwise
+  // every restore made such plants "just added" again.
+  if (raw.createdAt === '') p.createdAt = '';
+  else if (typeof raw.createdAt !== 'string' || Number.isNaN(Date.parse(raw.createdAt))) p.createdAt = new Date().toISOString();
   const h = finite(raw.heightM), w = finite(raw.widthM);
   p.heightM = h != null && h >= 0 ? h : null;
   p.widthM = w != null && w >= 0 ? w : null;
