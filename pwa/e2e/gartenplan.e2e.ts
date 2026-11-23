@@ -949,3 +949,28 @@ test('3D shows a wait animation until its first picture, and "whole plan" works 
   await expect(page.locator('#plan-3d-container')).toBeVisible();
   void errors;
 });
+
+test('3D with a plant armed: turning the view places nothing, a tap places one @slow', async ({ page, errors }) => {
+  await stubNetwork(page);
+  await loadMasterList(page);
+  await withDb(page, `await put('gardenPlans', arg.plan);`, { plan: planRecord('leer') });
+  await openPlan(page, 'leer');
+  await page.click('#btn-view-3d');
+  const canvas = page.locator('#plan-3d-container canvas');
+  await expect(canvas).toBeVisible({ timeout: 20000 });
+  await expect(page.locator('#plan-3d-wait')).toBeHidden({ timeout: 20000 });
+  await page.locator('#plant-picker [data-picker-plant]').first().click();
+  const count = () => page.evaluate(() => document.querySelectorAll('#plan-markers [data-placement-id]').length);
+  await canvas.scrollIntoViewIfNeeded();
+  const box = (await canvas.boundingBox())!;
+  const cx = box.x + box.width / 2, cy = box.y + box.height / 2; // the camera looks at the middle of the plan
+  await page.mouse.move(cx, cy);
+  await page.mouse.down();
+  await page.mouse.move(cx + 80, cy + 10, { steps: 6 });
+  await page.mouse.up();
+  await page.waitForTimeout(300);
+  expect(await count()).toBe(0);
+  await page.mouse.click(cx, cy);
+  await expect.poll(count).toBe(1);
+  void errors;
+});
