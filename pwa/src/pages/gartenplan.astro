@@ -669,7 +669,7 @@ import Layout from '../layouts/Layout.astro';
   import { areasSvg, AREA_PALETTE, uiScale, polygonCentroid } from '../lib/gartenplan-render';
   import { planFromLatLngPolygon, planToLatLon, planToEnu } from '../lib/gartenplan-geo';
   import type { MapDrawer } from '../lib/gartenplan-mapdraw';
-  import { basemapSvg, basemapAttribution, sourceForGeo, FALLBACK_ATTRIBUTION, basemapSvgInline } from '../lib/gartenplan-background';
+  import { basemapSvg, basemapAttribution, sourceForGeo, FALLBACK_ATTRIBUTION, basemapSvgInline, setExtraTiles } from '../lib/gartenplan-background';
   import { growPlanToFit, MAX_PLAN_M } from '../lib/gartenplan-extent';
   import type { PlanRect } from '../lib/gartenplan-geo';
   import { compassLabel, sunPosition } from '../lib/sun-position';
@@ -801,7 +801,8 @@ import Layout from '../layouts/Layout.astro';
 
   // ── State ───────────────────────────────────────────────────────────────
   let plants: PlantData[] = [];
-  let plantsById = new Map<string, PlantData>();
+  // Filled in place (never replaced): the open 3D view keeps this map, a new one left it drawing new or edited plants as stand-ins.
+  const plantsById = new Map<string, PlantData>();
   let polycultures: Polyculture[] = [];
   let polyculturesById = new Map<string, Polyculture>();
   let plans: GardenPlan[] = [];
@@ -810,7 +811,9 @@ import Layout from '../layouts/Layout.astro';
   const pluginPlants = new Map<string, Map<string, PlantData>>();
   /** plantsById = the user's plants, plus plugin plants whose ids the list doesn't have. */
   function rebuildPlantsById() {
-    plantsById = new Map([...[...pluginPlants.values()].flatMap(m => [...m]), ...plants.map(p => [p.id, p] as [string, PlantData])]);
+    plantsById.clear();
+    for (const m of pluginPlants.values()) for (const [id, p] of m) plantsById.set(id, p);
+    for (const p of plants) plantsById.set(p.id, p);
   }
   /** Set by a plugin (expert-api setReadOnly): the open plan is shown but not saved. */
   let readOnly = false;
@@ -1505,6 +1508,7 @@ import Layout from '../layouts/Layout.astro';
     fBasemap.disabled = !geo;
     fBasemapOpacity.disabled = !geo;
     fBasemap.value = geo?.basemap ?? 'none';
+    if (fBasemap.selectedIndex < 0) fBasemap.value = 'osm'; // 'extra' without the module that offers it: OSM is what shows
     // Name the service the aerial photo comes from (or that there is none).
     const ortho = geo ? orthoFor(geo.lat, geo.lon) : null;
     fBasemapOrtho.textContent = ortho
@@ -1543,7 +1547,7 @@ import Layout from '../layouts/Layout.astro';
   fBasemap.addEventListener('change', () => {
     if (!editing?.geo) return;
     const v = fBasemap.value;
-    editing.geo.basemap = v === 'none' || v === 'sat' || v === 'ortho' || v === 'mapbox' ? v : 'osm';
+    editing.geo.basemap = v === 'none' || v === 'sat' || v === 'ortho' || v === 'mapbox' || v === 'extra' ? v : 'osm';
     refreshBasemaps();
     if (!plan3dContainer.hidden) btnView3d.click(); // rebuild 3D ground, camera kept
     scheduleAutosave();
@@ -1855,7 +1859,7 @@ import Layout from '../layouts/Layout.astro';
     renderPlanSvg();
   });
 
-  let rebuild3dTimer = 0, rebuild3dNow = false;
+  let rebuild3dTimer = 0, rebuild3dNow = false, build3dPending = false;
   const wait3d = document.getElementById('plan-3d-wait')!;
   btnView3d.addEventListener('click', async (e) => {
     // Terrain, buildings, map tiles and forests arrive one after the other and each asks for a rebuild:
@@ -1870,6 +1874,8 @@ import Layout from '../layouts/Layout.astro';
     }
     // Rebuilds call .click() and keep the current kind; only a real click on "3D" means the full view.
     if (e.isTrusted) setSimple3d(false);
+    // A build is under way: it reads terrain, buildings, layers etc. only after its awaits, so it shows what arrived meanwhile.
+    if (build3dPending) return;
     if (!editing) return;
     planSvg.classList.add('hidden');
     canvasRectCache = null;
@@ -1880,9 +1886,13 @@ import Layout from '../layouts/Layout.astro';
     endAreaDraw();
     setBoundaryEdit(false);
     wait3d.hidden = false;
-    const { createGardenPlan3DView } = await import('../lib/gartenplan-3d');
-    // Let the wait animation paint before the (on phones several seconds long) build of the scene.
-    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    build3dPending = true;
+    let createGardenPlan3DView: typeof import('../lib/gartenplan-3d').createGardenPlan3DView;
+    try {
+      ({ createGardenPlan3DView } = await import('../lib/gartenplan-3d'));
+      // Let the wait animation paint before the (on phones several seconds long) build of the scene.
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    } finally { build3dPending = false; }
     if (!editing || plan3dContainer.hidden) { wait3d.hidden = true; return; } // left the plan or back to 2D meanwhile
     // Perspective carries over: rebuilds keep the live camera; coming from 2D
     // we restore the last 3D camera if 2D wasn't moved, else look straight
@@ -1942,7 +1952,7 @@ import Layout from '../layouts/Layout.astro';
       terrain: geo ? terrain : null,
       exaggeration: Number(exagSel.value) || 1,
       buildings: showBuildings() ? buildings : [],
-      layers: pluginLayers.filter(l => featureOn(l.featureId)).map(l => l.layer),
+      layers: activeLayers(),
       hidden: hiddenByPlugin,
       onTileFallback: noteOrthoFallback,
       onTileStatus(st) { tileStatus3d = st; showTileProgress(); },
@@ -2443,7 +2453,7 @@ import Layout from '../layouts/Layout.astro';
       window.removeEventListener('message', onMsg);
       f.style.pointerEvents = 'none'; f.style.opacity = '0';
       plants = await getAllPlants(); rebuildPlantsById();
-      if (editing) { renderPlanSvg(); renderSelectedPanel(); scheduleWarnings(); }
+      if (editing) { renderPlanSvg(); renderSelectedPanel(); scheduleWarnings(); view3d?.refreshPlacements(); }
       // A moment longer: the frame's change messages must not count as another tab's (Layout.astro).
       setTimeout(() => { f.remove(); if (editFrame === f) editFrame = null; }, 800);
       done(saved);
@@ -5793,6 +5803,7 @@ import Layout from '../layouts/Layout.astro';
   const planChangeListeners: ((plan: GardenPlan | null) => void)[] = [];
   // Plugin hooks (expert-api.ts): extra 3D content and shade casters.
   const pluginLayers: { featureId: string; layer: Scene3DLayer }[] = [];
+  const activeLayers = () => pluginLayers.filter(l => featureOn(l.featureId)).map(l => l.layer);
   const pluginOccluderFns: { featureId: string; fn: (groundZ: (x: number, y: number) => number) => Occluder[] }[] = [];
   // Each overlay draws into its own group; unchanged output is not written again,
   // and a plugin's redraw() redraws only its own overlay, once per frame.
@@ -5871,7 +5882,7 @@ import Layout from '../layouts/Layout.astro';
     setReplaceHandler(fn) { replaceHandler = fn; lastWarnSig = ''; scheduleWarnings(); },
     add3dLayer(featureId, layer) {
       pluginLayers.push({ featureId, layer });
-      if (!plan3dContainer.hidden && featureOn(featureId)) btnView3d.click();
+      if (!plan3dContainer.hidden && featureOn(featureId)) view3d?.setLayers(activeLayers());
     },
     addSunOccluders(featureId, fn) { pluginOccluderFns.push({ featureId, fn }); },
     addPlanOverlay(featureId, draw, opts) {
@@ -5995,7 +6006,8 @@ import Layout from '../layouts/Layout.astro';
       renderPluginOverlays();
       scheduleWarnings();
       if (coverageSelect.value.startsWith('sun')) scheduleCoverage();
-      if (!plan3dContainer.hidden) btnView3d.click();
+      // In place: a full rebuild (new canvas, tiles anew) flickered once per module on opening 3D (#429).
+      if (!plan3dContainer.hidden) view3d?.setLayers(activeLayers());
     },
     onPlanChange: cb => { planChangeListeners.push(cb); },
     getHistory: () => {
@@ -6019,10 +6031,21 @@ import Layout from '../layouts/Layout.astro';
       if (fn) pluginLabelStyle.set(featureId, fn); else pluginLabelStyle.delete(featureId);
       for (const pl of editing?.placements ?? []) { const g = markerMap.get(pl.id); if (g) updateMarkerShape(g, pl, plantsById.get(pl.plantId)); }
     },
+    setExtraTiles(featureId, base, overlays) {
+      const on = featureOn(featureId);
+      const baseChanged = JSON.stringify(sourceForGeo(editing?.geo));
+      setExtraTiles(on ? base : null, on ? overlays : []);
+      if (!editing) return;
+      refreshBasemaps();
+      if (!plan3dContainer.hidden && baseChanged !== JSON.stringify(sourceForGeo(editing.geo))) btnView3d.click(); // the 3D ground shows the background
+    },
     setHidden(featureId, ids) {
-      pluginHidden.set(featureId, new Set(ids));
+      const next = new Set(ids), before = pluginHidden.get(featureId);
+      if (before && before.size === next.size && [...next].every(id => before.has(id))) return;
+      if (!before && !next.size) return;
+      pluginHidden.set(featureId, next);
       updateHiddenStyle();
-      if (!plan3dContainer.hidden) btnView3d.click();
+      if (view3d && !plan3dContainer.hidden) { view3d.refreshPlacements(); view3d.refreshAreas(selectedAreaId); }
     },
     getSelection: () => ({
       placementIds: multiSel.size ? [...multiSel] : selectedPlacementId ? [selectedPlacementId] : [],
@@ -6077,7 +6100,7 @@ import Layout from '../layouts/Layout.astro';
       if (before && list.length === before.size && list.every(p => before.get(p.id) === p)) return;
       if (list.length) pluginPlants.set(featureId, new Map(list.map(p => [p.id, p]))); else pluginPlants.delete(featureId);
       rebuildPlantsById();
-      if (editing) { renderPlanSvg(); renderSelectedPanel(); if (!plan3dContainer.hidden) btnView3d.click(); }
+      if (editing) { renderPlanSvg(); renderSelectedPanel(); view3d?.refreshPlacements(); }
     },
     addPlanBadge(featureId, fn) { planBadges.push({ featureId, fn }); if (!editing) renderList(); },
     addPlanTileAction(featureId, label, onClick, opts) { planTileActions.push({ featureId, label, onClick, icon: opts?.icon }); if (!editing) renderList(); },

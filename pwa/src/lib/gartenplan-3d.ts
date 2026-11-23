@@ -151,12 +151,14 @@ export interface GardenPlan3DView {
   /** Loading state of the ground tiles on display. */
   tileStatus(): GroundTileStatus;
   /** New elevation grid (null = flat) in place: camera, renderer and sun stay, ground, buildings, plants,
-   *  areas and overlays follow. false = not possible (plugin layers drew on the old ground): rebuild the view. */
+   *  areas, overlays and plugin layers follow. Always true (kept for callers that rebuilt on false). */
   setTerrain(terrain: ElevationGrid | null): boolean;
-  /** Vertical exaggeration of the terrain (1 = true to scale); same false as setTerrain. */
+  /** Vertical exaggeration of the terrain (1 = true to scale); same return as setTerrain. */
   setExaggeration(factor: number): boolean;
   /** New building footprints in place (empty = none). */
   setBuildings(buildings: NonNullable<View3DOptions['buildings']>): void;
+  /** Plugin layers in place: the old ones are cleaned up, the given ones drawn anew (camera, ground, plants stay). */
+  setLayers(layers: Scene3DLayer[]): void;
   dispose(): void;
 }
 
@@ -1252,13 +1254,20 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
   controls.addEventListener('change', requestRender);
 
   // Plugin layers (expert-api.ts): each adds its own objects to the scene.
+  let layers = opts.layers ?? [];
   const layerCleanups: (() => void)[] = [];
-  for (const layer of opts.layers ?? []) {
-    try {
-      const done = layer({ THREE, scene, plan, ground: (x, y) => ground(x, y), requestRender, coverShadow: () => requestRender() });
-      if (typeof done === 'function') layerCleanups.push(done);
-    } catch (err) { console.warn('3D layer failed', err); }
+  function clearLayers() {
+    for (const done of layerCleanups.splice(0)) { try { done(); } catch { /* plugin */ } }
   }
+  function drawLayers() {
+    for (const layer of layers) {
+      try {
+        const done = layer({ THREE, scene, plan, ground: (x, y) => ground(x, y), requestRender, coverShadow: () => requestRender() });
+        if (typeof done === 'function') layerCleanups.push(done);
+      } catch (err) { console.warn('3D layer failed', err); }
+    }
+  }
+  drawLayers();
 
   // ── Interaction: raycasting for place/drag, letting OrbitControls handle
   // everything else untouched (see CHANGELOG.md "Gartenplan: 3D-Ansicht mit
@@ -1395,6 +1404,7 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
     }
   }
 
+  let pinches = 0; // second fingers seen: a tap that became a pinch places nothing
   function onContainerPointerDown(e: PointerEvent) {
     if (handingOver) return;
     // A second finger while the first one drags a plant: it was a pinch. The plant goes back and the first
@@ -1415,7 +1425,7 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
       requestRender();
       return;
     }
-    if (e.pointerType === 'touch' && !e.isPrimary) return; // a pinch: the camera's
+    if (e.pointerType === 'touch' && !e.isPrimary) { pinches++; return; } // a pinch: the camera's
     setNdcFromEvent(e);
     raycaster.setFromCamera(ndc, camera);
 
@@ -1447,13 +1457,16 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
     }
 
     if (armedPlantId) {
-      const groundHit = new THREE.Vector3();
-      if (intersectGround(groundHit)
-        && pointInPolygon({ xM: groundHit.x, yM: groundHit.z }, plan.boundary)) {
-        controls.enabled = false;
-        callbacks.onGroundTap(groundHit.x, groundHit.z);
-        renderer.domElement.addEventListener('pointerup', () => { controls.enabled = true; }, { once: true });
-      }
+      // Placed on letting go of a tap, as in 2D: turning or moving the view with a plant armed placed one at the start.
+      const sx = e.clientX, sy = e.clientY, p0 = pinches;
+      renderer.domElement.addEventListener('pointerup', (up: PointerEvent) => {
+        if (!armedPlantId || pinches !== p0 || Math.hypot(up.clientX - sx, up.clientY - sy) > DRAG_THRESHOLD_PX) return;
+        setNdcFromEvent(up);
+        raycaster.setFromCamera(ndc, camera);
+        const groundHit = new THREE.Vector3();
+        if (intersectGround(groundHit) && pointInPolygon({ xM: groundHit.x, yM: groundHit.z }, plan.boundary)) callbacks.onGroundTap(groundHit.x, groundHit.z);
+      }, { once: true });
+      return;
     }
     // A plain click (no orbit drag) on an area selects it; anything that
     // moves is left to OrbitControls as before.
@@ -1885,7 +1898,6 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
       return terrain ? view.setTerrain(terrain) : true;
     },
     setTerrain(t) {
-      if (opts.layers?.length) return false;
       useTerrain(t);
       layoutSrc = tileSrc ?? (terrain ? OSM_TILES : null);
       scene.remove(lawn);
@@ -1914,11 +1926,20 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
       setContours(lastContours);
       setPreview(lastPreview);
       view.setPositionMarker(lastPos);
+      // Plugin layers stood on the old ground.
+      clearLayers();
+      drawLayers();
       return true;
     },
     setBuildings(list) {
       buildingList = list;
       buildBuildings();
+      requestRender();
+    },
+    setLayers(list) {
+      layers = list;
+      clearLayers();
+      drawLayers();
       requestRender();
     },
     dispose() {
@@ -1927,7 +1948,7 @@ html.pdk-feld .pdk-compass{bottom:84px;left:12px}` }));
       for (const e of groundTiles.values()) e.alive = false;
       tileQueue.length = 0;
       clearTimeout(northTimer);
-      for (const done of layerCleanups) { try { done(); } catch { /* plugin */ } }
+      clearLayers();
       resizeObserver.disconnect();
       cancelAnimationFrame(northAnim);
       compass.remove();

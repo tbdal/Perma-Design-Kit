@@ -4,6 +4,11 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Planer 3D: kein Flackern beim Öffnen 2026-11-23
+- [x] **3D baut sich beim Öffnen nur einmal auf**: Gelände, Gebäude und nachladende Erweiterungen werden in die offene Ansicht eingesetzt statt sie jedes Mal neu zu bauen (neues Bild, alle Kartenkacheln neu); Klicks während des Aufbaus lösen keinen zweiten aus #bugs #prüfen
+- [x] **3D mit gewählter Pflanze**: Drehen und Verschieben der Ansicht setzt keine Pflanze mehr, gesetzt wird beim Loslassen eines Tipps (wie in 2D) #bugs #prüfen
+- [x] **3D zeigt neue und bearbeitete Pflanzen richtig**: eine während der 3D-Ansicht hinzugefügte oder im Editor geänderte Pflanze erschien als kleiner Platzhalter #bugs #prüfen
+
 ## Einstieg neu: einfach, einladend, für alle drei Gruppen 2026-11-16
 - [x] **Willkommen mit drei Wegen**: „Ich plane meinen Garten“ (Ansicht Einfach, Rundgang, danach einfache Startwege und Anregungen), „Wir planen gemeinsam“ (eigene Seite: Baumscheiben drucken, Polykultur, Plan teilen, Vorbilder, dann Rundgang) und „Ich plane professionell“ (Beta-Test: was man weitergeben kann, Zugang als Geschenk, Anmelden); „Erst mal umschauen“ schließt alles. Auf dem Handy als Zeilen mit Bild links. Die Wahl wird gemerkt #minor #prüfen
 - [x] **Leere Seiten**: Pflanzenliste mit drei Beispiel-Auswahlen und den Schritten des gewählten Wegs; Kalender und Polykulturen mit Bild, Erklärung und zwei Knöpfen (Kalender-Filter und PDF-Knöpfe erst mit Pflanzen) #minor #prüfen
