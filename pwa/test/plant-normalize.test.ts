@@ -2,6 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { normalizePlant, normalizePlants, normalizeGardenPlan } from '../src/lib/plant-normalize';
 
 describe('normalizePlant', () => {
+  it('keeps an empty add date empty (a restore must not make the plant "just added")', () => {
+    expect(normalizePlant({ id: 'a', latinName: 'X', createdAt: '' })!.createdAt).toBe('');
+    expect(Date.parse(normalizePlant({ id: 'a', latinName: 'X' })!.createdAt)).not.toBeNaN();
+    expect(normalizePlant({ id: 'a', latinName: 'X', createdAt: '2024-01-02T00:00:00.000Z' })!.createdAt).toBe('2024-01-02T00:00:00.000Z');
+  });
   it('fills fields missing from old export files', () => {
     const p = normalizePlant({ id: 'a', latinName: 'Malus domestica', commonName: 'Apfel' })!;
     expect(p.id).toBe('a');

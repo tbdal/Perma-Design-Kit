@@ -222,6 +222,30 @@ describe('HTTP endpoints', () => {
     expect((await post('/api/auth/device/redeem', { token })).status).toBe(404);
   });
 
+  it('a login link stops working when the person gets a new password or becomes admin; no hand-made login invitations', async () => {
+    const post = (path: string, body: unknown, cookie = '') => fetch(`${base}${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(cookie ? { cookie } : {}) }, body: JSON.stringify(body) });
+    const admin = cookieOf(await login('admin', 'admin-passwort'));
+    await post('/api/admin/users', { name: 'Lotte', role: 'team', password: 'lotte-passwort' }, admin);
+    const a = (await (await post('/api/admin/login-link', { name: 'Lotte' }, admin)).json()).token;
+    const b = (await (await post('/api/admin/login-link', { name: 'Lotte' }, admin)).json()).token;
+    await post('/api/admin/users', { name: 'Lotte', password: 'lotte-neu-passwort' }, admin);
+    expect((await post('/api/auth/device/redeem', { token: a })).status).toBe(404);
+    const c = (await (await post('/api/admin/login-link', { name: 'Lotte' }, admin)).json()).token;
+    await post('/api/admin/users', { name: 'Lotte', role: 'admin' }, admin);
+    expect((await post('/api/auth/device/redeem', { token: c })).status).toBe(404);
+    void b;
+    const hand = await (await post('/api/admin/invites', { role: 'team', extra: { login: 'admin' } }, admin)).json();
+    expect((await post('/api/auth/device/redeem', { token: hand.token })).status).toBe(404);
+  });
+
+  it('a removed and re-created account gets another session version (old cookies do not fit)', async () => {
+    let users = await upsertUser([], { name: 'Max', role: 'team', password: 'max-passwort' }, new Date(1000));
+    const v1 = users[0].v;
+    users = removeUser([...users, { name: 'a', role: 'admin', v: 1 }], 'Max');
+    users = await upsertUser(users, { name: 'Max', role: 'team', password: 'max-passwort' }, new Date(2000));
+    expect(users.find((u: { name: string }) => u.name === 'Max').v).not.toBe(v1);
+  });
+
   it('a person changes their own password (old one required; other sessions end, this one continues)', async () => {
     const post = (body: unknown, cookie = '') => fetch(`${base}/api/auth/password`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(cookie ? { cookie } : {}) }, body: JSON.stringify(body) });
     const admin = cookieOf(await login('admin', 'admin-passwort'));

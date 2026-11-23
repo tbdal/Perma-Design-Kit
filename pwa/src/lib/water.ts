@@ -46,9 +46,10 @@ class Heap {
 }
 
 /** Depression-filled copy of the heights; flats get a 1e-4 m/cell gradient so water always finds a way out. */
-export function fillDepressions(g: ElevationGrid): Float32Array {
+export function fillDepressions(g: ElevationGrid): Float64Array {
   const { nx, ny, heights } = g;
-  const filled = new Float32Array(heights);
+  // 64 bit: above ~2 km a float32 step (2.4e-4 m) swallows the 1e-4 m gradient, flats become level and flow stops.
+  const filled = new Float64Array(heights);
   const done = new Uint8Array(nx * ny);
   const heap = new Heap();
   for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
@@ -71,7 +72,7 @@ export function fillDepressions(g: ElevationGrid): Float32Array {
 }
 
 /** Downstream neighbour index per cell (−1 at the border). */
-export function flowDirections(g: ElevationGrid, z: Float32Array): Int32Array {
+export function flowDirections(g: ElevationGrid, z: Float64Array | Float32Array): Int32Array {
   const { nx, ny } = g;
   const dir = new Int32Array(nx * ny).fill(-1);
   for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
@@ -89,7 +90,7 @@ export function flowDirections(g: ElevationGrid, z: Float32Array): Int32Array {
 }
 
 /** Catchment area (m²) of every cell. */
-export function flowAccumulation(g: ElevationGrid, z: Float32Array, dir: Int32Array): Float32Array {
+export function flowAccumulation(g: ElevationGrid, z: Float64Array | Float32Array, dir: Int32Array): Float32Array {
   const n = g.nx * g.ny;
   const acc = new Float32Array(n).fill(g.cellM * g.cellM);
   const order = Array.from({ length: n }, (_, k) => k).sort((a, b) => z[b] - z[a]);

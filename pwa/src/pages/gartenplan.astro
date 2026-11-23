@@ -3920,7 +3920,9 @@ import Layout from '../layouts/Layout.astro';
         r.plan.placements = r.plan.placements.map(pl => ({ ...old.get(pl.id), ...pl }));
         const oldAreas = new Map(existing.areas.map(a => [a.id, a]));
         r.plan.areas = r.plan.areas.map(a => ({ ...oldAreas.get(a.id), ...a }));
-        r.plan = { ...existing, ...r.plan, createdAt: existing.createdAt, polycultureId: existing.polycultureId, zones: undefined };
+        // The plan's own settings stay too: grid spacing, map background and its opacity (the file is read north-up on a 1 m grid).
+        const geo = r.plan.geo && existing.geo ? { ...r.plan.geo, basemap: existing.geo.basemap, opacity: existing.geo.opacity } : r.plan.geo;
+        r.plan = { ...existing, ...r.plan, geo, gridSpacingM: existing.gridSpacingM, createdAt: existing.createdAt, polycultureId: existing.polycultureId, zones: undefined };
       } else {
         r.plan.id = newId();
         r.plan.areas.forEach(a => { a.id = newId(); });
@@ -4709,9 +4711,14 @@ import Layout from '../layouts/Layout.astro';
         `<path d="${d.join('')}" fill="none" stroke="#0284c7" stroke-opacity="${0.35 + cls * 0.1}" stroke-width="${0.6 + cls * 0.7}" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`).join('');
       waterFlowSvg.set(w, flow);
     }
+    // The flow paths (maybe 100 KB+) sit in their own group, written only for a new analysis: zoom redraws just the marks.
+    let flowG = layer.querySelector<SVGGElement & { drawn?: string }>(':scope > g[data-flow]');
+    let marksG = layer.querySelector(':scope > g[data-marks]');
+    if (!flowG || !marksG) { layer.innerHTML = '<g data-flow></g><g data-marks></g>'; flowG = layer.querySelector(':scope > g[data-flow]')!; marksG = layer.querySelector(':scope > g[data-marks]')!; }
+    if (flowG.drawn !== flow) { flowG.innerHTML = flow; flowG.drawn = flow; }
     const k = viewK();
     const nf = (v: number, d = 0) => new Intl.NumberFormat(lang, { maximumFractionDigits: d }).format(v);
-    const parts = [flow];
+    const parts: string[] = [];
     const label = (x: number, y: number, text: string, color: string) =>
       `<text x="${x * U}" y="${y * U}" text-anchor="middle" dominant-baseline="central" font-size="${10 * k}" font-weight="600" fill="${color}" stroke="#fff" stroke-width="${3 * k}" paint-order="stroke">${escapeHtml(text)}</text>`;
     if (terrain.dgm) {
@@ -4725,7 +4732,7 @@ import Layout from '../layouts/Layout.astro';
         parts.push(label((s.x1 + s.x2) / 2, (s.y1 + s.y2) / 2 - 1.2, t('waterSwaleLabel'), '#b45309'));
       }
     }
-    layer.innerHTML = parts.join('');
+    marksG.innerHTML = parts.join('');
   }
   function renderWater() {
     const layer = planSvg.querySelector('#water-layer');
@@ -5072,6 +5079,7 @@ import Layout from '../layouts/Layout.astro';
       if (climateRequestKey === key || climateRequestKey === '') setLoad('klima', null);
     }
     renderClimatePanel();
+    if (waterInput.checked) renderWater(); // its roof-rain line needs the rain
     updateAttribution(planSvg);
     renderSuggestions();
     scheduleWarnings();
@@ -5251,6 +5259,7 @@ import Layout from '../layouts/Layout.astro';
   }
   function afterBuildingsChanged() {
     renderBuildings2d();
+    if (waterInput.checked) renderWater(); // roof rain of the buildings
     updateAttribution(planSvg);
     scheduleWarnings();
     if (coverageSelect.value.startsWith('sun')) scheduleCoverage();

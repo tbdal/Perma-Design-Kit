@@ -68,6 +68,14 @@ describe('GeoJSON import', () => {
     expect(r.sourcePlanId).toBeNull();
   });
 
+  it('gives features copied in QGIS (same pdk_id) their own ids', () => {
+    const pt = (lon: number) => ({ type: 'Feature', properties: { pdk_id: 'tree-1', name: 'Malus' }, geometry: { type: 'Point', coordinates: [lon, 48.137] } });
+    const r = planFromGeoJson({ type: 'FeatureCollection', features: [pt(11.575), pt(11.5751), pt(11.5752)] }, []);
+    const ids = r.plan.placements.map(p => p.id);
+    expect(ids[0]).toBe('tree-1');
+    expect(new Set(ids).size).toBe(3);
+  });
+
   it('rejects files without geometry', () => {
     expect(() => planFromGeoJson({ type: 'FeatureCollection', features: [] }, [])).toThrow();
     expect(() => planFromGeoJson({ foo: 1 }, [])).toThrow();

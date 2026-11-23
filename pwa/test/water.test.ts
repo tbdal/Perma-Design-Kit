@@ -9,6 +9,16 @@ function grid(nx: number, ny: number, f: (x: number, y: number) => number, cellM
   return { minX: 0, minY: 0, cellM, nx, ny, heights, sources: [] };
 }
 
+describe('high up (above 2 km)', () => {
+  it('a flat at 3000 m still drains (the fill gradient is not rounded away)', () => {
+    const g = grid(20, 20, () => 3000);
+    const z = fillDepressions(g);
+    const dir = flowDirections(g, z);
+    // every inner cell has a way out
+    for (let j = 1; j < 19; j++) for (let i = 1; i < 19; i++) expect(dir[j * 20 + i]).toBeGreaterThanOrEqual(0);
+  });
+});
+
 describe('flow on a slope', () => {
   // falls towards +y (south) by 5 %
   const g = grid(40, 40, (_x, y) => 10 - y * 0.05);

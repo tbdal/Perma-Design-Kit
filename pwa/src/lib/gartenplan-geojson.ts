@@ -94,6 +94,9 @@ export function planFromGeoJson(fc: unknown, existingPlants: PlantData[], spacin
   const openRing = (r: Pos[]) => (r.length > 1 && r[0][0] === r[r.length - 1][0] && r[0][1] === r[r.length - 1][1] ? r.slice(0, -1) : r);
 
   const plan = createEmptyGardenPlan();
+  // Ids must stay unique: features copied in QGIS carry the same pdk_id (a copied tree would share one placement).
+  const seen = new Set<string>();
+  const uniqueId = (v: unknown) => { const id = str(v); if (!id || seen.has(id)) return newId(); seen.add(id); return id; };
   plan.id = f.pdk?.planId && typeof f.pdk.planId === 'string' ? f.pdk.planId : newId();
   plan.areaWidthM = frame.widthM;
   plan.areaHeightM = frame.heightM;
@@ -115,7 +118,7 @@ export function planFromGeoJson(fc: unknown, existingPlants: PlantData[], spacin
   if (!plan.name) plan.name = str(f.name) || 'Import';
 
   plan.areas = polygons.filter((_, i) => i !== boundaryIdx).map((p, i): GardenPlanArea => ({
-    id: str(p.props.pdk_id) || newId(),
+    id: uniqueId(p.props.pdk_id),
     name: str(p.props.name) || str(p.props.Name) || `Fläche ${i + 1}`,
     color: /^#[0-9a-f]{6}$/i.test(str(p.props.color)) ? str(p.props.color).toLowerCase() : AREA_PALETTE[i % AREA_PALETTE.length],
     points: openRing(p.ring).map(toPlan),
@@ -136,7 +139,7 @@ export function planFromGeoJson(fc: unknown, existingPlants: PlantData[], spacin
       if (latin) byLatin.set(tidyName(latin), plant);
     }
     const q = toPlan(pt.pos);
-    plan.placements.push({ id: str(pt.props.pdk_id) || newId(), plantId: plant.id, xM: q.xM, yM: q.yM, notes: str(pt.props.notes) });
+    plan.placements.push({ id: uniqueId(pt.props.pdk_id), plantId: plant.id, xM: q.xM, yM: q.yM, notes: str(pt.props.notes) });
   }
   return { plan, newPlants, matchedPlants: matched, skippedFeatures: skipped, sourcePlanId: f.pdk?.planId ?? null };
 }

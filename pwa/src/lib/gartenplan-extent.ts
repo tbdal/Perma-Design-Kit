@@ -25,22 +25,27 @@ export function growPlanToFit(plan: GardenPlan, marginM = 1): { dx: number; dy: 
   if (minX >= 0 && minY >= 0 && maxX <= w && maxY <= h) return null;
 
   const s = plan.gridSpacingM || 1;
-  const newMinX = minX < 0 ? Math.floor((minX - marginM) / s) * s : 0;
-  const newMinY = minY < 0 ? Math.floor((minY - marginM) / s) * s : 0;
-  const newMaxX = maxX > w ? Math.ceil((maxX + marginM) / s) * s : w;
-  const newMaxY = maxY > h ? Math.ceil((maxY + marginM) / s) * s : h;
+  // Never beyond MAX_PLAN_M a side (a restore cuts bigger plans down, points then lay outside): what was dragged
+  // further is held at the edge.
+  const newMinX = minX < 0 ? Math.max(Math.floor((minX - marginM) / s) * s, Math.min(0, w - MAX_PLAN_M)) : 0;
+  const newMinY = minY < 0 ? Math.max(Math.floor((minY - marginM) / s) * s, Math.min(0, h - MAX_PLAN_M)) : 0;
+  const newMaxX = maxX > w ? Math.min(Math.ceil((maxX + marginM) / s) * s, Math.max(w, newMinX + MAX_PLAN_M)) : w;
+  const newMaxY = maxY > h ? Math.min(Math.ceil((maxY + marginM) / s) * s, Math.max(h, newMinY + MAX_PLAN_M)) : h;
   const dx = newMinX ? -newMinX : 0, dy = newMinY ? -newMinY : 0; // no -0
 
   if (plan.geo && (dx || dy)) {
     const o = planToLatLon({ xM: newMinX, yM: newMinY }, plan.geo);
     plan.geo = { ...plan.geo, lat: o.lat, lon: o.lon };
   }
-  const shift = (p: { xM: number; yM: number }) => { p.xM += dx; p.yM += dy; };
+  const shift = (p: { xM: number; yM: number }) => {
+    p.xM = Math.min(newMaxX, Math.max(newMinX, p.xM)) + dx;
+    p.yM = Math.min(newMaxY, Math.max(newMinY, p.yM)) + dy;
+  };
   plan.boundary.forEach(shift);
   (plan.areas ?? []).forEach(a => a.points.forEach(shift));
   plan.placements.forEach(shift);
   if (plan.zones) { plan.zones.centerXM += dx; plan.zones.centerYM += dy; }
   plan.areaWidthM = newMaxX - newMinX;
   plan.areaHeightM = newMaxY - newMinY;
-  return { dx, dy };
+  return dx || dy || plan.areaWidthM !== w || plan.areaHeightM !== h ? { dx, dy } : null; // only held at the edge: not grown
 }

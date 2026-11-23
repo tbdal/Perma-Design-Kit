@@ -8,9 +8,9 @@ function plant(id: string, latinName: string, extra: Partial<PlantData> = {}): P
 
 const apple = plant('p1', 'Malus domestica', { commonName: 'Apfel', heightM: 5, eatable: true, notes: 'privat' });
 const clover = plant('p2', 'Trifolium repens', { nitrogenFix: true });
-const pc = { ...createEmptyPolyculture(), id: 'g1', name: 'Gilde', anchorPlantId: 'p1', members: [{ plantId: 'p2', role: 'nFixer' as const, notes: 'n' }], notes: 'pc-notiz' };
+const pc = { ...createEmptyPolyculture(), id: 'g1', name: 'Gilde', anchorPlantId: 'p1', members: [{ plantId: 'p2', role: 'nFixer' as const, notes: 'n' }], notes: 'pc-notiz', description: 'pc-text' };
 const plan = {
-  ...createEmptyGardenPlan(), id: 'gp1', name: 'Garten', notes: 'plan-notiz',
+  ...createEmptyGardenPlan(), id: 'gp1', name: 'Garten', notes: 'plan-notiz', description: 'plan-text',
   boundary: [{ xM: 0, yM: 0 }, { xM: 4, yM: 0 }, { xM: 4, yM: 4 }],
   placements: [{ id: 'pl1', plantId: 'p1', xM: 1, yM: 1, notes: 'x' }],
   geo: { lat: 50, lon: 8, rotationDeg: 0, basemap: 'osm' as const, opacity: 0.7 },
@@ -39,6 +39,8 @@ describe('share encode/decode', () => {
     expect(back.gardenPlans[0].notes).toBe('');
     expect(back.gardenPlans[0].placements[0].notes).toBe('');
     expect(back.gardenPlans[0].geo).toBeNull();
+    expect(back.polycultures[0].description).toBe('');
+    expect(back.gardenPlans[0].description).toBe('');
   });
 
   it('prunes default fields to keep links short', () => {
