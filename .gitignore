@@ -5,3 +5,4 @@ psd2svg/venv/
 
 # Dateiablage des Teams (Entwicklung → Dateien), liegt auf dem Server unter /root/pdk/assets
 /assets/
+node_modules/

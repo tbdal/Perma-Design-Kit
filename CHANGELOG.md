@@ -4,6 +4,13 @@ Abgeschlossene Roadmap-Punkte, chronologisch (neueste oben) nach Abarbeitung inn
 
 Stichworte am Zeilenende (sortierbar auf der Entwicklungsseite): `#bugs` Fehlerbehebung, `#minor` kleine Verbesserung, `#major` große Neuerung.
 
+## Prüfbericht November: zweite Runde 2026-11-23
+- [x] **Löschungen reisen beim Abgleich mit** (Server-Speicher, WebDAV, Gist): eine auf einem Gerät gelöschte Pflanze, Polykultur oder ein Plan kommt nicht mehr vom anderen Gerät zurück; was dort danach noch bearbeitet wurde, bleibt; eine bewusst eingespielte Sicherungsdatei holt Gelöschtes zurück #bugs #prüfen
+- [x] **Klima auf der Südhalbkugel**: letzter und erster Frost, Blütenfrost-Hinweise, Sommerregen und Köppen rechnen dort mit Winter Juni–August #bugs #prüfen
+- [x] **Wasser**: Fließwege werden beim Zoomen nicht mehr neu aufgebaut, die Dachwasser-Zeile erscheint auch, wenn Klima oder Gebäude später kommen, über 2000 m brechen Fließwege nicht mehr ab #bugs #prüfen
+- [x] **GeoJSON/QGIS**: kopierte Objekte bekommen eigene Kennungen; „Plan aktualisieren“ behält Drehung, Ursprung, Raster, Hintergrund und Zonen #bugs #prüfen
+- [x] **Kleinere Fehler**: leeres Anlagedatum bleibt beim Wiederherstellen leer; ein Plan wächst nie über 5 km; Teilen ohne Notizen lässt auch Beschreibungen weg; Anmeldelinks gelten nur für das Konto, wie es beim Erstellen war #bugs #prüfen
+
 ## Planer 3D: kein Flackern beim Öffnen 2026-11-23
 - [x] **3D baut sich beim Öffnen nur einmal auf**: Gelände, Gebäude und nachladende Erweiterungen werden in die offene Ansicht eingesetzt statt sie jedes Mal neu zu bauen (neues Bild, alle Kartenkacheln neu); Klicks während des Aufbaus lösen keinen zweiten aus #bugs #prüfen
 - [x] **3D mit gewählter Pflanze**: Drehen und Verschieben der Ansicht setzt keine Pflanze mehr, gesetzt wird beim Loslassen eines Tipps (wie in 2D) #bugs #prüfen
