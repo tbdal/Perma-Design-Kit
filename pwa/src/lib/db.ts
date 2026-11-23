@@ -2,6 +2,7 @@ import { openDB, type DBSchema } from 'idb';
 import type { PlantData, Polyculture, GardenPlan } from './types';
 import type { VarietyList } from './varieties';
 import { announceChange } from './data-channel';
+import { noteDeleted, forgetDeleted, type DelStore } from './deletions';
 
 let writes = 0;
 /** Counts this tab's writes, so a page can keep its records in memory until one happens. */
@@ -133,11 +134,13 @@ export async function savePlant(plant: PlantData): Promise<void> {
     plant.updatedAt = new Date().toISOString();
     await db.put('plants', plant);
   });
+  forgetDeleted('plants', [plant.id]);
   changed();
 }
 
 export async function deletePlant(id: string): Promise<void> {
   await run(db => db.delete('plants', id));
+  noteDeleted('plants', [id]); // travels with the next sync (deletions.ts)
   changed();
 }
 
@@ -149,6 +152,7 @@ export async function importPlants(plants: PlantData[]): Promise<void> {
     }
     await tx.done;
   });
+  forgetDeleted('plants', plants.map(p => p.id));
   changed();
 }
 
@@ -174,11 +178,13 @@ export async function getPolyculture(id: string): Promise<Polyculture | undefine
 export async function savePolyculture(polyculture: Polyculture): Promise<void> {
   polyculture.updatedAt = new Date().toISOString();
   await run(db => db.put('polycultures', polyculture));
+  forgetDeleted('polycultures', [polyculture.id]);
   changed();
 }
 
 export async function deletePolyculture(id: string): Promise<void> {
   await run(db => db.delete('polycultures', id));
+  noteDeleted('polycultures', [id]);
   changed();
 }
 
@@ -190,6 +196,7 @@ export async function importPolycultures(polycultures: Polyculture[]): Promise<v
     }
     await tx.done;
   });
+  forgetDeleted('polycultures', polycultures.map(p => p.id));
   changed();
 }
 
@@ -206,11 +213,13 @@ export async function getGardenPlan(id: string): Promise<GardenPlan | undefined>
 export async function saveGardenPlan(plan: GardenPlan): Promise<void> {
   plan.updatedAt = new Date().toISOString();
   await run(db => db.put('gardenPlans', plan));
+  forgetDeleted('gardenPlans', [plan.id]);
   changed();
 }
 
 export async function deleteGardenPlan(id: string): Promise<void> {
   await run(db => db.delete('gardenPlans', id));
+  noteDeleted('gardenPlans', [id]);
   changed();
 }
 
@@ -220,6 +229,18 @@ export async function importGardenPlans(plans: GardenPlan[]): Promise<void> {
     for (const plan of plans) {
       await tx.store.put(plan);
     }
+    await tx.done;
+  });
+  forgetDeleted('gardenPlans', plans.map(p => p.id));
+  changed();
+}
+
+/** Removes records another device deleted (sync): no new deletion marks, the merged ones are stored by the caller. */
+export async function removeDeleted(store: DelStore, ids: string[]): Promise<void> {
+  if (!ids.length) return;
+  await run(async db => {
+    const tx = db.transaction(store, 'readwrite');
+    for (const id of ids) await tx.store.delete(id);
     await tx.done;
   });
   changed();

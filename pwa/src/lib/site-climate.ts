@@ -31,7 +31,16 @@ export interface SiteClimate {
   windRose: number[];
   /** Direction (degrees, where the wind comes FROM) with the most days. */
   windFromDeg: number;
+  /** Southern hemisphere: frost dates counted from midwinter in July (older summaries without it are recomputed). */
+  south?: true;
 }
+
+// Southern hemisphere (#626): winter is June–August. Frost seasons, spring blossom, summer rain and Köppen's
+// summer half turn by six months there; SEASON_SHIFT moves a day of the year so that 1 = 1 July.
+const SEASON_SHIFT = 181;
+/** Day of the year in season order: north as is, south counted from 1 July (so spring frosts still come before autumn ones). */
+export const seasonDoy = (doy: number, south: boolean) => (south ? ((doy - 1 + 365 - SEASON_SHIFT) % 365) + 1 : doy);
+const realDoy = (d: number, south: boolean) => (south ? ((d - 1 + SEASON_SHIFT) % 365) + 1 : d);
 
 interface Daily { time: string[]; temperature_2m_min: (number | null)[]; precipitation_sum: (number | null)[]; wind_direction_10m_dominant: (number | null)[]; }
 
@@ -61,12 +70,15 @@ export function summarizeClimate(d: Daily, lat: number, lon: number, elevationM:
   const byYear = new Map<number, { min: number; lastSpring: number | null; firstAutumn: number | null; precip: number; n: number }>();
   const rose = new Array(16).fill(0);
   let windDays = 0;
+  const south = lat < 0;
   for (let i = 0; i < d.time.length; i++) {
-    const year = Number(d.time[i].slice(0, 4));
+    // South: a frost "year" runs July to June (one winter each), days counted from 1 July.
+    const shifted = south ? new Date(Date.parse(d.time[i].slice(0, 10)) - SEASON_SHIFT * 86_400_000).toISOString().slice(0, 10) : d.time[i];
+    const year = Number(shifted.slice(0, 4));
     const y = byYear.get(year) ?? { min: Infinity, lastSpring: null, firstAutumn: null, precip: 0, n: 0 };
     byYear.set(year, y);
     const tmin = d.temperature_2m_min[i];
-    const doy = doyOf(d.time[i]);
+    const doy = doyOf(shifted);
     if (tmin != null) {
       y.n++;
       if (tmin < y.min) y.min = tmin;
@@ -87,12 +99,13 @@ export function summarizeClimate(d: Daily, lat: number, lon: number, elevationM:
   return {
     lat, lon, elevationM, years: CLIMATE_YEARS,
     meanAnnualMinC, zone: usdaZone(meanAnnualMinC),
-    lastFrostDoy: last != null ? Math.round(last) : null,
-    firstFrostDoy: first != null ? Math.round(first) : null,
+    lastFrostDoy: last != null ? realDoy(Math.round(last), south) : null,
+    firstFrostDoy: first != null ? realDoy(Math.round(first), south) : null,
     frostFreeDays: last != null && first != null ? Math.round(first - last - 1) : null,
     precipMm: full.reduce((s, y) => s + y.precip, 0) / Math.max(1, full.length),
     windRose: rose.map(n => (windDays ? n / windDays : 0)),
     windFromDeg: maxSector * 22.5,
+    ...(south ? { south: true as const } : {}),
   };
 }
 
@@ -116,7 +129,7 @@ export function cachedSiteClimate(lat: number, lon: number): SiteClimate | null 
   try {
     const raw = localStorage.getItem(SUMMARY_KEY(lat, lon));
     const v = raw ? JSON.parse(raw) as { at: number; c: SiteClimate } : null;
-    return v && Date.now() - v.at < SUMMARY_MS && v.c && typeof v.c.zone === 'number' ? v.c : null;
+    return v && Date.now() - v.at < SUMMARY_MS && v.c && typeof v.c.zone === 'number' && (lat >= 0 || v.c.south) ? v.c : null;
   } catch { return null; }
 }
 
@@ -157,11 +170,15 @@ export function notHardy(p: Pick<PlantData, 'climateZone'>, c: SiteClimate): boo
 }
 
 /** Blossom at risk: flowering usually starts (mid-month) before the median last frost. */
-export function blossomFrostRisk(p: Pick<PlantData, 'flowerMonths'>, c: SiteClimate): boolean {
+export function blossomFrostRisk(p: Pick<PlantData, 'flowerMonths'>, c: Pick<SiteClimate, 'lastFrostDoy' | 'lat'>): boolean {
   if (c.lastFrostDoy == null) return false;
-  const first = (p.flowerMonths ?? []).findIndex(Boolean);
-  if (first < 0 || first > 5) return false;   // flowers from July on: no spring frost
-  return doyOf(`2001-${String(first + 1).padStart(2, '0')}-15`) <= c.lastFrostDoy;
+  const south = c.lat < 0;
+  // months in season order (south: from July), so "the first half" is winter and spring in both hemispheres
+  const order = Array.from({ length: 12 }, (_, k) => (south ? (k + 6) % 12 : k));
+  const i = order.findIndex(m => p.flowerMonths?.[m]);
+  if (i < 0 || i > 5) return false;   // flowers in the summer half on: no spring frost
+  const flowerDoy = doyOf(`2001-${String(order[i] + 1).padStart(2, '0')}-15`);
+  return seasonDoy(flowerDoy, south) <= seasonDoy(c.lastFrostDoy, south);
 }
 
 /** Day of year → short date ("18. Apr." / "Apr 18"), year-independent. */
@@ -263,10 +280,10 @@ export const scaleFactor = (ssp: Ssp, year: number, k: 0 | 1 | 2 = 0) =>
 
 /** Per model one row per year from `from` (null = too few days): [lowest temperature, days ≥ 30 °C, frost days,
  *  12 monthly means °C, 12 monthly rain sums mm]. Small enough to keep in localStorage (≈ 45 KB). */
-export interface FutureClimate { v: 2; from: number; models: Record<string, (number[] | null)[]> }
+export interface FutureClimate { v: 2; from: number; models: Record<string, (number[] | null)[]>; south?: true }
 
 /** Pure part: the climate API's daily series (all models) → yearly rows per model. */
-export function summarizeFuture(d: Record<string, (number | null)[] | string[]>): FutureClimate {
+export function summarizeFuture(d: Record<string, (number | null)[] | string[]>, lat = 0): FutureClimate {
   const time = d.time as string[];
   const from = Number(time[0]?.slice(0, 4)), models: FutureClimate['models'] = {};
   const r1 = (v: number) => Math.round(v * 10) / 10;
@@ -289,7 +306,7 @@ export function summarizeFuture(d: Record<string, (number | null)[] | string[]>)
     models[m] = Array.from(years, y => (y && y.n > 300 && y.tn.every(n => n > 0)
       ? [r1(y.min), y.hot, y.frost, ...y.t.map((s, k) => r1(s / y.tn[k])), ...y.p.map(r1)] : null));
   }
-  return { v: 2, from, models };
+  return { v: 2, from, models, ...(lat < 0 ? { south: true as const } : {}) };
 }
 
 export interface WindowStats { minT: number; hot: number; frost: number; tann: number; summerRain: number; T: number[]; P: number[] }
@@ -298,40 +315,41 @@ export const FUTURE_METRICS: FutureMetric[] = ['tann', 'minT', 'hot', 'frost', '
 const avg = (v: number[]) => v.reduce((s, x) => s + x, 0) / v.length;
 
 /** Means over the model years y0…y1; null with fewer than 8 years of data. */
-export function windowStats(rows: (number[] | null)[], from: number, y0: number, y1: number): WindowStats | null {
+export function windowStats(rows: (number[] | null)[], from: number, south: boolean | undefined, y0: number, y1: number): WindowStats | null {
   const ys: number[][] = [];
   for (let y = y0; y <= y1; y++) { const r = rows[y - from]; if (r) ys.push(r); }
   if (ys.length < 8) return null;
   const T = Array.from({ length: 12 }, (_, m) => avg(ys.map(r => r[3 + m])));
   const P = Array.from({ length: 12 }, (_, m) => avg(ys.map(r => r[15 + m])));
-  return { minT: avg(ys.map(r => r[0])), hot: avg(ys.map(r => r[1])), frost: avg(ys.map(r => r[2])), tann: avg(T), summerRain: P[5] + P[6] + P[7], T, P };
+  return { minT: avg(ys.map(r => r[0])), hot: avg(ys.map(r => r[1])), frost: avg(ys.map(r => r[2])), tann: avg(T), summerRain: south ? P[11] + P[0] + P[1] : P[5] + P[6] + P[7], T, P };
 }
 
 /** Change of a metric (K, days, or % for summer rain) in one model for a year; k picks the scenario's
  *  median/low/high after LAST_DATA_YEAR. null without enough data. */
 export function modelDelta(f: FutureClimate, model: string, metric: FutureMetric, year: number, ssp: Ssp, k: 0 | 1 | 2 = 0): number | null {
   const rows = f.models[model];
-  const ref = rows && windowStats(rows, f.from, ...CLIMATE_YEARS);
+  const ref = rows && windowStats(rows, f.from, f.south, ...CLIMATE_YEARS);
   if (!ref) return null;
   const d = (w: WindowStats) => (metric === 'summerRain' ? (ref.summerRain > 0 ? (w.summerRain / ref.summerRain - 1) * 100 : 0) : w[metric] - ref[metric]);
-  if (year <= LAST_DATA_YEAR) { const w = windowStats(rows, f.from, year - HALF, year + HALF); return w ? d(w) : null; }
-  const last = windowStats(rows, f.from, LAST_DATA_YEAR - HALF, LAST_DATA_YEAR + HALF);
+  if (year <= LAST_DATA_YEAR) { const w = windowStats(rows, f.from, f.south, year - HALF, year + HALF); return w ? d(w) : null; }
+  const last = windowStats(rows, f.from, f.south, LAST_DATA_YEAR - HALF, LAST_DATA_YEAR + HALF);
   return last ? d(last) * scaleFactor(ssp, year, k) : null;
 }
 
 /** Models with data. */
-export const availableModels = (f: FutureClimate) => FUTURE_MODELS.filter(m => windowStats(f.models[m] ?? [], f.from, ...CLIMATE_YEARS));
+export const availableModels = (f: FutureClimate) => FUTURE_MODELS.filter(m => windowStats(f.models[m] ?? [], f.from, f.south, ...CLIMATE_YEARS));
 /** Models a scenario looks at: the chosen one, or all with data. */
 export function scenarioModels(f: FutureClimate, s: ClimateScenario): string[] {
   const ok = availableModels(f);
   return s.model !== 'all' && ok.includes(s.model) ? [s.model] : ok;
 }
 
-/** Köppen-Geiger class from monthly means and sums (Kottek et al. 2006, northern hemisphere). */
-export function koeppen(T: number[], P: number[]): string {
+/** Köppen-Geiger class from monthly means and sums (Kottek et al. 2006); `south`: summer is October–March. */
+export function koeppen(T: number[], P: number[], south = false): string {
   const sum = (v: number[]) => v.reduce((s, x) => s + x, 0);
   const tann = avg(T), pann = sum(P), tmin = Math.min(...T), tmax = Math.max(...T);
-  const Ps = [3, 4, 5, 6, 7, 8].map(i => P[i]), Pw = [9, 10, 11, 0, 1, 2].map(i => P[i]);
+  const summer = [3, 4, 5, 6, 7, 8], winter = [9, 10, 11, 0, 1, 2];
+  const Ps = (south ? winter : summer).map(i => P[i]), Pw = (south ? summer : winter).map(i => P[i]);
   const pth = sum(Pw) >= pann * 2 / 3 ? 2 * tann : sum(Ps) >= pann * 2 / 3 ? 2 * tann + 28 : 2 * tann + 14;
   if (tmax < 10) return 'E';
   if (pann < 10 * pth) return (pann < 5 * pth ? 'BW' : 'BS') + (tann >= 18 ? 'h' : 'k');
@@ -347,16 +365,16 @@ export function koeppen(T: number[], P: number[]): string {
  *  the rain change up to 2050 is barely above noise and scaled would invent classes). */
 export function modelKoeppen(f: FutureClimate, model: string, s: ClimateScenario): [string, string] | null {
   const rows = f.models[model];
-  const ref = rows && windowStats(rows, f.from, ...CLIMATE_YEARS);
+  const ref = rows && windowStats(rows, f.from, f.south, ...CLIMATE_YEARS);
   if (!ref) return null;
   if (s.year <= LAST_DATA_YEAR) {
-    const w = windowStats(rows, f.from, s.year - HALF, s.year + HALF);
-    return w ? [koeppen(ref.T, ref.P), koeppen(w.T, w.P)] : null;
+    const w = windowStats(rows, f.from, f.south, s.year - HALF, s.year + HALF);
+    return w ? [koeppen(ref.T, ref.P, f.south), koeppen(w.T, w.P, f.south)] : null;
   }
-  const last = windowStats(rows, f.from, LAST_DATA_YEAR - HALF, LAST_DATA_YEAR + HALF);
+  const last = windowStats(rows, f.from, f.south, LAST_DATA_YEAR - HALF, LAST_DATA_YEAR + HALF);
   if (!last) return null;
   const k = scaleFactor(s.ssp, s.year);
-  return [koeppen(ref.T, ref.P), koeppen(ref.T.map((t, i) => t + (last.T[i] - t) * k), last.P)];
+  return [koeppen(ref.T, ref.P, f.south), koeppen(ref.T.map((t, i) => t + (last.T[i] - t) * k), last.P, f.south)];
 }
 
 /** What the plan's hints and suggestions use: USDA zone per model in the target year, median summer rain change. */
@@ -379,7 +397,7 @@ export function fetchFutureClimate(lat: number, lon: number): Promise<FutureClim
   const key = FUTURE_KEY(lat, lon);
   try {
     const v = JSON.parse(localStorage.getItem(key) ?? 'null') as { at: number; f: FutureClimate } | null;
-    if (v && Date.now() - v.at < SUMMARY_MS && v.f?.v === 2) return Promise.resolve(v.f);
+    if (v && Date.now() - v.at < SUMMARY_MS && v.f?.v === 2 && (lat >= 0 || v.f.south)) return Promise.resolve(v.f);
   } catch { /* fetch below */ }
   let p = pendingFuture.get(key);
   if (!p) {
@@ -390,7 +408,7 @@ export function fetchFutureClimate(lat: number, lon: number): Promise<FutureClim
       });
       const data = await (await climateFetch(`${FUTURE_URL}?${q}`)).json();
       if (!data?.daily?.time?.length) throw new Error('no future climate data');
-      const f = summarizeFuture(data.daily);
+      const f = summarizeFuture(data.daily, lat);
       if (!availableModels(f).length) throw new Error('no future climate data');
       try { localStorage.setItem(key, JSON.stringify({ at: Date.now(), f })); } catch { /* full or blocked */ }
       return f;

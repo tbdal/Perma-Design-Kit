@@ -21,6 +21,7 @@ vi.mock('../src/lib/db', () => ({
   importGardenPlans: async (x: GardenPlan[]) => put(db.gardenPlans, x),
   saveVarietyList: async (x: VarietyList) => put(db.varietyLists, [x]),
   reopenDB: () => {},
+  removeDeleted: async (st: 'plants' | 'polycultures' | 'gardenPlans', ids: string[]) => { (db as any)[st] = (db as any)[st].filter((r: { id: string }) => !ids.includes(r.id)); },
 }));
 
 const store: Record<string, string> = {};
@@ -114,6 +115,31 @@ describe('backup round trip', () => {
     edited();
     expect(await applyBackup(parsed)).toEqual({ keptLocal: 0 });
     expect([db.plants[0].commonName, db.polycultures[0].name, db.gardenPlans[0].name]).toEqual(['Apfel', 'Apfelgilde', 'Waldgarten']);
+  });
+
+  it('deletions travel with a sync (Löschmarken); an edit after the deletion wins; a file restore brings it back', async () => {
+    const t0 = '2026-01-01T00:00:00.000Z';
+    const { noteDeleted, readDeletions } = await import('../src/lib/deletions');
+    // device A: plant and plan deleted after their last change
+    db.plants = [{ ...plant, updatedAt: t0 }]; db.polycultures = [{ ...pc, updatedAt: t0 }]; db.gardenPlans = [{ ...plan, updatedAt: t0 }];
+    const before = parseBackup((await buildBackup()).json);
+    db.plants = []; db.gardenPlans = [];
+    noteDeleted('plants', ['p1'], '2026-01-05T00:00:00.000Z'); noteDeleted('gardenPlans', ['gp1'], '2026-01-05T00:00:00.000Z');
+    const fromA = parseBackup((await buildBackup()).json);
+    expect(Object.keys(fromA.deleted ?? {})).toEqual(['plants:p1', 'gardenPlans:gp1']);
+    // device B (still has both, its plan edited after the deletion) pulls A's backup
+    delete store['pdk-deleted'];
+    db.plants = [{ ...plant, updatedAt: t0 }]; db.gardenPlans = [{ ...plan, name: 'später bearbeitet', updatedAt: '2026-01-06T00:00:00.000Z' }];
+    await applyBackup(fromA, { keepNewer: true });
+    expect(db.plants).toHaveLength(0);                       // gone on B too
+    expect(db.gardenPlans.map(g => g.name)).toEqual(['später bearbeitet']); // edited after the deletion: stays
+    expect(readDeletions()['plants:p1']).toBe('2026-01-05T00:00:00.000Z');  // B carries the mark on
+    // an older backup pulled again does not bring the plant back …
+    await applyBackup(before, { keepNewer: true });
+    expect(db.plants).toHaveLength(0);
+    // … a deliberate file restore does
+    await applyBackup(before);
+    expect(db.plants.map(p => p.id)).toEqual(['p1']);
   });
 
   it('accepts a backup without plants', async () => {

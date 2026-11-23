@@ -1,7 +1,8 @@
 import {
   getAllPlants, getAllPolycultures, getAllGardenPlans, getVarietyLists,
-  importPlants, importPolycultures, importGardenPlans, saveVarietyList, reopenDB,
+  importPlants, importPolycultures, importGardenPlans, saveVarietyList, reopenDB, removeDeleted,
 } from './db';
+import { readDeletions, cleanDeletions, mergeDeletions, storeDeletions, isDeleted, type Deletions, type DelStore } from './deletions';
 import { loadSettings, saveSettings, type AppSettings } from './settings';
 import type { PlantData, Polyculture, GardenPlan } from './types';
 import type { VarietyList } from './varieties';
@@ -138,7 +139,9 @@ export async function buildBackup(): Promise<BuiltBackup> {
     const v = readPlanView(g.id);
     if (v) views[g.id] = v;
   }
-  const data = { settings, plants, polycultures, gardenPlans, varietyLists };
+  // Deletion marks travel along (and count for the fingerprint: a deletion alone is a change to upload).
+  const deleted = readDeletions();
+  const data = { settings, plants, polycultures, gardenPlans, varietyLists, ...(Object.keys(deleted).length ? { deleted } : {}) };
   const exportedAt = new Date().toISOString();
   return {
     json: JSON.stringify({ version: 1, exportedAt, ...data, views }, null, 2),
@@ -162,6 +165,8 @@ export interface ParsedBackup {
   views?: Record<string, PlanView>;
   /** Raw settings object, if the backup carried one; loadSettings() validates it on read. */
   settings: Partial<AppSettings> | null;
+  /** Deletion marks of the device that wrote it (deletions.ts). */
+  deleted?: Deletions;
 }
 
 /** Parses a backup file / Gist / WebDAV payload — either the full backup
@@ -181,6 +186,7 @@ export function parseBackup(text: string): ParsedBackup {
     gardenPlans,
     varietyLists: normalizeVarietyLists(d.varietyLists),
     ...(Object.keys(views).length ? { views } : {}),
+    ...(Object.keys(cleanDeletions(d.deleted)).length ? { deleted: cleanDeletions(d.deleted) } : {}),
     settings: typeof d.settings === 'object' && d.settings !== null && !Array.isArray(d.settings) ? d.settings as Partial<AppSettings> : null,
   };
 }
@@ -239,15 +245,21 @@ export async function applyBackup(b: ParsedBackup, opts: { keepNewer?: boolean }
   let keptLocal = 0;
   // a file picker or sync round may have sent the app to the background: start on a fresh connection (#7)
   reopenDB();
-  const pick = async <T extends { id: string; updatedAt: string }>(incoming: T[], local: () => Promise<T[]>) => {
-    if (!opts.keepNewer || !incoming.length) return incoming;
-    const r = dropOlder(incoming, await local());
+  // A sync round (keepNewer) also carries deletions both ways: what either side deleted after its last change goes,
+  // here and in what comes in. A file restore is a deliberate "bring it back": it ignores the marks.
+  const marks = opts.keepNewer ? mergeDeletions(readDeletions(), b.deleted ?? {}) : null;
+  const pick = async <T extends { id: string; updatedAt: string }>(store: DelStore, incoming: T[], local: () => Promise<T[]>) => {
+    if (!marks) return incoming;
+    const mine = await local();
+    await removeDeleted(store, mine.filter(r => isDeleted(marks, store, r)).map(r => r.id));
+    const r = dropOlder(incoming.filter(x => !isDeleted(marks, store, x)), mine);
     keptLocal += r.kept;
     return r.keep;
   };
-  const plants = await pick(b.plants, getAllPlants);
-  const polycultures = await pick(b.polycultures, getAllPolycultures);
-  const gardenPlans = await pick(b.gardenPlans, getAllGardenPlans);
+  const plants = await pick('plants', b.plants, getAllPlants);
+  const polycultures = await pick('polycultures', b.polycultures, getAllPolycultures);
+  const gardenPlans = await pick('gardenPlans', b.gardenPlans, getAllGardenPlans);
+  if (marks) storeDeletions(marks);
   if (plants.length) await importPlants(plants);
   if (polycultures.length) await importPolycultures(polycultures);
   if (gardenPlans.length) await importGardenPlans(gardenPlans);
