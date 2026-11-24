@@ -12,6 +12,7 @@ describe('nginx conf of the dev instance', () => {
   });
   it('lets only team/admin in, except the login page', () => {
     expect(conf).toContain('auth_request /_pdk_team;');
+    expect(conf.match(/location @pdk_login/g)).toHaveLength(1); // gate once, not inside nested locations
     expect(conf).not.toContain('auth_request /_pdk_auth;');
     expect(conf).toContain('proxy_pass http://127.0.0.1:8788/api/auth/check?team;');
     expect(conf.match(/auth_request off;/g)!.length).toBeGreaterThanOrEqual(7);
