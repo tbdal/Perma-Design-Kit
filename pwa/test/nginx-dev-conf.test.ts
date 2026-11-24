@@ -18,5 +18,6 @@ describe('nginx conf of the dev instance', () => {
     expect(conf.match(/auth_request off;/g)!.length).toBeGreaterThanOrEqual(7);
     // the proxy checks the login itself; a second check fails with 500 while it restarts
     expect(conf).toMatch(/location \^~ \/api\/x\/big\/ \{\n\s+auth_request off;/);
+    expect(conf).toMatch(/location ~ \^\/api\/v1\(\/\|\$\) \{\n\s+auth_request off;/); // token, no cookie (QGIS)
   });
 });

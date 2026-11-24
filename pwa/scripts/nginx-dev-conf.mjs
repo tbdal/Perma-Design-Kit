@@ -23,7 +23,8 @@ export function devConf(live) {
   swap('auth_request /_pdk_auth;', 'auth_request /_pdk_team;');
   // Login and the auth/feature API must work before the login; the proxy checks /api/x/ and /api/admin/ itself.
   // /api/x/big/ too: an extra team check per upload fails with 500 while the proxy restarts (auto-sync errors).
-  s = s.replace(/(location ~ \^\/api\/\(auth\|admin\|x\|beta\)\/ \{\n|location \^~ \/api\/x\/big\/ \{\n|location = \/api\/features \{\n|location = \/_pdk_auth \{\n)/g, '$1        auth_request off;\n');
+  // /api/v1/ too: scripts and GIS (QGIS) send a personal token, no login cookie; the proxy checks the token.
+  s = s.replace(/(location ~ \^\/api\/\(auth\|admin\|x\|beta\)\/ \{\n|location \^~ \/api\/x\/big\/ \{\n|location = \/api\/features \{\n|location = \/_pdk_auth \{\n|location ~ \^\/api\/v1\(\/\|\$\) \{\n)/g, '$1        auth_request off;\n');
   const gate = `
     # Dev instance (Werkstatt #656): everything only for team/admin accounts, except what the login page needs.
     auth_request /_pdk_team;
