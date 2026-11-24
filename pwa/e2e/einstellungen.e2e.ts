@@ -7,6 +7,7 @@ test('settings: search hides other cards and groups, fields save right away', as
   await page.goto('/settings/');
   await expect(page.locator('#g-oberflaeche h2')).toHaveText('Oberfläche');
   await expect(page.locator('#btn-save')).toHaveCount(0);
+  await expect(page.locator('#stats-plants')).not.toHaveText('…');   // page script has run
 
   await page.fill('#settings-search', 'nextcloud');
   await expect(page.locator('#daten-section')).toBeVisible();

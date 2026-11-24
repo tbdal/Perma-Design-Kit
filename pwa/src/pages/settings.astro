@@ -683,7 +683,7 @@ import Layout from '../layouts/Layout.astro';
   // ── Search (#727): hides the cards ([data-search]) that don't contain the words, and groups left empty ──
   const searchInput = document.getElementById('settings-search') as HTMLInputElement;
   const noHit = document.getElementById('settings-no-hit')!;
-  searchInput.addEventListener('input', () => {
+  function filterSettings() {
     const words = searchInput.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
     let hits = 0;
     document.querySelectorAll<HTMLElement>('[data-settings-group]').forEach(g => {
@@ -699,7 +699,10 @@ import Layout from '../layouts/Layout.astro';
     });
     noHit.hidden = hits > 0;
     noHit.textContent = hits ? '' : t('settingsSearchNone', { q: searchInput.value.trim() });
-  });
+  }
+  searchInput.addEventListener('input', filterSettings);
+  // typed (or restored by the browser) before this script ran
+  if (searchInput.value) filterSettings();
 
   // ── Daten: Backup ───────────────────────────────────────────────────────
   async function buildBackupBlob(): Promise<{ blob: Blob; filename: string }> {
