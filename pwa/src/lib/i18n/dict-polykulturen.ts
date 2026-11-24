@@ -54,7 +54,7 @@ export const polyculturesDict: Dict = {
   suggestionsHeading: { de: 'Vorschläge', en: 'Suggestions' },
   suggestionsIntro: { de: 'Pflanzen aus deinem Bestand, die freie Rollen füllen und mit der Ankerart in Sonne/Wasser/pH überlappen.', en: 'Plants from your collection that fill open roles and overlap with the anchor species in sun/water/pH.' },
   chooseAnchorFirst: { de: 'Wähle zuerst eine Ankerart, dann werden passende Pflanzen vorgeschlagen.', en: 'Choose an anchor species first, then matching plants will be suggested.' },
-  allRolesFilled: { de: 'Alle Rollen besetzt 🎉  Du kannst weiter „{companion}" hinzufügen, wenn du mehr Vielfalt willst.', en: 'All roles filled 🎉  You can keep adding "{companion}" if you want more diversity.' },
+  allRolesFilled: { de: 'Alle Rollen besetzt 🎉  Weitere Arten fügst du über die besetzten Rollen (✓, aufklappen) hinzu.', en: 'All roles filled 🎉  Add more species via the filled roles (✓, expand).' },
   noMatchingPlants: { de: 'keine passenden Pflanzen', en: 'no matching plants' },
   notInCollectionTitle: { de: '{common} ({latin}) — noch nicht in deinem Bestand', en: '{common} ({latin}) — not yet in your collection' },
   btnImport: { de: '↓ importieren', en: '↓ import' },

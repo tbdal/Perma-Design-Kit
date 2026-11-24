@@ -373,14 +373,11 @@ import Layout from '../layouts/Layout.astro';
     }
     const memberIds = new Set([anchorId, ...editing.members.map(m => m.plantId)]);
     const filledRoles = new Set(editing.members.map(m => m.role));
-    const openRoles = ROLES.filter(r => !filledRoles.has(r) && r !== 'other');
+    // Filled roles stay as collapsed blocks: a second species of the same role is still addable.
+    const shownRoles = ROLES.filter(r => r !== 'other');
+    const allFilled = shownRoles.every(r => filledRoles.has(r));
 
-    if (openRoles.length === 0) {
-      suggestions.innerHTML = `<p class="text-xs text-green-700 dark:text-green-400">${t('allRolesFilled', { companion: roleLabel('companion') })}</p>`;
-      return;
-    }
-
-    const blocks = openRoles.map(role => {
+    const blocks = shownRoles.map(role => {
       const requirements = ROLE_REQUIREMENT[role];
       const candidates = plants
         .filter(p => !memberIds.has(p.id))
@@ -442,7 +439,10 @@ import Layout from '../layouts/Layout.astro';
         </div>`;
     });
 
-    suggestions.innerHTML = blocks.join('');
+    const blockHtml = (role: PolycultureRole, html: string) => !filledRoles.has(role) ? html
+      : `<details class="mb-2"><summary class="cursor-pointer px-1 text-xs font-medium text-stone-500 dark:text-stone-400">✓ ${roleLabel(role)}</summary>${html}</details>`;
+    suggestions.innerHTML = (allFilled ? `<p class="mb-2 text-xs text-green-700 dark:text-green-400">${t('allRolesFilled')}</p>` : '')
+      + blocks.map((html, i) => blockHtml(shownRoles[i], html)).join('');
     suggestions.querySelectorAll<HTMLButtonElement>('[data-add-plant]').forEach(btn => {
       btn.addEventListener('click', () => {
         editing!.members.push({

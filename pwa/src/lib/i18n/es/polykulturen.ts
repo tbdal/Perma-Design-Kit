@@ -14,7 +14,7 @@ export const es: Record<string, string> = {
   btnAutoFillTitle: 'Para cada rol abierto, la planta de tu colección que mejor encaja (como en el panel de sugerencias)', toastAutoFill: '{n} roles rellenados', toastAutoFillNone: 'No hay plantas adecuadas para los roles abiertos en tu colección',
   placeInPlanLabel: 'Colocar en el plan de bosque comestible', btnPlaceInPlan: 'Colocar', placeNoPlans: 'Aún no hay plan de bosque comestible: crea uno primero', inPlans: 'En planes: {list}', inPlanItem: '{name} {n}×',
   noMembers: 'Sin miembros.', btnSaveGuild: 'Guardar', chooseAnchorFirst: 'Elige primero una especie ancla; después se sugieren plantas adecuadas.',
-  allRolesFilled: 'Todos los roles cubiertos 🎉  Puedes seguir añadiendo «{companion}» si quieres más diversidad.', noMatchingPlants: 'no hay plantas adecuadas',
+  allRolesFilled: 'Todos los roles cubiertos 🎉  Añade más especies desde los roles cubiertos (✓, desplegar).', noMatchingPlants: 'no hay plantas adecuadas',
   notInCollectionTitle: '{common} ({latin}) — aún no está en tu colección', btnImport: '↓ importar', noPlantForRole: 'No tienes ninguna planta para este rol. Representantes conocidos para importar:',
   knownRepresentatives: 'Representantes conocidos', unknownPlant: '— desconocida —', unnamedGuild: 'sin nombre', guildUnnamed: '— sin nombre —', anchorLabel: 'Ancla:',
   memberCountSingular: '{count} miembro', memberCountPlural: '{count} miembros', rolesFilled: '{filled} de {total} roles cubiertos', confirmDeleteGuild: '¿Eliminar de verdad el policultivo «{name}»?',
