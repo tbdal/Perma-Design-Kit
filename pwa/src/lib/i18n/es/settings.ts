@@ -1,6 +1,8 @@
 // Spanish texts of dict-settings.ts.
 export const es: Record<string, string> = {
-  pageTitle: 'Ajustes', pageSubtitle: 'Gestiona fuentes de datos, vista, tema y datos.',
+  pageTitle: 'Ajustes', pageSubtitle: 'Los cambios se guardan al instante y valen para este dispositivo.',
+  settingsSearchLabel: 'Buscar en los ajustes', settingsSearchPlaceholder: 'Buscar un ajuste … (p. ej. oscuro, Nextcloud, contraseña)', settingsSearchNone: 'Ningún ajuste para «{q}». Prueba con tema, copia, variedades o acceso.', settingsNavLabel: 'Secciones',
+  groupUi: 'Interfaz', groupPlantData: 'Datos de plantas', groupData: 'Datos y copias', groupAccount: 'Cuenta', groupPrivacy: 'Privacidad', groupDanger: 'Zona de peligro',
   syncProblemError: 'La sincronización automática con {provider} ha fallado: {msg}',
   syncProblemConflict: 'Sincronización automática en pausa: {provider} tiene una copia que este dispositivo no conoce (p. ej. de otro dispositivo). Usa «descargar» abajo para leerla o «subir» para reemplazarla.',
   themeAuto: 'Automático', themeLight: 'Claro', themeDark: 'Oscuro', sectionSources: 'Fuentes de datos', sectionLogin: 'Inicio de sesión',
@@ -19,7 +21,7 @@ export const es: Record<string, string> = {
   optPoly: 'Fichas de planta', optStripe: 'Fichas en tira', optBaumscheibe: 'Fichas de copa', sectionDesign: 'Diseño', designSubtitle: 'Aspecto del sitio web. Todas las funciones son iguales en todos los diseños.',
   designStandard: 'Clásico', designHorizont: 'Horizonte', sectionTheme: 'Tema', themeSubtitle: '«Automático» sigue el ajuste del sistema de tu dispositivo.', sectionPrivacy: 'Privacidad', privacyOptOutLabel: 'Desactivar la analítica',
   privacyOptOutDescPre: 'Nuestra analítica autoalojada (Umami) no recoge datos personales; si aun así prefieres no contar, marca esta casilla. Detalles en la', privacyOptOutDescLink: 'política de privacidad',
-  btnSaveSettings: 'Guardar ajustes', toastSettingsSaved: 'Ajustes guardados', sectionData: 'Copia de seguridad',
+  toastSettingsSaved: 'Guardado', sectionData: 'Copia de seguridad',
   dataSubtitle: 'Tus plantas, policultivos y planes solo están en este navegador. Guárdalos como archivo (la copia de seguridad) o automáticamente en un almacenamiento en línea.',
   statLabelPlants: 'Registros de plantas', storageBreakdown: 'Detalles: ¿qué ocupa el almacenamiento?', stoLocal: 'Tus datos y la app', stoIndexedDb: 'Plantas, policultivos, planes', stoIndexedDbNote: 'IndexedDB',
   stoCaches: 'Archivos de la app y cachés', stoCachesNote: 'para uso sin conexión; incluye los datos de abajo', stoGeo: 'Datos externos (caché)', stoTerrain: 'Terreno (teselas de elevación)', stoDgm: 'Modelo de elevación oficial (1 m)',

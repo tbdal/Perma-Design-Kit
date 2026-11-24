@@ -3,7 +3,17 @@ import { es as esTexts } from './es/settings';
 
 export const settingsDict: Dict = {
   pageTitle: { de: 'Einstellungen', en: 'Settings' },
-  pageSubtitle: { de: 'Datenquellen, Ansicht, Theme und Daten verwalten.', en: 'Manage data sources, view, theme and data.' },
+  pageSubtitle: { de: 'Änderungen werden sofort gespeichert und gelten für dieses Gerät.', en: 'Changes are saved right away and apply to this device.' },
+  settingsSearchLabel: { de: 'Einstellungen durchsuchen', en: 'Search the settings' },
+  settingsSearchPlaceholder: { de: 'Einstellung suchen … (z. B. dunkel, Nextcloud, Passwort)', en: 'Find a setting … (e.g. dark, Nextcloud, password)' },
+  settingsSearchNone: { de: 'Keine Einstellung zu „{q}“. Versuche Begriffe wie Theme, Backup, Sorten oder Anmeldung.', en: 'No setting for “{q}”. Try words like theme, backup, varieties or sign-in.' },
+  settingsNavLabel: { de: 'Bereiche', en: 'Sections' },
+  groupUi: { de: 'Oberfläche', en: 'Interface' },
+  groupPlantData: { de: 'Pflanzendaten', en: 'Plant data' },
+  groupData: { de: 'Daten & Sicherung', en: 'Data & backup' },
+  groupAccount: { de: 'Konto', en: 'Account' },
+  groupPrivacy: { de: 'Datenschutz', en: 'Privacy' },
+  groupDanger: { de: 'Gefahrenzone', en: 'Danger zone' },
 
   sectionSources: { de: 'Datenquellen', en: 'Data sources' },
   sectionLogin: { de: 'Anmeldung', en: 'Sign-in' },
@@ -68,8 +78,7 @@ export const settingsDict: Dict = {
   privacyOptOutDescPre: { de: 'Die selbst gehostete Reichweitenmessung (Umami) erfasst keine personenbezogenen Daten — falls du trotzdem nicht gezählt werden möchtest, hier den Haken setzen. Details in der', en: 'Our self-hosted analytics (Umami) does not collect personal data — if you’d still rather not be counted, check this box. Details in the' },
   privacyOptOutDescLink: { de: 'Datenschutzerklärung', en: 'privacy policy' },
 
-  btnSaveSettings: { de: 'Einstellungen speichern', en: 'Save settings' },
-  toastSettingsSaved: { de: 'Einstellungen gespeichert', en: 'Settings saved' },
+  toastSettingsSaved: { de: 'Gespeichert', en: 'Saved' },
 
   sectionData: { de: 'Sichern', en: 'Back up' },
   dataSubtitle: { de: 'Deine Pflanzen, Polykulturen und Pläne liegen nur in diesem Browser. Sichere sie als Datei (das Backup) oder automatisch in einen Online-Speicher.', en: 'Your plants, polycultures and plans live only in this browser. Keep them safe as a file (the backup) or automatically in online storage.' },

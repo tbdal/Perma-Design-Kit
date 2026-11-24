@@ -144,8 +144,7 @@ export const datenschutzDict: Dict = {
   dsOptOutLi2b: { de: 'den Haken bei „', en: 'section, check the box for "' },
   dsAnalyticsOptOutLabel: { de: 'Reichweitenmessung deaktivieren', en: 'Disable analytics' },
   dsOptOutLi2c: { de: '".', en: '".' },
-  dsOptOutLi3a: { de: 'Klicke auf', en: 'Click' },
-  dsSaveSettingsBtn: { de: 'Einstellungen speichern', en: 'Save settings' },
+  dsOptOutLi3: { de: 'Die Einstellung wird sofort gespeichert.', en: 'The setting is saved right away.' },
   dsOptOutBody1: { de: 'Technisch wird dabei in deinem Browser der lokale Schlüssel', en: 'Technically, this sets the local key' },
   dsOptOutBody2: { de: 'auf', en: 'to' },
   dsOptOutBody3: {
