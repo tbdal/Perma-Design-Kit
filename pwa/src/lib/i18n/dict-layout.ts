@@ -176,6 +176,7 @@ export const layoutDict: Dict = {
   scGpArrows: { de: 'Karte bewegen (mit Umschalt weiter)', en: 'Move the map (Shift = further)' },
   scGpEsc: { de: 'Abbrechen / Markierung aufheben', en: 'Cancel / clear selection' },
   shortcutsOverview: { de: 'Diese Übersicht', en: 'This overview' },
+  shortcutsSettings: { de: 'Einstellungen öffnen', en: 'Open the settings' },
   shortcutsPalette: { de: 'Alles auf der Seite suchen: Seiten, Menüs, Knöpfe, Schalter, Pflanzen …', en: 'Search everything on the page: pages, menus, buttons, switches, plants …' },
   cmdkTitle: { de: 'Alles suchen', en: 'Search everything' },
   cmdkPlaceholder: { de: 'Was möchtest du tun? Seite, Funktion, Pflanze …', en: 'What do you want to do? Page, function, plant …' },

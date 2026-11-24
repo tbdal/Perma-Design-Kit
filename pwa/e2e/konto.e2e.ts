@@ -60,3 +60,16 @@ test('an old code says so', async ({ page, errors }) => {
   await expect(page).not.toHaveURL(/geraet=/);
   void errors;
 });
+
+test('Ctrl/Cmd+Shift+, opens the settings, also from a text field', async ({ page, errors }) => {
+  await stubNetwork(page);
+  await page.addInitScript(() => { try { localStorage.setItem('pdk-mode', 'classic'); } catch { /* ignore */ } });
+  await page.goto('/kalender');
+  await page.keyboard.press('Control+Shift+Comma');
+  await expect(page).toHaveURL(/\/settings\/?$/);
+  await page.goto('/');
+  await page.locator('input[type="search"], input[type="text"]').first().focus();
+  await page.keyboard.press('Meta+Shift+Comma');
+  await expect(page).toHaveURL(/\/settings\/?$/);
+  void errors;
+});

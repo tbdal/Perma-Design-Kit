@@ -169,6 +169,7 @@ export const es: Record<string, string> = {
   scGpArrows: 'Mover el mapa (Mayús = más lejos)',
   scGpEsc: 'Cancelar / quitar la selección',
   shortcutsOverview: 'Este resumen',
+  shortcutsSettings: 'Abrir los ajustes',
   shortcutsPalette: 'Buscar todo en la página: páginas, menús, botones, interruptores, plantas…',
   cmdkTitle: 'Buscar todo',
   cmdkPlaceholder: '¿Qué quieres hacer? Página, función, planta…',
