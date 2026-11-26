@@ -2,6 +2,7 @@
 export const es: Record<string, string> = {
   helpMenuLabel: 'Ayuda',
   helpSources: 'Fuentes y método',
+  helpTimeline: 'Cronología de funciones',
   betaInfoLink: 'Sobre tu acceso beta',
   langLabel: 'Idioma',
   themeLabel: 'Claro / oscuro',

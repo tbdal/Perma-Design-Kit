@@ -88,6 +88,7 @@ export const layoutDict: Dict = {
   userMenuLabel: { de: 'Konto, Sprache und Darstellung', en: 'Account, language and display' },
   helpMenuLabel: { de: 'Hilfe', en: 'Help' },
   helpSources: { de: 'Quellen und Methode', en: 'Sources and method' },
+  helpTimeline: { de: 'Zeitstrahl der Funktionen', en: 'Feature timeline' },
   betaInfoLink: { de: 'Über deinen Beta-Zugang', en: 'About your beta access' },
   langLabel: { de: 'Sprache', en: 'Language' },
   themeLabel: { de: 'Hell / Dunkel', en: 'Light / dark' },
